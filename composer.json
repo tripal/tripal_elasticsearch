@@ -1,0 +1,5 @@
+{
+    "require": {
+        "archon/dataframe": "^0.4.1"
+    }
+}

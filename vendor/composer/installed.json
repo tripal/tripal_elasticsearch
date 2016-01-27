@@ -1,0 +1,159 @@
+[
+    {
+        "name": "gajus/dindent",
+        "version": "2.0.2",
+        "version_normalized": "2.0.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/gajus/dindent.git",
+            "reference": "d81c3a6f78fbe1ab26f5e753098bbbef6b6a9f3c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/gajus/dindent/zipball/d81c3a6f78fbe1ab26f5e753098bbbef6b6a9f3c",
+            "reference": "d81c3a6f78fbe1ab26f5e753098bbbef6b6a9f3c",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3"
+        },
+        "require-dev": {
+            "satooshi/php-coveralls": "dev-master"
+        },
+        "time": "2014-10-08 10:03:04",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Gajus\\Dindent\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Gajus Kuizinas",
+                "email": "gk@anuary.com"
+            }
+        ],
+        "description": "HTML indentation library for development and testing.",
+        "homepage": "https://github.com/gajus/dindent",
+        "keywords": [
+            "format",
+            "html",
+            "indent"
+        ]
+    },
+    {
+        "name": "phpoffice/phpexcel",
+        "version": "1.8.1",
+        "version_normalized": "1.8.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/PHPOffice/PHPExcel.git",
+            "reference": "372c7cbb695a6f6f1e62649381aeaa37e7e70b32"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/PHPOffice/PHPExcel/zipball/372c7cbb695a6f6f1e62649381aeaa37e7e70b32",
+            "reference": "372c7cbb695a6f6f1e62649381aeaa37e7e70b32",
+            "shasum": ""
+        },
+        "require": {
+            "ext-xml": "*",
+            "ext-xmlwriter": "*",
+            "php": ">=5.2.0"
+        },
+        "time": "2015-05-01 07:00:55",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "PHPExcel": "Classes/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "LGPL"
+        ],
+        "authors": [
+            {
+                "name": "Maarten Balliauw",
+                "homepage": "http://blog.maartenballiauw.be"
+            },
+            {
+                "name": "Mark Baker"
+            },
+            {
+                "name": "Franck Lefevre",
+                "homepage": "http://blog.rootslabs.net"
+            },
+            {
+                "name": "Erik Tilt"
+            }
+        ],
+        "description": "PHPExcel - OpenXML - Read, Create and Write Spreadsheet documents in PHP - Spreadsheet engine",
+        "homepage": "http://phpexcel.codeplex.com",
+        "keywords": [
+            "OpenXML",
+            "excel",
+            "php",
+            "spreadsheet",
+            "xls",
+            "xlsx"
+        ]
+    },
+    {
+        "name": "archon/dataframe",
+        "version": "0.4.1",
+        "version_normalized": "0.4.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/HWGehring/Archon.git",
+            "reference": "16435d80c34124079584234e34ef81ddae2fc6d6"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/HWGehring/Archon/zipball/16435d80c34124079584234e34ef81ddae2fc6d6",
+            "reference": "16435d80c34124079584234e34ef81ddae2fc6d6",
+            "shasum": ""
+        },
+        "require": {
+            "ext-mbstring": "*",
+            "ext-pdo_sqlite": "*",
+            "gajus/dindent": "2.0.2",
+            "php": ">=5.5",
+            "phpoffice/phpexcel": "1.8.1"
+        },
+        "require-dev": {
+            "phpmd/phpmd": "@stable",
+            "phpunit/phpunit": "4.7.*",
+            "satooshi/php-coveralls": "0.6.1",
+            "squizlabs/php_codesniffer": "2.3.4"
+        },
+        "time": "2015-10-22 04:46:54",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Archon\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "description": "Archon: PHP Data Analysis Library",
+        "homepage": "https://github.com/HWGehring/Archon",
+        "keywords": [
+            "csv",
+            "data",
+            "data analysis",
+            "database",
+            "excel",
+            "sql"
+        ]
+    }
+]

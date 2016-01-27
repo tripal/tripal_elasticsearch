@@ -1,0 +1,5 @@
+name = Elastic search
+description = Provide an interface for search all indexed data
+package = Pro Drupal Development
+core = 7.x
+files[] = elastic_search.module
