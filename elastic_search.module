@@ -507,7 +507,7 @@ drupal_set_message('form has been submitted');
 				}
 				
 
-
+				// replace the keys of right table with the common field's value
 				foreach($right_table as $key => $value){
 					unset($right_table[$key]);
 					$new_key = 'key_'.$value[$common_field];
@@ -515,21 +515,17 @@ drupal_set_message('form has been submitted');
 				}				
 
 
-
+				// merge the right table's elements to the left table
+				// use the common field's value from the left table as the key value for the right table
 				$inner_join_table = array();
-
-
-
 				foreach($left_table as $value){
 					$key = 'key_'.$value[$common_field];
 					if(isset($right_table[$key])){
 						$inner_join_table[] = array_merge($value, $right_table[$key]);
 					}
-				//	$inner_join_table[] = $right_table[$key];
 				}				
-
-//				dpm($inner_join_table);
-
+				//===================== End of inner join two tables ===============================
+				
 
 				$_SESSION['search_output_table'] = $inner_join_table;
 
@@ -933,67 +929,197 @@ drupal_set_message('form has been submitted');
                 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+
+
+
+
+
+				//============== Get primary keys for $table_1, $table_2 and $table_3 =====
+				//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+				$primary_key_table_1 = get_primary_key($table_1);
+				$primary_key_table_2 = get_primary_key($table_2);
+				$primary_key_table_3 = get_primary_key($table_3);
+
+
+				
+
                 //=========== Inner join $table_1, $table_2 and $table_3====================
 				$inner_join_table = array();
                 // when $table_1 is the connecting table
                 if($table_1_elastic_count == 2){
-                    foreach($search_output_table_1 as $table_1){
-                        foreach($search_output_table_2 as $table_2){
-                            if($table_1[$common_field_12] == $table_2[$common_field_12]){
-                                $inner_join_table_0[] = array_merge($table_1, $table_2);
-                            }
-                        }
-                    }
-//					dpm($inner_join_table_0);
-                    foreach($inner_join_table_0 as $table_0){
-                        foreach($search_output_table_3 as $table_3){
-                            if($table_0[$common_field_13] == $table_3[$common_field_13]){
-                                $inner_join_table[] = array_merge($table_0, $table_3);
-                            }
-                        }
-                    }
+					// first round table joining
+			        if($primary_key_table_1 == $common_field_12){
+        	            $right_table = $search_output_table_1;
+            	        $left_table = $search_output_table_2;
+              		}else{
+						$right_table = $search_output_table_2;
+                    	$left_table = $search_output_table_1;
+                	}
 
-                $_SESSION['search_output_table'] = $inner_join_table;
+
+					foreach($right_table as $key => $value){
+                    	unset($right_table[$key]);
+                    	$new_key = 'key_'.$value[$common_field_12];
+                    	$right_table[$new_key] = $value;
+                	}
+
+
+					$firt_round_inner_join_table = array();
+                	foreach($left_table as $value){
+                    	$key = 'key_'.$value[$common_field_12];
+                    	if(isset($right_table[$key])){
+                        	$first_round_inner_join_table[] = array_merge($value, $right_table[$key]);
+                    	}
+                	}
+
+					
+					// second round table joining
+					if($primary_key_table_3 == $common_field_13){
+						$right_table = $search_output_table_3;
+						$left_table = $first_round_inner_join_table;
+					}else{
+						$right_table = $first_round_inner_join_table;
+						$left_table = $search_output_table_3;
+					}
+
+
+					foreach($right_table as $key => $value){
+                    	unset($right_table[$key]);
+                    	$new_key = 'key_'.$value[$common_field_13];
+                    	$right_table[$new_key] = $value;
+                	}
+
+
+
+					$second_round_inner_join_table = array();
+                	foreach($left_table as $value){
+                    	$key = 'key_'.$value[$common_field_13];
+                    	if(isset($right_table[$key])){
+                        	$second_round_inner_join_table[] = array_merge($value, $right_table[$key]);
+                    	}
+                	}
+
+
+
+					$_SESSION['search_output_table'] = $second_round_inner_join_table;
+
+
 
                 }elseif($table_2_elastic_count == 2){
-                    foreach($search_output_table_2 as $table_2){
-                        foreach($search_output_table_1 as $table_1){
-                            if($table_2[$common_field_12] == $table_1[$common_field_12]){
-                                $inner_join_table_0[] = array_merge($table_1, $table_2);
-                            }
-                        }
-                    }
+					// first round table joining
+			        if($primary_key_table_2 == $common_field_12){
+        	            $right_table = $search_output_table_2;
+            	        $left_table = $search_output_table_1;
+              		}else{
+						$right_table = $search_output_table_1;
+                    	$left_table = $search_output_table_2;
+                	}
 
-                    foreach($inner_join_table_0 as $table_0){
-                        foreach($search_output_table_3 as $table_3){
-                            if($table_0[$common_field_23] == $table_3[$common_field_23]){
-                                $inner_join_table[] = array_merge($table_0, $table_3);
-                            }
-                        }
-                    }
 
-                $_SESSION['search_output_table'] = $inner_join_table;
+					foreach($right_table as $key => $value){
+                    	unset($right_table[$key]);
+                    	$new_key = 'key_'.$value[$common_field_12];
+                    	$right_table[$new_key] = $value;
+                	}
+
+
+					$firt_round_inner_join_table = array();
+                	foreach($left_table as $value){
+                    	$key = 'key_'.$value[$common_field_12];
+                    	if(isset($right_table[$key])){
+                        	$first_round_inner_join_table[] = array_merge($value, $right_table[$key]);
+                    	}
+                	}
+
+					
+					// second round table joining
+					if($primary_key_table_3 == $common_field_23){
+						$right_table = $search_output_table_3;
+						$left_table = $first_round_inner_join_table;
+					}else{
+						$right_table = $first_round_inner_join_table;
+						$left_table = $search_output_table_3;
+					}
+
+
+					foreach($right_table as $key => $value){
+                    	unset($right_table[$key]);
+                    	$new_key = 'key_'.$value[$common_field_23];
+                    	$right_table[$new_key] = $value;
+                	}
+
+
+
+					$second_round_inner_join_table = array();
+                	foreach($left_table as $value){
+                    	$key = 'key_'.$value[$common_field_13];
+                    	if(isset($right_table[$key])){
+                        	$second_round_inner_join_table[] = array_merge($value, $right_table[$key]);
+                    	}
+                	}
+
+
+
+					$_SESSION['search_output_table'] = $second_round_inner_join_table;
+
 
                 }else{
-                    foreach($search_output_table_3 as $table_3){
-                        foreach($search_output_table_1 as $table_1){
-                            if($table_3[$common_field_13] == $table_1[$common_field_12]){
-                                $inner_join_table_0[] = array_merge($table_1, $table_3);
-                            }
-                        }
-                    }
-
-                    foreach($inner_join_table_0 as $table_0){
-                        foreach($search_output_table_2 as $table_2){
-                            if($table_0[$common_field_23] == $table_2[$common_field_23]){
-                                $inner_join_table[] = array_merge($table_0, $table_3);
-                            }
-                        }
-                    }
-
-                $_SESSION['search_output_table'] = $inner_join_table;
+					// first round table joining
+			        if($primary_key_table_3 == $common_field_13){
+        	            $right_table = $search_output_table_3;
+            	        $left_table = $search_output_table_1;
+              		}else{
+						$right_table = $search_output_table_1;
+                    	$left_table = $search_output_table_3;
+                	}
 
 
+					foreach($right_table as $key => $value){
+                    	unset($right_table[$key]);
+                    	$new_key = 'key_'.$value[$common_field_13];
+                    	$right_table[$new_key] = $value;
+                	}
+
+
+
+					$firt_round_inner_join_table = array();
+                	foreach($left_table as $value){
+                    	$key = 'key_'.$value[$common_field_13];
+                    	if(isset($right_table[$key])){
+                        	$first_round_inner_join_table[] = array_merge($value, $right_table[$key]);
+                    	}
+                	}
+
+					
+					// second round table joining
+					if($primary_key_table_2 == $common_field_23){
+						$right_table = $search_output_table_2;
+						$left_table = $first_round_inner_join_table;
+					}else{
+						$right_table = $first_round_inner_join_table;
+						$left_table = $search_output_table_2;
+					}
+
+
+					foreach($right_table as $key => $value){
+                    	unset($right_table[$key]);
+                    	$new_key = 'key_'.$value[$common_field_23];
+                    	$right_table[$new_key] = $value;
+                	}
+
+
+
+					$second_round_inner_join_table = array();
+                	foreach($left_table as $value){
+                    	$key = 'key_'.$value[$common_field_23];
+                    	if(isset($right_table[$key])){
+                        	$second_round_inner_join_table[] = array_merge($value, $right_table[$key]);
+                    	}
+                	}
+
+
+
+					$_SESSION['search_output_table'] = $second_round_inner_join_table;
 
                 }
 
@@ -1046,7 +1172,7 @@ function _elastic_search_results(){
 		$rows[] = array_values($values);
 	}		
 
-	$per_page = 20;
+	$per_page = 10;
 	// Initialize the pager
 	$current_page = pager_default_initialize(count($rows), $per_page);
 	// Split your list into page sized chunks
