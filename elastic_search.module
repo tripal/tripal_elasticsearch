@@ -1,6 +1,8 @@
 <?php
 
 	require_once '/data/www/html/hardwoods_dev_ming/htdocs/sites/all/modules/DRUPAL_ELASTIC_SEARCH/vendor/autoload.php';
+	require_once '/data/www/html/hardwoods_dev_ming/htdocs/sites/all/modules/custom/elastic_indexing/elastic_indexing.inc';
+
 
 set_time_limit(0);
 
@@ -485,30 +487,48 @@ drupal_set_message('form has been submitted');
 */
 
 
-				//======= Binary search tree algorithm for inner join two tables ===========
+
+				//================= get primary keys for $table_1 and $table_2 ============== 
+				$primary_key_table_1 = get_primary_key($table_1);
+				$primary_key_table_2 = get_primary_key($table_2);
+
+
+
+				//========================= Inner join two tables ===========================
 				//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-				foreach($search_output_table_1 as $key => $value){
-					unset($search_output_table_1[$key]);
+				// The table which is $common_field as primary key is called right table
+				// then the other one is called left table
+				if($primary_key_table_1 == $common_field){
+					$right_table = $search_output_table_1;
+					$left_table = $search_output_table_2;
+				}else{
+					$right_table = $search_output_table_2;
+					$left_table = $search_output_table_1;
+				}
+				
+
+
+				foreach($right_table as $key => $value){
+					unset($right_table[$key]);
 					$new_key = 'key_'.$value[$common_field];
-					$search_output_table_1[$new_key] = $value;
+					$right_table[$new_key] = $value;
 				}				
 
-//				dpm(array_keys($search_output_table_1));
 
 
 				$inner_join_table = array();
 
 
 
-				foreach($search_output_table_2 as $value){
+				foreach($left_table as $value){
 					$key = 'key_'.$value[$common_field];
-					if(isset($search_output_table_1[$key])){
-						$inner_join_table[] = array_merge($value, $search_output_table_1[$key]);
+					if(isset($right_table[$key])){
+						$inner_join_table[] = array_merge($value, $right_table[$key]);
 					}
-				//	$inner_join_table[] = $search_output_table_1[$key];
+				//	$inner_join_table[] = $right_table[$key];
 				}				
 
-				dpm($inner_join_table);
+//				dpm($inner_join_table);
 
 
 				$_SESSION['search_output_table'] = $inner_join_table;
@@ -1104,6 +1124,40 @@ function template_preprocess_elastic_search_form(&$variables){
 //++++++++++++++++++++++++++ The end of theme functions ++++++++++++++++++++++++++++++++++++
 
 
+
+
+
+
+/**
+ * Define a function to get primary key of a table
+ */
+function get_primary_key($table_name){
+	if(in_array($table_name, get_chado_table_list())){
+		$table = 'chado.'.$table_name;
+		$primary_key_sql = 'SELECT a.attname
+							FROM   pg_index i
+							JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                     					AND a.attnum = ANY(i.indkey)
+							WHERE  i.indrelid = \''.$table.'\'::regclass
+							AND    i.indisprimary;';
+
+		$primary_key = db_query($primary_key_sql)->fetchAssoc();
+	}else{
+		$table = $table_name;
+			$primary_key_sql = 'SELECT a.attname
+								FROM   pg_index i
+								JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                     						AND a.attnum = ANY(i.indkey)
+								WHERE  i.indrelid = \''.$table.'\'::regclass
+								AND    i.indisprimary;';
+
+			$primary_key = db_query($primary_key_sql)->fetchAssoc();
+	}
+
+
+	return implode($primary_key);
+
+}//============== End of primary key function ================================
 
 
 
