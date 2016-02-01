@@ -14,16 +14,16 @@ function elastic_search_menu(){
 		'title' => t('Elastic Search'),
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('elastic_search_form'),
-		'access callback' => 'user_access',
-		'access arguments' => array('administer users'),
+		'access callback' => TRUE, //'user_access',
+	//	'access arguments' => array('administer users'),
 		'type' => MENU_NORMAL_ITEM,
 	);
 
 	$items['elastic_search/search_results'] = array(
 		'title' => t('Elasticsearch results'),
 		'page callback' => '_elastic_search_results',
-		'access callback' => 'user_access',
-		'access arguments' => array('administer users'),
+		'access callback' => TRUE, // 'user_access',
+	//	'access arguments' => array('administer users'),
 		'type' => MENU_NORMAL_ITEM,
 	);
 
@@ -241,7 +241,6 @@ drupal_set_message('form has been submitted');
 
 
 
-
 	//====== AT THIS STAGE, WE HAVE ALL THE DATA WE NEED TO IMPLEMENT ELASTICSEARCH========
 	//======	$_SESSION['all_selected_fields']	========== 	Field name
 	//====== 	$_SESSION['query'][$query_name]		========== 	Query method
@@ -273,13 +272,12 @@ drupal_set_message('form has been submitted');
 	    $client = new Elasticsearch\Client();
 	    $mappings = $client->indices()->getMapping();
 		//======================================================================================
-	    
+
 	    switch(count($all_selected_tables)){
-	    	
+
+
 			// When only one table is selected    
 	    	case 1:
-	
-	
 				$table_1 = $all_selected_tables[0];
 	            $table_1_fields = array_keys($mappings[$table_1]['mappings'][$table_1]['properties']);
 				//=====================================
@@ -335,7 +333,8 @@ drupal_set_message('form has been submitted');
 	
 									
 				break;
-	
+
+
 	    	case 2:
 	    		$table_1 = $all_selected_tables[0];
 	    		$table_1_fields = array_keys($mappings[$table_1]['mappings'][$table_1]['properties']);
@@ -469,23 +468,6 @@ drupal_set_message('form has been submitted');
 				}
 	
 
-/*
-				$inner_join_table = array();
-				foreach($search_output_table_1 as $table_1){
-					foreach($search_output_table_2 as $table_2){
-						if($table_1[$common_field] == $table_2[$common_field]){
-							$inner_join_table[] = array_merge($table_1, $table_2);
-						}
-					}
-				}
-
-//					dpm($inner_join_table);
-				
-			
-				$_SESSION['search_output_table'] = $inner_join_table;	
-
-*/
-
 
 
 				//================= get primary keys for $table_1 and $table_2 ============== 
@@ -531,10 +513,7 @@ drupal_set_message('form has been submitted');
 
 
 
-
 				break;
-	
-	
 	
 		
 
@@ -1125,7 +1104,6 @@ drupal_set_message('form has been submitted');
 
 
 
-
 	//dpm($elastic_table_1_results);
 	//dpm($elastic_table_2_results);
 	//dpm($elastic_table_3_results);
@@ -1137,6 +1115,7 @@ drupal_set_message('form has been submitted');
 //	dpm($search_output_table_3);
 	
 				break;
+
 	    }
 	    
 	
@@ -1146,7 +1125,6 @@ drupal_set_message('form has been submitted');
 	
 	//====================== The end of elasticsearch ==========================
 	//++++++++++++++++++++++ The end of elasticsearch ++++++++++++++++++++++++++	
-	
 
 
 
@@ -1300,6 +1278,7 @@ function get_primary_key($table_name){
 //unset($_SESSION['query']);
 //unset($_SESSION['keywords']);
 //unset($_SESSION['common_field']);
+//unset($_SESSION['search_output_table']);
 unset($params);
 
 
@@ -1414,85 +1393,5 @@ if(!empty($_SESSION['all_selected_fields'])){
 //=================== Query 2 ends =============================
 
 
-
-
-				//===========================++++++++++++++++++++++++++=========================================
-				// It turns out using db_query and creating tables in database is a very slow methods. Discard it
-				//===========================++++++++++++++++++++++++++=========================================
-
-				//++++++++++++++++++++++++++++++++++++++++++++++++++++
-				// Create a table in database to store search results+
-				//====================================================
-
-
-
-
-/**
-				// define a function to generate table schema for each table
-				function generate_table_schema($selected_table){
-					$fields = array(
-								'id' => array('type' => 'int', 'default' => NULL),
-								'score' => array('type' => 'text', 'default' => NULL),
-							);
-					foreach($_SESSION['all_selected_fields'][$selected_table] as $field){
-						$fields[$field] = array('type' => 'text', 'default' => NULL);
-					}
-					$table_schema = array();
-					$table_schema['description'] = 'Schema '.$selected_table.' description';
-					$table_schema['fields'] = $fields;
-					
-					return $table_schema;
-				}
-
-
-
-
-				//+++++++++++++++++++++++ $table_1 +++++++++++++++++++++
-				// get table schema				
-				$table_1_specification = generate_table_schema($table_1);
-
-				// always create a new table in the database
-				if(db_table_exists('elastic_'.$table_1)){
-					db_drop_table('elastic_'.$table_1);
-				}	
-				db_create_table('elastic_'.$table_1, $table_1_specification);
-
-				// insert data into the table
-				foreach($search_output_table_1 as $data){
-					db_insert('elastic_'.$table_1)->fields($data)->execute();
-				}
-
-
-
-
-				//+++++++++++++++++++++++ $table_2 +++++++++++++++++++++
-				// get table schema				
-				$table_2_specification = generate_table_schema($table_2);
-
-				// always create a new table in the database
-				if(db_table_exists('elastic_'.$table_2)){
-					db_drop_table('elastic_'.$table_2);
-				}
-				db_create_table('elastic_'.$table_2, $table_2_specification);
-
-				// insert data into the table
-				foreach($search_output_table_2 as $data){
-					db_insert('elastic_'.$table_2)->fields($data)->execute();
-				}
-
-
-
-				$sql = 'SELECT * FROM elastic_'.$table_1.'
-						INNER JOIN elastic_'.$table_2.' ON elastic_'.$table_1.'.'.$common_field.' = elastic_'.$table_2.'.'.$common_field.';';
-				$result = db_query($sql);
-*/				
-
-/**
-				//+++++++++++++++++ join $table_1 & $table_2 +++++++++++++++
-				$query = db_select($table_1, 't1');
-				$query->join($table_2, 't2', 't1.feature_id = t2.feature_id');
-				$query->fields('t1',array('species'))->execute();
-				$results = $query->fetchAssoc();
-*/	
 
 
