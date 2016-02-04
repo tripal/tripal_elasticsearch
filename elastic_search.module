@@ -14,8 +14,7 @@ function elastic_search_menu(){
 		'title' => t('Elastic Search'),
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('elastic_search_form'),
-		'access callback' => TRUE, //'user_access',
-	//	'access arguments' => array('administer users'),
+		'access callback' => TRUE,
 		'type' => MENU_NORMAL_ITEM,
 	);
 
@@ -204,7 +203,6 @@ function all_fields_callback($form, &$form_state){
  */
 function get_form_values($form, &$form_state){
 
-drupal_set_message('form has been submitted');
 
 	// Get all the selected table and selected fields
 	// remember that $form_state['all_selected_fields'] is a two level array:
@@ -439,7 +437,7 @@ drupal_set_message('form has been submitted');
 							foreach($_SESSION['all_selected_fields'][$table_1] as $field){
 								$search_output_table_1[$key][$field] = $search_hit['_source'][$field]; 
 							}
-							$search_output_table_1[$key]['score'] = $search_hit['_score'];
+					//		$search_output_table_1[$key]['score'] = $search_hit['_score'];
 					}
 					
 	
@@ -458,7 +456,7 @@ drupal_set_message('form has been submitted');
 							foreach($_SESSION['all_selected_fields'][$table_2] as $field){
 								$search_output_table_2[$key][$field] = $search_hit['_source'][$field]; 
 							}
-							$search_output_table_2[$key]['score'] = $search_hit['_score'];
+					//		$search_output_table_2[$key]['score'] = $search_hit['_score'];
 					}
 		
 //					dpm($search_output_table_1);
@@ -625,7 +623,7 @@ drupal_set_message('form has been submitted');
                             foreach($_SESSION['all_selected_fields'][$table_1] as $field){
                                 $search_output_table_1[$key][$field] = $search_hit['_source'][$field];
                             }
-                            $search_output_table_1[$key]['score'] = $search_hit['_score'];
+                    //        $search_output_table_1[$key]['score'] = $search_hit['_score'];
                     }
 
 
@@ -644,7 +642,7 @@ drupal_set_message('form has been submitted');
                             foreach($_SESSION['all_selected_fields'][$table_2] as $field){
                                 $search_output_table_2[$key][$field] = $search_hit['_source'][$field];
                             }
-                            $search_output_table_2[$key]['score'] = $search_hit['_score'];
+                    //        $search_output_table_2[$key]['score'] = $search_hit['_score'];
                     }
 
 //                  dpm($search_output_table_1);
@@ -756,7 +754,7 @@ drupal_set_message('form has been submitted');
                             foreach($_SESSION['all_selected_fields'][$table_1] as $field){
                                 $search_output_table_1[$key][$field] = $search_hit['_source'][$field];
                             }
-                            $search_output_table_1[$key]['score'] = $search_hit['_score'];
+                     //       $search_output_table_1[$key]['score'] = $search_hit['_score'];
                     }
 
 	
@@ -770,7 +768,7 @@ drupal_set_message('form has been submitted');
                             foreach($_SESSION['all_selected_fields'][$table_3] as $field){
                                 $search_output_table_3[$key][$field] = $search_hit['_source'][$field];
                             }
-                            $search_output_table_3[$key]['score'] = $search_hit['_score'];
+                    //        $search_output_table_3[$key]['score'] = $search_hit['_score'];
                     }
 
 //                  dpm($search_output_table_1);
@@ -877,7 +875,7 @@ drupal_set_message('form has been submitted');
                             foreach($_SESSION['all_selected_fields'][$table_2] as $field){
                                 $search_output_table_2[$key][$field] = $search_hit['_source'][$field];
                             }
-                            $search_output_table_2[$key]['score'] = $search_hit['_score'];
+                      //      $search_output_table_2[$key]['score'] = $search_hit['_score'];
                     }
 
 
@@ -896,7 +894,7 @@ drupal_set_message('form has been submitted');
                             foreach($_SESSION['all_selected_fields'][$table_3] as $field){
                                 $search_output_table_3[$key][$field] = $search_hit['_source'][$field];
                             }
-                            $search_output_table_3[$key]['score'] = $search_hit['_score'];
+                        //    $search_output_table_3[$key]['score'] = $search_hit['_score'];
                     }
 
 //                  dpm($search_output_table_2);
@@ -1259,7 +1257,11 @@ function get_primary_key($table_name){
 	}
 
 
-	return implode($primary_key);
+	if(is_array($primary_key)){
+		$primary_key = implode($primary_key);
+	}
+
+	return $primary_key;
 
 }//============== End of primary key function ================================
 
