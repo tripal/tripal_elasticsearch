@@ -346,7 +346,6 @@ function get_form_values($form, &$form_state){
 				// $common_field is an array, but I need it to be a string
 				$common_field = implode($common_field);
 	
-dpm(empty($common_field));	
 				if(!empty($common_field)){
 	
 					//=====================================
@@ -515,7 +514,7 @@ dpm(empty($common_field));
 				}
 				else{
 					$_SESSION['search_output_table'] = array(
-															0 => array('Oops!' => 'This two tables has no common field.'),
+															0 => array('Oops!' => 'These two tables has no common field.'),
 															);
 				}
 
