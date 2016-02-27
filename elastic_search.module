@@ -163,7 +163,7 @@ function template_preprocess_elastic_indexing_form(&$variables){
 /**
  * implement hok_cron().
  */
-function elastic_indexing_cron() {
+function elastic_search_cron() {
 	// Default to an hourly interval. Of course, cron has to be running at least
 	// hourly for this to work.
 	$interval = variable_get('elastic_indexing_interval', 60);
@@ -173,11 +173,13 @@ function elastic_indexing_cron() {
     	// This is a silly example of a cron job.
     	// It just makes it obvious that the job has run without
     	// making any changes to your database.
-    	watchdog('Elastic indexing', 'Elastic indexing cron ran successfully');
-    	if (TRUE) {
-      		drupal_set_message(t('cron_example executed at %time', array('%time' => date_iso8601(time(0)))));
-    	}
-    	variable_set('elastic_indexing_next_execution', time() + $interval);
+		if(drupal_cron_run()){
+    		watchdog('Elastic indexing', 'Elastic indexing cron ran successfully');
+    		if (TRUE) {
+      			drupal_set_message(t('cron_example executed at %time', array('%time' => date_iso8601(time(0)))));
+    		}
+    		variable_set('elastic_indexing_next_execution', time() + $interval);
+		}
   	}
 }
 
@@ -188,7 +190,7 @@ function elastic_indexing_cron() {
 /**
  * implement hook_cron_queue_info()
  */
-function elastic_indexing_cron_queue_info(){
+function elastic_search_cron_queue_info(){
 	$queues['elastic_queue'] = array(
 		'worker callback' => 'elasticindexing_queue_item',
 		//'time' => 120,	## the time (in second) a single cron batch will run. 
