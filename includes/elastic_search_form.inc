@@ -262,7 +262,7 @@ function _run_elastic_search($form, &$form_state){
 				//+++++++++++++++++++++++++++++++++++++	
 		    	$params['index'] = $table_1 ;
 				$params['type'] = $table_1;
-				$params['size'] = 1000000;
+				$params['size'] = 100000;
 	
 				// replace the query string with corresponding data (query method, field name, keywords) 
 		    	$output = '';
@@ -280,8 +280,8 @@ function _run_elastic_search($form, &$form_state){
 	
 				$params['body'] = $body_header.$output.$body_end;    
 	
-				// display 1000000 records
-				$params['size'] = 1000000;
+				// display 100000 records
+				$params['size'] = 100000;
 	
 	
 				//===run elasticsearch================	
@@ -328,7 +328,7 @@ function _run_elastic_search($form, &$form_state){
 					//+++++++++++++++++++++++++++++++++++++	
 			    	$params['index'] = $table_1 ;
 					$params['type'] = $table_1;
-					$params['size'] = 1000000;
+					$params['size'] = 100000;
 	
 					// replace the query string with corresponding data (query method, field name, keywords) 
 			    	$output = '';
@@ -346,8 +346,8 @@ function _run_elastic_search($form, &$form_state){
 	
 					$params['body'] = $body_header.$output.$body_end;    
 	
-					// display 1000000 records
-					$params['size'] = 1000000;
+					// display 100000 records
+					$params['size'] = 100000;
 	
 	
 					//===run elasticsearch================	
@@ -365,7 +365,7 @@ function _run_elastic_search($form, &$form_state){
 					//+++++++++++++++++++++++++++++++++++++	
 			    	$params['index'] = $table_2 ;
 					$params['type'] = $table_2;
-					$params['size'] = 1000000;
+					$params['size'] = 100000;
 	
 					// replace the query string with corresponding data (query method, field name, keywords) 
 			    	$output = '';
@@ -530,7 +530,7 @@ function _run_elastic_search($form, &$form_state){
 	                    //+++++++++++++++++++++++++++++++++++++ 
 	                    $params['index'] = $table_1 ;
 	                    $params['type'] = $table_1;
-	                    $params['size'] = 1000000;
+	                    $params['size'] = 100000;
 	
 	                    // replace the query string with corresponding data (query method, field name, keywords) 
 	                    $output = '';
@@ -548,8 +548,8 @@ function _run_elastic_search($form, &$form_state){
 	
 	                    $params['body'] = $body_header.$output.$body_end;
 	
-	                    // display 1000000 records
-	                    $params['size'] = 1000000;
+	                    // display 100000 records
+	                    $params['size'] = 100000;
 	
 	
 	                    //===run elasticsearch================  
@@ -565,7 +565,7 @@ function _run_elastic_search($form, &$form_state){
 	                    //+++++++++++++++++++++++++++++++++++++ 
 	                    $params['index'] = $table_2 ;
 	                    $params['type'] = $table_2;
-	                    $params['size'] = 1000000;
+	                    $params['size'] = 100000;
 	
 	                    // replace the query string with corresponding data (query method, field name, keywords) 
 	                    $output = '';
@@ -644,7 +644,7 @@ function _run_elastic_search($form, &$form_state){
 	                    //+++++++++++++++++++++++++++++++++++++ 
 	                    $params['index'] = $table_1 ;
 	                    $params['type'] = $table_1;
-	                    $params['size'] = 1000000;
+	                    $params['size'] = 100000;
 	
 	                    // replace the query string with corresponding data (query method, field name, keywords) 
 	                    $output = '';
@@ -662,8 +662,8 @@ function _run_elastic_search($form, &$form_state){
 	
 	                    $params['body'] = $body_header.$output.$body_end;
 	
-	                    // display 1000000 records
-	                    $params['size'] = 1000000;
+	                    // display 100000 records
+	                    $params['size'] = 100000;
 	
 	
 	                    //===run elasticsearch================  
@@ -681,7 +681,7 @@ function _run_elastic_search($form, &$form_state){
 	                    //+++++++++++++++++++++++++++++++++++++ 
 	                    $params['index'] = $table_3 ;
 	                    $params['type'] = $table_3;
-	                    $params['size'] = 1000000;
+	                    $params['size'] = 100000;
 	
 	                    // replace the query string with corresponding data (query method, field name, keywords) 
 	                    $output = '';
@@ -754,7 +754,7 @@ function _run_elastic_search($form, &$form_state){
 	                    //+++++++++++++++++++++++++++++++++++++ 
 	                    $params['index'] = $table_2 ;
 	                    $params['type'] = $table_2;
-	                    $params['size'] = 1000000;
+	                    $params['size'] = 100000;
 	
 	                    // replace the query string with corresponding data (query method, field name, keywords) 
 	                    $output = '';
@@ -772,8 +772,8 @@ function _run_elastic_search($form, &$form_state){
 	
 	                    $params['body'] = $body_header.$output.$body_end;
 	
-	                    // display 1000000 records
-	                    $params['size'] = 1000000;
+	                    // display 100000 records
+	                    $params['size'] = 100000;
 	
 	
 	                    //===run elasticsearch================  
@@ -789,7 +789,7 @@ function _run_elastic_search($form, &$form_state){
 	                    //+++++++++++++++++++++++++++++++++++++ 
 	                    $params['index'] = $table_3 ;
 	                    $params['type'] = $table_3;
-	                    $params['size'] = 1000000;
+	                    $params['size'] = 100000;
 	
 	                    // replace the query string with corresponding data (query method, field name, keywords) 
 	                    $output = '';
