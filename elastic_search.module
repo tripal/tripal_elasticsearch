@@ -193,7 +193,7 @@ function elastic_search_cron() {
 function elastic_search_cron_queue_info(){
 	$queues['elastic_queue'] = array(
 		'worker callback' => 'elasticindexing_queue_item',
-		//'time' => 120,	## the time (in second) a single cron batch will run. 
+		'time' => 60 * 60 * 2,	## the amount of time drupal spends on calling the worker function. 
 	);
 
 	return $queues;
