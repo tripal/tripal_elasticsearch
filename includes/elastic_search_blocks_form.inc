@@ -25,6 +25,11 @@ function elastic_search_blocks_form($form, &$form_state){
 function _delete_elastic_block($form, &$form_state){
 	$block_name = substr($form_state['values']['op'], 7);
 	unset($_SESSION['elastic_search_blocks'][$block_name]);
+
+	db_delete('elastic_search_interface')
+		->condition('search_block_name', $block_name, '=')
+		->execute();
+
 	$form_state['rebuild'] = TRUE;
 }
 

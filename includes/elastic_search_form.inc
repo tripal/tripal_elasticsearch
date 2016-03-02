@@ -235,9 +235,14 @@ function _add_elastic_search_block($form, &$form_state){
 	//remove the first comma ',' in the string
 	$table_list = substr($table_list, 1);
 	$field_list = substr($field_list, 1);
-	dpm($block_name);
-	dpm($table_list);
-	dpm($field_list);
+	
+	//input data into database table 'elastic_search_interface'
+	$record = array(
+		'search_block_name' => $block_name,
+		'table_name' => $table_list,
+		'field_list' => $field_list,
+	);
+	drupal_write_record('elastic_search_interface', $record);
 
 }
 
