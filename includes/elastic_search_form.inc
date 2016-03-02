@@ -159,6 +159,7 @@ function elastic_search_form($form, &$form_state) {
 	);	
 	
 
+	$form['#validate'][] = '_search_block_name_validate';
 	
 	return $form;	
 }
@@ -196,6 +197,12 @@ function _add_elastic_search_block($form, &$form_state){
 }
 
 
+
+function _search_block_name_validate($form, &$form_state){
+	if(empty($form_state['values']['search_block_name'])){
+		form_set_error('search_block_name', t('Search block name cannot be empty'));
+	}
+}
 
 
 //===========================================================================
