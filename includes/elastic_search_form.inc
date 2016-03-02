@@ -35,13 +35,19 @@ function elastic_search_form($form, &$form_state) {
 		'#type' => 'fieldset',
 		'#title' => t('Select tables for search'),
 	);
+
+	
+	$table_list = array();
+	foreach($indices as $table){
+		$table_list[$table] = $table;
+	}
 	$form['elastic_indexed']['indexed_tables'] = array(
 		'#type' => 'checkboxes',
 		'#title' => t('Select tables for searching'),
 		'#description' => t('You can select one single table or join multiple tables for searching.
 			However, only relational tables can be joined.'),
 		// indices are named by indexed table names
-		'#options' => $indices,
+		'#options' => $table_list,
 		'#ajax' => array(
 			'callback' => 'table_dependent_fields_callback',
 			'wrapper' => 'fields_replace',
@@ -72,14 +78,19 @@ function elastic_search_form($form, &$form_state) {
 	// Create an array to store all selected fields
 	$all_selected_fields = array();
 	if(!empty($form_state['values']['indexed_tables'])){
-    	foreach($form_state['values']['indexed_tables'] as $key){
+    	foreach($form_state['values']['indexed_tables'] as $selected_table){
     		// check if $key is an alphanumeric character.
-    		if(ctype_alnum($key)){
-    			$selected_table = $indices[$key];
+    		if(!empty($selected_table)){
+    			//$selected_table = $indices[$key];
     			// get list of fields for the selected table
     			$fields = array_keys($mappings[$selected_table]['mappings'][$selected_table]['properties']);
 				// note that this form field is within a for loop.
 				// It creates a form field for each table, with table fields as being displayed 
+				foreach($fields as $key=>$field){
+					unset($fields[$key]);
+					$fields[$selected_table.'|'.$field] = $selected_table.'|'.$field;
+				}
+
     			$form['elastic_search'][$selected_table] = array(
     				'#type' => 'checkboxes',
     				'#title' => t("$selected_table"),
@@ -98,12 +109,14 @@ function elastic_search_form($form, &$form_state) {
 				*/
 				// $form_state['values'][$selected_table] is an array of keys of
 				// selected fields from table $selected_table
-    			foreach($form_state['values'][$selected_table] as $key){
-    				if(ctype_alnum($key)){
-    					$all_selected_fields[$selected_table][] = $fields[$key];
+    			foreach($form_state['values'][$selected_table] as $field){
+    				if(!empty($field)){
+    					$all_selected_fields[$selected_table][] = $field;
     				}
     				
     			};			
+
+			$_SESSION['selected_table'][$selected_table] = $selected_table;
     
     		}
 
@@ -185,6 +198,17 @@ function all_fields_callback($form, &$form_state){
 
 
 
+/**
+ * search block name validation
+ */
+function _search_block_name_validate($form, &$form_state){
+	if(empty($form_state['values']['search_block_name'])){
+		form_set_error('search_block_name', t('Search block name cannot be empty'));
+	}
+
+}
+
+
 
 
 /**
@@ -194,14 +218,27 @@ function _add_elastic_search_block($form, &$form_state){
 	$block_name = $form_state['values']['search_block_name'];
 	$_SESSION['elastic_search_blocks'][$block_name] = $form['all_selected_fields'];
 	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block';
-}
 
-
-
-function _search_block_name_validate($form, &$form_state){
-	if(empty($form_state['values']['search_block_name'])){
-		form_set_error('search_block_name', t('Search block name cannot be empty'));
+	$table_list = '';
+	$field_list = '';
+	foreach($form_state['values']['indexed_tables'] as $selected_table){
+		if(!empty($selected_table)){
+			$table_list = $table_list. ',' . $selected_table;
+			foreach($form_state['values'][$selected_table] as $field){
+				if(!empty($field)){
+					$field_list = $field_list .','. $field;
+				}
+			}
+		}
 	}
+
+	//remove the first comma ',' in the string
+	$table_list = substr($table_list, 1);
+	$field_list = substr($field_list, 1);
+	dpm($block_name);
+	dpm($table_list);
+	dpm($field_list);
+
 }
 
 
