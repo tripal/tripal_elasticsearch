@@ -34,6 +34,22 @@ function elastic_indexing_form($form, &$form_state){
 	//=========================================================================
 
 
+
+	// Create an area to display the already indexed data.
+	$form['indexed_block'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('All your indexed tables are below'),
+		'#collapsible' => TRUE,
+		'#collapsed' => TRUE,
+	);
+	
+	$form['indexed_block']['indexed_table'] = array(
+		'#type' => 'item',
+		'#markup' => $variables['elastic_indexing_form']['table'],
+	);
+
+
+
 	// Get the list of tables to populate the table dropdown
 	$options_first = get_table_list();
 
@@ -47,7 +63,7 @@ function elastic_indexing_form($form, &$form_state){
 
 	$form['indexing_table'] = array(
 		'#type' => 'fieldset',
-		'#title' => t('Elasticindex your data'),
+		'#title' => t('Elastic-index your data'),
 		// The entire enclosing div created here gets replaced when table_dropdown
 		// is changed.
 		'#prefix' => '<div id="dropdown_fields_replace">',
@@ -56,7 +72,7 @@ function elastic_indexing_form($form, &$form_state){
 
 	$form['indexing_table']['table_dropdown'] = array(
 		'#type' => 'select',
-		'#title' => 'Select a table to Elasticindex',
+		'#title' => 'Select a table to elastic-index',
 		'#options' => $options_first,
 		'#default_value' => $selected,
 		// bind an ajax callback to the change event (which is the default for the
@@ -72,7 +88,7 @@ function elastic_indexing_form($form, &$form_state){
 
 	$form['indexing_table']['indexing_fields'] = array(
 		'#type' => 'fieldset',
-		'#title' => t('Select fields to Elasticindex'),
+		'#title' => t('Select fields to elastic-index'),
 	);
 
 	// Check if a table is already indexed.
@@ -96,7 +112,7 @@ function elastic_indexing_form($form, &$form_state){
 		'#options' => get_column_list($options_first[$selected]),
 	);
 
-
+/**
 	$form['indexing_table']['cron_config'] = array(
 		'#type' => 'fieldset',
 		'#title' => t('Cron configuration'),
@@ -115,6 +131,7 @@ function elastic_indexing_form($form, &$form_state){
 		),
 
 	);
+*/
 
 	$form['indexing_table']['submit'] = array(
 		'#type' => 'submit',
@@ -122,22 +139,6 @@ function elastic_indexing_form($form, &$form_state){
 		'#submit' => array('elastic_indexing_table_and_fields'),
 	);
 
-
-
-
-
-	// Create an area to display the already indexed data.
-	$form['indexed_block'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('All your indexed tables are below'),
-		'#collapsible' => TRUE,
-		'#collapsed' => TRUE,
-	);
-	
-	$form['indexed_block']['indexed_table'] = array(
-		'#type' => 'item',
-		'#markup' => $variables['elastic_indexing_form']['table'],
-	);
 
 
 

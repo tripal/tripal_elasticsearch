@@ -1,0 +1,30 @@
+<?php
+
+
+
+function elastic_search_schema(){
+	$schema['elastic_search_interface'] = array(
+		'description' => 'Store table names and fields used to build elastic search interface.',
+		'fields' => array(
+			'search_block_name' => array(
+				'description' => t('tables and fields belong to the same block share the same search_block_name'),
+				'type' => 'varchar',
+				'length' => 255,
+				'default' => '',
+			),
+			'table_name' => array(
+				'description' => 'The table name.',
+				'type' => 'varchar',
+	        	'length' => 255,
+        		'default' => '',
+			),
+			'field_list' => array(
+				'description' => 'fields are separated by comma',
+				'type' => 'text',
+				'size' => 'big',
+			), 
+		),
+		'primary key' => array('table_name'),
+	);
+	return $schema;
+}

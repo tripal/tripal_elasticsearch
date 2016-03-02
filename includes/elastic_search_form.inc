@@ -145,9 +145,11 @@ function elastic_search_form($form, &$form_state) {
 
 	$form['build_search_boxes'] = array(
 		'#type' => 'submit',
-		'#value' => 'Elasticsearch',
-		'#submit' => array('_run_elastic_search'),
+		'#value' => 'Add elasticsearch block',
+		'#submit' => array('_add_elastic_search_block'),
 	);	
+	
+
 	
 	return $form;	
 }
@@ -175,12 +177,24 @@ function all_fields_callback($form, &$form_state){
 
 
 
+/**
+ * submit callback
+ */
+function _add_elastic_search_block($form, &$form_state){
+	$_SESSION['elastic_search_blocks'][] = $form['all_selected_fields'];
+	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block';
+}
+
+
+
 
 //===========================================================================
 /**
  * Call the submit callback to get form values and implement elastic search
  */
 //===========================================================================
+
+/**
 function _run_elastic_search($form, &$form_state){
 
 
@@ -1079,5 +1093,5 @@ function _run_elastic_search($form, &$form_state){
 //++++++++++++++++++++++++++ The end of form submit function ++++++++++++++++++++
 
 
-
+*/
 
