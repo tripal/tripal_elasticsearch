@@ -48,6 +48,18 @@ function elastic_search_form($form, &$form_state) {
 		),
 	);
 
+
+
+	// Add search block name
+	$form['elastic_indexed']['search_block_name'] = array(
+		'#type' => 'textfield',
+		'#description' => t('Please input a name for the search block you want to add to the search interface.'),
+		'#title' => t('Name of elastic search block'),
+	);
+
+
+
+
 	// Form fieldsets to display indexed fields for searching.
 	$form['elastic_search'] = array(
 		'#type' => 'fieldset',
@@ -108,13 +120,10 @@ function elastic_search_form($form, &$form_state) {
 
 	
 
-
-
-
 	// Build search box for all selected fields
 	$form['all_selected_fields'] = array(
 		'#type' => 'fieldset',
-		'#title' => t('Enter keywords for searching'),
+		'#title' => t('Elastic search block'),
 		'#prefix' => '<div id="all_fields_replace">',
 		'#suffix' => '</div>',
 	);		
@@ -181,7 +190,8 @@ function all_fields_callback($form, &$form_state){
  * submit callback
  */
 function _add_elastic_search_block($form, &$form_state){
-	$_SESSION['elastic_search_blocks'][] = $form['all_selected_fields'];
+	$block_name = $form_state['values']['search_block_name'];
+	$_SESSION['elastic_search_blocks'][$block_name] = $form['all_selected_fields'];
 	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block';
 }
 
