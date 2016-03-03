@@ -86,10 +86,9 @@ function _elastic_search_run($form, &$form_state){
         //++++++++++++++++++++++++++++++++++++
         $client = new Elasticsearch\Client();
         $search_result = $client->search($params);
-dpm($search_result);
+//dpm($search_result);
 	}
 
-/*
 		foreach($search_result['hits']['hits'] as $key=>$value){
 			foreach($fields as $field=>$keyword){
 				$elastic_output[$table][$key][$field] = $value['_source'][$field];
@@ -100,12 +99,11 @@ dpm($search_result);
 			} 
 		}
 
-*/
 
-
+	$_SESSION['search_output_table'] = $elastic_output[$table];
 
 //	$form_state['rebuild'] = TRUE;
-//	$form_state['redirect'] = 'elastic_search/search_results';
+	$form_state['redirect'] = 'elastic_search/search_results';
 
 }
 
