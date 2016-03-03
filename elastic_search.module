@@ -53,6 +53,15 @@ function elastic_search_menu(){
         'weight' => 2,
     );
 
+    $items['elastic_search'] = array(
+        'title' => t('Elastic search interface'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('elastic_search_interface_form'),
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'includes/elastic_search_interface_form.inc',
+    );
+
 	$items['elastic_search/search_results'] = array(
 		'title' => t('Elasticsearch results'),
 		'page callback' => '_elastic_search_results',
