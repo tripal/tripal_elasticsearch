@@ -41,7 +41,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
 			$table_field_mix[$field] = $keyword;
 		}
 	}
-dpm($form_state['values']);
 	// group fields by table in case that there are more than one table involved in this search block
 	foreach($table_field_mix as $table_field=>$keyword){
 		$table_field_arr = explode('|', $table_field);
@@ -50,7 +49,6 @@ dpm($form_state['values']);
 		$table_field_comb_arr[$table][$field] = $keyword;
 	}
 
-dpm($table_field_comb_arr);
 
 	//--------------------run elastic search----------------------------------
     // Build query statement, just need to replace some of this query string
@@ -92,11 +90,8 @@ dpm($table_field_comb_arr);
 	        	if($table == $table_field_arr[0]){
 	        		$field = $table_field_arr[1];
 					$elastic_output[$table][$key][$field] = $value['_source'][$field];
+					//$elastic_output[$table][$key][$primary_key] = $value['_source'][$primary_key];
 				}
-			}
-			//primary key field will be used to join tables
-			if(!empty($primary_key)){
-				$elastic_output[$table][$key][$primary_key] = $value['_source'][$primary_key];
 			}
 		}
 	}//------------------end of elastic search-------------------------------------
