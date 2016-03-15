@@ -4,7 +4,6 @@
 	require_once 'api/elastic_search.api.php';
 //	require_once '/data/www/html/hardwoods_dev_ming/htdocs/sites/all/modules/custom/elastic_indexing/elastic_indexing.inc';
 
-
 set_time_limit(0);
 
 /**
@@ -34,7 +33,7 @@ function elastic_search_menu(){
     );
 
 	$items[$pre.'/search'] = array(
-		'title' => t('Build search interface'),
+		'title' => t('Build search block'),
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('elastic_search_form'),
 		'access callback' => TRUE,
@@ -79,114 +78,28 @@ function elastic_search_menu(){
 
 
 
-
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//
-//
-//================================ Theme functions ==============================
-
 /**
- * Implements hook_theme().
+ * template preprocess function for elastic_search_form
  */
-function elastic_search_theme(){
-    return array(
-        'elastic_search_form' => array(
-            'render element' => 'form',
-            'template' => 'elastic-search-form',
-        ),
-    );
-}
-
-
-
-/**
- * Assign the elements of the form to variables so
- * the themer can use those values to control how the form elements
- * are displayed.
- */
-
 function template_preprocess_elastic_search_form(&$variables){
-    // Create an empty array to hold elements that will be collected.
-    $variables['elastic_search_form'] = array();
-    // Create an empty array to store hidden elements that will be collected.
-    $hidden = array();
 
-    // Provide variables named after form keys so themers can print each element
-    // independently.
-    foreach(element_children($variables['form']) as $key){
+    foreach($variables['form'] as $key=>$value){
+        $variables['elastic_search_form'][$key] = render($variables['form'][$key]);
+    }   
 
-        // For some reason I don't know, one form element doesn't have '#type'
-        // so I have to write a conditional statement to get the $type variable.
-        if(!empty($variables['form'][$key]['#type'])){
-            $type = $variables['form'][$key]['#type'];
-        }
-
-        if($type == 'hidden' || $type == 'token'){
-            $hidden[] = drupal_render($variables['form'][$key]);
-        }
-        else{
-            $variables['elastic_search_form'][$key] = drupal_render($variables['form'][$key]);
-        }
-
-        // Hidden form elements have no value to themers. No need for separation.
-        $variables['elastic_search_form']['hidden'] = implode($hidden);
-    }
-
-
-}//========================= The end of theme functions ====================================
-//++++++++++++++++++++++++++ The end of theme functions ++++++++++++++++++++++++++++++++++++
-
-
-
-
-/**
- * Implements hook_theme().
- */
-function elastic_indexing_theme(){
-	return array(
-		'elastic_indexing_form' => array(
-			'render element' => 'form',
-			'template' => 'elastic-indexing-form',
-		),
-	);
+    $variables['children'] = drupal_render_children($variables['form']);
 }
 
-
-
 /**
- * Assign the elements of the form to variables so
- * the themer can use those values to control how the form elements
- * are displayed.
- */ 
-function template_preprocess_elastic_indexing_form(&$variables){
-	// Create an empty array to hold elements that will be gathered.
-	$variables['elastic_indexing_form'] = array();
-	// Create an empty array to store hidden elements that will be gathered.
-	$hidden = array();
+ * template preprocess function for elastic_indexing_form
+ */
+function elastic_search_preprocess_elastic_indexing_form(&$variables){
 	
-	// Provide variables named after form keys so themers can print each element
-	// independently.
-	foreach(element_children($variables['form']) as $key){
-	
-		// For some reason I don't know, one form element doesn't have '#type'
-		// so I have to write a conditional statement to get the $type variable.
-		if(!empty($variables['form'][$key]['#type'])){
-			$type = $variables['form'][$key]['#type'];
-		}
-
-		if($type == 'hidden' || $type == 'token'){
-			$hidden[] = drupal_render($variables['form'][$key]);
-		}
-		else{
-			$variables['elastic_indexing_form'][$key] = drupal_render($variables['form'][$key]);
-		}
-
-		// Hidden form elements have no value to themers. No need for separation.
-		$variables['elastic_indexing_form']['hidden'] = implode($hidden);
+	foreach($variables['form'] as $key=>$value){
+		$variables['elastic_indexing_form'][$key] = render($variables['form'][$key]);
 	}
 
-
+	$variables['children'] = drupal_render_children($variables['form']);
 }
 
 
