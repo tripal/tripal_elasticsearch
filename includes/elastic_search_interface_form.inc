@@ -20,7 +20,7 @@ function elastic_search_interface_form($form, &$form_state){
 		$form[$key]['submit'] = array(
 			'#type' => 'submit',
 			'#value' => 'Elasticsearch|'.$key,
-			'#submit' => array('_elastic_search_run'),
+			//'#submit' => array('_elastic_search_run'),
 		);
 	}
 	return $form;
@@ -32,7 +32,7 @@ function elastic_search_interface_form($form, &$form_state){
 /**
  *elastic_search_interface_form submit callback
  */
-function _elastic_search_run($form, &$form_state){
+function elastic_search_interface_form_submit($form, &$form_state){
 	// The name of search block being submitted
 	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
 	// get field and corresponding input keywords
@@ -85,7 +85,7 @@ dpm($table_field_comb_arr);
 	}
 	//------------------end of elastic search-------------------------------------
 
-//dpm($search_result);
+dpm($search_result);
 	foreach($search_result['hits']['hits'] as $key=>$value){
 			$elastic_output[$table][$key] = $value['_source'];
 		//$primary_key = get_primary_key($table);
@@ -101,7 +101,7 @@ dpm($table_field_comb_arr);
 	}
 //	$form_state['rebuild'] = TRUE;
 //	$form_state['redirect'] = 'elastic_search/search_results';
-dpm($elastic_output);
+//dpm($elastic_output);
 }
 
 
