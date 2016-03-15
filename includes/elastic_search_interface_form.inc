@@ -37,7 +37,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
 	// get field and corresponding input keywords
 	foreach($form_state['values'][$block_name] as $field=>$keyword){
-		if(!empty($keyword) and $field != 'submit'){
+		if($field != 'submit'){
 			$table_field_mix[$field] = $keyword;
 		}
 	}
@@ -76,21 +76,31 @@ dpm($table_field_comb_arr);
         $output = rtrim($output, ',');
         $params['index'] = $table;
         $params['type'] = $table;
-        $params['size'] = 100000;
+        $params['size'] = 10000;
         $params['body'] = $body_header.$output.$body_end; 
         //===run elasticsearch================  
         //++++++++++++++++++++++++++++++++++++
         $client = new Elasticsearch\Client();
         $search_result = $client->search($params);
-	}
-	//------------------end of elastic search-------------------------------------
 
-dpm($search_result);
-	foreach($search_result['hits']['hits'] as $key=>$value){
-			$elastic_output[$table][$key] = $value['_source'];
-		//$primary_key = get_primary_key($table);
-			//$elastic_output[$table][$key][$primary_key] = $value['_source'][$primary_key];
-	}
+		//elastic search return results with all fields from a document
+		//but we only need to display fields we need
+		$primary_key = get_primary_key($table);
+		foreach($search_result['hits']['hits'] as $key=>$value){
+			foreach($table_field_mix as $table_field=>$keyword){
+			    $table_field_arr = explode('|', $table_field);
+	        	if($table == $table_field_arr[0]){
+	        		$field = $table_field_arr[1];
+					$elastic_output[$table][$key][$field] = $value['_source'][$field];
+				}
+			}
+			//primary key field will be used to join tables
+			if(!empty($primary_key)){
+				$elastic_output[$table][$key][$primary_key] = $value['_source'][$primary_key];
+			}
+		}
+	}//------------------end of elastic search-------------------------------------
+
 
 
 	if(!empty($elastic_output)){
@@ -101,7 +111,8 @@ dpm($search_result);
 	}
 //	$form_state['rebuild'] = TRUE;
 //	$form_state['redirect'] = 'elastic_search/search_results';
-//dpm($elastic_output);
+dpm($elastic_output);
+
 }
 
 
