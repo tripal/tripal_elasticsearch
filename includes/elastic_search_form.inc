@@ -93,7 +93,6 @@ function elastic_search_form($form, &$form_state) {
     				}
     			};			
 
-			//$_SESSION['selected_table'][$selected_table] = $selected_table;
     
     		}
     	}
@@ -143,11 +142,6 @@ function elastic_search_form($form, &$form_state) {
  * AJAX callback function to generate all fields for a selected table
  */
 function search_block_ajax_callback($form, &$form_state){
-	foreach($form_state['values']['indexed_tables'] as $table){
-		if(is_string($table))
-			dpm(get_primary_key($table));
-		//dpm(get_primary_key($table));
-	};	
     return $form;
 }
 
@@ -167,41 +161,13 @@ function _search_block_name_validate($form, &$form_state){
 }
 
 
-
-
 /**
- * submit callback
+ * elastic_search_form submit callback
  */
 function _add_elastic_search_block($form, &$form_state){
 	$block_name = $form_state['values']['search_block_name'];
 	$_SESSION['elastic_search_blocks'][$block_name] = $form['search_block']['all_selected_fields'];
 	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block';
-
-	$table_list = '';
-	$field_list = '';
-	foreach($form_state['values']['indexed_tables'] as $selected_table){
-		if(!empty($selected_table)){
-			$table_list = $table_list. ',' . $selected_table;
-			foreach($form_state['values'][$selected_table] as $field){
-				if(!empty($field)){
-					$field_list = $field_list .','. $field;
-				}
-			}
-		}
-	}
-
-	//remove the first comma ',' in the string
-	$table_list = substr($table_list, 1);
-	$field_list = substr($field_list, 1);
-	
-	//input data into database table 'elastic_search_interface'
-	$record = array(
-		'search_block_name' => $block_name,
-		'table_name' => $table_list,
-		'field_list' => $field_list,
-	);
-	//drupal_write_record('elastic_search_interface', $record);
-
 }
 
 
@@ -218,4 +184,6 @@ function elastic_search_get_table_list_options(){
 
 	return $table_list;	
 }
+
+
 

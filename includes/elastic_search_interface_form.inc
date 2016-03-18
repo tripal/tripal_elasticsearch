@@ -1,7 +1,6 @@
 <?php
 
-
-
+/*
 function elastic_search_interface_form($form, &$form_state){
 	foreach($_SESSION['elastic_search_blocks'] as $key => $value){
 		$form[$key] = array(
@@ -26,12 +25,13 @@ function elastic_search_interface_form($form, &$form_state){
 	return $form;
 }
 
-
+*/
 
 
 /**
  *elastic_search_interface_form submit callback
  */
+/*
 function elastic_search_interface_form_submit($form, &$form_state){
 	// The name of search block being submitted
 	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
@@ -73,6 +73,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
         }
         $output = rtrim($output, ',');
         $params['index'] = $table;
+		//$params['index'] = 'hardwoodgenomics';
         $params['type'] = $table;
         $params['size'] = 10000;
         $params['body'] = $body_header.$output.$body_end; 
@@ -97,17 +98,17 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	}//------------------end of elastic search-------------------------------------
 
 
-
-	if(!empty($elastic_output)){
+	unset($_SESSION['search_output_table']);
+	if(count($elastic_output, 0) == 1){ //count how many tables involved.
 		$_SESSION['search_output_table'] = $elastic_output[$table];
 	}
 	else{
 		$_SESSION['search_output_table'][] = array('Oops!' => 'No records found.');
 	}
 //	$form_state['rebuild'] = TRUE;
-//	$form_state['redirect'] = 'elastic_search/search_results';
-dpm($elastic_output);
+	$form_state['redirect'] = 'elastic_search/search_results';
+//dpm($elastic_output);
 
 }
 
-
+*/

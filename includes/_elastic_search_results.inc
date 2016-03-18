@@ -8,7 +8,7 @@
 function _elastic_search_results(){
 
 
-
+/**
 	$output = '<hr>';
 	
 	//get the first element of an array
@@ -31,9 +31,9 @@ function _elastic_search_results(){
 
 
 
-
 	foreach($sorted_output as $values){
 //		$header[] = array_keys($values);
+		$values['uniquename'] = l($values['uniquename'], 'feature/'.$values['uniquename']); // add link to feature uniquename.
 		$rows[] = array_values($values);
 	}		
 
@@ -46,7 +46,7 @@ function _elastic_search_results(){
 	$output .= theme('table', array('header' => $header, 'rows' => $chunks[$current_page] ));
 	$output .= theme('pager', array('quantity', count($rows)));			
 
-
+*/
 	return $output;
 
 }//================ The end of callback function for results display ============
