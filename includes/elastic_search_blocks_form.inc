@@ -46,6 +46,7 @@ function elastic_search_interface_form($form, &$form_state){
 			$form[$key][$form_field] = array(
 				'#type' => 'textfield',
 				'#title' => $form_field,
+				'#attributes' => array('class'=>array('elastic_search_form_item')),
 			);
 		}
 		
@@ -56,6 +57,16 @@ function elastic_search_interface_form($form, &$form_state){
 			//'#submit' => array('_elastic_search_run'),
 		);
 	}
+
+	$form['#attributes']['class'][]  = 'elastic_search_block_form';
+
+	// add CSS file
+	$form['#attached'] = array(
+		'#css' => array(
+			'type' => 'file',
+			'data' => drupal_get_path('module', 'elastic_search').'/css/elastic_search_block_form.css',
+		),
+	);
 
 	return $form;
 }

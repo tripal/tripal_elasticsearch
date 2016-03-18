@@ -153,6 +153,46 @@ function _elastic_search_results(){
 
 
 
+/** implements hook_theme() **/
+// set custom tpl for the elastic_search_interface_form //
+function elastic_search_theme(){
+	return array(
+		'elastic_search_interface_form' => array(
+			'render element' => 'form',
+			'path' => drupal_get_path('module', 'elastic_search') . '/templates',
+			'template' => 'elastic-search-interface',
+		),
+	);
+}
+
+//** implements hook_preprocess_elastic_search_interface_form(). **//
+function elastic_search_preprocess_elastic_search_interface_form(&$variables){
+	// shorten the form variable name for easier access.
+	$form = $variables['form'];
+
+	// change labels for the form elements.
+	$form['Search_transcripts']['search_transcripts_all|abbreviation']['#title'] = t('Organism');
+	$form['Search_transcripts']['search_transcripts_all|hit_best_eval']['#title'] = t('Blast hit evalue');
+	$form['Search_transcripts']['search_transcripts_all|hit_best_score']['#title'] = t('Blast hit score');
+	$form['Search_transcripts']['search_transcripts_all|hit_description']['#title'] = t('Blast hit description');
+	$form['Search_transcripts']['search_transcripts_all|seqlen']['#title'] = t('Sequence length');
+	$form['Search_transcripts']['search_transcripts_all|type']['#title'] = t('Sequence type');
+	$form['Search_transcripts']['search_transcripts_all|uniquename']['#title'] = t('Unique name');
+
+	// create variables for individual elements.
+	$variables['organism'] = render($form['Search_transcripts']['search_transcripts_all|abbreviation']);
+	$variables['blast_hit_eval'] = render($form['Search_transcripts']['search_transcripts_all|hit_best_eval']);
+	$variables['blast_hit_score'] = render($form['Search_transcripts']['search_transcripts_all|hit_best_score']);
+	$variables['blast_hit_description'] = render($form['Search_transcripts']['search_transcripts_all|hit_description']);
+	$variables['seqlen'] = render($form['Search_transcripts']['search_transcripts_all|seqlen']);
+	$variables['seqtype'] = render($form['Search_transcripts']['search_transcripts_all|type']);
+	$variables['uniquename'] = render($form['Search_transcripts']['search_transcripts_all|uniquename']);
+
+	// be sure to print the remaining rendered form items.
+	$variables['children'] = drupal_render_children($form);
+}
+
+
 /**
  * template preprocess function for elastic_search_form
  */
@@ -180,7 +220,7 @@ function elastic_search_preprocess_elastic_indexing_form(&$variables){
 
 
 /**
- * implement hok_cron().
+ * implement hook_cron().
  */
 function elastic_search_cron() {
 	// Default to an hourly interval. Of course, cron has to be running at least
