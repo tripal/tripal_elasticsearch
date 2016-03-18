@@ -8,6 +8,7 @@
 	<li><?php print $blast_hit_description; ?></li>
 	<li><?php print $blast_hit_score; ?></li>
 	<li><?php print $blast_hit_eval; ?></li>
+	<li><?php print $submit; ?></li>
 </ul>
 
 

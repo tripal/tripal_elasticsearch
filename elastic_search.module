@@ -178,6 +178,7 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	$form['Search_transcripts']['search_transcripts_all|seqlen']['#title'] = t('Sequence length');
 	$form['Search_transcripts']['search_transcripts_all|type']['#title'] = t('Sequence type');
 	$form['Search_transcripts']['search_transcripts_all|uniquename']['#title'] = t('Unique name');
+	$form['Search_transcripts']['submit']['#value'] = t('Elasticsearch');
 
 	// create variables for individual elements.
 	$variables['organism'] = render($form['Search_transcripts']['search_transcripts_all|abbreviation']);
@@ -187,6 +188,8 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	$variables['seqlen'] = render($form['Search_transcripts']['search_transcripts_all|seqlen']);
 	$variables['seqtype'] = render($form['Search_transcripts']['search_transcripts_all|type']);
 	$variables['uniquename'] = render($form['Search_transcripts']['search_transcripts_all|uniquename']);
+
+	$variables['submit'] = render($form['Search_transcripts']['submit']);
 
 	// be sure to print the remaining rendered form items.
 	$variables['children'] = drupal_render_children($form);
