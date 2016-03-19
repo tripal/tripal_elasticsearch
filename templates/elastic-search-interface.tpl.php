@@ -1,14 +1,13 @@
 
+	<div><?php print $uniquename; ?></div>
+	<div style="float:right"><?php print $seqtype; ?></div>
+	<div><?php print $organism; ?></div>
+	<div style="float:right"><?php print $seqlen; ?></div>
+	<div><?php print $blast_hit_description; ?></div>
+	<div style="float:right"><?php print $blast_hit_score; ?></div>
+	<div><?php print $blast_hit_eval; ?></div>
+	<div><?php print $submit; ?></div>
+	<div style="display:none"><?php print $children; ?></div>
 
-<ul>
-	<li><?php print $uniquename; ?></li>
-	<li><?php print $organism; ?></li>
-	<li><?php print $seqtype; ?></li>
-	<li><?php print $seqlen; ?></li>
-	<li><?php print $blast_hit_description; ?></li>
-	<li><?php print $blast_hit_score; ?></li>
-	<li><?php print $blast_hit_eval; ?></li>
-	<li><?php print $submit; ?></li>
-</ul>
-
+	<div <?php //style="border-style:solid;border-width:10px";?>><br/><br/></br></div>
 

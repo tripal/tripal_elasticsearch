@@ -193,6 +193,7 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 
 	// be sure to print the remaining rendered form items.
 	$variables['children'] = drupal_render_children($form);
+
 }
 
 

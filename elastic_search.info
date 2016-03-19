@@ -4,3 +4,5 @@ package = Pro Drupal Development
 core = 7.x
 files[] = elastic_search.module
 
+
+stylesheets[all][] = elastic_search_block_form.css

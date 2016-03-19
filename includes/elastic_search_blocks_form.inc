@@ -54,9 +54,10 @@ function elastic_search_interface_form($form, &$form_state){
 		$form[$key]['submit'] = array(
 			'#type' => 'submit',
 			'#value' => 'Elasticsearch|'.$key,
-			//'#submit' => array('_elastic_search_run'),
+			//'#submit' => array('elastic_search_interface_form_submit'),
 		);
 	}
+
 
 	$form['#attributes']['class'][]  = 'elastic_search_block_form';
 
@@ -67,6 +68,7 @@ function elastic_search_interface_form($form, &$form_state){
 			'data' => drupal_get_path('module', 'elastic_search').'/css/elastic_search_block_form.css',
 		),
 	);
+
 
 	return $form;
 }
@@ -150,6 +152,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	else{
 		$_SESSION['search_output_table'][] = array('Oops!' => 'No records found.');
 	}
+
 //	$form_state['rebuild'] = TRUE;
 	//$form_state['redirect'] = 'elastic_search/search_results';
 //dpm($elastic_output);
