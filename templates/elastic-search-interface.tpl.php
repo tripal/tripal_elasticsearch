@@ -1,4 +1,5 @@
 
+	<h2>Elastic search: transcripts</h2>
 	<div><?php print $uniquename; ?></div>
 	<div style="float:right"><?php print $seqtype; ?></div>
 	<div><?php print $organism; ?></div>
@@ -10,4 +11,4 @@
 	<div style="display:none"><?php print $children; ?></div>
 
 	<div <?php //style="border-style:solid;border-width:10px";?>><br/><br/></br></div>
-
+	<hr />

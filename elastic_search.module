@@ -55,7 +55,7 @@ function elastic_search_menu(){
     );
 
     $items['elastic_search'] = array(
-        'title' => t('Elastic search interface'),
+        'title' => '',
         'page callback' => 'drupal_get_form',
         'page arguments' => array('elastic_search_interface_form'),
         'access callback' => TRUE,
@@ -100,7 +100,7 @@ function elastic_search_block_info(){
 function elastic_search_block_view($delta = ''){
     switch($delta){
         case 'elastic_results_transcripts':
-            $block['subject'] = t('Elastic search results');
+            $block['subject'] = '';//t('Elastic search results');
             $block['content'] = _elastic_search_results();
         break;
     }
@@ -197,30 +197,6 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 }
 
 
-/**
- * template preprocess function for elastic_search_form
- */
-function template_preprocess_elastic_search_form(&$variables){
-
-    foreach($variables['form'] as $key=>$value){
-        $variables['elastic_search_form'][$key] = render($variables['form'][$key]);
-    }   
-
-    $variables['children'] = drupal_render_children($variables['form']);
-}
-
-/**
- * template preprocess function for elastic_indexing_form
- */
-function elastic_search_preprocess_elastic_indexing_form(&$variables){
-	
-	foreach($variables['form'] as $key=>$value){
-		$variables['elastic_indexing_form'][$key] = render($variables['form'][$key]);
-	}
-
-	$variables['children'] = drupal_render_children($variables['form']);
-}
-
 
 
 /**
@@ -285,12 +261,6 @@ function elasticindexing_queue_item($item){
 
 
 
-
-//unset($_SESSION['all_selected_fields']);
-//unset($_SESSION['query']);
-//unset($_SESSION['keywords']);
-//unset($_SESSION['common_field']);
-//unset($_SESSION['search_output_table']);
 unset($params);
 
 
