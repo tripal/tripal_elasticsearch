@@ -3,10 +3,8 @@
 
 
 
-/**
- * Generate the search form.
- */
-function elastic_search_form($form, &$form_state) {
+/** elastic_search_form handler.**/
+function elastic_search_block_build_form($form, &$form_state) {
 
     // You have to create a new $client to get access to the elasticsearch
     $client = new Elasticsearch\Client();
@@ -166,10 +164,12 @@ function _search_block_name_validate($form, &$form_state){
  */
 function _add_elastic_search_block($form, &$form_state){
 	$block_name = $form_state['values']['search_block_name'];
+	// store form element for building block list and search interface.
 	$_SESSION['elastic_search_blocks'][$block_name] = $form['search_block']['all_selected_fields'];
-	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block';
-}
+	variable_set('elastic_search_blocks', $_SESSION['elastic_search_blocks']);
 
+	$form_state['redirect'] = 'admin/config/search/elastic_search/search_blocks';
+}
 
 
 // generate table_list options
