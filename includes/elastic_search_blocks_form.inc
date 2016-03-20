@@ -145,7 +145,11 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	}//------------------end of elastic search-------------------------------------
 
 
-	unset($_SESSION['search_output_table']);
+	// unset search_output_table session if it have already existed.
+	if(!empty($_SESSION['search_output_table'])){
+		unset($_SESSION['search_output_table']);
+	}
+	// display results only when elastic search results is not empty.
 	if(!empty($value['_source'])){ //count how many tables involved.
 		if(count($elastic_output, 0) == 1){
 			$_SESSION['search_output_table'] = $elastic_output[$table];
