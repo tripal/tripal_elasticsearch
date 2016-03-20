@@ -145,8 +145,11 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	}//------------------end of elastic search-------------------------------------
 
 
-	if(count($elastic_output, 0) == 1){ //count how many tables involved.
-		$_SESSION['search_output_table'] = $elastic_output[$table];
+	unset($_SESSION['search_output_table']);
+	if(!empty($value['_source'])){ //count how many tables involved.
+		if(count($elastic_output, 0) == 1){
+			$_SESSION['search_output_table'] = $elastic_output[$table];
+		}
 	}
 	else{
 		$_SESSION['search_output_table'][] = array('Oops!' => 'No records found.');

@@ -34,8 +34,7 @@ function elastic_search_menu(){
 
 	$items[$pre.'/search'] = array(
 		'title' => t('Build search block'),
-		'page callback' => 'drupal_get_form',
-		'page arguments' => array('elastic_search_form'),
+		'page callback' => '_elastic_search_block_build',
         'access callback' => 'user_access',
         'access arguments' => array('administer users'),
 		'type' => MENU_LOCAL_TASK,
@@ -43,10 +42,11 @@ function elastic_search_menu(){
 		'weight' => 1,
 	);
 
-    $items[$pre.'/search_block'] = array(
+    $items[$pre.'/search_blocks'] = array(
         'title' => t('Elastic search blocks'),
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('elastic_search_blocks_form'),
+		'page callback' => '_elastic_search_blocks',
+        //'page callback' => 'drupal_get_form',
+        //'page arguments' => array('elastic_search_blocks_form'),
         'access callback' => 'user_access',
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
@@ -56,8 +56,7 @@ function elastic_search_menu(){
 
     $items['elastic_search'] = array(
         'title' => '',
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('elastic_search_interface_form'),
+        'page callback' => '_elastic_search_interface_form',
         'access callback' => TRUE,
         'type' => MENU_NORMAL_ITEM,
         'file' => 'includes/elastic_search_blocks_form.inc',
@@ -76,6 +75,28 @@ function elastic_search_menu(){
 	return $items;
 }
 
+
+/** page callback to return elastic_search_block_build form **/
+function _elastic_search_block_build(){
+	return drupal_get_form('elastic_search_block_build_form');
+}
+
+/** page callback to return elastic_search_blocks form. **/
+function _elastic_search_blocks(){
+	$elastic_search_blocks = variable_get('elastic_search_blocks');
+	$output = drupal_get_form('elastic_search_blocks_form', $elastic_search_blocks);
+
+	return $output;
+}
+
+
+/** page callback to return elastic_search_interface_form. **/
+function _elastic_search_interface_form(){
+	$elastic_search_interface = variable_get('elastic_search_blocks');
+	$output = drupal_get_form('elastic_search_interface_form', $elastic_search_interface);
+
+	return $output;
+}
 
 
 /**
@@ -134,7 +155,9 @@ function _elastic_search_results(){
 
     foreach($sorted_output as $values){
 //      $header[] = array_keys($values);
-        $values['uniquename'] = l($values['uniquename'], 'feature/'.$values['uniquename']); // add link to feature uniquename.
+		if(!empty($values['uniquename'])){ // add a link to each feature unique name.
+        	$values['uniquename'] = l($values['uniquename'], 'feature/'.$values['uniquename']); // add link to feature uniquename.
+		}
         $rows[] = array_values($values);
     }
 
@@ -170,6 +193,14 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	// shorten the form variable name for easier access.
 	$form = $variables['form'];
 
+/**
+	foreach($form as $block_name=>$block_items){
+		foreach(array_keys($block_items) as $block_item){
+			$variables['elastic_search_block'][$block_items][$block_item] = render($form[$block_items][$block_item]);
+		}
+	}
+**/
+
 	// change labels for the form elements.
 	$form['Search_transcripts']['search_transcripts_all|abbreviation']['#title'] = t('Organism');
 	$form['Search_transcripts']['search_transcripts_all|hit_best_eval']['#title'] = t('Blast hit evalue');
@@ -190,6 +221,7 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	$variables['uniquename'] = render($form['Search_transcripts']['search_transcripts_all|uniquename']);
 
 	$variables['submit'] = render($form['Search_transcripts']['submit']);
+
 
 	// be sure to print the remaining rendered form items.
 	$variables['children'] = drupal_render_children($form);
