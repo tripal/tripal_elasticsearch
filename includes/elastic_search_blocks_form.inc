@@ -1,9 +1,9 @@
 <?php
 
-
-
-function elastic_search_blocks_form($form, &$form_state){
-	foreach($_SESSION['elastic_search_blocks'] as $key => $value){
+/** elastic_search_blocks form handler **/
+function elastic_search_blocks_form($form, &$form_state, $elastic_search_blocks){
+	//foreach($_SESSION['elastic_search_blocks'] as $key => $value){
+	foreach($elastic_search_blocks as $key => $value){
 		$form[$key] = $value;
 		$form[$key]['#title'] = $key;
 		$form[$key]['#tree'] = TRUE;
@@ -13,10 +13,9 @@ function elastic_search_blocks_form($form, &$form_state){
 			'#submit' => array('_delete_elastic_block'),
 		);
 	}
+
 	return $form;
 }
-
-
 
 
 /**
@@ -24,19 +23,19 @@ function elastic_search_blocks_form($form, &$form_state){
 */
 function _delete_elastic_block($form, &$form_state){
 	$block_name = substr($form_state['values']['op'], 7);
-	unset($_SESSION['elastic_search_blocks'][$block_name]);
-
-	db_delete('elastic_search_interface')
-		->condition('search_block_name', $block_name, '=')
-		->execute();
+	//unset($_SESSION['elastic_search_blocks'][$block_name]);
+	$elastic_search_blocks = variable_get('elastic_search_blocks');
+	unset($elastic_search_blocks[$block_name]);
+	variable_set('elastic_search_blocks', $elastic_search_blocks);
 
 	$form_state['rebuild'] = TRUE;
 }
 
 
-//------------------- elastic_search_interface_form--------------------------
-function elastic_search_interface_form($form, &$form_state){
-	foreach($_SESSION['elastic_search_blocks'] as $key => $value){
+/** elastic_search_interface form handler **/
+function elastic_search_interface_form($form, &$form_state, $elastic_search_interface){
+	//foreach($_SESSION['elastic_search_blocks'] as $key => $value){
+	foreach($elastic_search_interface as $key => $value){
 		$form[$key] = array(
 			'#type' => 'fieldset',
 			'#title' => $key,
@@ -146,8 +145,11 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	}//------------------end of elastic search-------------------------------------
 
 
-	if(count($elastic_output, 0) == 1){ //count how many tables involved.
-		$_SESSION['search_output_table'] = $elastic_output[$table];
+	unset($_SESSION['search_output_table']);
+	if(!empty($value['_source'])){ //count how many tables involved.
+		if(count($elastic_output, 0) == 1){
+			$_SESSION['search_output_table'] = $elastic_output[$table];
+		}
 	}
 	else{
 		$_SESSION['search_output_table'][] = array('Oops!' => 'No records found.');
