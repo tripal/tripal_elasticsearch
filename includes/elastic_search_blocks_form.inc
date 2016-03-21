@@ -45,6 +45,8 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 			$form[$key][$form_field] = array(
 				'#type' => 'textfield',
 				'#title' => $form_field,
+				'#prefix' => '<div class="container-inline">',
+				'#suffix' => '</div>',
 				'#attributes' => array('class'=>array('elastic_search_form_item')),
 			);
 		}
@@ -58,14 +60,11 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 	}
 
 
-	$form['#attributes']['class'][]  = 'elastic_search_block_form';
+	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
 
 	// add CSS file
-	$form['#attached'] = array(
-		'#css' => array(
-			'type' => 'file',
-			'data' => drupal_get_path('module', 'elastic_search').'/css/elastic_search_block_form.css',
-		),
+	$form['#attached']['css'][] = array(
+		'data' => drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css',
 	);
 
 
@@ -133,9 +132,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 		$params_count['index'] = $table;
 		$params_count['type'] = $table;
 		$params_count['body'] = $body_header.$output.$body_end;
-		$search_record_count = $client->count($params_count);
-		dpm($search_record_count);
-		dpm(array('records'));
+		variable_set('search_record_count', $client->count($params_count));
 
 		//elastic search return results with all fields from a document
 		//but we only need to display fields we need
@@ -175,4 +172,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
 
 
 
-//
+
+
+
