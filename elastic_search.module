@@ -123,6 +123,11 @@ function elastic_search_block_view($delta = ''){
         case 'elastic_results_transcripts':
             $block['subject'] = '';//t('Elastic search results');
             $block['content'] = _elastic_search_results();
+			// After display the result, $_SESSION['search_output_table'] is not needed.
+			// unset $_SESSION['search_output_table'].
+			if(isset($_SESSION['search_output_table'])){
+				unset($_SESSION['search_output_table']);
+			}
         break;
     }
 

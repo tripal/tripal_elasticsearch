@@ -135,7 +135,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
 		$params_count['body'] = $body_header.$output.$body_end;
 		$search_record_count = $client->count($params_count);
 		dpm($search_record_count);
-		dpm(array('records'));
 
 		//elastic search return results with all fields from a document
 		//but we only need to display fields we need
@@ -175,4 +174,3 @@ function elastic_search_interface_form_submit($form, &$form_state){
 
 
 
-//
