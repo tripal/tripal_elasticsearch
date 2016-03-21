@@ -121,13 +121,21 @@ function elastic_search_interface_form_submit($form, &$form_state){
         $params['index'] = $table;
 		//$params['index'] = 'hardwoodgenomics';
         $params['type'] = $table;
-        $params['size'] = 10000;
+        $params['size'] = 100;
 		//$params['from']	= 5125630;
         $params['body'] = $body_header.$output.$body_end; 
         //===run elasticsearch================  
         //++++++++++++++++++++++++++++++++++++
         $client = new Elasticsearch\Client();
         $search_result = $client->search($params);
+
+		//------obtain the hits count--------
+		$params_count['index'] = $table;
+		$params_count['type'] = $table;
+		$params_count['body'] = $body_header.$output.$body_end;
+		$search_record_count = $client->count($params_count);
+		dpm($search_record_count);
+		dpm(array('records'));
 
 		//elastic search return results with all fields from a document
 		//but we only need to display fields we need
@@ -164,7 +172,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
 //dpm($elastic_output);
 
 }
-
 
 
 
