@@ -300,8 +300,6 @@ function _from_nth_entry_submit($form, &$form_state){
         $params['size'] = 100;
 		$nth_entry = variable_get('nth_entry');
        	$params['from'] = $nth_entry;
-dpm($nth_entry);
-        //$params['from']   = 5125630;
         $params['body'] = $body_header.$output.$body_end;
         // store $params for __from_nth_entry_submit() callback
         $_SESSION['params'] = $params;
