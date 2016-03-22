@@ -60,6 +60,29 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 	}
 
 
+    $form['from_nth_entry']['nth'] = array(
+        '#type' => 'textfield',
+        '#title' => '',
+        '#size' => 30,
+        '#prefix' => '<div id="from_nth_entry" class="container-inline">Display 100 records from nth entry:',
+        '#suffix' => '</div>',
+		'#ajax' => array(
+			'callback' => '_from_nth_entry_ajax',
+			'wrapper' => 'from_nth_entry',
+		),
+        '#attributes' => array(
+            'placeholder' => t('Please enter an offset number')
+        ),
+    );
+    $form['from_nth_entry']['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Go!'),
+        '#submit' => array('_from_nth_entry_submit'),
+    );
+
+
+
+
 	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
 
 	// add CSS file
@@ -78,6 +101,9 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
  *elastic_search_interface_form submit callback
  */
 function elastic_search_interface_form_submit($form, &$form_state){
+	// store $form_state['values'] for later use in _from_nth_entry_submit() callback
+	variable_set('form_state_values', $form_state['values']);
+
 	// The name of search block being submitted
 	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
 	// get field and corresponding input keywords

@@ -229,17 +229,8 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 
 	$search_record_count = variable_get('search_record_count');
 	if(!empty($search_record_count)){
-		$form['from_nth_entry'] = array(
-			'#type' => 'textfield',
-			'#title' => '',
-			'#size' => 30,
-			'#prefix' => '<div class="container-inline">Display 100 records from nth entry:',
-			'#suffix' => '</div>',
-			'#attributes' => array(
-				'placeholder' => t('Please enter an offset number')
-			),
-		);
-		$variables['from_nth_entry'] = render($form['from_nth_entry']);
+		$variables['from_nth_entry_nth'] = render($form['from_nth_entry']['nth']);
+		$variables['from_nth_entry_submit'] = render($form['from_nth_entry']['submit']);
 	} else {
 		$variables['from_nth_entry'] = NULL;
 	}
@@ -254,6 +245,103 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 }
 
 
+/** _from_nth_entry form ajax callback **/
+function _from_nth_entry_ajax($form, &$form_state){
+	variable_set('nth_entry', $form_state['values']['nth']);
+	return $form['from_nth_entry']['nth'];
+}
+
+function _from_nth_entry_submit($form, &$form_state){
+	$form_state['values'] = variable_get('form_state_values');
+
+
+    // The name of search block being submitted
+    $block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
+    // get field and corresponding input keywords
+    foreach($form_state['values'][$block_name] as $field=>$keyword){
+        if($field != 'submit'){
+            $table_field_mix[$field] = $keyword;
+        }
+    }
+    // group fields by table in case that there are more than one table involved in this search block
+    foreach($table_field_mix as $table_field=>$keyword){
+        $table_field_arr = explode('|', $table_field);
+        $table = $table_field_arr[0];
+        $field = $table_field_arr[1];
+        $table_field_comb_arr[$table][$field] = $keyword;
+    }
+
+
+    //--------------------run elastic search----------------------------------
+    // Build query statement, just need to replace some of this query string
+    // with the input form data
+    $body_header =  '{"query" : {"bool" : {"must" : [';
+    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
+    $body_end = ']}}}';
+
+
+    foreach($table_field_comb_arr as $table=>$fields){
+        // replace the query string with corresponding data (query method, field name, keywords) 
+        $output = '';
+        foreach($fields as $field=>$keyword){
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            // Don't insert query sentences when keyword is empty
+            if(!empty($keyword)){
+                $replaced_query_sentence = str_replace($search, $replace, $query_sentence);
+                $output .= $replaced_query_sentence;
+            }
+
+        }
+        $output = rtrim($output, ',');
+        $params['index'] = $table;
+        //$params['index'] = 'hardwoodgenomics';
+        $params['type'] = $table;
+        $params['size'] = 100;
+		$nth_entry = variable_get('nth_entry');
+       	$params['from'] = $nth_entry;
+dpm($nth_entry);
+        //$params['from']   = 5125630;
+        $params['body'] = $body_header.$output.$body_end;
+        // store $params for __from_nth_entry_submit() callback
+        $_SESSION['params'] = $params;
+        //===run elasticsearch================  
+        //++++++++++++++++++++++++++++++++++++
+        $client = new Elasticsearch\Client();
+        $search_result = $client->search($params);
+
+       
+        //elastic search return results with all fields from a document
+        //but we only need to display fields we need
+        $primary_key = get_primary_key($table);
+        foreach($search_result['hits']['hits'] as $key=>$value){
+            foreach($table_field_mix as $table_field=>$keyword){
+                $table_field_arr = explode('|', $table_field);
+                if($table == $table_field_arr[0]){
+                    $field = $table_field_arr[1];
+                    $elastic_output[$table][$key][$field] = $value['_source'][$field];
+                    //$elastic_output[$table][$key][$primary_key] = $value['_source'][$primary_key];
+                }
+            }
+        }
+    }//------------------end of elastic search-------------------------------------
+
+
+    // unset search_output_table session if it have already existed.
+    if(!empty($_SESSION['search_output_table'])){
+        unset($_SESSION['search_output_table']);
+    }
+    // display results only when elastic search results is not empty.
+    if(!empty($value['_source'])){ //count how many tables involved.
+        if(count($elastic_output, 0) == 1){
+            $_SESSION['search_output_table'] = $elastic_output[$table];
+        }
+    }
+    else{
+        $_SESSION['search_output_table'][] = array('Oops!' => 'No records found.');
+    }
+
+}
 
 
 /**

@@ -1,5 +1,4 @@
 
-
 	<h2>Elastic search: transcripts</h2>
 	<div style="padding:10px; left:0"><?php print $organism; ?></div>
 	<div style="padding:10px; left:0"><?php print $uniquename; ?></div>
@@ -16,8 +15,9 @@
 	<div>
 		<span style="color:#ff0000"><?php print $search_record_count. '</span> records were found'; ?>
 		<?php 
-			if(!empty($from_nth_entry)){
-				print $from_nth_entry;
+			if(!empty($from_nth_entry_nth)){
+				print $from_nth_entry_nth;
+				print $from_nth_entry_submit;
 			}
 		?>
 	</div>
