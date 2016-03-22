@@ -72,6 +72,9 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	// store $form_state['values'] for later use in _from_nth_entry_submit() callback
 	variable_set('form_state_values', $form_state['values']);
 
+
+dpm($form_state);
+
 	// The name of search block being submitted
 	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
 	// get field and corresponding input keywords
@@ -166,80 +169,45 @@ function elastic_search_interface_form_submit($form, &$form_state){
 
 
 
+
 //** implements hook_preprocess_elastic_search_interface_form(). **//
 function elastic_search_preprocess_elastic_search_interface_form(&$variables){
-	// shorten the form variable name for easier access.
-	$form = $variables['form'];
-dpm($form);
+    // shorten the form variable name for easier access.
+    $form = $variables['form'];
 
-	//------------ modify form for search_transcripts---------------------------------
-	// change labels for the form elements.
-	$form['search_transcripts']['search_transcripts_all|abbreviation']['#title'] 	= 	t('Organism');
-	$form['search_transcripts']['search_transcripts_all|abbreviation']['#type']		= 'select';
-	$form['search_transcripts']['search_transcripts_all|abbreviation']['#options']	= array(
-		'\"A. saccharum\"' => t('Sugar Maple (Acer saccharum)'),
-		'\"C. dentata\"' => t('American Chestnut (Castanea dentat)'),
-		'\"C. mollissima\"' => t('Chinese Chestnut (Castanea mollissima)'),
-		'\"F. grandifolia\"' => t('American Beech (Fagus grandifolia)'),
-		'\"P. serotina\"' => t('Black Cherry (Prunus serotina)'),
-		'\"F. americana\"' => t('White Ash (Fraxinus americana)'),
-		'\"F. pennsylvanica\"' => t('Green Ash (Fraxinus pennsylvanica)'),
-		'\"G. triacanthos\"' => t('Honeylocust (Gleditsia triacanthos)'),
-		'\"J. nigra\"' => t('Black Walnut (Juglans nigra)'),
-		'\"L. styraciflua\"' => t('Sweetgum (Liquidambar styraciflua)'),
-		'\"L. tulipifera\"' => t('Tulip Poplar (Liriodendron tulipifera)'),
-		'\"N. sylvatica\"' => t('Blackgum (Nyssa sylvatica)'),
-		'\"P. borbonia' => t('Redbay (Persea borbonia)'),
-		'\"Q. alba\"' => t('White Oak (Quercus alba)'),
-		'\"Q. robur\"' => t('Pedunculate Oak (Quercus robur)'),
-		'\"Q. rubra\"' => t('Northern Red Oak (Quercus rubra)'),
-	);
-	//$form['search_transcripts']['search_transcripts_all|hit_best_eval']['#title'] 	= 	t('Blast hit evalue');
-	//$form['search_transcripts']['search_transcripts_all|hit_best_score']['#title'] 	= 	t('Blast hit score');
-	$form['search_transcripts']['search_transcripts_all|hit_description']['#title'] = 	t('Blast hit description');
-	//$form['search_transcripts']['search_transcripts_all|seqlen']['#title'] 			= 	t('Sequence length');
-	$form['search_transcripts']['search_transcripts_all|type']['#title'] 			= 	t('Sequence type');
-	$form['search_transcripts']['search_transcripts_all|uniquename']['#title'] 		= 	t('Unique name');
-	$form['search_transcripts']['submit']['#value'] = t('Elasticsearch|transcripts');
-
-	// create variables for individual elements.
-	$variables['organism'] = render($form['search_transcripts']['search_transcripts_all|abbreviation']);
-	//$variables['blast_hit_eval'] = render($form['search_transcripts']['search_transcripts_all|hit_best_eval']);
-	//$variables['blast_hit_score'] = render($form['search_transcripts']['search_transcripts_all|hit_best_score']);
-	$variables['blast_hit_description'] = render($form['search_transcripts']['search_transcripts_all|hit_description']);
-	//$variables['seqlen'] = render($form['search_transcripts']['search_transcripts_all|seqlen']);
-	$variables['seqtype'] = render($form['search_transcripts']['search_transcripts_all|type']);
-	$variables['uniquename'] = render($form['search_transcripts']['search_transcripts_all|uniquename']);
-	$variables['search_transcripts_submit'] = render($form['search_transcripts']['submit']);
+    // create variables for individual elements.
+    $variables['organism'] = render($form['search_transcripts']['search_transcripts_all|abbreviation']);
+    //$variables['blast_hit_eval'] = render($form['search_transcripts']['search_transcripts_all|hit_best_eval']);
+    //$variables['blast_hit_score'] = render($form['search_transcripts']['search_transcripts_all|hit_best_score']);
+    $variables['blast_hit_description'] = render($form['search_transcripts']['search_transcripts_all|hit_description']);
+    //$variables['seqlen'] = render($form['search_transcripts']['search_transcripts_all|seqlen']);
+    $variables['seqtype'] = render($form['search_transcripts']['search_transcripts_all|type']);
+    $variables['uniquename'] = render($form['search_transcripts']['search_transcripts_all|uniquename']);
+    $variables['search_transcripts_submit'] = render($form['search_transcripts']['submit']);
 
 
+    // create variables for individual elements
+    $variables['search_webpages'] = render($form['website_node_content']['field_data_body|body_value']);
+    $variables['search_webpages_submit'] = render($form['website_node_content']['submit']);
 
-	//------------ modify form for website_node_content---------------------------------
-	// change labels
-	$form['website_node_content']['field_data_body|body_value']['#title'] = t('search webpages');
-	$form['website_node_content']['submit']['#value'] = t('Elasticsearch|webpages');
+    $search_record_count = variable_get('search_record_count');
+    if(!empty($search_record_count)){
+        $variables['from_nth_entry_nth'] = render($form['from_nth_entry']['nth']);
+        $variables['from_nth_entry_submit'] = render($form['from_nth_entry']['submit']);
+    } else {
+        $variables['from_nth_entry'] = NULL;
+    }
 
-	// create variables for individual elements
-	$variables['search_webpages'] = render($form['website_node_content']['field_data_body|body_value']);
-	$variables['search_webpages_submit'] = render($form['website_node_content']['submit']);
+    // obtain search records count.
+    $count_arr = variable_get('search_record_count');
+    $variables['search_record_count'] = $count_arr['count'];
 
-
-	$search_record_count = variable_get('search_record_count');
-	if(!empty($search_record_count)){
-		$variables['from_nth_entry_nth'] = render($form['from_nth_entry']['nth']);
-		$variables['from_nth_entry_submit'] = render($form['from_nth_entry']['submit']);
-	} else {
-		$variables['from_nth_entry'] = NULL;
-	}
-
-	// obtain search records count.
-	$count_arr = variable_get('search_record_count');
-	$variables['search_record_count'] = $count_arr['count'];
-
-	// be sure to print the remaining rendered form items.
-	$variables['children'] = drupal_render_children($form);
+    // be sure to print the remaining rendered form items.
+    $variables['children'] = drupal_render_children($form);
 
 }
+
+
 
 
 /** _from_nth_entry form element ajax callback **/
@@ -248,6 +216,8 @@ function _from_nth_entry_ajax($form, &$form_state){
 	return $form['from_nth_entry']['nth'];
 }
 
+
+/** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){
 	$form_state['values'] = variable_get('form_state_values');
 

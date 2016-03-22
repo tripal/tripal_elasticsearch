@@ -28,7 +28,8 @@ function _delete_elastic_block($form, &$form_state){
 	unset($elastic_search_blocks[$block_name]);
 	variable_set('elastic_search_blocks', $elastic_search_blocks);
 
-	$form_state['rebuild'] = TRUE;
+	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block_builder';
+	//$form_state['rebuild'] = TRUE;
 }
 
 

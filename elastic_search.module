@@ -93,6 +93,54 @@ function _elastic_search_interface_form(){
 }
 
 
+
+//** implements hook_preprocess_elastic_search_interface_form(). **//
+function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
+
+dpm($form);
+
+	//------------ modify form for search_transcripts---------------------------------
+	// change labels for the form elements.
+	$form['search_transcripts']['search_transcripts_all|abbreviation']['#title'] 	= 	t('Organism');
+	$form['search_transcripts']['search_transcripts_all|abbreviation']['#type']		= 'select';
+	$form['search_transcripts']['search_transcripts_all|abbreviation']['#options']	= array(
+		'\"A. saccharum\"' => t('Sugar Maple (Acer saccharum)'),
+		//'\"C. dentata\"' => t('American Chestnut (Castanea dentat)'),		// no transcripts data
+		'\"C. mollissima\"' => t('Chinese Chestnut (Castanea mollissima)'),
+		//'\"F. grandifolia\"' => t('American Beech (Fagus grandifolia)'),	// no transcripts data
+		'\"P. serotina\"' => t('Black Cherry (Prunus serotina)'),
+		'\"F. americana\"' => t('White Ash (Fraxinus americana)'),
+		'\"F. pennsylvanica\"' => t('Green Ash (Fraxinus pennsylvanica)'),
+		'\"G. triacanthos\"' => t('Honeylocust (Gleditsia triacanthos)'),
+		'\"J. nigra\"' => t('Black Walnut (Juglans nigra)'),
+		'\"L. styraciflua\"' => t('Sweetgum (Liquidambar styraciflua)'),
+		'\"L. tulipifera\"' => t('Tulip Poplar (Liriodendron tulipifera)'),
+		'\"N. sylvatica\"' => t('Blackgum (Nyssa sylvatica)'),
+		'\"P. borbonia' => t('Redbay (Persea borbonia)'),
+		//'\"Q. alba\"' => t('White Oak (Quercus alba)'),					// no transcripts data
+		//'\"Q. robur\"' => t('Pedunculate Oak (Quercus robur)'),			// no transcripts data
+		'\"Q. rubra\"' => t('Northern Red Oak (Quercus rubra)'),
+	);
+	//$form['search_transcripts']['search_transcripts_all|hit_best_eval']['#title'] 	= 	t('Blast hit evalue');
+	//$form['search_transcripts']['search_transcripts_all|hit_best_score']['#title'] 	= 	t('Blast hit score');
+	$form['search_transcripts']['search_transcripts_all|hit_description']['#title'] = 	t('Blast hit description');
+	//$form['search_transcripts']['search_transcripts_all|seqlen']['#title'] 			= 	t('Sequence length');
+	$form['search_transcripts']['search_transcripts_all|type']['#title'] 			= 	t('Sequence type');
+	$form['search_transcripts']['search_transcripts_all|uniquename']['#title'] 		= 	t('Unique name');
+	//$form['search_transcripts']['submit']['#value'] = t('Elasticsearch|transcripts');
+
+
+	//------------ modify form for website_node_content---------------------------------
+	// change labels
+	$form['website_node_content']['field_data_body|body_value']['#title'] = t('search webpages');
+	//$form['website_node_content']['submit']['#value'] = t('Elasticsearch|webpages');
+
+}
+
+
+
+
+
 /**
  * Implements hook_block_info().
  */
