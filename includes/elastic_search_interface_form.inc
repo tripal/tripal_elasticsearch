@@ -125,14 +125,14 @@ dpm($field_searchMethod_pairs);
 	$body = $body_header . $combine_query . $body_end;
 	dpm($body);
 
-
+	dpm($elasticsearch_query_type);
 
 	$params['index'] = $elasticsearch_query_type;
 	$params['type'] = $elasticsearch_query_type;
 	$params['body'] = $body;
 	$params['size'] = 100;
         $client = new Elasticsearch\Client();
-//        $search_result = $client->search($params);
+        $search_result = $client->search($params);
 
 dpm($search_result);
 dpm($search_result['hits']['hits']);
@@ -207,7 +207,7 @@ dpm($search_result['hits']['hits']);
 /** function to build elastic query for each field **/
 function _build_elastic_query($searchMethod, $field, $keyword){
     $body_header =  '{"query" : {"bool" : {"must" : [';
-    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
+    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}}';
     $body_end = ']}}}';
 
 	$query_string = '';
@@ -216,31 +216,31 @@ function _build_elastic_query($searchMethod, $field, $keyword){
 			$query_string =	'{"query_string" : {"default_field": "_field_", "query": "_keyword_"}}';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
+            $final_query_string = str_replace($search, $replace, $query_sentence);
             break;
 		case 'match':
 			$query_string = ' {"match":{"_field_":"_keyword_"}} ';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
+            $final_query_string = str_replace($search, $replace, $query_sentence);
 			break;
 		case 'fuzzy':
 			$query_string = ' {"fuzzy":{"_field_":"_keyword_"}} ';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
+            $final_query_string = str_replace($search, $replace, $query_sentence);
 			break;
 		case 'match_phrase':
 			$query_string = ' {"query":{"match_phrase": {"_field_":"_keyword_"} }} ';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
-			$final_query_string = str_replace($search, $replace, $query_string);
+			$final_query_string = str_replace($search, $replace, $query_sentence);
 			break;
 		case 'sort_ascending':
 			$query_string = ' {"sort":[{"_field_":{"order":"asc"}}]} ';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
+            $final_query_string = str_replace($search, $replace, $query_sentence);
 			break;
 		case 'sort_descending':
             $query_string = ' {"sort":[{"_field_":{"order":"asc"}}]} ';
