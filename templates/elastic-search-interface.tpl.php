@@ -1,4 +1,5 @@
-
+<?php
+/**
 	<h3>Elasticsearch: transcripts</h3>
 	<div style="padding:10px"><?php print $organism; ?></div>
 	<div style="padding:10px"><?php print $uniquename; ?></div>
@@ -11,7 +12,11 @@
 	<h3>Elasticsearch: webpages</h3>
 	<div style="padding:10px"><?php print $search_webpages; ?></div>
 	<div><?php print $search_webpages_submit; ?></div>
-	<div style="display:none"><?php print $children; ?></div>
+*/
+?>
+
+
+	<div><?php print $children; ?></div>
 
 
 
