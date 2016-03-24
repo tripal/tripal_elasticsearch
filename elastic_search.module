@@ -29,6 +29,15 @@ function elastic_search_menu(){
 		'file' => 'includes/elastic_indexing_form.inc',
 		'weight' => 0,
     );
+	$items[$pre.'/delete_elastic_indexed_tables'] = array(
+		'title' => t('Delete indexed tables'),
+		'page callback' => '_delete_elastic_indexed_tables',
+		'access callback' => 'user_access',
+		'access arguments' => array('administer users'),
+		'type' => MENU_LOCAL_TASK,
+		'file' => 'includes/delete_elastic_indexed_tables.inc',
+		'weight' => 1,
+	);
 
 	$items[$pre.'/search_block_builder'] = array(
 		'title' => t('Build search block'),
@@ -37,7 +46,7 @@ function elastic_search_menu(){
         'access arguments' => array('administer users'),
 		'type' => MENU_LOCAL_TASK,
 		'file' => 'includes/elastic_search_block_build_form.inc',
-		'weight' => 1,
+		'weight' => 2,
 	);
 
     $items[$pre.'/search_blocks'] = array(
@@ -49,7 +58,7 @@ function elastic_search_menu(){
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
         'file' => 'includes/elastic_search_blocks_form.inc',
-        'weight' => 2,
+        'weight' => 3,
     );
 
     $items['elastic_search'] = array(
@@ -69,6 +78,10 @@ function _elastic_indexing_form(){
 	return drupal_get_form('elastic_indexing_form');
 }
 
+/** page callback to return delete_elastic_indices_form **/
+function _delete_elastic_indexed_tables(){
+	return drupal_get_form('delete_elastic_indexed_tables_form');
+}
 /** page callback to return elastic_search_block_build form **/
 function _elastic_search_block_build(){
 	return drupal_get_form('elastic_search_block_build_form');
@@ -77,9 +90,7 @@ function _elastic_search_block_build(){
 /** page callback to return elastic_search_blocks form. **/
 function _elastic_search_blocks(){
 	$elastic_search_blocks = variable_get('elastic_search_blocks');
-	$output = drupal_get_form('elastic_search_blocks_form', $elastic_search_blocks);
-
-	return $output;
+	return drupal_get_form('elastic_search_blocks_form', $elastic_search_blocks);
 }
 
 

@@ -44,7 +44,7 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
         '#type' => 'textfield',
         '#title' => '',
         '#size' => 30,
-        '#prefix' => '<div id="from_nth_entry" class="container-inline">Display 10,000 records from nth entry:',
+        '#prefix' => '<div id="from_nth_entry" class="container-inline">Display 1,000 records from nth entry:',
         '#suffix' => '</div>',
 		'#ajax' => array(
 			'callback' => '_from_nth_entry_ajax',
