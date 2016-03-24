@@ -142,8 +142,8 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 	//------------ modify form for website_node_content---------------------------------
 	// change labels
 	$form['website_node_content']['field_data_body|body_value']['#title'] = t('search webpages');
-	//unset($form['website_node_content']['field_data_body|entity_id']);
-	//unset($form['website_node_content']['search_field_data_body|entity_id']);
+	$form['website_node_content']['field_data_body|entity_id']['#type'] = 'hidden';
+	$form['website_node_content']['search_field_data_body|entity_id']['#type'] = 'hidden';
 	//$form['website_node_content']['submit']['#value'] = t('Elasticsearch|webpages');
 
 }
