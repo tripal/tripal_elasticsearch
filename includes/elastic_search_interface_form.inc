@@ -146,9 +146,12 @@ function elastic_search_interface_form_submit($form, &$form_state){
 
 
 		//------obtain the hits count--------
+		unset($params_count);
 		$params_count['index'] = $elasticsearch_query_type;
 		$params_count['type'] = $elasticsearch_query_type;
-		$params_count['body'] = $body;
+		// $client->count does not support sort query. So sort query has to be removed.
+		$body_count = $body_curl_head . $body_head . $none_sort_query_element.$body_end. $body_curl_end;
+		$params_count['body'] = $body_count;
 		variable_set('search_record_count', $client->count($params_count));
 
 
@@ -272,7 +275,6 @@ function _from_nth_entry_ajax($form, &$form_state){
 function _from_nth_entry_submit($form, &$form_state){
 	$form_state['values'] = variable_get('form_state_values');
 
-/**
 	// The name of search block being submitted
 	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
 	// get field and corresponding input keywords
@@ -284,6 +286,7 @@ function _from_nth_entry_submit($form, &$form_state){
 	}
 	
 
+dpm($field_searchMethod_pairs);
 
 	//--------------------run elastic search----------------------------------
     // Build query statement, just need to replace some of this query string
@@ -353,7 +356,6 @@ function _from_nth_entry_submit($form, &$form_state){
 		}
 	}
 
-*/
 
 }
 
