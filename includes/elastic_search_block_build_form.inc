@@ -36,6 +36,7 @@ function elastic_search_block_build_form($form, &$form_state) {
 		'#type' => 'select',
 		'#title' => t('Select tables for searching'),
 		'#options' => elastic_search_get_table_list_options(),
+		'#default_value' => t('Select a table'),
 		'#ajax' => array(
 			'callback' => '_elastic_search_block_build_ajax',
 			'wrapper' => 'search_block',
@@ -139,6 +140,7 @@ function elastic_search_get_table_list_options(){
     $client = new Elasticsearch\Client();
     $mappings = $client->indices()->getMapping();
     $indices = array_keys($mappings);
+    $table_list['Select a table'] = 'Select a table';
     foreach($indices as $table){
         $table_list[$table] = $table;
     }

@@ -38,7 +38,16 @@ function elastic_search_menu(){
 		'file' => 'includes/delete_elastic_indexed_tables.inc',
 		'weight' => 1,
 	);
-
+/*
+	$items[$pre.'/comfirm_indices_deletion'] = array(
+		'title' => t('Do you really want to delete the selected indices?'),
+		'page callback' => '_comfirm_indices_deletion',
+		'access callback' => 'user_access',
+		'access arguments' => array('administer users'),
+		'type' => MENU_NORMAL_ITEM,
+		'file' => 'includes/confirm_indices_deletion_form.inc',
+	);
+*/
 	$items[$pre.'/search_block_builder'] = array(
 		'title' => t('Build search block'),
 		'page callback' => '_elastic_search_block_build',
@@ -82,6 +91,18 @@ function _elastic_indexing_form(){
 function _delete_elastic_indexed_tables(){
 	return drupal_get_form('delete_elastic_indexed_tables_form');
 }
+
+/** page callback to return comfirm_indices_deletion_form **/
+/*
+function _comfirm_indices_deletion(){
+	$output = 'This action cannot be undone!';
+	$confirm_deletion = drupal_get_form('confirm_indices_deletion_form');
+	$output .= render($confirm_deletion);
+
+	return $output;
+}
+*/
+
 /** page callback to return elastic_search_block_build form **/
 function _elastic_search_block_build(){
 	return drupal_get_form('elastic_search_block_build_form');

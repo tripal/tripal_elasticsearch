@@ -26,25 +26,28 @@ function delete_elastic_indexed_tables_form($form, &$form_state){
 }
 
 
+
+
 /** delete_elastic_indexed_tables_form submit callback **/
 function _delete_elastic_indexed_tables_submit($form, &$form_state){
-	$client = new Elasticsearch\Client();
-	foreach($form_state['values']['elastic_indices'] as $index){
-		if(!empty($index)){
-			$params['index'] = $index;
-			$client->indices()->delete($params);
+    $client = new Elasticsearch\Client();
+    foreach($form_state['values']['elastic_indices'] as $index){
+        if(!empty($index)){
+            $params['index'] = $index;
+            $client->indices()->delete($params);
 
-    		/* delete all search blocks that depend on the delete indices */
-    		$elastic_search_blocks = variable_get('elastic_search_blocks');
-    		foreach($elastic_search_blocks as $block_name=>$value){
-				$indexed_table = element_children($value)[0];
-				$indexed_table = explode('|', $indexed_table)[0];
-				if($index == $indexed_table){
-					unset($elastic_search_blocks[$block_name]);
-					variable_set('elastic_search_blocks', $elastic_search_blocks);
-				}
-    		}
-		}
-	}
+            /* delete all search blocks that depend on the delete indices */
+            $elastic_search_blocks = variable_get('elastic_search_blocks');
+            foreach($elastic_search_blocks as $block_name=>$value){
+                $indexed_table = element_children($value)[0];
+                $indexed_table = explode('|', $indexed_table)[0];
+                if($index == $indexed_table){
+                    unset($elastic_search_blocks[$block_name]);
+                    variable_set('elastic_search_blocks', $elastic_search_blocks);
+                }
+            }
+        }
+    }
 
+    $form_state['redirect'] = 'admin/config/search/elastic_search/delete_elastic_indexed_tables';
 }
