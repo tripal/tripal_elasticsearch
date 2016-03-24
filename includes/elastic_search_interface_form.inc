@@ -20,14 +20,14 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 			$form[$key]['search_'.$form_field] = array(
 				'#type' => 'select',
 				'#options' => array(
-					'match' => 'exact match',
-					'sort_ascending' => 'sort by ascending',
-					'sort_descending' => 'sort by descending',
+					'match' => 'match',
 					'fuzzy' => 'fuzzy match',
-					'match_phrase' => 'phrase search',
+					'match_phrase' => 'phrase match',
+					//'sort_ascending' => 'sort by ascending',
+					//'sort_descending' => 'sort by descending',
 					//'range' => 'range search',
 				),
-				'#default_value' => 'fuzzy match',
+				'#default_value' => 'match',
 			);
 		}
 		
@@ -44,7 +44,7 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
         '#type' => 'textfield',
         '#title' => '',
         '#size' => 30,
-        '#prefix' => '<div id="from_nth_entry" class="container-inline">Display 100 records from nth entry:',
+        '#prefix' => '<div id="from_nth_entry" class="container-inline">Display 10,000 records from nth entry:',
         '#suffix' => '</div>',
 		'#ajax' => array(
 			'callback' => '_from_nth_entry_ajax',
@@ -105,6 +105,9 @@ function elastic_search_interface_form_submit($form, &$form_state){
     $body_end = ']}}';
 	$body_curl_end = '}';
 
+
+	$sort_query_element = array();
+	$none_sort_query_element = array();
 	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
 		$key1 = array_keys($searchMethod_keyword)[0];
 		$key2 = array_keys($searchMethod_keyword)[1];
@@ -141,7 +144,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	$params['index'] = $elasticsearch_query_type;
 	$params['type'] = $elasticsearch_query_type;
 	$params['body'] = $body;
-	$params['size'] = 100;
+	$params['size'] = 1000;
     $search_result = $client->search($params);
 
 
@@ -286,7 +289,6 @@ function _from_nth_entry_submit($form, &$form_state){
 	}
 	
 
-dpm($field_searchMethod_pairs);
 
 	//--------------------run elastic search----------------------------------
     // Build query statement, just need to replace some of this query string
@@ -297,6 +299,8 @@ dpm($field_searchMethod_pairs);
     $body_end = ']}}';
 	$body_curl_end = '}';
 
+    $sort_query_element = array();
+    $none_sort_query_element = array();
 	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
 		$key1 = array_keys($searchMethod_keyword)[0];
 		$key2 = array_keys($searchMethod_keyword)[1];
