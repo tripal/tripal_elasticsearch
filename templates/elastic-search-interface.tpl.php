@@ -16,13 +16,9 @@
 ?>
 
 
-	<div><?php print $children; ?></div>
+	<div class="elastic_search_interface_form"><?php print $children; ?></div>
 
-
-
-	<div><br/><br/><br/></div>
-	<div>
-		<span style="color:#ff0000"><?php print $search_record_count. '</span> records were found'; ?>
+	<div class="results_info">
 		<?php 
 			if(!empty($from_nth_entry_nth)){
 				print $from_nth_entry_nth;
@@ -30,4 +26,8 @@
 			}
 		?>
 	</div>
+	
+	<p id="records-found">
+		<span style="color:#ff0000"><?php print $search_record_count. '</span> records were found'; ?>
+	</p>
 	<hr/>

@@ -5,4 +5,4 @@ core = 7.x
 files[] = elastic_search.module
 
 
-stylesheets[all][] = css/elastic_search_interface_form.css
+;stylesheets[all][] = css/elastic_search_interface_form.css

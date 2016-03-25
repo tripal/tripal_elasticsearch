@@ -13,9 +13,8 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 			$form[$key][$form_field] = array(
 				'#type' => 'textfield',
 				'#title' => $form_field,
-				'#prefix' => '<div class="container-inline">',
+				'#prefix' => '<div class="elastic-search-form-item">',
 				'#suffix' => '</div>',
-				'#attributes' => array('class'=>array('elastic_search_form_item')),
 			);
 			$form[$key]['search_'.$form_field] = array(
 				'#type' => 'select',
@@ -42,9 +41,9 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 
     $form['from_nth_entry']['nth'] = array(
         '#type' => 'textfield',
-        '#title' => '',
+        '#title' => t('Display 1,000 records from nth entry:'),
         '#size' => 30,
-        '#prefix' => '<div id="from_nth_entry" class="container-inline">Display 1,000 records from nth entry:',
+        '#prefix' => '<div class="from-nth-entry">',
         '#suffix' => '</div>',
 		'#ajax' => array(
 			'callback' => '_from_nth_entry_ajax',
@@ -58,6 +57,9 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
         '#type' => 'submit',
         '#value' => t('Go!'),
         '#submit' => array('_from_nth_entry_submit'),
+		'#attributes' => array(
+			'id' => array('from-nth-entry-submit'),
+		),
     );
 
 
@@ -262,6 +264,9 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
     // be sure to print the remaining rendered form items.
     $variables['children'] = drupal_render_children($form);
 
+
+	drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css');
+
 }
 
 
@@ -337,8 +342,9 @@ function _from_nth_entry_submit($form, &$form_state){
 	$params['index'] = $elasticsearch_query_type;
 	$params['type'] = $elasticsearch_query_type;
 	$params['body'] = $body;
-	$params['from'] = variable_get('nth_entry'); 
-	$params['size'] = 100;
+	$nth = intval(variable_get('nth_entry'));
+	$params['from'] = $nth; 
+	$params['size'] = 1000;
     $search_result = $client->search($params);
 
 
