@@ -223,7 +223,7 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	drupal_add_js(drupal_get_path('module', 'elastic_search').'/js/elastic_search.js');
 
 	// add the datepicker library:
-	drupal_add_library('system', 'ui.datepicker');
+	//drupal_add_library('system', 'ui.datepicker');
 
 }
 

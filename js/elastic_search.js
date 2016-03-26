@@ -1,4 +1,3 @@
-/**
 (function ($){
 	//jQuery(document).ready(function(){
 	//	alert("Drupal is awesome!");
@@ -7,14 +6,14 @@
 	Drupal.behaviors.myAlert = {
 		attach: function(context, settings){
 			$(document).ready(function(){
-//				$('div .elastic-search-form-item input').datepicker();
+				//alert('Thanks for using elastic search!');
+				//$('div .elastic-search-form-item input').datepicker();
 			}); // end alert
 		}
 	};
 
-	$(document).ready(function(){
-		$('div .elastic-search-form-item input').datepicker();
-	})
+//	$(document).ready(function(){
+//		$('div .elastic-search-form-item input').datepicker();
+//	})
 
 })(jQuery);
-*/
