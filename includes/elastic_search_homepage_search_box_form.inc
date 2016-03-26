@@ -81,6 +81,9 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 		$_SESSION['homepage_search_output'][$key]['body_value'] = $body_value;
 	}
 
+	if(empty($form_state['values']['search_box'])){
+		$_SESSION['homepage_search_output'] = '';
+	}
 
 	$form_state['redirect'] = 'search-website';
 }
@@ -113,9 +116,8 @@ function _homepage_elastic_search_output(){
 		$output = $title.$output;
 		
 		// unset $_SESSION['homepage_search_output']
-		unset($_SESSION['homepage_search_output']);
+		//unset($_SESSION['homepage_search_output']);
 	} else {
-		unset($_SESSION['homepage_search_output']);	
 		$output .= '<h3>No records were found</h3>';
 	}
 
