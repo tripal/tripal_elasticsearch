@@ -285,6 +285,7 @@ function _elastic_search_results(){
 	    $output .= theme('table', array('header' => $header, 'rows' => $chunks[$current_page] ));
 	    $output .= theme('pager', array('quantity', count($rows)));
 
+		unset($_SESSION['search_output_table']);
 	}
 
 
