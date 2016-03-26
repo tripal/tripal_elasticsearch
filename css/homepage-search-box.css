@@ -1,0 +1,42 @@
+.homepage-search-box{
+	border-bottom: 2px solid #ffffff;
+	height:55px;
+}
+
+.form-item-search-box {
+	width:100%;
+	margin: 0 0 5px 0;
+}
+
+.form-item-search-box input{
+	width:100%;
+	margin:0;
+}
+
+.form-item-search-methods{
+	display:inline-block;
+	float:left;
+	padding:0;
+	border:0;
+	margin: 0;
+	width:50%;
+}
+
+.form-item-search-methods select{
+	border:2px solid green;
+	width:100%;
+	height:20px;
+}
+
+#edit-search-submit{
+	display:inline-block;
+	float:right;
+	clear:right;
+	padding:0;
+	border:2px solid green;	
+	margin:0;
+	width:50%;
+	height:20px;
+}
+
+

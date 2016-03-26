@@ -67,11 +67,6 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 
 	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
 
-	// add CSS file
-	$form['#attached']['css'][] = array(
-		'data' => drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css',
-	);
-
 
 	return $form;
 }
@@ -183,47 +178,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
 
 
 
-/** function to build elastic query for each field **/
-function _build_elastic_query($searchMethod, $field, $keyword){
-
-	switch($searchMethod){
-		case 'match':
-			$query_string = ' {"match":{"_field_":"_keyword_"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-			break;
-		case 'fuzzy':
-			$query_string = ' {"fuzzy":{"_field_":"_keyword_"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-			break;
-		case 'match_phrase':
-			$query_string = ' {"match_phrase": {"_field_":"_keyword_"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-			$final_query_string = str_replace($search, $replace, $query_string);
-			break;
-		case 'sort_ascending':
-			$query_string = ' {"_field_":{"order":"asc"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-			break;
-		case 'sort_descending':
-            $query_string = ' {"_field_":{"order":"desc"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-			break;
-		case 'range':
-			break;
-	}
-
-	return $final_query_string;
-}
-
 
 //** implements hook_preprocess_elastic_search_interface_form(). **//
 function elastic_search_preprocess_elastic_search_interface_form(&$variables){
@@ -266,6 +220,10 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 
 
 	drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css');
+	drupal_add_js(drupal_get_path('module', 'elastic_search').'/js/elastic_search.js');
+
+	// add the datepicker library:
+	drupal_add_library('system', 'ui.datepicker');
 
 }
 

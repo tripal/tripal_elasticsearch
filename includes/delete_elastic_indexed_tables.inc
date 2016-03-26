@@ -18,6 +18,8 @@ function delete_elastic_indexed_tables_form($form, &$form_state){
 	$form['delete_indices'] = array(
 		'#type' => 'submit',
 		'#value' => t('Delete indexed tables'),
+		'#prefix' => '<div id="delete-indices-submit">',
+		'#suffix' => '</div>',
 	);
 
 	$form['#submit'][] = '_delete_elastic_indexed_tables_submit';

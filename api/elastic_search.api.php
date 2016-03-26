@@ -170,3 +170,47 @@ function flatten($arr, $prefix = '') {
 
         return $out;
 }
+
+
+
+/** function to build elastic query for each field **/
+function _build_elastic_query($searchMethod, $field, $keyword){
+
+    switch($searchMethod){
+        case 'match':
+            $query_string = ' {"match":{"_field_":"_keyword_"}} ';
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            $final_query_string = str_replace($search, $replace, $query_string);
+            break;
+        case 'fuzzy':
+            $query_string = ' {"fuzzy":{"_field_":"_keyword_"}} ';
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            $final_query_string = str_replace($search, $replace, $query_string);
+            break;
+        case 'match_phrase':
+            $query_string = ' {"match_phrase": {"_field_":"_keyword_"}} ';
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            $final_query_string = str_replace($search, $replace, $query_string);
+            break;
+        case 'sort_ascending':
+            $query_string = ' {"_field_":{"order":"asc"}} ';
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            $final_query_string = str_replace($search, $replace, $query_string);
+            break;
+        case 'sort_descending':
+            $query_string = ' {"_field_":{"order":"desc"}} ';
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            $final_query_string = str_replace($search, $replace, $query_string);
+            break;
+        case 'range':
+            break;
+    }
+
+    return $final_query_string;
+}
+
