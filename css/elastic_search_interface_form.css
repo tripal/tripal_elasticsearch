@@ -28,11 +28,12 @@ div.results_info input{
 }
 
 div input#from-nth-entry-submit.form-submit{
+	display:inline-block;
+	float:left;
 	clear: right;
-	background-color:red;
 	border: 0;
-	margin: 2px 0 2px 0;
-	padding: 0 9px 0 9px;
+	margin:0;
+	padding: 2px 9px 2px 9px;
 }
 
 
@@ -41,4 +42,18 @@ p#records-found {
 	clear: both;
 	padding: 0;
 	left: 0;
+	width: 200px;
+	margin: 0;
+}
+
+
+.download-table{
+	display:inline;
+	float:left;
+}
+
+.download-fasta{
+	display:inline;
+	float:left;
+	clear:right;
 }

@@ -287,6 +287,9 @@ function _elastic_search_results(){
 	    $output .= theme('table', array('header' => $header, 'rows' => $chunks[$current_page] ));
 	    $output .= theme('pager', array('quantity', count($rows)));
 
+		// store data for writing downloadable file
+		$_SESSION['_download_table'] = $_SESSION['search_output_table'];
+		// unset $_SESSION['search_output_table'] for not displaying the results if page is refreshed
 		unset($_SESSION['search_output_table']);
 		variable_del('search_record_count');
 	}

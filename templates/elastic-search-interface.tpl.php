@@ -13,18 +13,37 @@
 	<div style="padding:10px"><?php print $search_webpages; ?></div>
 	<div><?php print $search_webpages_submit; ?></div>
 */
-?>
 
 
-	<div class="elastic_search_interface_form"><?php print $children; ?></div>
-	
-	<?php if(!empty($from_nth_entry_nth)) {
+	print '<div class="elastic_search_interface_form">';
+	foreach(array_keys($elastic_search_interface) as $key){
+		if($key != 'download_table' and $key != 'download_fasta'){
+			print $elastic_search_interface[$key];
+		}
+	}
+	print '</div>';
+
+	print $children;
+
+	if(!empty($from_nth_entry_nth)) {
 		print '<div class="results_info">';
-					print $from_nth_entry_nth;
-					print $from_nth_entry_submit;
+		print $from_nth_entry_nth;
+		print $from_nth_entry_submit;
 		print '</div>';
+
 		print '<p id="records-found">';
-		print '<span style="color:#ff0000">'.$search_record_count. '</span> records were found'; 
+		print '<span style="color:#ff0000">';
+		print $search_record_count;
+		print '</span> records were found'; 
 		print '</p>';
-		print '<hr/>';
-	} ?>
+		
+		print '<div class="download-table">';
+		print $elastic_search_interface['download_table'];
+		print $elastic_search_interface['download_fasta'];
+		print '<div class="download-fasta">';
+
+		print '<br/><br/>';
+	}
+
+
+

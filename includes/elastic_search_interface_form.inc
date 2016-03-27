@@ -63,6 +63,17 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
     );
 
 
+	/** download_search_results_form handler **/
+    $form['download_table'] = array(
+        '#type' => 'submit',
+        '#value' => 'Download csv',
+		'#submit' => array('_download_table_submit'), 
+    );
+	$form['download_fasta'] = array(
+		'#type' => 'submit',
+		'#value' => 'Download fasta',
+		'#submit' => array('_download_fasta_submit'),
+	);
 
 
 	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
@@ -202,6 +213,16 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
     $variables['search_webpages_submit'] = render($form['website_node_content']['submit']);
 */
 
+	foreach(element_children($form) as $key){
+		if(isset($form[$key]['#type'])){
+			$type = $form[$key]['#type'];
+			if($type != 'hidden' and $type != 'token'){
+				dpm($key);
+				dpm($type);
+				$variables['elastic_search_interface'][$key] = render($form[$key]); 
+			}
+		}
+	}
 
     $search_record_count = variable_get('search_record_count');
     if(!empty(variable_get('search_record_count'))){
@@ -215,6 +236,11 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
     // obtain search records count.
     $count_arr = variable_get('search_record_count');
     $variables['search_record_count'] = $count_arr['count'];
+
+
+	// download search results file
+	//$variables['download_table'] = render($form['download_table']);
+	//$variables['download_fasta'] = render($form['download_fasta']);
 
     // be sure to print the remaining rendered form items.
     $variables['children'] = drupal_render_children($form);
@@ -329,3 +355,93 @@ function _from_nth_entry_submit($form, &$form_state){
 }
 
 
+
+/** download_table form submit **/
+function _download_table_submit($form, &$form_state){
+
+	$form_state['values'] = variable_get('form_state_values');
+
+	// The name of search block being submitted
+	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
+	// get field and corresponding input keywords
+	foreach($form_state['values'][$block_name] as $field=>$keyword){
+		if($field != 'submit'){
+			$table_field_array = explode('|', $field);
+			$field_searchMethod_pairs[$table_field_array[1]][$table_field_array[0]] = $keyword;
+		}
+	}
+	
+
+
+	//--------------------run elastic search----------------------------------
+    // Build query statement, just need to replace some of this query string
+    // with the input form data
+	$body_curl_head = '{';
+    $body_head =  '"query" : {"bool" : {"must" : [';
+    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
+    $body_end = ']}}';
+	$body_curl_end = '}';
+
+    $sort_query_element = array();
+    $none_sort_query_element = array();
+	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
+		$key1 = array_keys($searchMethod_keyword)[0];
+		$key2 = array_keys($searchMethod_keyword)[1];
+		if(strlen($key1 < strlen($key2))){
+			$keyword = $searchMethod_keyword[$key1];
+			$searchMethod = $searchMethod_keyword[$key2];
+			$elasticsearch_query_type = $key1;
+		} else {
+			$keyword = $searchMethod_keyword[$key2];
+			$searchMethod = $searchMethod_keyword[$key1];
+			$elasticsearch_query_type = $key2;
+		}
+		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
+            // build query for sort query
+            $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
+        } elseif(!empty($keyword)){
+			// match and fuzzy query are at the same level
+			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
+		}	
+	}
+
+	$sort_query_string = implode(',', $sort_query_element);
+	$sort_query_head = ' "sort":[';
+	$sort_query_end = ']';
+	$sort_query = $sort_query_head . $sort_query_string . $sort_query_end;	
+
+	$none_sort_query_element = implode(',', $none_sort_query_element);
+	
+
+	$body = $body_curl_head . $body_head . $none_sort_query_element.$body_end.',' . $sort_query . $body_curl_end;
+
+
+	$client = new Elasticsearch\Client();
+	$params['index'] = $elasticsearch_query_type;
+	$params['type'] = $elasticsearch_query_type;
+	$params['body'] = $body;
+	$params['size'] = 10000000;
+    $search_result = $client->search($params);
+
+
+
+
+	
+	// create a file pointer connected to the output stream
+	$destination = file_destination('public://'.'/elastic_output.csv', FILE_EXISTS_REPLACE);
+	$output = fopen($destination, 'w');
+
+    foreach($search_result['hits']['hits'] as $key=>$value){
+		fputcsv($output, $value['_source']);
+    }
+
+	//drupal_goto(drupal_realpath($destination));
+	drupal_goto('sites/default/files/elastic_output.csv');
+}
+
+
+
+/** **/
+function _download_fasta_submit($form, &$form_state){
+
+}
