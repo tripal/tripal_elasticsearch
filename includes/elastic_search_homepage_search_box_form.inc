@@ -82,7 +82,7 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 		}
 	}
 
-
+	// if no keywords input or no records were found, search output is set to be empty
 	if(empty($form_state['values']['search_box']) or empty($homepage_search_output)){
 		$_SESSION['homepage_search_output'] = '';
 	} else {
