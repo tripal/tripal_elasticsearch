@@ -81,7 +81,7 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 	}
 
 
-	if(empty($form_state['values']['search_box'])){
+	if(empty($form_state['values']['search_box']) or empty($homepage_search_out)){
 		$_SESSION['homepage_search_output'] = '';
 	} else {
 		$_SESSION['homepage_search_output'] = $homepage_search_output;
