@@ -72,16 +72,18 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 		$params['size'] = 10000;
 	    $search_results = $client->search($params);	
 		foreach($search_results['hits']['hits'] as $key=>$value){
-			$entity_id = $value['_source']['entity_id'];
-			$body_value = implode('......', $value['highlight']['body_value']);
-			$body_value = strip_tags($body_value, '<em><b>');
-			$homepage_search_output[$key]['entity_id'] = $entity_id;
-			$homepage_search_output[$key]['body_value'] = $body_value;
+			if(!empty($value)){
+				$entity_id = $value['_source']['entity_id'];
+				$body_value = implode('......', $value['highlight']['body_value']);
+				$body_value = strip_tags($body_value, '<em><b>');
+				$homepage_search_output[$key]['entity_id'] = $entity_id;
+				$homepage_search_output[$key]['body_value'] = $body_value;
+			}
 		}
 	}
 
 
-	if(empty($form_state['values']['search_box']) or empty($homepage_search_out)){
+	if(empty($form_state['values']['search_box']) or empty($homepage_search_output)){
 		$_SESSION['homepage_search_output'] = '';
 	} else {
 		$_SESSION['homepage_search_output'] = $homepage_search_output;
