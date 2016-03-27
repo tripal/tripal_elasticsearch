@@ -217,8 +217,6 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 		if(isset($form[$key]['#type'])){
 			$type = $form[$key]['#type'];
 			if($type != 'hidden' and $type != 'token'){
-				dpm($key);
-				dpm($type);
 				$variables['elastic_search_interface'][$key] = render($form[$key]); 
 			}
 		}

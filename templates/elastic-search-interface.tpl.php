@@ -23,7 +23,9 @@
 	}
 	print '</div>';
 
+	print '<div style="display:none">';
 	print $children;
+	print '</div>';
 
 	if(!empty($from_nth_entry_nth)) {
 		print '<div class="results_info">';
