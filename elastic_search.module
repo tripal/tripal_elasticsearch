@@ -119,14 +119,15 @@ function _elastic_search_block_build(){
 
 /** page callback to return elastic_search_blocks form. **/
 function _elastic_search_blocks(){
-	$elastic_search_blocks = variable_get('elastic_search_blocks');
-	return drupal_get_form('elastic_search_blocks_form', $elastic_search_blocks);
+	//$elastic_search_blocks = variable_get('elastic_search_blocks');
+	//return drupal_get_form('elastic_search_blocks_form', $elastic_search_blocks);
+	return drupal_get_form('elastic_search_blocks_form', $_SESSION['elastic_search_blocks']);
 }
 
 
 /** page callback to return elastic_search_interface_form. **/
 function _elastic_search_interface_form(){
-	$elastic_search_interface = variable_get('elastic_search_blocks');
+	$elastic_search_interface = variable_get('elastic_search_interface');
 	$output = drupal_get_form('elastic_search_interface_form', $elastic_search_interface);
 	$output = render($output);
 

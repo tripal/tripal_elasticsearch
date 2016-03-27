@@ -1,18 +1,35 @@
 <?php
 
 /** elastic_search_blocks form handler **/
-function elastic_search_blocks_form($form, &$form_state, $elastic_search_blocks){
-	//foreach($_SESSION['elastic_search_blocks'] as $key => $value){
-	foreach($elastic_search_blocks as $key => $value){
+function elastic_search_blocks_form($form, &$form_state){
+	foreach($_SESSION['elastic_search_blocks'] as $key => $value){
+	//foreach($elastic_search_blocks as $key => $value){
 		$form[$key] = $value;
 		$form[$key]['#title'] = $key;
 		$form[$key]['#tree'] = TRUE;
-		$form[$key]['submit'] = array(
-			'#type' => 'submit',
-			'#value' => 'Delete|'.$key,
-			'#submit' => array('_delete_elastic_block'),
-		);
 	}
+
+	$form['delete_blocks'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Delete search blocks'),
+		'#tree' => TRUE,
+	);
+
+	$options = array();
+	foreach(array_keys($_SESSION['elastic_search_blocks']) as $block){
+		$options[$block] = $block;
+	}
+	$form['delete_blocks']['blocks'] = array(
+		'#type' => 'checkboxes',
+		'#title' => t('Select search blocks to delete'),
+		'#options' => $options,
+	);
+	$form['delete_blocks']['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Delete'),
+		'#submit' => array('_delete_elastic_block'),
+	);
+
 
 	return $form;
 }
@@ -22,14 +39,20 @@ function elastic_search_blocks_form($form, &$form_state, $elastic_search_blocks)
  *elastic_search_blocks_form submit callback
 */
 function _delete_elastic_block($form, &$form_state){
-	$block_name = substr($form_state['values']['op'], 7);
-	//unset($_SESSION['elastic_search_blocks'][$block_name]);
-	$elastic_search_blocks = variable_get('elastic_search_blocks');
-	unset($elastic_search_blocks[$block_name]);
-	variable_set('elastic_search_blocks', $elastic_search_blocks);
 
-	$form_state['redirect'] = 'admin/config/search/elastic_search/search_block_builder';
-	//$form_state['rebuild'] = TRUE;
+	$elastic_search_interface = array();
+	foreach($form_state['values']['delete_blocks']['blocks'] as $key=>$block){
+		if(!empty($block)){
+			unset($_SESSION['elastic_search_blocks'][$block]);
+		} else {
+			$elastic_search_interface[$key] = $form[$key];
+		}
+	}
+	variable_set('elastic_search_interface', $elastic_search_interface);
+
+	
+	$form_state['rebuild'] = TRUE;
+
 }
 
 

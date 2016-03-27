@@ -2,7 +2,7 @@
 
 /** elastic_search_interface form handler **/
 function elastic_search_interface_form($form, &$form_state, $elastic_search_interface){
-	//foreach($_SESSION['elastic_search_blocks'] as $key => $value){
+	//foreach($_SESSION['elastic_search_interface'] as $key => $value){
 	foreach($elastic_search_interface as $key => $value){
 		$form[$key] = array(
 			'#type' => 'fieldset',
