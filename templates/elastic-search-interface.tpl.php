@@ -17,17 +17,14 @@
 
 
 	<div class="elastic_search_interface_form"><?php print $children; ?></div>
-
-	<div class="results_info">
-		<?php 
-			if(!empty($from_nth_entry_nth)){
-				print $from_nth_entry_nth;
-				print $from_nth_entry_submit;
-			}
-		?>
-	</div>
 	
-	<p id="records-found">
-		<span style="color:#ff0000"><?php print $search_record_count. '</span> records were found'; ?>
-	</p>
-	<hr/>
+	<?php if(!empty($from_nth_entry_nth)) {
+		print '<div class="results_info">';
+					print $from_nth_entry_nth;
+					print $from_nth_entry_submit;
+		print '</div>';
+		print '<p id="records-found">';
+		print '<span style="color:#ff0000">'.$search_record_count. '</span> records were found'; 
+		print '</p>';
+		print '<hr/>';
+	} ?>

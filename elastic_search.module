@@ -288,6 +288,7 @@ function _elastic_search_results(){
 	    $output .= theme('pager', array('quantity', count($rows)));
 
 		unset($_SESSION['search_output_table']);
+		variable_del('search_record_count');
 	}
 
 

@@ -204,11 +204,12 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 
 
     $search_record_count = variable_get('search_record_count');
-    if(!empty($search_record_count)){
+    if(!empty(variable_get('search_record_count'))){
         $variables['from_nth_entry_nth'] = render($form['from_nth_entry']['nth']);
         $variables['from_nth_entry_submit'] = render($form['from_nth_entry']['submit']);
     } else {
-        $variables['from_nth_entry'] = NULL;
+		$variables['from_nth_entry_nth'] = '';
+		$variables['from_nth_entry_nth'] = '';
     }
 
     // obtain search records count.
