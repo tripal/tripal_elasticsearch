@@ -426,7 +426,7 @@ function _download_table_submit($form, &$form_state){
 
 	
 	// create a file pointer connected to the output stream
-	$destination = file_destination('public://'.'/elastic_output.csv', FILE_EXISTS_REPLACE);
+	$destination = file_destination('public://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
 	$output = fopen($destination, 'w');
 
     foreach($search_result['hits']['hits'] as $key=>$value){
