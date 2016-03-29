@@ -433,8 +433,14 @@ function _download_table_submit($form, &$form_state){
 		fputcsv($output, $value['_source']);
     }
 
+
+	// strip off 'public://'
+	$filename = substr($destination, 9); 
 	//drupal_goto(drupal_realpath($destination));
-	drupal_goto('sites/default/files/elastic_output.csv');
+	drupal_goto('sites/default/files/'. $filename);
+
+	//file_unmanaged_delete($destination);
+
 }
 
 
