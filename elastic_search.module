@@ -143,9 +143,9 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 
     //------------ modify form for blast_merged_transcripts---------------------------------
     // change labels for the form elements.
-    $form['blast_merged_transcripts']['blast_merged_transcripts|organism']['#title']    =   t('Organism');
-    $form['blast_merged_transcripts']['blast_merged_transcripts|organism']['#type']     = 'select';
-    $form['blast_merged_transcripts']['blast_merged_transcripts|organism']['#options']  = array(
+    $form['blast_merged_transcripts']['blast_merged_transcripts|hit_description']['#title']    =   t('Organism');
+    $form['blast_merged_transcripts']['blast_merged_transcripts|hit_description']['#type']     = 'select';
+    $form['blast_merged_transcripts']['blast_merged_transcripts|hit_description']['#options']  = array(
         '' => t('Any organism'),
         'A. saccharum' => t('Sugar Maple (Acer saccharum)'),
         //'\"C. dentata\"' => t('American Chestnut (Castanea dentat)'),     // no transcripts data
@@ -164,10 +164,13 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
         //'\"Q. robur\"' => t('Pedunculate Oak (Quercus robur)'),           // no transcripts data
         'rubra' => t('Northern Red Oak (Quercus rubra)'),
     );
-    $form['blast_merged_transcripts']['search_blast_merged_transcripts|organism'] = array(
+    $form['blast_merged_transcripts']['search_blast_merged_transcripts|hit_description'] = array(
         '#type' => 'value',
         '#value' => 'match',
     );
+	$form['blast_merged_transcripts']['blast_merged_transcripts|organism']['#title']    =   t('Blast hit description');
+	$form['blast_merged_transcripts']['blast_merged_transcripts|unique_name']['#title']    = t('Transcripts');
+
 
 
 	//------------ modify form for search_transcripts---------------------------------
