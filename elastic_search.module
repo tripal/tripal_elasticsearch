@@ -218,7 +218,6 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 	$form['website_node_content']['search_field_data_body|entity_id']['#type'] = 'hidden';
 	//$form['website_node_content']['submit']['#value'] = t('Elasticsearch|webpages');
 
-dpm($form);
 }
 
 
