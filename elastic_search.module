@@ -4,7 +4,6 @@
 	require_once 'api/elastic_search.api.php';
 	require_once '/data/www/html/hardwoods_ming/htdocs/sites/all/modules/custom/elastic_search/includes/elastic_search_homepage_search_box_form.inc';
 
-
 set_time_limit(0);
 
 /**
