@@ -1,8 +1,9 @@
 <?php
 
-	require_once '/data/www/html/hardwoods_dev_ming/htdocs/sites/all/modules/DRUPAL_ELASTIC_SEARCH/vendor/autoload.php';
+	require_once drupal_get_path('module', 'elastic_search').'/vendor/autoload.php';
 	require_once 'api/elastic_search.api.php';
-	require_once '/data/www/html/hardwoods_dev_ming/htdocs/sites/all/modules/custom/elastic_search/includes/elastic_search_homepage_search_box_form.inc';
+	require_once '/data/www/html/hardwoods_ming/htdocs/sites/all/modules/custom/elastic_search/includes/elastic_search_homepage_search_box_form.inc';
+
 
 set_time_limit(0);
 
@@ -406,8 +407,8 @@ function elastic_search_cron_queue_info(){
 
 
 function elasticindexing_queue_item($item){
-
-	$client = new Elasticsearch\Client();
+	$client = Elasticsearch\ClientBuilder::create()->build();
+	#$client = new Elasticsearch\Client();
 	//$params['index'] = 'hardwoodgenomics';
 	$params['index'] = str_replace('chado.', '', $_SESSION['selected_table']);
 	$params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
