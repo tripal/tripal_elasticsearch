@@ -44,7 +44,6 @@ function elastic_search_preprocess_elastic_search_homepage_search_box_form(&$var
 /** elastic_search_homepage_search_box_form submit **/
 function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 	
-
     $client = new Elasticsearch\Client();
     $mappings = $client->indices()->getMapping();
     $indices = array_keys($mappings);

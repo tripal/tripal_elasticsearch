@@ -1,8 +1,6 @@
 <?php
 
 
-
-
 /**
  * The fileds options are dependent on the table selected in previous
  * dropdown.
