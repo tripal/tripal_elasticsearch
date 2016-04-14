@@ -25,11 +25,6 @@ function delete_elastic_indexed_tables_form($form, &$form_state){
 	$form['#submit'][] = '_delete_elastic_indexed_tables_submit';
 
 
-	$form['#attached']['js'] = array(
-		'data' => drupal_get_path('module', 'elastic_search') . 'jss/delete_indexed_tables.js', 
-		'type' => 'file',
-	);
-
 	return $form;
 }
 

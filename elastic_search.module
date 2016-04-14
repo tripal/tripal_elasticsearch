@@ -417,76 +417,81 @@ function elasticindexing_queue_item($item){
 	$result = db_query($sql);
 
 
-
 		// Delete the index if it already exists
 	        $mappings = $client->indices()->getMapping();
         	$indices = array_keys($mappings);
+
+/*
 		if(in_array($index, $indices)){
 			$paramsDelete['index'] = [ $index ];
 			$client->indices()->delete($paramsDelete);
 		}
+*/
 
-	foreach($result as $record){
-		$doc = objectToArray($record);
-
-		$properties = array();
-		foreach(array_keys($doc) as $field) {
-			//$field = array('type' => 'string', 'analyzer' => $index);
-			$properties[$field] = array('type' => 'string', 'analyzer' => $index);
+		if(!in_array($index, $indices)){
+			foreach($result as $record){
+				$doc = objectToArray($record);
+		
+				$properties = array();
+				foreach(array_keys($doc) as $field) {
+					//$field = array('type' => 'string', 'analyzer' => $index);
+					$properties[$field] = array('type' => 'string', 'analyzer' => $index);
+				}
+				$mappings = array(
+					'_default_' => array('properties' => $properties),
+				);
+		
+		
+				$params = array();
+				$params = [
+				    'index' => $index,
+				    'body' => [
+				        'settings' => [
+				            'number_of_shards' => 1,
+				            'number_of_replicas' => 0,
+				            'analysis' => [
+				                'filter' => [
+				                    'myTokenFilter1' => [
+				                        'type' => 'word_delimiter'
+				                    ]
+				                ],
+				                'char_filter' => [
+				                    'my_html' => [
+				                        'type' => 'html_strip',
+				                    ]
+				                ],
+				                'analyzer' => [
+				                    $index => [
+				                        'type' => 'custom',
+				                        'tokenizer' => 'standard',
+				                        'char_filter' => ['my_html'],
+				                        'filter' => ['myTokenFilter1', 'lowercase']
+				                    ]
+				                ]
+				            ]
+				        ],
+				        'mappings' => $mappings
+				    ]
+				];
+		
+				$client->indices()->create($params);
+				break;
+			}
+		
 		}
-		$mappings = array(
-			'_default_' => array('properties' => $properties),
-		);
+		
+		
+		       foreach($result as $record){
+		                $doc = objectToArray($record);
+		
+				$params = array();
+				$params['index'] = $index;
+		                $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
+		
+		                $params['body'] = $doc;
+		                $client->index($params);
+		        }
 
-
-		$params = array();
-		$params = [
-		    'index' => $index,
-		    'body' => [
-		        'settings' => [
-		            'number_of_shards' => 1,
-		            'number_of_replicas' => 0,
-		            'analysis' => [
-		                'filter' => [
-		                    'myTokenFilter1' => [
-		                        'type' => 'word_delimiter'
-		                    ]
-		                ],
-		                'char_filter' => [
-		                    'my_html' => [
-		                        'type' => 'html_strip',
-		                    ]
-		                ],
-		                'analyzer' => [
-		                    $index => [
-		                        'type' => 'custom',
-		                        'tokenizer' => 'standard',
-		                        'char_filter' => ['my_html'],
-		                        'filter' => ['myTokenFilter1', 'lowercase']
-		                    ]
-		                ]
-		            ]
-		        ],
-		        'mappings' => $mappings
-		    ]
-		];
-
-		$client->indices()->create($params);
-		break;
-	}
-
-
-       foreach($result as $record){
-                $doc = objectToArray($record);
-
-		$params = array();
-		$params['index'] = $index;
-                $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
-
-                $params['body'] = $doc;
-//              $client->index($params);
-                $client->index($params);
-        }
 }
 
 
