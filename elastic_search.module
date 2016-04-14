@@ -411,81 +411,26 @@ function elasticindexing_queue_item($item){
 //	$params['index'] = str_replace('chado.', '', $_SESSION['selected_table']);
 
 	
-/*
-$index = str_replace('chado.', '', $_SESSION['selected_table']);
-$params = [
-    'index' => $index,
-    'body' => [
-        'settings' => [ 
-            'number_of_shards' => 1,
-            'number_of_replicas' => 0,
-            'analysis' => [ 
-                'filter' => [
-                    'myTokenFilter1' => [
-                        'type' => 'word_delimiter'
-                    ]
-                ],
-                'char_filter' => [
-                    'my_html' => [
-                        'type' => 'html_strip',
-                    ]
-                ],
-                'analyzer' => [
-                    $index => [
-                        'type' => 'custom',
-                        'tokenizer' => 'standard',
-						'char_filter' => ['my_html'],
-                        'filter' => ['myTokenFilter1']
-                    ]
-                ]
-            ]
-        ],
-		'mappings' => $mappings
-    ]
-];
-*/
-
-/*
-	$params['body']['settings']['analysis'] = array(
-		'analyzer' => array(
-			'myAnalyzer1' => array(
-				'type' => 'custom',
-				'tokenizer' => 'myTokenizer1',
-				'filter' => array('myTokenFilter1'),
-				'char_filter' => array('my_html'),
-			),
-		),
-		'tokenizer' => array(
-			'myTokenizer1' => array(
-				'type' => 'standard',
-			),
-		),
-		'filter' => array(
-			'myTokenFilter1' => array(
-				'type' => array(
-					'word_delimiter' => array(
-						'generate_word_parts' => false,
-					),
-				),
-			),
-		),
-		'char_filter' => array(
-			'my_html' => array(
-				'type' => 'html_strip',
-			),
-		),
-	);
-*/
 
 	$index = str_replace('chado.', '', $_SESSION['selected_table']);
 	$sql = $item->sql;
 	$result = db_query($sql);
 
+
+
+		// Delete the index if it already exists
+	        $mappings = $client->indices()->getMapping();
+        	$indices = array_keys($mappings);
+		if(in_array($index, $indices)){
+			$paramsDelete['index'] = [ $index ];
+			$client->indices()->delete($paramsDelete);
+		}
+
 	foreach($result as $record){
 		$doc = objectToArray($record);
 
 		$properties = array();
-		foreach($doc as $field => $field_content) {
+		foreach(array_keys($doc) as $field) {
 			//$field = array('type' => 'string', 'analyzer' => $index);
 			$properties[$field] = array('type' => 'string', 'analyzer' => $index);
 		}
@@ -494,7 +439,7 @@ $params = [
 		);
 
 
-		$index = str_replace('chado.', '', $_SESSION['selected_table']);
+		$params = array();
 		$params = [
 		    'index' => $index,
 		    'body' => [
@@ -517,7 +462,7 @@ $params = [
 		                        'type' => 'custom',
 		                        'tokenizer' => 'standard',
 		                        'char_filter' => ['my_html'],
-		                        'filter' => ['myTokenFilter1']
+		                        'filter' => ['myTokenFilter1', 'lowercase']
 		                    ]
 		                ]
 		            ]
