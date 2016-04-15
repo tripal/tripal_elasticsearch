@@ -2,7 +2,7 @@
 
 	require_once drupal_get_path('module', 'elastic_search').'/vendor/autoload.php';
 	require_once 'api/elastic_search.api.php';
-	require_once '/data/www/html/hardwoods_ming/htdocs/sites/all/modules/custom/elastic_search/includes/elastic_search_homepage_search_box_form.inc';
+	require_once drupal_get_path('module', 'elastic_search').'/includes/elastic_search_homepage_search_box_form.inc';
 
 set_time_limit(0);
 
@@ -39,16 +39,6 @@ function elastic_search_menu(){
 		'file' => 'includes/delete_elastic_indexed_tables.inc',
 		'weight' => 1,
 	);
-/*
-	$items[$pre.'/comfirm_indices_deletion'] = array(
-		'title' => t('Do you really want to delete the selected indices?'),
-		'page callback' => '_comfirm_indices_deletion',
-		'access callback' => 'user_access',
-		'access arguments' => array('administer users'),
-		'type' => MENU_NORMAL_ITEM,
-		'file' => 'includes/confirm_indices_deletion_form.inc',
-	);
-*/
 	$items[$pre.'/search_block_builder'] = array(
 		'title' => t('Build search block'),
 		'page callback' => '_elastic_search_block_build',
@@ -101,16 +91,6 @@ function _delete_elastic_indexed_tables(){
 	return drupal_get_form('delete_elastic_indexed_tables_form');
 }
 
-/** page callback to return comfirm_indices_deletion_form **/
-/*
-function _comfirm_indices_deletion(){
-	$output = 'This action cannot be undone!';
-	$confirm_deletion = drupal_get_form('confirm_indices_deletion_form');
-	$output .= render($confirm_deletion);
-
-	return $output;
-}
-*/
 
 /** page callback to return elastic_search_block_build form **/
 function _elastic_search_block_build(){
@@ -139,37 +119,6 @@ function _elastic_search_interface_form(){
 
 //** implements hook_preprocess_elastic_search_interface_form(). **//
 function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
-
-
-    //------------ modify form for blast_merged_transcripts---------------------------------
-    // change labels for the form elements.
-    $form['blast_merged_transcripts']['blast_merged_transcripts|hit_description']['#title']    =   t('Organism');
-    $form['blast_merged_transcripts']['blast_merged_transcripts|hit_description']['#type']     = 'select';
-    $form['blast_merged_transcripts']['blast_merged_transcripts|hit_description']['#options']  = array(
-        '' => t('Any organism'),
-        'A. saccharum' => t('Sugar Maple (Acer saccharum)'),
-        //'\"C. dentata\"' => t('American Chestnut (Castanea dentat)'),     // no transcripts data
-        //'\"mollissima\"' => t('Chinese Chestnut (Castanea mollissima)'),
-        //'\"F. grandifolia\"' => t('American Beech (Fagus grandifolia)'),  // no transcripts data
-        //'\"serotina\"' => t('Black Cherry (Prunus serotina)'),
-        //'\"americana\"' => t('White Ash (Fraxinus americana)'),
-        'F. pennsylvanica' => t('Green Ash (Fraxinus pennsylvanica)'),
-        'G. triacanthos' => t('Honeylocust (Gleditsia triacanthos)'),
-        'J. nigra\"' => t('Black Walnut (Juglans nigra)'),
-        'L. styraciflua' => t('Sweetgum (Liquidambar styraciflua)'),
-        'L. tulipifera' => t('Tulip Poplar (Liriodendron tulipifera)'),
-        'N. sylvatica' => t('Blackgum (Nyssa sylvatica)'),
-        //'\"borbonia' => t('Redbay (Persea borbonia)'),
-        //'\"Q. alba\"' => t('White Oak (Quercus alba)'),                   // no transcripts data
-        //'\"Q. robur\"' => t('Pedunculate Oak (Quercus robur)'),           // no transcripts data
-        'rubra' => t('Northern Red Oak (Quercus rubra)'),
-    );
-    $form['blast_merged_transcripts']['search_blast_merged_transcripts|hit_description'] = array(
-        '#type' => 'value',
-        '#value' => 'match',
-    );
-	$form['blast_merged_transcripts']['blast_merged_transcripts|organism']['#title']    =   t('Blast hit description');
-	$form['blast_merged_transcripts']['blast_merged_transcripts|unique_name']['#title']    = t('Transcripts');
 
 
 
@@ -231,7 +180,7 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
  * Implements hook_block_info().
  */
 function elastic_search_block_info(){
-    $blocks['elastic_results_transcripts'] = array(
+    $blocks['elasticsearch_results'] = array(
         'info' => t('Elastic search results for transcript data'),
         'status' => TRUE,
         'region' => 'content',
@@ -251,6 +200,7 @@ function elastic_search_block_info(){
 		'weight' => 0,
 	);
 
+
     return $blocks;
 }
 
@@ -259,8 +209,10 @@ function elastic_search_block_info(){
  * Implements hook_block_view().
  */
 function elastic_search_block_view($delta = ''){
+
+	$block = array();
     switch($delta){
-        case 'elastic_results_transcripts':
+        case 'elasticsearch_results':
             $block['subject'] = '';//t('Elastic search results');
             $block['content'] = _elastic_search_results();
         break;

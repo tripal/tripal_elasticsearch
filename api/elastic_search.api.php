@@ -184,7 +184,7 @@ function _build_elastic_query($searchMethod, $field, $keyword){
             $final_query_string = str_replace($search, $replace, $query_string);
             break;
         case 'fuzzy':
-            $query_string = ' {"fuzzy":{"_field_":"_keyword_"}} ';
+            $query_string = ' {"match":{"_field_": {"query":"_keyword_", "fuzziness":"AUTO" }}} ';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
             $final_query_string = str_replace($search, $replace, $query_string);
