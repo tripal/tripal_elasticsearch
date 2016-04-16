@@ -118,8 +118,8 @@ function get_table_list() {
     $input_table = $result_table->fetchAll();
 
 
-    $table_list = array();
-    $i = 0;
+    $table_list = array('index_website');
+    $i = 1;
     foreach ($input_table as $value) {
         $table_list[$i] = $value->table_name;
         $i++;
