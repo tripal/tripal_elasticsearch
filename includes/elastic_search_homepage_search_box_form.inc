@@ -70,6 +70,7 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 	    $params['body'] = $body_curl_head.$body_head.$body_content.$body_end.','.$highlight.$body_curl_end;
 		$params['size'] = 10000;
 	    $search_results = $client->search($params);	
+
 		foreach($search_results['hits']['hits'] as $key=>$value){
 			if(!empty($value)){
 				$node_id = $value['_source']['node_id'];
@@ -90,10 +91,9 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 	} else {
 		$_SESSION['homepage_search_output'] = $homepage_search_output;
 	}
-
+	
 	$form_state['redirect'] = 'search-website';
 }
-
 
 
 /** function to return homepage elasticsearch output **/

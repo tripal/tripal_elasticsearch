@@ -368,10 +368,8 @@ function elasticindexing_queue_item($item){
 	$sql = $item->sql;
 	$result = db_query($sql);
 
-
-		// Delete the index if it already exists
-	        $mappings = $client->indices()->getMapping();
-        	$indices = array_keys($mappings);
+	$mappings = $client->indices()->getMapping();
+    $indices = array_keys($mappings);
 
 /*
 		if(in_array($index, $indices)){
@@ -380,69 +378,142 @@ function elasticindexing_queue_item($item){
 		}
 */
 
-		if(!in_array($index, $indices)){
-			foreach($result as $record){
-				$doc = objectToArray($record);
-		
-				$properties = array();
-				foreach(array_keys($doc) as $field) {
-					//$field = array('type' => 'string', 'analyzer' => $index);
-					$properties[$field] = array('type' => 'string', 'analyzer' => $index);
-				}
-				$mappings = array(
-					'_default_' => array('properties' => $properties),
-				);
-		
-		
-				$params = array();
-				$params = [
-				    'index' => $index,
-				    'body' => [
-				        'settings' => [
-				            'number_of_shards' => 1,
-				            'number_of_replicas' => 0,
-				            'analysis' => [
-				                'filter' => [
-				                    'myTokenFilter1' => [
-				                        'type' => 'word_delimiter'
-				                    ]
-				                ],
-				                'char_filter' => [
-				                    'my_html' => [
-				                        'type' => 'html_strip',
-				                    ]
-				                ],
-				                'analyzer' => [
-				                    $index => [
-				                        'type' => 'custom',
-				                        'tokenizer' => 'standard',
-				                        'char_filter' => ['my_html'],
-				                        'filter' => ['myTokenFilter1', 'lowercase']
-				                    ]
-				                ]
-				            ]
-				        ],
-				        'mappings' => $mappings
-				    ]
-				];
-		
-				$client->indices()->create($params);
-				break;
-			}
-		
+	if($_SESSION['selected_table'] == 'index_website'){
+		// INDEX WEBSITE
+    	if(!in_array($index, $indices)){
+        	foreach($result as $record){
+                $doc = objectToArray($record);
+
+                $properties['node_title'] = array('type' => 'string', 'analyzer' => $index);
+                $properties['node_id'] = array('type' => 'string', 'analyzer' => $index);
+                $properties['node_content'] = array('type' => 'string', 'analyzer' => $index);
+
+                $mappings = array(
+                    '_default_' => array('properties' => $properties),
+                );
+
+
+                $params = array();
+                $params = [
+                    'index' => $index,
+                    'body' => [
+                        'settings' => [
+                            'number_of_shards' => 1,
+                            'number_of_replicas' => 0,
+                            'analysis' => [
+                                'filter' => [
+                                    'myTokenFilter1' => [
+                                        'type' => 'word_delimiter'
+                                    ]
+                                ],
+                                'char_filter' => [
+                                    'my_html' => [
+                                        'type' => 'html_strip',
+                                    ]
+                                ],
+                                'analyzer' => [
+                                    $index => [
+                                        'type' => 'custom',
+                                        'tokenizer' => 'standard',
+                                        'char_filter' => ['my_html'],
+                                        'filter' => ['myTokenFilter1', 'lowercase']
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'mappings' => $mappings
+                    ]
+                ];
+
+                $client->indices()->create($params);
+                break;
+            }
+
+        }
+        foreach($result as $record){
+            $doc = objectToArray($record);
+
+            $params = array();
+            $params['index'] = $index;
+            $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
+
+            $node = node_load($doc['nid']);
+
+            $body['node_id'] = $doc['nid'];
+            $body['node_title'] = $doc['title'];
+            $node_element = node_view($node);
+            $node_html = drupal_render_children($node_element);
+            // combine the title and content so that searching the content will also searching the title.
+            $node_string = $doc['title'].strip_tags($node_html);
+            $body['node_content'] = $node_string;
+
+            $params['body'] = $body;
+            $client->index($params);
+        } // end foreach($result as $record)
+    } // end if($_SESSION['selected_table'] == 'index_website')
+    else {  // index a selected table
+        if(!in_array($index, $indices)){
+            foreach($result as $record){
+                $doc = objectToArray($record);
+
+                $properties = array();
+                foreach(array_keys($doc) as $field) {
+                    //$field = array('type' => 'string', 'analyzer' => $index);
+                    $properties[$field] = array('type' => 'string', 'analyzer' => $index);
+                }
+                $mappings = array(
+                    '_default_' => array('properties' => $properties),
+                );
+
+
+                $params = array();
+                $params = [
+                    'index' => $index,
+                    'body' => [
+                        'settings' => [
+                            'number_of_shards' => 1,
+                            'number_of_replicas' => 0,
+                            'analysis' => [
+                                'filter' => [
+                                    'myTokenFilter1' => [
+                                        'type' => 'word_delimiter'
+                                    ]
+                                ],
+                                'char_filter' => [
+                                    'my_html' => [
+                                        'type' => 'html_strip',
+                                    ]
+                                ],
+                                'analyzer' => [
+                                    $index => [
+                                        'type' => 'custom',
+                                        'tokenizer' => 'standard',
+                                        'char_filter' => ['my_html'],
+                                        'filter' => ['myTokenFilter1', 'lowercase']
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'mappings' => $mappings
+                    ]
+                ];
+
+                $client->indices()->create($params);
+                break;
+            }
 		}
-		
-		
-		       foreach($result as $record){
-		                $doc = objectToArray($record);
-		
-				$params = array();
-				$params['index'] = $index;
-		                $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
-		
-		                $params['body'] = $doc;
-		                $client->index($params);
-		        }
+
+        foreach($result as $record){
+            $doc = objectToArray($record);
+
+            $params = array();
+            $params['index'] = $index;
+            $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
+			$params['body'] = $doc;
+
+            $client->index($params);
+        } 
+	}
 
 }
 
