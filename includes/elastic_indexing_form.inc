@@ -110,26 +110,6 @@ function elastic_indexing_form($form, &$form_state){
 		'#options' => get_column_list($options_first[$selected]),
 	);
 
-/**
-	$form['indexing_table']['cron_config'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Cron configuration'),
-	);
-
-	$form['indexing_table']['cron_config']['elastic_indexing_interval'] = array(
-		'#type' => 'select',
-		'#title' => 'cron interval',
-		'#description' => t('Time after which elastic_indexing_cron will respond to a processing request'),
-		'#default_value' => variable_get('elastic_indexing_interval', 30),
-		'#options' => array(
-			60 => t('1 minute'),
-			120 => t('2 minutes'),
-			300 => t('5 minutes'),
-			600 => t('10 minutes'),
-		),
-
-	);
-*/
 
 	$form['indexing_table']['submit'] = array(
 		'#type' => 'submit',
@@ -202,7 +182,12 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 
 	// get row count of the selected table
-	$sql_rowcount = "SELECT COUNT(*) FROM ".$_SESSION['selected_table'].";";
+	if($_SESSION['selected_table'] == 'index_website'){
+		$sql_rowcount = "SELECT COUNT(*) FROM node;";
+	}
+	else {
+		$sql_rowcount = "SELECT COUNT(*) FROM ".$_SESSION['selected_table'].";";
+	}
 	$row_count = db_query($sql_rowcount)->fetchAssoc();
 	$row_count = implode($row_count);
 
@@ -216,7 +201,12 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 	foreach($offsets as $offset){
 		$offset = $k*$offset;
 		$item = new stdClass();
-		$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $_SESSION['selected_table'] ."  LIMIT $k OFFSET $offset;";
+		if($_SESSION['selected_table'] == 'index_website'){
+			$sql = 'SELECT title, nid FROM node';
+		}
+		else {
+			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $_SESSION['selected_table'] ."  LIMIT $k OFFSET $offset;";
+		}
 		$item->sql = $sql;
 		$queue->createItem($item);	
 	}

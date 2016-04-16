@@ -1,5 +1,6 @@
 <?php
 
+
 /** elastic_search_interface form handler **/
 function elastic_search_interface_form($form, &$form_state, $elastic_search_interface){
 	//foreach($_SESSION['elastic_search_interface'] as $key => $value){
@@ -130,9 +131,11 @@ function elastic_search_interface_form_submit($form, &$form_state){
 		}
 		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
             // build query for sort query
+			$keyword = trim($keyword);	
             $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
         } elseif(!empty($keyword)){
 			// match and fuzzy query are at the same level
+			$keyword = trim($keyword);
 			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
 		}	
 	}
@@ -303,9 +306,11 @@ function _from_nth_entry_submit($form, &$form_state){
 		}
 		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
             // build query for sort query
+			$keyword = trim($keyword);
             $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
         } elseif(!empty($keyword)){
 			// match and fuzzy query are at the same level
+			$keyword = trim($keyword);
 			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
 		}	
 	}
@@ -396,9 +401,11 @@ function _download_table_submit($form, &$form_state){
 		}
 		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
             // build query for sort query
+			$keyword = trim($keyword);
             $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
         } elseif(!empty($keyword)){
 			// match and fuzzy query are at the same level
+			$keyword = trim($keyword);
 			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
 		}	
 	}

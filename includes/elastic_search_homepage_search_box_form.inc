@@ -47,11 +47,10 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
     $client = new Elasticsearch\Client();
     $mappings = $client->indices()->getMapping();
     $indices = array_keys($mappings);
-    $index = 'field_data_body';
+    $index = 'index_website';
 
-
-	if(in_array($index, $indices)){
-	    $field = 'body_value';
+	//if(in_array($index, $indices)){
+	    $field = 'node_content';
 	    $searchMethod = $form_state['values']['search_methods'];
 	    $keyword = $form_state['values']['search_box'];
 
@@ -60,8 +59,9 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
     	// with the input form data
     	$body_curl_head = '{';
     	$body_head =  '"query" : {"bool" : {"must" : [';
+		$keyword = trim($keyword);
 		$body_content = _build_elastic_query($searchMethod, $field, $keyword);
-		$highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"body_value":{"fragment_size":150}}}';
+		$highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';
 		$body_end = ']}}';
 		$body_curl_end = '}';
 		
@@ -72,14 +72,17 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 	    $search_results = $client->search($params);	
 		foreach($search_results['hits']['hits'] as $key=>$value){
 			if(!empty($value)){
-				$entity_id = $value['_source']['entity_id'];
-				$body_value = implode('......', $value['highlight']['body_value']);
-				$body_value = strip_tags($body_value, '<em><b>');
-				$homepage_search_output[$key]['entity_id'] = $entity_id;
-				$homepage_search_output[$key]['body_value'] = $body_value;
+				$node_id = $value['_source']['node_id'];
+				$node_title = $value['_source']['node_title'];
+				$node_content = implode('......', $value['highlight']['node_content']);
+				$node_content = strip_tags($node_content, '<em><b>');
+
+				$homepage_search_output[$key]['node_id'] = $node_id;
+				$homepage_search_output[$key]['node_title'] = $node_title;
+				$homepage_search_output[$key]['node_content'] = $node_content;
 			}
 		}
-	}
+	//}
 
 	// if no keywords input or no records were found, search output is set to be empty
 	if(empty($form_state['values']['search_box']) or empty($homepage_search_output)){
@@ -99,14 +102,16 @@ function _homepage_elastic_search_output(){
 	if(!empty($_SESSION['homepage_search_output'])){
 		$record_count = count($_SESSION['homepage_search_output']);
 		$title = '<h3><em>'.$record_count.'</em> records were found</h3>';
-		$header['page'] = array('data'=>'page', 'field'=>'pages');
-		$header['page link'] = array('data'=>'page link', 'field'=>'page link');
+		$header['title'] = array('data'=>'title', 'field'=>'title');
+		$header['content'] = array('data'=>'content', 'field'=>'content');
 	
 
 		foreach($_SESSION['homepage_search_output'] as $value){
-			$item1 = $value['body_value'];
-			$item2 = l(t('read more'), 'node/'.$value['entity_id']);
-			$rows[] = array($item1, $item2);
+			//$item2 = l(t('read more'), 'node/'.$value['node_id']);
+			$rows[] = array(
+				'node_title' => l($value['node_title'], 'node/'.$value['node_id']),
+				'node_content' => $value['node_content'], 
+			);
 		}	
 	
 		$per_page = 10;
