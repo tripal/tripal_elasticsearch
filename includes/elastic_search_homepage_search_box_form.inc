@@ -65,11 +65,20 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 		$body_end = ']}}';
 		$body_curl_end = '}';
 		
+	
         $params['index'] = $index;
         $params['type'] = $index;
+
+		// Get the hits count. Note that $client->count does not support hightlights.
+		unset($_SESSION['websearch_count']);
+		$body_for_count = $body_curl_head.$body_head.$body_content.$body_end.','.$body_curl_end;
+		$_SESSION['websearch_count'] = $client->count($params)['count'];
+
+		// display the first 1000 records for performance.
 	    $params['body'] = $body_curl_head.$body_head.$body_content.$body_end.','.$highlight.$body_curl_end;
 		$params['size'] = 1000;
 	    $search_results = $client->search($params);	
+
 
 		foreach($search_results['hits']['hits'] as $key=>$value){
 			if(!empty($value)){
@@ -101,32 +110,30 @@ function _homepage_elastic_search_output(){
 	$output = '';
 	if(!empty($_SESSION['homepage_search_output'])){
 		$record_count = count($_SESSION['homepage_search_output']);
-		$title = '<h3><em>'.$record_count.'</em> records were found</h3>';
-		$header['title'] = array('data'=>'title', 'field'=>'title');
-		$header['content'] = array('data'=>'content', 'field'=>'content');
-	
+		$title = '<h6><span style="color:red"><em>'.$_SESSION['websearch_count'].'</em></span> records were found</h6>';
+		//$header['title'] = array('data'=>'title', 'field'=>'title');
+		//$header['content'] = array('data'=>'content', 'field'=>'content');
+		
 
 		foreach($_SESSION['homepage_search_output'] as $value){
-			//$item2 = l(t('read more'), 'node/'.$value['node_id']);
-			$rows[] = array(
-				'node_title' => l($value['node_title'], 'node/'.$value['node_id']),
-				'node_content' => $value['node_content'], 
-			);
+			
+			$row = '<h5>'.l($value['node_title'], 'node/'.$value['node_id']).'</h5>';
+			$row .= '<p>'.$value['node_content'].'</p>';
+			$rows[] = array('row' =>$row);
 		}	
-	
 		$per_page = 10;
 		$current_page = pager_default_initialize(count($rows), $per_page);
 		// split list into page sized chunks
 		$chunks = array_chunk($rows, $per_page, TRUE);
 		// show the appropriate items from the list
-		$output .= theme('table', array('header'=>$header, 'rows'=>$chunks[$current_page]));
+		$output .= theme('table', array('header'=>array(), 'rows'=>$chunks[$current_page]));
 		$output .= theme('pager', array('quantity', count($rows)));
 		$output = $title.$output;
 		
 		// unset $_SESSION['homepage_search_output']
 		//unset($_SESSION['homepage_search_output']);
 	} else {
-		$output .= '<h3>No records were found</h3>';
+		$output .= '<h6>No records were found</h6>';
 	}
 
 	return $output;
