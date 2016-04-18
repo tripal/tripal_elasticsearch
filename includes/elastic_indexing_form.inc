@@ -193,7 +193,13 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 
 	// fetch 1000 rows for a single database query
-	$k = 1000;
+	if($_SESSION['selected_table'] == 'index_website'){
+		$k = 10000;
+	}
+	else {
+		$k = 1000;
+	}
+	//$k = 1000;
 	// the number of database queries for a selected table
 	$n = intval($row_count/$k);
 	$queue = DrupalQueue::get('elastic_queue');

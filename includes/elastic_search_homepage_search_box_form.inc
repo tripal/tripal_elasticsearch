@@ -68,16 +68,17 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 	
         $params['index'] = $index;
         $params['type'] = $index;
-
-		// Get the hits count. Note that $client->count does not support hightlights.
-		unset($_SESSION['websearch_count']);
-		$body_for_count = $body_curl_head.$body_head.$body_content.$body_end.','.$body_curl_end;
-		$_SESSION['websearch_count'] = $client->count($params)['count'];
-
 		// display the first 1000 records for performance.
 	    $params['body'] = $body_curl_head.$body_head.$body_content.$body_end.','.$highlight.$body_curl_end;
-		$params['size'] = 1000;
+		$params['size'] = 100;
 	    $search_results = $client->search($params);	
+
+
+        $params_count['index'] = $index;
+        $params_count['type'] = $index;
+        // get hits count. remove 'highlight' settings.
+        $params_count['body'] = $body_curl_head.$body_head.$body_content.$body_end.$body_curl_end;
+        $_SESSION['websearch_count'] = $client->count($params_count)['count'];
 
 
 		foreach($search_results['hits']['hits'] as $key=>$value){
@@ -93,7 +94,7 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 			}
 		}
 	//}
-
+	unset($_SESSION['homepage_search_output']);
 	// if no keywords input or no records were found, search output is set to be empty
 	if(empty($form_state['values']['search_box']) or empty($homepage_search_output)){
 		$_SESSION['homepage_search_output'] = '';
@@ -109,8 +110,8 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 function _homepage_elastic_search_output(){
 	$output = '';
 	if(!empty($_SESSION['homepage_search_output'])){
-		$record_count = count($_SESSION['homepage_search_output']);
-		$title = '<h6><span style="color:red"><em>'.$_SESSION['websearch_count'].'</em></span> records were found</h6>';
+		$title = '<h6><span style="color:red"><em>'.$_SESSION['websearch_count'].'</em></span> records were found. The first ';
+		$title .= '<span style="color:red"><em>'. count($_SESSION['homepage_search_output']).'</em></span> records were displayed.</h6>';
 		//$header['title'] = array('data'=>'title', 'field'=>'title');
 		//$header['content'] = array('data'=>'content', 'field'=>'content');
 		

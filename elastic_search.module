@@ -372,13 +372,6 @@ function elasticindexing_queue_item($item){
 	$mappings = $client->indices()->getMapping();
     $indices = array_keys($mappings);
 
-/*
-		if(in_array($index, $indices)){
-			$paramsDelete['index'] = [ $index ];
-			$client->indices()->delete($paramsDelete);
-		}
-*/
-
 	if($_SESSION['selected_table'] == 'index_website'){
 		// INDEX WEBSITE
     	if(!in_array($index, $indices)){
@@ -449,7 +442,8 @@ function elasticindexing_queue_item($item){
             $node_string = $doc['title'].strip_tags($node_html);
             $body['node_content'] = $node_html;
 
-            $params['body'] = $body;
+            //$params['body'] = $body;
+			$params['body'] = $doc;
             $client->index($params);
         } // end foreach($result as $record)
     } // end if($_SESSION['selected_table'] == 'index_website')
