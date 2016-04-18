@@ -4,6 +4,7 @@
 	require_once 'api/elastic_search.api.php';
 	require_once drupal_get_path('module', 'elastic_search').'/includes/elastic_search_homepage_search_box_form.inc';
 
+
 set_time_limit(0);
 
 /**
@@ -442,10 +443,11 @@ function elasticindexing_queue_item($item){
             $body['node_id'] = $doc['nid'];
             $body['node_title'] = $doc['title'];
             $node_element = node_view($node);
+
             $node_html = drupal_render_children($node_element);
             // combine the title and content so that searching the content will also searching the title.
             $node_string = $doc['title'].strip_tags($node_html);
-            $body['node_content'] = $node_string;
+            $body['node_content'] = $node_html;
 
             $params['body'] = $body;
             $client->index($params);

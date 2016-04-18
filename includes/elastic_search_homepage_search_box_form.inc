@@ -68,7 +68,7 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
         $params['index'] = $index;
         $params['type'] = $index;
 	    $params['body'] = $body_curl_head.$body_head.$body_content.$body_end.','.$highlight.$body_curl_end;
-		$params['size'] = 10000;
+		$params['size'] = 1000;
 	    $search_results = $client->search($params);	
 
 		foreach($search_results['hits']['hits'] as $key=>$value){

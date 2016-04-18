@@ -217,3 +217,12 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 }
 
 
+/**
+$node = node_load(1098947);
+$node = node_view($node);
+$node_html = drupal_render_children($node);
+$node_string = strip_tags($node_html);
+dpm($node_string);
+**/
+
+
