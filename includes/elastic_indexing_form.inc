@@ -194,7 +194,7 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 	// fetch 1000 rows for a single database query
 	if($_SESSION['selected_table'] == 'index_website'){
-		$k = 10000;
+		$k = 100;
 	}
 	else {
 		$k = 1000;
@@ -208,7 +208,7 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 		$offset = $k*$offset;
 		$item = new stdClass();
 		if($_SESSION['selected_table'] == 'index_website'){
-			$sql = 'SELECT title, nid FROM node';
+			$sql = 'SELECT title, nid FROM node'."  LIMIT $k OFFSET $offset;";;
 		}
 		else {
 			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $_SESSION['selected_table'] ."  LIMIT $k OFFSET $offset;";
@@ -222,13 +222,12 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 }
 
-
-/**
+/*
 $node = node_load(1098947);
 $node = node_view($node);
+dpm($node);
 $node_html = drupal_render_children($node);
 $node_string = strip_tags($node_html);
 dpm($node_string);
-**/
-
+*/
 
