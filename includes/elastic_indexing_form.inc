@@ -95,7 +95,8 @@ function elastic_indexing_form($form, &$form_state){
 	if(!empty($condition)){
 		$form['indexing_table']['indexing_fields']['checking_table'] = array(
 			'#type' => 'item',
-			'#markup' => '<font color="red"><b>'.t("$options_first[$selected] has been indexed. Please select another table, otherwise you will reindex this table!"). '</b></font>',
+			'#markup' => '<font color="red"><b>'.t("$options_first[$selected] already exists in elasticsearch. 
+Please select another item to index, or DELETE this item first and then re-index it!"). '</b></font>',
 		);
 	}
 
@@ -176,9 +177,6 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 	$comma_separated_fields = implode(", ", $_SESSION['selected_fields']);
 	$_SESSION['comma_separated_fields'] = implode(", ", $_SESSION['selected_fields']);
     //====="SELECT * FROM chado.blast_hit_data ORDER BY RANDOM() LIMIT 1000;"
-    //For the purpose of testing, I randomly select only 1000 records from the selected table
-   // $sql = "SELECT $comma_separated_fields FROM " . $_SESSION['selected_table'] .";";
-
 
 
 	// get row count of the selected table
@@ -194,12 +192,12 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 	// fetch 1000 rows for a single database query
 	if($_SESSION['selected_table'] == 'index_website'){
-		$k = 100;
+		// It's better to set a small $k when the doc to be index is very large, e.g. a whole webpage.
+		$k = 10;
 	}
 	else {
 		$k = 1000;
 	}
-	//$k = 1000;
 	// the number of database queries for a selected table
 	$n = intval($row_count/$k);
 	$queue = DrupalQueue::get('elastic_queue');
@@ -222,12 +220,5 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 }
 
-/*
-$node = node_load(1098947);
-$node = node_view($node);
-dpm($node);
-$node_html = drupal_render_children($node);
-$node_string = strip_tags($node_html);
-dpm($node_string);
-*/
+
 
