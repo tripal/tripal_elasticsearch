@@ -1,8 +1,7 @@
-name = Elastic search
-description = Provide an interface for search all indexed data
+name = Elasticsearch
+description = Provide website-wide indexing and searching. Also provide interface for indexing and searching for any drupal and chado tables.  
 package = Pro Drupal Development
 core = 7.x
 files[] = elastic_search.module
 
 
-;stylesheets[all][] = css/elastic_search_interface_form.css

@@ -122,7 +122,7 @@ function _elastic_search_interface_form(){
 function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
 
 
-
+/**
 	//------------ modify form for search_transcripts---------------------------------
 	// change labels for the form elements.
 	$form['search_transcripts']['search_transcripts_all|abbreviation']['#title'] 	= 	t('Organism');
@@ -170,6 +170,8 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 	$form['website_node_content']['field_data_body|entity_id']['#type'] = 'hidden';
 	$form['website_node_content']['search_field_data_body|entity_id']['#type'] = 'hidden';
 	//$form['website_node_content']['submit']['#value'] = t('Elasticsearch|webpages');
+
+*/
 
 }
 
@@ -335,10 +337,6 @@ function elastic_search_cron_queue_info(){
 
 function elasticindexing_queue_item($item){
 	$client = new Elasticsearch\Client();
-	//$params['index'] = 'hardwoodgenomics';
-//	$params['index'] = str_replace('chado.', '', $_SESSION['selected_table']);
-
-	
 
 	$index = str_replace('chado.', '', $_SESSION['selected_table']);
 	$sql = $item->sql;
@@ -348,7 +346,7 @@ function elasticindexing_queue_item($item){
     $indices = array_keys($mappings);
 
 	if($_SESSION['selected_table'] == 'index_website'){
-		// INDEX WEBSITE
+		// INDEX THE ENTIRE WEBSITE
     	if(!in_array($index, $indices)){
         	foreach($result as $record){
                 $doc = objectToArray($record);

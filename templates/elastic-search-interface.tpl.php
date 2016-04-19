@@ -1,20 +1,5 @@
 <?php
 /**
-	<h3>Elasticsearch: transcripts</h3>
-	<div style="padding:10px"><?php print $organism; ?></div>
-	<div style="padding:10px"><?php print $uniquename; ?></div>
-	<div style="padding:10px"><?php print $seqtype; ?></div>
-	<div style="padding:10px"><?php print $blast_hit_description; ?></div>
-	<div><?php print $search_transcripts_submit; ?></div>
-	
-	<br/>
-	<br/>
-	<h3>Elasticsearch: webpages</h3>
-	<div style="padding:10px"><?php print $search_webpages; ?></div>
-	<div><?php print $search_webpages_submit; ?></div>
-*/
-
-
 	print '<div class="elastic_search_interface_form">';
 	foreach(array_keys($elastic_search_interface) as $key){
 		if($key != 'download_table' and $key != 'download_fasta'){
@@ -46,6 +31,40 @@
 
 		print '<br/><br/>';
 	}
+*/
+?>
+
+<?php 
+	print '<div class="elastic_search_interface_form">';
+		foreach(array_keys($elastic_search_interface) as $key){ 
+			if($key != 'download_table' and $key != 'download_fasta'){
+				print $elastic_search_interface[$key]; 
+			}
+		}
+
+	print '</div>';
+?>
+
+	<div style="display:none">
+		<?php print $children; ?>
+	</div>
+
+
+	<?php if(!empty($from_nth_entry_nth)): ?>
+		<div class="results_info">
+			<?php print $from_nth_entry_nth; ?>
+			<?php print $from_nth_entry_submit; ?>
+		</div>
+
+		<p id="records-found"><span style="color:#ff0000"><?php print $search_record_count; ?></span> records were found</p>
+
+		<div class="download-table">
+			<?php print $elastic_search_interface['download_table']; ?>
+		</div>
+
+		<br/><br/>
+	<?php endif; ?>
+
 
 
 

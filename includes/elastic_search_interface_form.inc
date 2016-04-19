@@ -23,9 +23,6 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
 					'match' => 'match',
 					'fuzzy' => 'fuzzy match',
 					'match_phrase' => 'phrase match',
-					//'sort_ascending' => 'sort by ascending',
-					//'sort_descending' => 'sort by descending',
-					//'range' => 'range search',
 				),
 				'#default_value' => 'match',
 			);
@@ -199,23 +196,6 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
     $form = $variables['form'];
 
 
-/**
-    // create variables for individual elements.
-    $variables['organism'] = render($form['search_transcripts']['search_transcripts_all|abbreviation']);
-    //$variables['blast_hit_eval'] = render($form['search_transcripts']['search_transcripts_all|hit_best_eval']);
-    //$variables['blast_hit_score'] = render($form['search_transcripts']['search_transcripts_all|hit_best_score']);
-    $variables['blast_hit_description'] = render($form['search_transcripts']['search_transcripts_all|hit_description']);
-    //$variables['seqlen'] = render($form['search_transcripts']['search_transcripts_all|seqlen']);
-    $variables['seqtype'] = render($form['search_transcripts']['search_transcripts_all|type']);
-    $variables['uniquename'] = render($form['search_transcripts']['search_transcripts_all|uniquename']);
-    $variables['search_transcripts_submit'] = render($form['search_transcripts']['submit']);
-
-
-    // create variables for individual elements
-    $variables['search_webpages'] = render($form['website_node_content']['field_data_body|body_value']);
-    $variables['search_webpages_submit'] = render($form['website_node_content']['submit']);
-*/
-
 	foreach(element_children($form) as $key){
 		if(isset($form[$key]['#type'])){
 			$type = $form[$key]['#type'];
@@ -238,20 +218,11 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
     $count_arr = variable_get('search_record_count');
     $variables['search_record_count'] = $count_arr['count'];
 
-
-	// download search results file
-	//$variables['download_table'] = render($form['download_table']);
-	//$variables['download_fasta'] = render($form['download_fasta']);
-
     // be sure to print the remaining rendered form items.
     $variables['children'] = drupal_render_children($form);
 
 
 	drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css');
-	drupal_add_js(drupal_get_path('module', 'elastic_search').'/js/elastic_search.js');
-
-	// add the datepicker library:
-	//drupal_add_library('system', 'ui.datepicker');
 
 }
 
@@ -433,26 +404,19 @@ function _download_table_submit($form, &$form_state){
 
 	
 	// create a file pointer connected to the output stream
-	$destination = file_destination('public://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
+	$destination = file_destination('temporary://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
 	$output = fopen($destination, 'w');
 
     foreach($search_result['hits']['hits'] as $key=>$value){
 		fputcsv($output, $value['_source']);
     }
 
-
-	// strip off 'public://'
-	$filename = substr($destination, 9); 
+	// strip off 'temporary://'
+	$filename = substr($destination, 12); 
 	//drupal_goto(drupal_realpath($destination));
 	drupal_goto('sites/default/files/'. $filename);
 
-	//file_unmanaged_delete($destination);
-
 }
 
 
 
-/** **/
-function _download_fasta_submit($form, &$form_state){
-
-}
