@@ -150,10 +150,10 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 	//Get selected table
 	$table_list = get_table_list();
 	$selected_table_key = $form_state['values']['table_dropdown'];
-	$_SESSION['selected_table'] = $table_list[$selected_table_key];
+	$selected_table = $table_list[$selected_table_key];
 
 	// Get selected fields=============
-	$field_list = get_column_list($_SESSION['selected_table']);
+	$field_list = get_column_list($selected_table);
 	$selected_fields_keys = $form_state['values']['fields'];
 	$_SESSION['selected_fields'] = array();
 
@@ -168,8 +168,8 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 
 	// Add 'chado.' to the front of table name if it is a chado table
-	if(in_array($_SESSION['selected_table'], get_chado_table_list())){
-		$_SESSION['selected_table'] = 'chado.' . $_SESSION['selected_table'];
+	if(in_array($selected_table, get_chado_table_list())){
+		$selected_table = 'chado.' . $selected_table;
 	}
 
 	// separate the selected fields by ','.
@@ -180,20 +180,20 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
 
 	// get row count of the selected table
-	if($_SESSION['selected_table'] == 'index_website'){
+	if($selected_table == 'index_website'){
 		$sql_rowcount = "SELECT COUNT(*) FROM node;";
 	}
 	else {
-		$sql_rowcount = "SELECT COUNT(*) FROM ".$_SESSION['selected_table'].";";
+		$sql_rowcount = "SELECT COUNT(*) FROM ".$selected_table.";";
 	}
 	$row_count = db_query($sql_rowcount)->fetchAssoc();
 	$row_count = implode($row_count);
 
 
 	// fetch 1000 rows for a single database query
-	if($_SESSION['selected_table'] == 'index_website'){
+	if($selected_table == 'index_website'){
 		// It's better to set a small $k when the doc to be index is very large, e.g. a whole webpage.
-		$k = 10;
+		$k = 100;
 	}
 	else {
 		$k = 1000;
@@ -205,13 +205,15 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 	foreach($offsets as $offset){
 		$offset = $k*$offset;
 		$item = new stdClass();
-		if($_SESSION['selected_table'] == 'index_website'){
+		if($selected_table == 'index_website'){
 			$sql = 'SELECT title, nid FROM node'."  LIMIT $k OFFSET $offset;";;
 		}
 		else {
-			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $_SESSION['selected_table'] ."  LIMIT $k OFFSET $offset;";
+			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $selected_table ."  LIMIT $k OFFSET $offset;";
 		}
 		$item->sql = $sql;
+		// also store selected table
+		$item->selected_table = $selected_table;
 		$queue->createItem($item);	
 	}
 

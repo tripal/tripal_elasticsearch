@@ -264,14 +264,16 @@ function elastic_search_cron_queue_info(){
 function elasticindexing_queue_item($item){
 	$client = new Elasticsearch\Client();
 
-	$index = str_replace('chado.', '', $_SESSION['selected_table']);
+	$selected_table = $item->selected_table;
+
+	$index = str_replace('chado.', '', $selected_table);
 	$sql = $item->sql;
 	$result = db_query($sql);
 
 	$mappings = $client->indices()->getMapping();
     $indices = array_keys($mappings);
 
-	if($_SESSION['selected_table'] == 'index_website'){
+	if($selected_table == 'index_website'){
 		// INDEX THE ENTIRE WEBSITE
     	if(!in_array($index, $indices)){
         	foreach($result as $record){
@@ -327,7 +329,7 @@ function elasticindexing_queue_item($item){
             $doc = objectToArray($record);
             $params = array();
             $params['index'] = $index;
-            $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
+            $params['type'] = str_replace('chado.', '', $selected_table);
 
             $body['node_id'] = $doc['nid'];
             $body['node_title'] = $doc['title'];
@@ -344,7 +346,10 @@ function elasticindexing_queue_item($item){
             $client->index($params);
 
         } // end foreach($result as $record)
-    } // end if($_SESSION['selected_table'] == 'index_website')
+
+	watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. time());
+
+    } // end if($selected_table == 'index_website')
     else {  // index a selected table
         if(!in_array($index, $indices)){
             foreach($result as $record){
@@ -402,19 +407,16 @@ function elasticindexing_queue_item($item){
 
             $params = array();
             $params['index'] = $index;
-            $params['type'] = str_replace('chado.', '', $_SESSION['selected_table']);
+            $params['type'] = str_replace('chado.', '', $selected_table);
 			$params['body'] = $doc;
 
             $client->index($params);
         } 
+
+	watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. time());
+
 	}
 
 }
 
-
-
-/** hook_cron() implementation **/
-function elastic_search_cron(){
-	drupal_flush_all_caches();
-}
 
