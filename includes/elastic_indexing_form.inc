@@ -95,7 +95,7 @@ function elastic_indexing_form($form, &$form_state){
 	if(!empty($condition)){
 		$form['indexing_table']['indexing_fields']['checking_table'] = array(
 			'#type' => 'item',
-			'#markup' => '<font color="red"><b>'.t("$options_first[$selected] already exists in elasticsearch. 
+			'#markup' => '<font color="red"><b>'.t("$options_first[$selected] already exists in elasticsearch.<br /> 
 Please select another item to index, or DELETE this item first and then re-index it!"). '</b></font>',
 		);
 	}

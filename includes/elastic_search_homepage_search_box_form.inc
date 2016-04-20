@@ -59,6 +59,8 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
     	// with the input form data
     	$body_curl_head = '{';
     	$body_head =  '"query" : {"bool" : {"must" : [';
+		$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
+		$keyword = str_replace($elastic_special_chars, '', $keyword);
 		$keyword = trim($keyword);
 		$body_content = _build_elastic_query($searchMethod, $field, $keyword);
 		$highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';

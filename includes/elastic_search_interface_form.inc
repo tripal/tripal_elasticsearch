@@ -111,7 +111,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
     $body_end = ']}}';
 	$body_curl_end = '}';
 
-
+	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
 	$sort_query_element = array();
 	$none_sort_query_element = array();
 	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
@@ -128,10 +128,12 @@ function elastic_search_interface_form_submit($form, &$form_state){
 		}
 		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
             // build query for sort query
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
 			$keyword = trim($keyword);	
             $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
         } elseif(!empty($keyword)){
 			// match and fuzzy query are at the same level
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
 			$keyword = trim($keyword);
 			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
 		}	
@@ -261,6 +263,8 @@ function _from_nth_entry_submit($form, &$form_state){
     $body_end = ']}}';
 	$body_curl_end = '}';
 
+
+	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
     $sort_query_element = array();
     $none_sort_query_element = array();
 	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
@@ -277,10 +281,12 @@ function _from_nth_entry_submit($form, &$form_state){
 		}
 		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
             // build query for sort query
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
 			$keyword = trim($keyword);
             $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
         } elseif(!empty($keyword)){
 			// match and fuzzy query are at the same level
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
 			$keyword = trim($keyword);
 			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
 		}	
@@ -356,6 +362,8 @@ function _download_table_submit($form, &$form_state){
     $body_end = ']}}';
 	$body_curl_end = '}';
 
+
+	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
     $sort_query_element = array();
     $none_sort_query_element = array();
 	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
@@ -372,10 +380,12 @@ function _download_table_submit($form, &$form_state){
 		}
 		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
             // build query for sort query
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
 			$keyword = trim($keyword);
             $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
         } elseif(!empty($keyword)){
 			// match and fuzzy query are at the same level
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
 			$keyword = trim($keyword);
 			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
 		}	

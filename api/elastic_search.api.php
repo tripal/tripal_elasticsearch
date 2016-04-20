@@ -42,16 +42,17 @@ function get_primary_key($table_name){
 							AND    i.indisprimary;';
 
 		$primary_key = db_query($primary_key_sql)->fetchAssoc();
-	}else{
+	}
+	else{
 		$table = $table_name;
-			$primary_key_sql = 'SELECT a.attname
-								FROM   pg_index i
-								JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                     						AND a.attnum = ANY(i.indkey)
-								WHERE  i.indrelid = \''.$table.'\'::regclass
-								AND    i.indisprimary;';
+		$primary_key_sql = 'SELECT a.attname
+							FROM   pg_index i
+							JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                     		AND a.attnum = ANY(i.indkey)
+							WHERE  i.indrelid = \''.$table.'\'::regclass
+							AND    i.indisprimary;';
 
-			$primary_key = db_query($primary_key_sql)->fetchAssoc();
+		$primary_key = db_query($primary_key_sql)->fetchAssoc();
 	}
 
 
@@ -184,7 +185,7 @@ function _build_elastic_query($searchMethod, $field, $keyword){
             $final_query_string = str_replace($search, $replace, $query_string);
             break;
         case 'fuzzy':
-            $query_string = ' {"match":{"_field_": {"query":"_keyword_", "fuzziness":"AUTO" }}} ';
+            $query_string = ' {"match":{"_field_": {"query":"_keyword_", "fuzziness":"AUTO", "operator":"AND" }}} ';
             $search = array("_field_", "_keyword_");
             $replace = array($field, $keyword);
             $final_query_string = str_replace($search, $replace, $query_string);
@@ -213,4 +214,7 @@ function _build_elastic_query($searchMethod, $field, $keyword){
 
     return $final_query_string;
 }
+
+
+
 
