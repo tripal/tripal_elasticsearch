@@ -412,3 +412,9 @@ function elasticindexing_queue_item($item){
 }
 
 
+
+/** hook_cron() implementation **/
+function elastic_search_cron(){
+	drupal_flush_all_caches();
+}
+
