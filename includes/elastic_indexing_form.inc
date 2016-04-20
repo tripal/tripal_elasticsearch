@@ -215,7 +215,6 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 		$queue->createItem($item);	
 	}
 
-
 	$form['rebuild'] = TRUE;
 
 }
