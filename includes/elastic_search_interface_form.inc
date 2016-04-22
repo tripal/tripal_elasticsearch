@@ -3,38 +3,50 @@
 
 /** elastic_search_interface form handler **/
 function elastic_search_interface_form($form, &$form_state, $elastic_search_interface){
-	//foreach($_SESSION['elastic_search_interface'] as $key => $value){
-	foreach($elastic_search_interface as $key => $value){
-		$form[$key] = array(
-			'#type' => 'fieldset',
-			'#title' => $key,
-			'#tree' => TRUE,
-		);
-		foreach(element_children($value) as $form_field){
-			$form[$key][$form_field] = array(
-				'#type' => 'textfield',
-				'#title' => $form_field,
-				'#prefix' => '<div class="elastic-search-form-item">',
-				'#suffix' => '</div>',
+
+    // Build search blocks
+    $search_block_elements = db_select('elastic_search', 'e')
+                                ->fields('e')                   
+                                ->execute();                    
+    foreach($search_block_elements as $record){
+        // Build search_block_name field only once
+        if(empty($form[$record->search_block_name]['#title'])){
+            $form[$record->search_block_name] = array(
+                '#type' => 'fieldset',
+                '#title' => $record->search_block_name,
+				'#tree' => TRUE,
+            );          
+
+			$form[$record->search_block_name]['submit'] = array(
+				'#type' => 'submit',
+				'#value' => 'Elasticsearch|'.$record->search_block_name,
+				'#weight' => '3',
 			);
-			$form[$key]['search_'.$form_field] = array(
-				'#type' => 'select',
-				'#options' => array(
-					'match' => 'match',
-					'fuzzy' => 'fuzzy match',
-					'match_phrase' => 'phrase match',
-				),
-				'#default_value' => 'match',
+        }       
+        // Add fields to the fieldset
+		if(empty($form[$record->table_field]['#title'])){
+			$form[$record->search_block_name][$record->table_field] = array(
+				'#type' => 'fieldset',
 			);
 		}
-		
+        $form[$record->search_block_name][$record->table_field]['field'] = array(
+            '#type' => 'textfield',
+            '#title' => $record->table_field,
+			'#title_display' => 'after',
+			'#size' => '40',
+        );      
+        $form[$record->search_block_name][$record->table_field]['search'] = array(
+            '#type' => 'select',
+            '#options' => array(
+                'match' => 'match',
+                'fuzzy' => 'fuzzy match',
+                'match_phrase' => 'phrase match',
+            ),
+            '#default_value' => 'fuzzy',
+        );
 
-		$form[$key]['submit'] = array(
-			'#type' => 'submit',
-			'#value' => 'Elasticsearch|'.$key,
-			//'#submit' => array('elastic_search_interface_form_submit'),
-		);
-	}
+    }   
+
 
 
     $form['from_nth_entry']['nth'] = array(
@@ -87,6 +99,100 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
  *elastic_search_interface_form submit callback
  */
 function elastic_search_interface_form_submit($form, &$form_state){
+	$search_block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
+
+	//--------------------run elastic search----------------------------------
+    // Build query statement, just need to replace some of this query string
+    // with the input form data
+	$body_curl_head = '{';
+    $body_head =  '"query" : {"bool" : {"must" : [';
+    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
+    $body_end = ']}}';
+	$body_curl_end = '}';
+
+	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', 
+								'<', '!', '(', ')', '{', '}', '[', 
+								']', '^', '"', '~', '*', '?', ':', '\\', '/');
+
+
+	$elasticsearch_query_elements = array();
+	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+		if($field_name != 'submit'){
+			$table = explode('|', $field_name)[0];
+			$field = explode('1', $field_name)[1];
+			$keyword = $search_data['field'];
+			$searchMethod = $search_data['search'];
+
+			if(!empty($keyword)){
+				$keyword = str_replace($elastic_special_chars, '', $keyword);
+				$keyword = trim($keyword);
+				$elasticsearch_query_elements[$field] = _build_elastic_query($searchMethod, $field, $keyword);
+			}
+		} 
+	}
+
+    $elasticsearch_query_string = implode(',', $elasticsearch_query_elements);
+    $body = $body_curl_head . $body_head . $elasticsearch_query_string.$body_end.$body_curl_end;
+
+
+	// Implement search and obtain search results
+    $client = new Elasticsearch\Client();
+	$params = array();
+    $params['index'] = $table;
+    $params['type'] = $table;
+    $params['body'] = $body;
+    $params['size'] = 1000;
+    $search_result = $client->search($params);
+
+
+    // Use the same searching parameters to obtain hits count
+    $client = new Elasticsearch\Client();
+    $params = array();
+    $params['index'] = $table;
+    $params['type'] = $table;
+    $params['body'] = $body;
+    $search_hits_count = $client->count($params)['count'];
+
+
+dpm($search_result['hits']['hits']);
+dpm($search_hits_count);
+
+
+/*
+    foreach($search_result['hits']['hits'] as $key=>$value){
+        foreach(array_keys($field_searchMethod_pairs) as $field){
+            $elastic_output[$elasticsearch_query_type][$key][$field] = $value['_source'][$field];
+        }
+    }
+
+
+    // unset search_output_table session if it have already existed.
+    if(!empty($_SESSION['search_output_table'])){
+        unset($_SESSION['search_output_table']);
+    }
+    // display results only when elastic search results is not empty.
+    if(!empty($value['_source'])){ //count how many tables involved.
+        if(count($elastic_output, 0) == 1){
+            $_SESSION['search_output_table'] = $elastic_output[$elasticsearch_query_type];
+        }
+    }
+
+*/
+
+
+/*
+
+
+
+        //------obtain the hits count--------
+        $params_count = array();
+        $params_count['index'] = $elasticsearch_query_type;
+        $params_count['type'] = $elasticsearch_query_type;
+        // $client->count does not support sort query. So sort query has to be removed.
+        $body_count = $body_curl_head . $body_head . $none_sort_query_element.$body_end. $body_curl_end;
+        $params_count['body'] = $body_count;
+
+
 	// store $form_state['values'] for later use in _from_nth_entry_submit() callback
 	variable_set('form_state_values', $form_state['values']);
 
@@ -102,14 +208,16 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	
 
 
-	//--------------------run elastic search----------------------------------
+
+    //--------------------run elastic search----------------------------------
     // Build query statement, just need to replace some of this query string
     // with the input form data
-	$body_curl_head = '{';
+    $body_curl_head = '{';
     $body_head =  '"query" : {"bool" : {"must" : [';
     $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
     $body_end = ']}}';
-	$body_curl_end = '}';
+    $body_curl_end = '}';
+
 
 	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
 	$sort_query_element = array();
@@ -186,6 +294,8 @@ function elastic_search_interface_form_submit($form, &$form_state){
 			$_SESSION['search_output_table'] = $elastic_output[$elasticsearch_query_type];
 		}
 	}
+*/
+
 
 }
 
