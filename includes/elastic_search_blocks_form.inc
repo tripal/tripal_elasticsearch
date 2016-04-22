@@ -2,35 +2,50 @@
 
 /** elastic_search_blocks form handler **/
 function elastic_search_blocks_form($form, &$form_state){
-	foreach($_SESSION['elastic_search_blocks'] as $key => $value){
-	//foreach($elastic_search_blocks as $key => $value){
-		$form[$key] = $value;
-		$form[$key]['#title'] = $key;
-		$form[$key]['#tree'] = TRUE;
+
+	// Build search blocks
+	$search_block_elements = db_select('elastic_search', 'e')
+								->fields('e')
+								->execute();
+	foreach($search_block_elements as $record){
+		// Build search_block_name field only once
+		if(empty($form[$record->search_block_name]['#title'])){
+			$form[$record->search_block_name] = array(
+				'#type' => 'fieldset',
+				'#title' => $record->search_block_name,
+			);
+		}
+		// Add fields to the fieldset
+		$form[$record->search_block_name][$record->table_field] = array(
+			'#type' => 'textfield',
+			'#title' => $record->table_field,
+		);
 	}
+									
 
-	$form['delete_blocks'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Delete search blocks'),
-		'#tree' => TRUE,
-	);
-
+	// Options to delete blocks
+	$res = db_select('elastic_search', 'e')
+				->fields('e')
+				->execute()
+				->fetchAllAssoc('search_block_name');
 	$options = array();
-	foreach(array_keys($_SESSION['elastic_search_blocks']) as $block){
-		$options[$block] = $block;
+	foreach(array_keys($res) as $search_block_name){
+		$options[$search_block_name] = $search_block_name;
 	}
-	$form['delete_blocks']['blocks'] = array(
+	// create form for deleting search blocks
+	$form['delete_search_blocks'] = array(
 		'#type' => 'checkboxes',
-		'#title' => t('Select search blocks to delete'),
-		'#options' => $options,
+		'#title' => t('Delete search blocks'),
+		'#options' => $options
 	);
-	$form['delete_blocks']['submit'] = array(
+
+	$form['submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Delete'),
+		'#value' => t('Delete blocks'),
 		'#submit' => array('_delete_elastic_block'),
 	);
 
-
+	
 	return $form;
 }
 
@@ -39,20 +54,16 @@ function elastic_search_blocks_form($form, &$form_state){
  *elastic_search_blocks_form submit callback
 */
 function _delete_elastic_block($form, &$form_state){
-
-	$elastic_search_interface = array();
-	foreach($form_state['values']['delete_blocks']['blocks'] as $key=>$block){
-		if(!empty($block)){
-			unset($_SESSION['elastic_search_blocks'][$block]);
-		} else {
-			$elastic_search_interface[$key] = $form[$key];
+	$delete_blocks = $form_state['values']['delete_search_blocks'];
+	foreach($delete_blocks as $search_block_name){
+		if(!empty($search_block_name)){
+			db_delete('elastic_search')
+				->condition('search_block_name', $search_block_name)
+				->execute();
 		}
 	}
-	variable_set('elastic_search_interface', $elastic_search_interface);
-
 	
 	$form_state['rebuild'] = TRUE;
-
 }
 
 

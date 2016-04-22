@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Input, update, and delete data for build search blocks.
+ */
+
+
+/**
+ * Implements hook_schema().
+ */
+function elastic_search_schema(){
+	$schema['elastic_search'] = array(
+		'description' => 'The table for store data for building search blocks',
+		'fields' => array(
+			'search_block_name' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
+			'table_name' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
+			'table_field' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
+		),
+	);
+
+	return $schema;
+}
+  
