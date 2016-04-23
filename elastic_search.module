@@ -98,9 +98,7 @@ function _elastic_search_block_build(){
 
 /** page callback to return elastic_search_blocks form. **/
 function _elastic_search_blocks(){
-	//$elastic_search_blocks = variable_get('elastic_search_blocks');
-	//return drupal_get_form('elastic_search_blocks_form', $elastic_search_blocks);
-	return drupal_get_form('elastic_search_blocks_form', $_SESSION['elastic_search_blocks']);
+	return drupal_get_form('elastic_search_blocks_form');
 }
 
 
@@ -114,7 +112,6 @@ function _elastic_search_interface_form(){
 			$output .= '<h6><span style="color:red">'.$_SESSION['search_hits_count'].'</span> records were found.</h6>';
 			$output .= '<hr />';
 		}
-//		$output .= $_SESSION['search_output_arr'];
 	}
 	return $output;
 }
@@ -129,9 +126,7 @@ function elastic_search_block_info(){
 	$blocks['elastic_homepage_search_box'] = array(
 		'info' => t('An elastic search box on the home page'),
         'status' => TRUE,
-        'region' => 'content',
-        //'visibility' => BLOCK_VISIBILITY_LISTED,
-        //'pages' => '',
+        'region' => 'header',
         'cache' => DRUPAL_NO_CACHE,
 		'weight' => 1,
 	);
@@ -159,7 +154,10 @@ function elastic_search_block_view($delta = ''){
     switch($delta){
 		case 'elastic_search_tables':
 			$block['subject'] = '';
-			$block['content'] = _elastic_search_results($_SESSION['search_output_arr']);
+			if(!empty($_SESSION['search_output_arr']))
+				$block['content'] = _elastic_search_results($_SESSION['search_output_arr']);
+			else
+				$block['content'] = '';
 		break;
 
 		case 'elastic_homepage_search_box':
@@ -173,6 +171,10 @@ function elastic_search_block_view($delta = ''){
 }
 
 
+
+/**
+ * take a search_output array and turn a themed table
+ */
 function _elastic_search_results($search_output_arr){
 
 	$output = '';
@@ -237,13 +239,11 @@ function _elastic_search_results($search_output_arr){
 // set custom tpl for the elastic_search_interface_form //
 function elastic_search_theme(){
 	return array(
-/*
 		'elastic_search_interface_form' => array(
 			'render element' => 'form',
 			'path' => drupal_get_path('module', 'elastic_search') . '/templates',
 			'template' => 'elastic-search-interface',
 		),
-*/
 		'elastic_search_homepage_search_box_form' => array(
 			'render element' => 'form',
 			'path' => drupal_get_path('module', 'elastic_search') . '/templates',
@@ -268,7 +268,9 @@ function elastic_search_cron_queue_info(){
 }
 
 
-
+/**
+ * queue worker function
+ */
 function elasticindexing_queue_item($item){
 	$client = new Elasticsearch\Client();
 
@@ -355,7 +357,7 @@ function elasticindexing_queue_item($item){
 
         } // end foreach($result as $record)
 
-	watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. time());
+	watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
@@ -421,7 +423,7 @@ function elasticindexing_queue_item($item){
             $client->index($params);
         } 
 
-	watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. time());
+	watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
 	}
 
