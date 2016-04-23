@@ -2,7 +2,7 @@
 
 
 /** elastic_search_interface form handler **/
-function elastic_search_interface_form($form, &$form_state, $elastic_search_interface){
+function elastic_search_interface_form($form, &$form_state){
 
     // Build search blocks
     $search_block_elements = db_select('elastic_search', 'e')
@@ -53,12 +53,6 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
         '#type' => 'textfield',
         '#title' => t('Display 1,000 records from nth entry:'),
         '#size' => 30,
-        '#prefix' => '<div class="from-nth-entry">',
-        '#suffix' => '</div>',
-		'#ajax' => array(
-			'callback' => '_from_nth_entry_ajax',
-			'wrapper' => 'from_nth_entry',
-		),
         '#attributes' => array(
             'placeholder' => t('Please enter an offset number')
         ),
@@ -79,15 +73,8 @@ function elastic_search_interface_form($form, &$form_state, $elastic_search_inte
         '#value' => 'Download csv',
 		'#submit' => array('_download_table_submit'), 
     );
-	$form['download_fasta'] = array(
-		'#type' => 'submit',
-		'#value' => 'Download fasta',
-		'#submit' => array('_download_fasta_submit'),
-	);
-
 
 	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
-
 
 	return $form;
 }
@@ -119,7 +106,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
 		if($field_name != 'submit'){
 			$table = explode('|', $field_name)[0];
-			$field = explode('1', $field_name)[1];
+			$field = explode('|', $field_name)[1];
 			$keyword = $search_data['field'];
 			$searchMethod = $search_data['search'];
 
@@ -154,149 +141,24 @@ function elastic_search_interface_form_submit($form, &$form_state){
     $search_hits_count = $client->count($params)['count'];
 
 
-dpm($search_result['hits']['hits']);
-dpm($search_hits_count);
 
-
-/*
+	$search_output_arr = array();
     foreach($search_result['hits']['hits'] as $key=>$value){
-        foreach(array_keys($field_searchMethod_pairs) as $field){
-            $elastic_output[$elasticsearch_query_type][$key][$field] = $value['_source'][$field];
-        }
+    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+        	if($field_name != 'submit'){
+            	$field = explode('|', $field_name)[1];
+				$search_output_arr[$key][$field] = $value['_source'][$field];
+        	}
+    	}
     }
+	//---------end of running elastic search ---------------------
 
-
-    // unset search_output_table session if it have already existed.
-    if(!empty($_SESSION['search_output_table'])){
-        unset($_SESSION['search_output_table']);
-    }
-    // display results only when elastic search results is not empty.
-    if(!empty($value['_source'])){ //count how many tables involved.
-        if(count($elastic_output, 0) == 1){
-            $_SESSION['search_output_table'] = $elastic_output[$elasticsearch_query_type];
-        }
-    }
-
-*/
-
-
-/*
-
-
-
-        //------obtain the hits count--------
-        $params_count = array();
-        $params_count['index'] = $elasticsearch_query_type;
-        $params_count['type'] = $elasticsearch_query_type;
-        // $client->count does not support sort query. So sort query has to be removed.
-        $body_count = $body_curl_head . $body_head . $none_sort_query_element.$body_end. $body_curl_end;
-        $params_count['body'] = $body_count;
-
-
-	// store $form_state['values'] for later use in _from_nth_entry_submit() callback
-	variable_set('form_state_values', $form_state['values']);
-
-	// The name of search block being submitted
-	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
-	// get field and corresponding input keywords
-	foreach($form_state['values'][$block_name] as $field=>$keyword){
-		if($field != 'submit'){
-			$table_field_array = explode('|', $field);
-			$field_searchMethod_pairs[$table_field_array[1]][$table_field_array[0]] = $keyword;
-		}
-	}
-	
-
-
-
-    //--------------------run elastic search----------------------------------
-    // Build query statement, just need to replace some of this query string
-    // with the input form data
-    $body_curl_head = '{';
-    $body_head =  '"query" : {"bool" : {"must" : [';
-    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
-    $body_end = ']}}';
-    $body_curl_end = '}';
-
-
-	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
-	$sort_query_element = array();
-	$none_sort_query_element = array();
-	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
-		$key1 = array_keys($searchMethod_keyword)[0];
-		$key2 = array_keys($searchMethod_keyword)[1];
-		if(strlen($key1 < strlen($key2))){
-			$keyword = $searchMethod_keyword[$key1];
-			$searchMethod = $searchMethod_keyword[$key2];
-			$elasticsearch_query_type = $key1;
-		} else {
-			$keyword = $searchMethod_keyword[$key2];
-			$searchMethod = $searchMethod_keyword[$key1];
-			$elasticsearch_query_type = $key2;
-		}
-		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
-            // build query for sort query
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
-			$keyword = trim($keyword);	
-            $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
-        } elseif(!empty($keyword)){
-			// match and fuzzy query are at the same level
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
-			$keyword = trim($keyword);
-			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
-		}	
-	}
-
-	$sort_query_string = implode(',', $sort_query_element);
-	$sort_query_head = ' "sort":[';
-	$sort_query_end = ']';
-	$sort_query = $sort_query_head . $sort_query_string . $sort_query_end;	
-
-	$none_sort_query_element = implode(',', $none_sort_query_element);
-	
-
-	$body = $body_curl_head . $body_head . $none_sort_query_element.$body_end.',' . $sort_query . $body_curl_end;
-
-
-	$client = new Elasticsearch\Client();
-	$params['index'] = $elasticsearch_query_type;
-	$params['type'] = $elasticsearch_query_type;
-	$params['body'] = $body;
-	$params['size'] = 1000;
-    $search_result = $client->search($params);
-
-
-		//------obtain the hits count--------
-		unset($params_count);
-		$params_count['index'] = $elasticsearch_query_type;
-		$params_count['type'] = $elasticsearch_query_type;
-		// $client->count does not support sort query. So sort query has to be removed.
-		$body_count = $body_curl_head . $body_head . $none_sort_query_element.$body_end. $body_curl_end;
-		$params_count['body'] = $body_count;
-		variable_set('search_record_count', $client->count($params_count));
-
-
-
-    foreach($search_result['hits']['hits'] as $key=>$value){
-        foreach(array_keys($field_searchMethod_pairs) as $field){
-        	$elastic_output[$elasticsearch_query_type][$key][$field] = $value['_source'][$field];
-        }
-    }
-
-
-	// unset search_output_table session if it have already existed.
-	if(!empty($_SESSION['search_output_table'])){
-		unset($_SESSION['search_output_table']);
-	}
-	// display results only when elastic search results is not empty.
-	if(!empty($value['_source'])){ //count how many tables involved.
-		if(count($elastic_output, 0) == 1){
-			$_SESSION['search_output_table'] = $elastic_output[$elasticsearch_query_type];
-		}
-	}
-*/
-
-
+	// store search results in a cookie
+	setcookie('search_output_arr', _elastic_search_results($search_output_arr));
+	// store search parameters in a cookie
+	setcookie('search_params', implode('|', $params));
+	// store $search_block_name in a cookie
+	setcookie('search_block_name', $search_block_name);
 }
 
 
@@ -339,109 +201,38 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 }
 
 
-
-
-/** _from_nth_entry form element ajax callback **/
-function _from_nth_entry_ajax($form, &$form_state){
-	variable_set('nth_entry', $form_state['values']['nth']);
-	return $form['from_nth_entry']['nth'];
-}
-
-
 /** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){
-	$form_state['values'] = variable_get('form_state_values');
 
-	// The name of search block being submitted
-	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
-	// get field and corresponding input keywords
-	foreach($form_state['values'][$block_name] as $field=>$keyword){
-		if($field != 'submit'){
-			$table_field_array = explode('|', $field);
-			$field_searchMethod_pairs[$table_field_array[1]][$table_field_array[0]] = $keyword;
-		}
-	}
+	if(!empty($_COOKIE['search_params'])){
+		$search_params = explode('|', $_COOKIE['search_params']);
+		$params['index'] = $search_params[0];
+		$params['type'] = $search_params[1];
+		$params['body'] = $search_params[2];
 	
-
-
-	//--------------------run elastic search----------------------------------
-    // Build query statement, just need to replace some of this query string
-    // with the input form data
-	$body_curl_head = '{';
-    $body_head =  '"query" : {"bool" : {"must" : [';
-    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
-    $body_end = ']}}';
-	$body_curl_end = '}';
-
-
-	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
-    $sort_query_element = array();
-    $none_sort_query_element = array();
-	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
-		$key1 = array_keys($searchMethod_keyword)[0];
-		$key2 = array_keys($searchMethod_keyword)[1];
-		if(strlen($key1 < strlen($key2))){
-			$keyword = $searchMethod_keyword[$key1];
-			$searchMethod = $searchMethod_keyword[$key2];
-			$elasticsearch_query_type = $key1;
-		} else {
-			$keyword = $searchMethod_keyword[$key2];
-			$searchMethod = $searchMethod_keyword[$key1];
-			$elasticsearch_query_type = $key2;
-		}
-		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
-            // build query for sort query
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
-			$keyword = trim($keyword);
-            $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
-        } elseif(!empty($keyword)){
-			// match and fuzzy query are at the same level
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
-			$keyword = trim($keyword);
-			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
-		}	
-	}
-
-	$sort_query_string = implode(',', $sort_query_element);
-	$sort_query_head = ' "sort":[';
-	$sort_query_end = ']';
-	$sort_query = $sort_query_head . $sort_query_string . $sort_query_end;	
-
-	$none_sort_query_element = implode(',', $none_sort_query_element);
+		$client = new Elasticsearch\Client();
+		$params['from'] = $form_state['values']['nth']; 
+	    $params['size'] = 1000;
+		dpm($params);
 	
-
-	$body = $body_curl_head . $body_head . $none_sort_query_element.$body_end.',' . $sort_query . $body_curl_end;
-
-
-	$client = new Elasticsearch\Client();
-	$params['index'] = $elasticsearch_query_type;
-	$params['type'] = $elasticsearch_query_type;
-	$params['body'] = $body;
-	$nth = intval(variable_get('nth_entry'));
-	$params['from'] = $nth; 
-	$params['size'] = 1000;
-    $search_result = $client->search($params);
-
-
-    foreach($search_result['hits']['hits'] as $key=>$value){
-        foreach(array_keys($field_searchMethod_pairs) as $field){
-        	$elastic_output[$elasticsearch_query_type][$key][$field] = $value['_source'][$field];
-        }
-    }
-
-
-	// unset search_output_table session if it have already existed.
-	if(!empty($_SESSION['search_output_table'])){
-		unset($_SESSION['search_output_table']);
+	    $search_result = $client->search($params);
+	
+		$search_block_name = $_COOKIE['search_block_name'];
+		$search_output_arr = array();
+	    foreach($search_result['hits']['hits'] as $key=>$value){
+	    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+	        	if($field_name != 'submit'){
+	            	$field = explode('|', $field_name)[1];
+					$search_output_arr[$key][$field] = $value['_source'][$field];
+	        	}
+	    	}
+	    }
+		//---------end of running elastic search ---------------------
+	
+		// store search results in a cookie
+		setcookie('search_output_arr', _elastic_search_results($search_output_arr));
+	
 	}
-	// display results only when elastic search results is not empty.
-	if(!empty($value['_source'])){ //count how many tables involved.
-		if(count($elastic_output, 0) == 1){
-			$_SESSION['search_output_table'] = $elastic_output[$elasticsearch_query_type];
-		}
-	}
-
-
 }
 
 
@@ -449,92 +240,43 @@ function _from_nth_entry_submit($form, &$form_state){
 /** download_table form submit **/
 function _download_table_submit($form, &$form_state){
 
-	$form_state['values'] = variable_get('form_state_values');
+	if(!empty($_COOKIE['search_params'])){
+		$search_params = explode('|', $_COOKIE['search_params']);
+		$params['index'] = $search_params[0];
+		$params['type'] = $search_params[1];
+		$params['body'] = $search_params[2];
+	
+		$client = new Elasticsearch\Client();
+	    $params['size'] = 10000000;
+	
+	    $search_result = $client->search($params);
+	
+		$search_block_name = $_COOKIE['search_block_name'];
+		$search_output_arr = array();
+	    foreach($search_result['hits']['hits'] as $key=>$value){
+	    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+	        	if($field_name != 'submit'){
+	            	$field = explode('|', $field_name)[1];
+					$search_output_arr[$key][$field] = $value['_source'][$field];
+	        	}
+	    	}
+	    }
+		//---------end of running elastic search ---------------------
 
-	// The name of search block being submitted
-	$block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
-	// get field and corresponding input keywords
-	foreach($form_state['values'][$block_name] as $field=>$keyword){
-		if($field != 'submit'){
-			$table_field_array = explode('|', $field);
-			$field_searchMethod_pairs[$table_field_array[1]][$table_field_array[0]] = $keyword;
-		}
+	
+		// create a file pointer connected to the output stream
+		$destination = file_destination('temporary://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
+		$output = fopen($destination, 'w');
+
+    	foreach($search_output_arr as $value){
+			fputcsv($output, $value);
+    	}
+
+		// strip off 'temporary://'
+		$filename = substr($destination, 12); 
+		//drupal_goto(drupal_realpath($destination));
+		drupal_goto('sites/default/files/tmp/'. $filename);
 	}
-	
-
-
-	//--------------------run elastic search----------------------------------
-    // Build query statement, just need to replace some of this query string
-    // with the input form data
-	$body_curl_head = '{';
-    $body_head =  '"query" : {"bool" : {"must" : [';
-    $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
-    $body_end = ']}}';
-	$body_curl_end = '}';
-
-
-	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
-    $sort_query_element = array();
-    $none_sort_query_element = array();
-	foreach($field_searchMethod_pairs as $field=>$searchMethod_keyword){
-		$key1 = array_keys($searchMethod_keyword)[0];
-		$key2 = array_keys($searchMethod_keyword)[1];
-		if(strlen($key1 < strlen($key2))){
-			$keyword = $searchMethod_keyword[$key1];
-			$searchMethod = $searchMethod_keyword[$key2];
-			$elasticsearch_query_type = $key1;
-		} else {
-			$keyword = $searchMethod_keyword[$key2];
-			$searchMethod = $searchMethod_keyword[$key1];
-			$elasticsearch_query_type = $key2;
-		}
-		if($searchMethod == 'sort_ascending' or $searchMethod == 'sort_descending') {
-            // build query for sort query
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
-			$keyword = trim($keyword);
-            $sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);
-        } elseif(!empty($keyword)){
-			// match and fuzzy query are at the same level
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
-			$keyword = trim($keyword);
-			$none_sort_query_element[$field] = _build_elastic_query($searchMethod, $field, $keyword);  
-		}	
-	}
-
-	$sort_query_string = implode(',', $sort_query_element);
-	$sort_query_head = ' "sort":[';
-	$sort_query_end = ']';
-	$sort_query = $sort_query_head . $sort_query_string . $sort_query_end;	
-
-	$none_sort_query_element = implode(',', $none_sort_query_element);
-	
-
-	$body = $body_curl_head . $body_head . $none_sort_query_element.$body_end.',' . $sort_query . $body_curl_end;
-
-
-	$client = new Elasticsearch\Client();
-	$params['index'] = $elasticsearch_query_type;
-	$params['type'] = $elasticsearch_query_type;
-	$params['body'] = $body;
-	$params['size'] = 10000000;
-    $search_result = $client->search($params);
-
-
-
-
-	
-	// create a file pointer connected to the output stream
-	$destination = file_destination('temporary://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
-	$output = fopen($destination, 'w');
-
-    foreach($search_result['hits']['hits'] as $key=>$value){
-		fputcsv($output, $value['_source']);
-    }
-
-	// strip off 'temporary://'
-	$filename = substr($destination, 12); 
-	//drupal_goto(drupal_realpath($destination));
-	drupal_goto('sites/default/files/'. $filename);
 
 }
 

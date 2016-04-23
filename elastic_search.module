@@ -106,9 +106,11 @@ function _elastic_search_blocks(){
 
 /** page callback to return elastic_search_interface_form. **/
 function _elastic_search_interface_form(){
-	$elastic_search_interface = variable_get('elastic_search_interface');
-	$output = drupal_get_form('elastic_search_interface_form', $elastic_search_interface);
+	$output = drupal_get_form('elastic_search_interface_form');
 	$output = render($output);
+	if(isset($_COOKIE['search_output_arr'])){
+		$output .= $_COOKIE['search_output_arr'];
+	}
 
 	return $output;
 }
@@ -167,13 +169,13 @@ function elastic_search_block_view($delta = ''){
 }
 
 
-function _elastic_search_results(){
+function _elastic_search_results($search_output_arr){
 
 	$output = '';
     //get the first element of an array
     //get headers with clicking sorting
-	if(!empty($_SESSION['search_output_table'])){
-	    $elements = array_chunk($_SESSION['search_output_table'], 1, 1);
+	if(!empty($search_output_arr)){
+	    $elements = array_chunk($search_output_arr, 1, 1);
 	    foreach($elements[0] as $value){
 	        foreach(array_keys($value) as $field){
 	            $header[] = array('data'=> $field, 'field'=>$field);
@@ -181,9 +183,9 @@ function _elastic_search_results(){
 	    }
 
 	    // implementation of sort by clicking
-	    $sorted_output = $_SESSION['search_output_table']; // default is unsorted
+	    $sorted_output = $search_output_arr; // default is unsorted
 	    if(isset($_GET['sort']) && isset($_GET['order'])){
-	        $sorted_output = sort_2d_array_by_value($_SESSION['search_output_table'], $_GET['order'], $_GET['sort']);
+	        $sorted_output = sort_2d_array_by_value($search_output_arr, $_GET['order'], $_GET['sort']);
 	    }
 	
 	
@@ -212,9 +214,9 @@ function _elastic_search_results(){
 
 
 		// store data for writing downloadable file
-		$_SESSION['_download_table'] = $_SESSION['search_output_table'];
-		// unset $_SESSION['search_output_table'] for not displaying the results if page is refreshed
-		//unset($_SESSION['search_output_table']);
+		$_SESSION['_download_table'] = $search_output_arr;
+		// unset $search_output_arr for not displaying the results if page is refreshed
+		//unset($search_output_arr);
 		//variable_del('search_record_count');
 	}
 
