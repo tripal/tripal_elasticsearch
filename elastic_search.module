@@ -131,11 +131,20 @@ function elastic_search_block_info(){
         'status' => TRUE,
         'region' => 'content',
         'visibility' => BLOCK_VISIBILITY_LISTED,
-        'pages' => 'elastic_search',
+        'pages' => '<front>',
         'cache' => DRUPAL_NO_CACHE,
-		'weight' => 0,
+		'weight' => 1,
 	);
 
+    $blocks['elastic_search_tables'] = array(
+        'info' => t('An elastic search box for search data in database tables'),
+        'status' => TRUE,
+        'region' => 'content',
+        'visibility' => BLOCK_VISIBILITY_LISTED,
+        'pages' => 'elastic_search',
+        'cache' => DRUPAL_NO_CACHE,
+        'weight' => 0,
+    );
 
     return $blocks;
 }
@@ -148,6 +157,10 @@ function elastic_search_block_view($delta = ''){
 
 	$block = array();
     switch($delta){
+		case 'elastic_search_tables':
+			$block['subject'] = '';
+			$block['content'] = $_SESSION['search_output_arr'];
+		break;
 
 		case 'elastic_homepage_search_box':
 			$block['subject'] = '';
