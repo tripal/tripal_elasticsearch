@@ -56,8 +56,6 @@
 			<?php print $from_nth_entry_submit; ?>
 		</div>
 
-		<p id="records-found"><span style="color:#ff0000"><?php print $search_record_count; ?></span> records were found</p>
-
 		<div class="download-table">
 			<?php print $elastic_search_interface['download_table']; ?>
 		</div>

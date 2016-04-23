@@ -47,38 +47,36 @@ function elastic_search_interface_form($form, &$form_state){
 
     }   
 
-
-
-    $form['from_nth_entry']['nth'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Display 1,000 records from nth entry:'),
-        '#size' => 30,
-        '#attributes' => array(
-            'placeholder' => t('Please enter an offset number')
-        ),
-    );
-    $form['from_nth_entry']['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Go!'),
-        '#submit' => array('_from_nth_entry_submit'),
-		'#attributes' => array(
-			'id' => array('from-nth-entry-submit'),
-		),
-    );
-
-
-	/** download_search_results_form handler **/
-    $form['download_table'] = array(
-        '#type' => 'submit',
-        '#value' => 'Download csv',
-		'#submit' => array('_download_table_submit'), 
-    );
-
+	if(isset($_SESSION['search_output_arr'])){
+	    $form['from_nth_entry']['nth'] = array(
+	        '#type' => 'textfield',
+	        '#title' => t('Display 1,000 records from nth entry:'),
+	        '#size' => 30,
+	        '#attributes' => array(
+	            'placeholder' => t('Please enter an offset number')
+	        ),
+	    );
+	    $form['from_nth_entry']['submit'] = array(
+	        '#type' => 'submit',
+	        '#value' => t('Go!'),
+	        '#submit' => array('_from_nth_entry_submit'),
+			'#attributes' => array(
+				'id' => array('from-nth-entry-submit'),
+			),
+	    );
+	
+	
+		/** download_search_results_form handler **/
+	    $form['download_table'] = array(
+	        '#type' => 'submit',
+	        '#value' => 'Download csv',
+			'#submit' => array('_download_table_submit'), 
+	    );
+	}
 	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
 
 	return $form;
 }
-
 
 
 
@@ -153,12 +151,20 @@ function elastic_search_interface_form_submit($form, &$form_state){
     }
 	//---------end of running elastic search ---------------------
 
-	// store search results in a cookie
-	setcookie('search_output_arr', _elastic_search_results($search_output_arr));
+	// Use $_SESSION to transfer data to page callback function in .module
+	$_SESSION['search_output_arr'] = _elastic_search_results($search_output_arr);
+	$_SESSION['search_params'] = $params;
+	$_SESSION['search_block_name'] = $search_block_name;
+	$_SESSION['search_hits_count'] = $search_hits_count;
+
+
+	// Use $_COOKIE to transfer data to other submit function.
 	// store search parameters in a cookie
 	setcookie('search_params', implode('|', $params));
 	// store $search_block_name in a cookie
 	setcookie('search_block_name', $search_block_name);
+	// store hits count in a cookie
+	setcookie('search_hits_count', $search_hits_count);
 }
 
 
@@ -213,7 +219,6 @@ function _from_nth_entry_submit($form, &$form_state){
 		$client = new Elasticsearch\Client();
 		$params['from'] = $form_state['values']['nth']; 
 	    $params['size'] = 1000;
-		dpm($params);
 	
 	    $search_result = $client->search($params);
 	
