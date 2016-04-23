@@ -177,6 +177,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 
 
 //** implements hook_preprocess_elastic_search_interface_form(). **//
+/*
 function elastic_search_preprocess_elastic_search_interface_form(&$variables){
     // shorten the form variable name for easier access.
     $form = $variables['form'];
@@ -211,7 +212,7 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css');
 
 }
-
+*/
 
 /** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){

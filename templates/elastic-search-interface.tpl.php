@@ -51,6 +51,7 @@
 
 
 	<?php if(!empty($from_nth_entry_nth)): ?>
+
 		<div class="results_info">
 			<?php print $from_nth_entry_nth; ?>
 			<?php print $from_nth_entry_submit; ?>

@@ -241,8 +241,8 @@ function elastic_search_theme(){
 	return array(
 		'elastic_search_interface_form' => array(
 			'render element' => 'form',
-			'path' => drupal_get_path('module', 'elastic_search') . '/templates',
-			'template' => 'elastic-search-interface',
+			//'path' => drupal_get_path('module', 'elastic_search') . '/templates',
+			//'template' => 'elastic-search-interface',
 		),
 		'elastic_search_homepage_search_box_form' => array(
 			'render element' => 'form',
@@ -251,6 +251,7 @@ function elastic_search_theme(){
 		),
 	);
 }
+
 
 
 
