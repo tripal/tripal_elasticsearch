@@ -50,8 +50,9 @@ function elastic_search_interface_form($form, &$form_state){
 	if(isset($_SESSION['search_output_arr'])){
 	    $form['from_nth_entry']['nth'] = array(
 	        '#type' => 'textfield',
-	        '#title' => t('Display 1,000 records from nth entry:'),
+	        '#title' => t('Display 1,000 records from nth entry'),
 	        '#size' => 30,
+			'#title_display' => 'after',
 	        '#attributes' => array(
 	            'placeholder' => t('Please enter an offset number')
 	        ),
