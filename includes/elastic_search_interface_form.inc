@@ -152,11 +152,16 @@ function elastic_search_interface_form_submit($form, &$form_state){
     }
 	//---------end of running elastic search ---------------------
 
+
+	$_SESSION['search_output_arr'] = $search_output_arr;
+
+	$_SESSION['search_hits_count'] = $search_hits_count;
+
+/*
 	// Use $_SESSION to transfer data to page callback function in .module
 	$_SESSION['search_output_arr'] = _elastic_search_results($search_output_arr);
 	$_SESSION['search_params'] = $params;
 	$_SESSION['search_block_name'] = $search_block_name;
-	$_SESSION['search_hits_count'] = $search_hits_count;
 
 
 	// Use $_COOKIE to transfer data to other submit function.
@@ -166,6 +171,8 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	setcookie('search_block_name', $search_block_name);
 	// store hits count in a cookie
 	setcookie('search_hits_count', $search_hits_count);
+**/
+
 }
 
 
@@ -235,8 +242,10 @@ function _from_nth_entry_submit($form, &$form_state){
 	    }
 		//---------end of running elastic search ---------------------
 	
+		$_SESSION['search_output_arr'] = $search_output_arr;
+
 		// store search results in a cookie
-		setcookie('search_output_arr', _elastic_search_results($search_output_arr));
+		//setcookie('search_output_arr', _elastic_search_results($search_output_arr));
 	
 	}
 }

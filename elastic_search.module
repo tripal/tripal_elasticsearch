@@ -114,7 +114,7 @@ function _elastic_search_interface_form(){
 			$output .= '<h6><span style="color:red">'.$_SESSION['search_hits_count'].'</span> records were found.</h6>';
 			$output .= '<hr />';
 		}
-		$output .= $_SESSION['search_output_arr'];
+//		$output .= $_SESSION['search_output_arr'];
 	}
 	return $output;
 }
@@ -130,8 +130,8 @@ function elastic_search_block_info(){
 		'info' => t('An elastic search box on the home page'),
         'status' => TRUE,
         'region' => 'content',
-        'visibility' => BLOCK_VISIBILITY_LISTED,
-        'pages' => '<front>',
+        //'visibility' => BLOCK_VISIBILITY_LISTED,
+        //'pages' => '',
         'cache' => DRUPAL_NO_CACHE,
 		'weight' => 1,
 	);
@@ -159,7 +159,7 @@ function elastic_search_block_view($delta = ''){
     switch($delta){
 		case 'elastic_search_tables':
 			$block['subject'] = '';
-			$block['content'] = $_SESSION['search_output_arr'];
+			$block['content'] = _elastic_search_results($_SESSION['search_output_arr']);
 		break;
 
 		case 'elastic_homepage_search_box':
