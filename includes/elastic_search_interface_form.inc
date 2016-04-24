@@ -27,14 +27,9 @@ function elastic_search_interface_form($form, &$form_state){
 		if(empty($form[$record->table_field]['#title'])){
 			$form[$record->search_block_name][$record->table_field] = array(
 				'#type' => 'fieldset',
+				'#attributes' => array('class' => array('container-inline')),
 			);
 		}
-        $form[$record->search_block_name][$record->table_field]['field'] = array(
-            '#type' => 'textfield',
-            '#title' => $record->table_field,
-			'#title_display' => 'after',
-			'#size' => '40',
-        );      
         $form[$record->search_block_name][$record->table_field]['search'] = array(
             '#type' => 'select',
             '#options' => array(
@@ -44,6 +39,12 @@ function elastic_search_interface_form($form, &$form_state){
             ),
             '#default_value' => 'fuzzy',
         );
+        $form[$record->search_block_name][$record->table_field]['field'] = array(
+            '#type' => 'textfield',
+            '#title' => $record->table_field,
+			'#title_display' => 'after',
+			'#size' => '40',
+        );      
 
     }   
 
@@ -212,7 +213,6 @@ function elastic_search_preprocess_elastic_search_interface_form(&$variables){
 	drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css');
 
 }
-*/
 
 /** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){
