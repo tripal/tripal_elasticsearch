@@ -2,7 +2,11 @@
 
 /** elastic_search_homepage_search_box_form handler**/
 function elastic_search_homepage_search_box_form($form, &$form_state){
-	$form['search_methods'] = array(
+	$form['search'] = array(
+		'#type' => 'fieldset',
+		'#attributes' => array('class' => array('container-inline')),
+	);
+	$form['search']['search_methods'] = array(
 		'#type' => 'select',
 		'#options' => array(
 			'match' => t('match'),
@@ -10,11 +14,12 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 			'match_phrase' => t('phrase match'),
 		),
 	);
-	$form['search_box'] = array(
+	$form['search']['search_box'] = array(
 		'#type' => 'textfield',
+		'#size' => 15,
 	);	
 
-	$form['search_submit'] = array(
+	$form['search']['search_submit'] = array(
 		'#type' => 'submit',
 		'#value' => t('Elasticsearch'),
 		//'#submit' => array('_homepage_search_box_form_submit'),
@@ -25,21 +30,6 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 }
 
 
-/** hook_preprocess_theme() implementation**/
-function elastic_search_preprocess_elastic_search_homepage_search_box_form(&$variables){
-
-	$form = $variables['form'];
-	if($form){
-		drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/homepage-search-box.css');
-	}
-
-	$variables['search_methods'] = render($form['search_methods']);
-	$variables['search_box'] = render($form['search_box']);
-	$variables['search_submit'] = render($form['search_submit']);	
-
-	$variables['children'] = drupal_render_children($form);
-	
-}
 
 /** elastic_search_homepage_search_box_form submit **/
 function elastic_search_homepage_search_box_form_submit($form, &$form_state){
