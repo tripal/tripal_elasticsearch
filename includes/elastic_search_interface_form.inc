@@ -75,7 +75,11 @@ function elastic_search_interface_form($form, &$form_state){
 			'#submit' => array('_download_table_submit'), 
 	    );
 	}
-	$form['#attributes']['class'][]  = 'elastic_search_interface_form';
+
+	//$form['#attributes']['class'][]  = 'elastic_search_interface_form';
+	$form['#attached']['js'] = array(
+		drupal_get_path('module', 'elastic_search').'/js/download.js',
+	);
 
 	return $form;
 }
