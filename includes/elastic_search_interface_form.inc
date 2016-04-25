@@ -253,6 +253,8 @@ function _from_nth_entry_submit($form, &$form_state){
 function _download_table_submit($form, &$form_state){
 
 	if(!empty($_COOKIE['search_params'])){
+		// set memory to unlimited to get enough memory for file writing and download
+		ini_set('memory_limit', '-1');
 		$search_params = explode('|', $_COOKIE['search_params']);
 		$params['index'] = $search_params[0];
 		$params['type'] = $search_params[1];
