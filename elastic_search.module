@@ -61,7 +61,7 @@ function elastic_search_menu(){
     );
 
     $items['elastic_search'] = array(
-        'title' => '',
+        'title' => t('Elasticsearch'),
         'page callback' => '_elastic_search_interface_form',
         'access callback' => TRUE,
         'type' => MENU_NORMAL_ITEM,
