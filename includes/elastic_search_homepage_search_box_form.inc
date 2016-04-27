@@ -13,6 +13,7 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 			'fuzzy' => t('fuzzy match'),
 			'match_phrase' => t('phrase match'),
 		),
+		'#default_value' => 'fuzzy',
 	);
 	$form['search']['search_box'] = array(
 		'#type' => 'textfield',
