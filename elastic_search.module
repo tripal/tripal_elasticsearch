@@ -126,7 +126,7 @@ function elastic_search_block_info(){
 	$blocks['elastic_homepage_search_box'] = array(
 		'info' => t('An elastic search box on the home page'),
         'status' => TRUE,
-        'region' => 'header',
+        'region' => 'preface_top',
         'cache' => DRUPAL_NO_CACHE,
 		'weight' => 1,
 	);
