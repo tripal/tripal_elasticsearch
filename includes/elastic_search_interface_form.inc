@@ -179,6 +179,37 @@ function elastic_search_interface_form_submit($form, &$form_state){
 }
 
 
+/**
+ * implements hook_form_alter().
+ */
+function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
+	if(isset($form['Transcripts'])){
+		$form['Transcripts']['search_transcripts_all|abbreviation']['field']= array(
+			'#type' => 'select',
+			'#title' => 'search_transcripts_all|organism',
+			'#title_display' => 'after',
+			'#options' => array(
+				'A. saccharum' => t('Acer saccharum (Sugar Maple)'),
+				'C. dentata' => t('Castanea dentata (	American Chestnut)'),
+				'C. mollissima' => t('Castanea mollissima (Chinese Chestnut)'),
+				'F. grandifolia' => t('Fagus grandifolia (American Beech)'),
+				'F. americana' => t('Fraxinus americana (White Ash)'),
+				'F. pennsylvanica' => t('Fraxinus pennsylvanica (Green Ash)'),
+				'G. triacanthos' => t('Gleditsia triacanthos (Honeylocust)'),
+				'J. nigra' => t('Juglans nigra (Black Walnut)'),
+				'L. styraciflua' => t('Liquidambar styraciflua (Sweetgum)'),
+				'L. tulipifera' => t('Liriodendron tulipifera (Tulip Poplar)'),
+				'N. sylvatica' => t('Nyssa sylvatica (Blackgum)'),
+				'P. borbonia' => t('Persea	borbonia (Redbay)'),
+				'P. serotina' => t('Prunus serotina (Black Cherry)'),
+				'Q. alba' => t('Quercus alba (White Oak)'),
+				'Q. robur' => t('Quercus robur (Pedunculate Oak)'),
+				'Q. rubra' => t('Quercus rubra (Northern Red Oak)'),  
+			),
+		);
+	}
+}
+
 
 
 //** implements hook_preprocess_elastic_search_interface_form(). **//
