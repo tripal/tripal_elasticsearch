@@ -31,3 +31,16 @@ function elastic_search_schema(){
 	return $schema;
 }
   
+
+/**
+ * implements hook_install()
+ */
+function elastic_search_install(){
+	$item = array(
+    	'link_title' => 'Elasticsearch',
+    	'link_path' => 'elastic_search',
+    	'menu_name' => 'main-menu',
+    	'weight' => 99,
+	);
+	menu_link_save($item);
+}

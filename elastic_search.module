@@ -67,7 +67,6 @@ function elastic_search_menu(){
         'type' => MENU_NORMAL_ITEM,
         'file' => 'includes/elastic_search_interface_form.inc',
     );
-
 	$items['search-website'] = array(
 		'title' => '',
 		'page callback' => '_homepage_elastic_search_output',
@@ -331,6 +330,8 @@ function elasticindexing_queue_item($item){
 
 			//$params['body'] = array('node_content' => $node_string);
 			$params['body'] = $body;
+			// use node ID as the document ID.
+			$params['id'] = $doc['nid'];
             $client->index($params);
 
         } // end foreach($result as $record)
