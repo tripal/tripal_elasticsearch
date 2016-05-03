@@ -213,43 +213,6 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 
 
 
-//** implements hook_preprocess_elastic_search_interface_form(). **//
-/*
-function elastic_search_preprocess_elastic_search_interface_form(&$variables){
-    // shorten the form variable name for easier access.
-    $form = $variables['form'];
-
-
-	foreach(element_children($form) as $key){
-		if(isset($form[$key]['#type'])){
-			$type = $form[$key]['#type'];
-			if($type != 'hidden' and $type != 'token'){
-				$variables['elastic_search_interface'][$key] = render($form[$key]); 
-			}
-		}
-	}
-
-    $search_record_count = variable_get('search_record_count');
-    if(!empty(variable_get('search_record_count'))){
-        $variables['from_nth_entry_nth'] = render($form['from_nth_entry']['nth']);
-        $variables['from_nth_entry_submit'] = render($form['from_nth_entry']['submit']);
-    } else {
-		$variables['from_nth_entry_nth'] = '';
-		$variables['from_nth_entry_nth'] = '';
-    }
-
-    // obtain search records count.
-    $count_arr = variable_get('search_record_count');
-    $variables['search_record_count'] = $count_arr['count'];
-
-    // be sure to print the remaining rendered form items.
-    $variables['children'] = drupal_render_children($form);
-
-
-	drupal_add_css(drupal_get_path('module', 'elastic_search').'/css/elastic_search_interface_form.css');
-
-}
-
 /** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){
 

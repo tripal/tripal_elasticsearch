@@ -178,6 +178,12 @@ function flatten($arr, $prefix = '') {
 function _build_elastic_query($searchMethod, $field, $keyword){
 
     switch($searchMethod){
+        case 'query_string':
+            $query_string = ' {"query_string":{"default_field":"_field_", "query":"_keyword_"}} ';
+            $search = array("_field_", "_keyword_");
+            $replace = array($field, $keyword);
+            $final_query_string = str_replace($search, $replace, $query_string);
+            break;
         case 'match':
             $query_string = ' {"match":{"_field_":"_keyword_"}} ';
             $search = array("_field_", "_keyword_");

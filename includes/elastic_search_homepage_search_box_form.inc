@@ -12,6 +12,7 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 			'match' => t('match'),
 			'fuzzy' => t('fuzzy match'),
 			'match_phrase' => t('phrase match'),
+			'query_string' => t('query_string'),
 		),
 		'#default_value' => 'fuzzy',
 	);
@@ -51,8 +52,20 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
     	$body_curl_head = '{';
     	$body_head =  '"query" : {"bool" : {"must" : [';
 		$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
-		$keyword = str_replace($elastic_special_chars, '', $keyword);
+		// trim all whitespace at the beginning and the end
 		$keyword = trim($keyword);
+		// get the first and the end letter and see if there are '"'.
+		$first_2_letters = substr($keyword, 0, 1);
+		$laster_2_letters = substr($keyword, -1, 1);
+		if($first_2_letters == '"' and $laster_2_letters == '"'){
+			// if the beginning and the end letters are '"', this is assumed as a phrase search
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
+			$keyword = '\"'.$keyword.'\"';
+		}
+		else{
+			// if it is not a phrase search, remove all special characters.
+			$keyword = str_replace($elastic_special_chars, '', $keyword);
+		}
 		$body_content = _build_elastic_query($searchMethod, $field, $keyword);
 		$highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';
 		$body_end = ']}}';
