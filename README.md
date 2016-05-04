@@ -1,2 +1,3 @@
 # elastic_search
-Elasticsearch for transcripts on Hardwood genomics database.
+A module that provides site-wide indexing and search and individual drupa and chado database
+tables indexing and search.
