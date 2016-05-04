@@ -409,3 +409,37 @@ function elasticindexing_queue_item($item){
 }
 
 
+
+
+/**
+ * implements hook_node_update().
+ * Any node updates will also update the corresponding elasticsearch docs.
+ */
+function elastic_search_node_update($node){
+  $queue = DrupalQueue::get('elastic_queue');
+  $nid = $node->nid;
+  $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
+  $item = new stdClass();
+  $item->sql = $sql;
+  $item->selected_table = 'index_website';
+  $queue->createItem($item);
+}
+
+/**
+ * implements hook_node_insert().
+ * Any new nodes will be added to the  elasticsearch cron queue.
+ */
+function elastic_search_node_insert($node){
+  $queue = DrupalQueue::get('elastic_queue');
+  $nid = $node->nid;
+  $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
+  $item = new stdClass();
+  $item->sql = $sql;
+  $item->selected_table = 'index_website';
+  $queue->createItem($item);
+}
+
+
+
+
+
