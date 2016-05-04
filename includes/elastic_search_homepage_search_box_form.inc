@@ -6,6 +6,7 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 		'#type' => 'fieldset',
 		'#attributes' => array('class' => array('container-inline')),
 	);
+/*
 	$form['search']['search_methods'] = array(
 		'#type' => 'select',
 		'#options' => array(
@@ -14,8 +15,9 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 			'match_phrase' => t('phrase match'),
 			'query_string' => t('query_string'),
 		),
-		'#default_value' => 'fuzzy',
+		'#default_value' => 'query_string',
 	);
+*/
 	$form['search']['search_box'] = array(
 		'#type' => 'textfield',
 		'#size' => 40,
@@ -43,7 +45,8 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 
 	//if(in_array($index, $indices)){
 	    $field = 'node_content';
-	    $searchMethod = $form_state['values']['search_methods'];
+	    //$searchMethod = $form_state['values']['search_methods'];
+		$searchMethod = 'query_string';
 	    $keyword = $form_state['values']['search_box'];
 
 	    //--------------------run elastic search----------------------------------
