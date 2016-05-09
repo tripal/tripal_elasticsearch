@@ -62,6 +62,7 @@ function elastic_search_interface_form($form, &$form_state){
 	        '#type' => 'submit',
 	        '#value' => t('Go!'),
 	        '#submit' => array('_from_nth_entry_submit'),
+			'#validate' => array('_from_nth_entry_validate'),
 			'#attributes' => array(
 				'id' => array('from-nth-entry-submit'),
 			),
@@ -84,6 +85,15 @@ function elastic_search_interface_form($form, &$form_state){
 	return $form;
 }
 
+
+
+
+/** _from_nth_entry_validate **/ 
+function _from_nth_entry_validate($form, &$form_state){
+  if(!is_numeric($form_state['values']['nth'])){
+    form_set_error('nth', t('Please enter an integer as the offset number.'));
+  }
+}
 
 
 /**
@@ -212,17 +222,17 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 }
 
 
-
 /** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){
 
 	if(!empty($_COOKIE['search_params'])){
 		$search_params = explode('|', $_COOKIE['search_params']);
+		$params = array();
 		$params['index'] = $search_params[0];
 		$params['type'] = $search_params[1];
 		$params['body'] = $search_params[2];
 		$client = new Elasticsearch\Client();
-		$params['from'] = $form_state['values']['nth']; 
+		$params['from'] = $form_state['values']['nth'];
 	    $params['size'] = 1000;
 
 

@@ -440,6 +440,13 @@ function elastic_search_node_insert($node){
 }
 
 
+/**
+ * Implements hook_node_delete().
+ * the indexed doc for the deleted node will be also deleted in elasticsearch
+ */
+function elastic_search_node_delete($node){
+
+}
 
 
 
