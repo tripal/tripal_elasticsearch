@@ -202,6 +202,9 @@ function _elastic_search_results($search_output_arr){
 			if(!empty($values['entity_id'])){
 				$values['entity_id'] = l('read this page', 'node/'. $values['entity_id']); // add link to web page based entity_id.
 			}
+			if(!empty($values['abbreviation']) and !empty($values['genus']) and !empty($values['species'])){
+				$values['abbreviation'] = l($values['abbreviation'], 'organism/'.$values['genus'].'/'.$values['species']);
+			}
 	        $rows[] = array_values($values);
 	    }
 	
