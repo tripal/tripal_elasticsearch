@@ -126,6 +126,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 			$keyword = $search_data['field'];
 			//$searchMethod = $search_data['search'];
 			$searchMethod = 'fuzzy';	
+			//$searchMethod = 'query_string';
 
 			if(!empty($keyword)){
 				$keyword = str_replace($elastic_special_chars, '', $keyword);

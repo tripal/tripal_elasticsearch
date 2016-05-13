@@ -361,7 +361,8 @@ function elasticindexing_queue_item($item){
                             'analysis' => [
                                 'filter' => [
                                     'myTokenFilter1' => [
-                                        'type' => 'word_delimiter'
+                                        'type' => 'word_delimiter',
+										'split_on_numerics' => 'false'
                                     ]
                                 ],
                                 'char_filter' => [
