@@ -25,7 +25,7 @@ function elastic_search_homepage_search_box_form($form, &$form_state){
 
 	$form['search']['search_submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Elasticsearch'),
+		'#value' => t('Search'),
 		//'#submit' => array('_homepage_search_box_form_submit'),
 	);
 

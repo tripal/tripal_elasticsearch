@@ -19,7 +19,7 @@ function elastic_search_interface_form($form, &$form_state){
 
 			$form[$record->search_block_name]['submit'] = array(
 				'#type' => 'submit',
-				'#value' => 'Elasticsearch|'.$record->search_block_name,
+				'#value' => 'Search|'.$record->search_block_name,
 				'#weight' => '3',
 			);
         }       
@@ -30,6 +30,7 @@ function elastic_search_interface_form($form, &$form_state){
 				'#attributes' => array('class' => array('container-inline')),
 			);
 		}
+/*
         $form[$record->search_block_name][$record->table_field]['search'] = array(
             '#type' => 'select',
             '#options' => array(
@@ -39,6 +40,7 @@ function elastic_search_interface_form($form, &$form_state){
             ),
             '#default_value' => 'fuzzy',
         );
+*/
         $form[$record->search_block_name][$record->table_field]['field'] = array(
             '#type' => 'textfield',
             '#title' => $record->table_field,
@@ -100,7 +102,7 @@ function _from_nth_entry_validate($form, &$form_state){
  *elastic_search_interface_form submit callback
  */
 function elastic_search_interface_form_submit($form, &$form_state){
-	$search_block_name = substr($form_state['values']['op'], strlen('Elasticsearch|'));
+	$search_block_name = substr($form_state['values']['op'], strlen('Search|'));
 
 	//--------------------run elastic search----------------------------------
     // Build query statement, just need to replace some of this query string
@@ -122,7 +124,8 @@ function elastic_search_interface_form_submit($form, &$form_state){
 			$table = explode('|', $field_name)[0];
 			$field = explode('|', $field_name)[1];
 			$keyword = $search_data['field'];
-			$searchMethod = $search_data['search'];
+			//$searchMethod = $search_data['search'];
+			$searchMethod = 'fuzzy';	
 
 			if(!empty($keyword)){
 				$keyword = str_replace($elastic_special_chars, '', $keyword);
@@ -219,6 +222,34 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 			),
 		);
 	}
+
+
+    if(isset($form['BlastMergedTranscripts'])){
+        $form['BlastMergedTranscripts']['blast_merged_transcripts|abbreviation']['field']= array(
+            '#type' => 'select',
+            '#title' => 'blast_merged_transcripts|organism',
+            '#title_display' => 'after',
+            '#options' => array(
+                '' => t('Any organism'),
+                'A. saccharum' => t('Acer saccharum (Sugar Maple)'),
+                'C. dentata' => t('Castanea dentata (   American Chestnut)'),
+                'C. mollissima' => t('Castanea mollissima (Chinese Chestnut)'),
+                'F. grandifolia' => t('Fagus grandifolia (American Beech)'),
+                'F. americana' => t('Fraxinus americana (White Ash)'),
+                'F. pennsylvanica' => t('Fraxinus pennsylvanica (Green Ash)'),
+                'G. triacanthos' => t('Gleditsia triacanthos (Honeylocust)'),
+                'J. nigra' => t('Juglans nigra (Black Walnut)'),
+                'L. styraciflua' => t('Liquidambar styraciflua (Sweetgum)'),
+                'L. tulipifera' => t('Liriodendron tulipifera (Tulip Poplar)'),
+                'N. sylvatica' => t('Nyssa sylvatica (Blackgum)'),
+                'P. borbonia' => t('Persea  borbonia (Redbay)'),
+                'P. serotina' => t('Prunus serotina (Black Cherry)'),
+                'Q. alba' => t('Quercus alba (White Oak)'),
+                'Q. robur' => t('Quercus robur (Pedunculate Oak)'),
+                'Q. rubra' => t('Quercus rubra (Northern Red Oak)'),
+            ),
+        );
+    }
 }
 
 

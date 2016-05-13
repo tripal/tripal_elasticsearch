@@ -61,7 +61,7 @@ function elastic_search_menu(){
     );
 
     $items['elastic_search'] = array(
-        'title' => t('Elasticsearch'),
+        'title' => '', // t('Elasticsearch'),
         'page callback' => '_elastic_search_interface_form',
         'access callback' => TRUE,
         'type' => MENU_NORMAL_ITEM,
@@ -199,9 +199,6 @@ function _elastic_search_results($search_output_arr){
 			if(!empty($values['uniquename'])){ // add a link to each feature unique name.
 	        	$values['uniquename'] = l($values['uniquename'], 'feature/'.$values['uniquename']); // add link to feature uniquename.
 			}
-            if(!empty($values['unique_name'])){ // add a link to each feature unique name.
-                $values['unique_name'] = l($values['unique_name'], 'feature/'.$values['unique_name']); // add link to feature uniquename.
-            }			
 			if(!empty($values['entity_id'])){
 				$values['entity_id'] = l('read this page', 'node/'. $values['entity_id']); // add link to web page based entity_id.
 			}
