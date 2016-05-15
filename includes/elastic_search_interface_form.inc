@@ -206,42 +206,39 @@ function elastic_search_interface_form_submit($form, &$form_state){
  * implements hook_form_alter().
  */
 function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
-/*
-	if(isset($form['Transcripts'])){
-		$form['Transcripts']['search_transcripts_all|abbreviation']['field']= array(
-			'#type' => 'select',
-			'#title' => 'search_transcripts_all|organism',
-			'#title_display' => 'after',
-			'#options' => array(
-				'' => t('Any organism'),
-				'A. saccharum' => t('Acer saccharum (Sugar Maple)'),
-				'C. dentata' => t('Castanea dentata (	American Chestnut)'),
-				'C. mollissima' => t('Castanea mollissima (Chinese Chestnut)'),
-				'F. grandifolia' => t('Fagus grandifolia (American Beech)'),
-				'F. americana' => t('Fraxinus americana (White Ash)'),
-				'F. pennsylvanica' => t('Fraxinus pennsylvanica (Green Ash)'),
-				'G. triacanthos' => t('Gleditsia triacanthos (Honeylocust)'),
-				'J. nigra' => t('Juglans nigra (Black Walnut)'),
-				'L. styraciflua' => t('Liquidambar styraciflua (Sweetgum)'),
-				'L. tulipifera' => t('Liriodendron tulipifera (Tulip Poplar)'),
-				'N. sylvatica' => t('Nyssa sylvatica (Blackgum)'),
-				'P. borbonia' => t('Persea	borbonia (Redbay)'),
-				'P. serotina' => t('Prunus serotina (Black Cherry)'),
-				'Q. alba' => t('Quercus alba (White Oak)'),
-				'Q. robur' => t('Quercus robur (Pedunculate Oak)'),
-				'Q. rubra' => t('Quercus rubra (Northern Red Oak)'),  
-			),
-		);
+            $options_default_arr = array(
+                'acer saccharum' => t('A. saccharum'),
+                'castanea dentata' => t('C. dentata'),
+                'castanea mollissima' => t('C. mollissima'),
+                'fagus grandifolia' => t('F. grandifolia'),
+                'fraxinus americana' => t('F. americana'),
+                'fraxinus pennsylvanica' => t('F. pennsylvanica'),
+                'gleditsia triacanthos' => t('G. triacanthos'),
+                'juglans nigra' => t('J. nigra'),
+                'liquidambar styraciflua' => t('L. styraciflua'),
+                'liriodendron tulipifera' => t('L. tulipifera'),
+                'nyssa sylvatica' => t('N. sylvatica'),
+                'persea  borbonia' => t('P. borbonia'),
+                'prunus serotina' => t('P. serotina'),
+                'quercus alba' => t('Q. alba'),
+                'quercus robur' => t('Q. robur'),
+                'quercus rubra' => t('Q. rubra'),
+            );
+
+	$url_items = explode('/', current_path());
+	if(!empty($url_items[1]) and $url_items[1] == 'organism'){
+		if(!empty($url_items[2]) and !empty($url_items[3])){
+			$organism = $url_items[2].' '.$url_items[3];
+		}
 	}
-*/
 
     if(isset($form['Transcripts'])){
-        $form['Transcripts']['abbreviation']['field']= array(
-            '#type' => 'select',
-            '#title' => 'organism',
-            '#title_display' => 'after',
-            '#options' => array(
-                '' => t('Any organism'),
+		$form['Transcripts']['abbreviation']['field'] = array();
+		$form['Transcripts']['abbreviation']['field']['#type'] = 'select';
+		$form['Transcripts']['abbreviation']['field']['#title'] = 'organism';
+		$form['Transcripts']['abbreviation']['field']['#title_display'] = 'after';
+        $form['Transcripts']['abbreviation']['field']['#options'] = array(
+               '' => t('Any organism'),
                 'A. saccharum' => t('Acer saccharum (Sugar Maple)'),
                 'C. dentata' => t('Castanea dentata (American Chestnut)'),
                 'C. mollissima' => t('Castanea mollissima (Chinese Chestnut)'),
@@ -258,8 +255,12 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
                 'Q. alba' => t('Quercus alba (White Oak)'),
                 'Q. robur' => t('Quercus robur (Pedunculate Oak)'),
                 'Q. rubra' => t('Quercus rubra (Northern Red Oak)'),
-            ),
-        );
+            ); 
+
+        if(in_array($organism, array_keys($options_default_arr))){
+            $form['Transcripts']['abbreviation']['field']['#default_value'] = $options_default_arr[$organism];
+        }
+
     }
 }
 

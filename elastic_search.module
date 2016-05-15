@@ -67,6 +67,13 @@ function elastic_search_menu(){
         'type' => MENU_NORMAL_ITEM,
         'file' => 'includes/elastic_search_interface_form.inc',
     );
+    $items['elastic_search/organism/%'] = array(
+        'title' => '', // t('Elasticsearch'),
+        'page callback' => '_elastic_search_interface_form',
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'includes/elastic_search_interface_form.inc',
+    );
 	$items['search-website'] = array(
 		'title' => '',
 		'page callback' => '_homepage_elastic_search_output',
@@ -135,7 +142,7 @@ function elastic_search_block_info(){
         'status' => TRUE,
         'region' => 'content',
         'visibility' => BLOCK_VISIBILITY_LISTED,
-        'pages' => 'elastic_search',
+        'pages' => 'elastic_search/*',
         'cache' => DRUPAL_NO_CACHE,
         'weight' => 0,
     );
