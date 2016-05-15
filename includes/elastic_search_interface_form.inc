@@ -197,6 +197,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
  * implements hook_form_alter().
  */
 function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
+/*
 	if(isset($form['Transcripts'])){
 		$form['Transcripts']['search_transcripts_all|abbreviation']['field']= array(
 			'#type' => 'select',
@@ -223,17 +224,17 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 			),
 		);
 	}
+*/
 
-
-    if(isset($form['BlastMergedTranscripts'])){
-        $form['BlastMergedTranscripts']['blast_merged_transcripts|abbreviation']['field']= array(
+    if(isset($form['Transcripts'])){
+        $form['Transcripts']['blast_merged_transcripts|abbreviation']['field']= array(
             '#type' => 'select',
             '#title' => 'blast_merged_transcripts|organism',
             '#title_display' => 'after',
             '#options' => array(
                 '' => t('Any organism'),
                 'A. saccharum' => t('Acer saccharum (Sugar Maple)'),
-                'C. dentata' => t('Castanea dentata (   American Chestnut)'),
+                'C. dentata' => t('Castanea dentata (American Chestnut)'),
                 'C. mollissima' => t('Castanea mollissima (Chinese Chestnut)'),
                 'F. grandifolia' => t('Fagus grandifolia (American Beech)'),
                 'F. americana' => t('Fraxinus americana (White Ash)'),
