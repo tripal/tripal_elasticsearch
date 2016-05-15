@@ -229,6 +229,10 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 	if(!empty($url_items[1]) and $url_items[1] == 'organism'){
 		if(!empty($url_items[2]) and !empty($url_items[3])){
 			$organism = $url_items[2].' '.$url_items[3];
+        	if(in_array($organism, array_keys($options_default_arr))){
+            	$form['Transcripts']['abbreviation']['field']['#default_value'] = $options_default_arr[$organism];
+        	}
+
 		}
 	}
 
@@ -256,10 +260,6 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
                 'Q. robur' => t('Quercus robur (Pedunculate Oak)'),
                 'Q. rubra' => t('Quercus rubra (Northern Red Oak)'),
             ); 
-
-        if(in_array($organism, array_keys($options_default_arr))){
-            $form['Transcripts']['abbreviation']['field']['#default_value'] = $options_default_arr[$organism];
-        }
 
     }
 }
