@@ -117,12 +117,12 @@ function elastic_search_interface_form_submit($form, &$form_state){
 								'<', '!', '(', ')', '{', '}', '[', 
 								']', '^', '"', '~', '*', '?', ':', '\\', '/');
 
-
 	$elasticsearch_query_elements = array();
 	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
 		if($field_name != 'submit'){
-			$table = explode('|', $field_name)[0];
-			$field = explode('|', $field_name)[1];
+			//$table = explode('|', $field_name)[0];
+			//$field = explode('|', $field_name)[1];
+			$field = $field_name;
 			$keyword = $search_data['field'];
 			//$searchMethod = $search_data['search'];
 			$searchMethod = 'fuzzy';	
@@ -134,6 +134,15 @@ function elastic_search_interface_form_submit($form, &$form_state){
 				$elasticsearch_query_elements[$field] = _build_elastic_query($searchMethod, $field, $keyword);
 			}
 		} 
+		else{
+			$search_block_name = explode('|', $search_data)[1];
+		}
+	}
+
+	// get table name from database table 'elastic_search'
+	$results = db_query('SELECT * FROM {elastic_search} WHERE search_block_name=:search_block_name', array(':search_block_name'=>$search_block_name));
+	foreach($results as $record){
+		$table = $record->table_name;
 	}
 
     $elasticsearch_query_string = implode(',', $elasticsearch_query_elements);
@@ -158,13 +167,14 @@ function elastic_search_interface_form_submit($form, &$form_state){
     $params['body'] = $body;
     $search_hits_count = $client->count($params)['count'];
 
+//dpm($search_result['hits']['hits']);
 
 
 	$search_output_arr = array();
     foreach($search_result['hits']['hits'] as $key=>$value){
     	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
         	if($field_name != 'submit'){
-            	$field = explode('|', $field_name)[1];
+            	$field = $field_name;
 				$search_output_arr[$key][$field] = $value['_source'][$field];
         	}
     	}
@@ -189,7 +199,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	setcookie('search_block_name', $search_block_name);
 	// store hits count in a cookie
 	setcookie('search_hits_count', $search_hits_count);
-
 }
 
 
@@ -227,9 +236,9 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 */
 
     if(isset($form['Transcripts'])){
-        $form['Transcripts']['blast_merged_transcripts|abbreviation']['field']= array(
+        $form['Transcripts']['abbreviation']['field']= array(
             '#type' => 'select',
-            '#title' => 'blast_merged_transcripts|organism',
+            '#title' => 'organism',
             '#title_display' => 'after',
             '#options' => array(
                 '' => t('Any organism'),

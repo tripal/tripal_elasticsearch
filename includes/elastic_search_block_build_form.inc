@@ -55,7 +55,8 @@ function elastic_search_block_build_form($form, &$form_state) {
 			// It creates a form field for each table, with table fields as being displayed 
 			foreach($fields as $key=>$field){
 				unset($fields[$key]);
-				$fields[$selected_table.'|'.$field] = $selected_table.'|'.$field;
+				//$fields[$selected_table.'|'.$field] = $selected_table.'|'.$field;
+				$fields[$field] = $field;
 			}
 
 			$form['search_block'][$selected_table] = array(
