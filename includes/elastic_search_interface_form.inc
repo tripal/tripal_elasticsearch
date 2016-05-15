@@ -285,7 +285,7 @@ function _from_nth_entry_submit($form, &$form_state){
 	    foreach($search_result['hits']['hits'] as $key=>$value){
 	    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
 	        	if($field_name != 'submit'){
-	            	$field = explode('|', $field_name)[1];
+	            	$field = $field_name;
 					$search_output_arr[$key][$field] = $value['_source'][$field];
 	        	}
 	    	}
@@ -312,7 +312,7 @@ function _download_table_submit($form, &$form_state){
 		$params['body'] = $search_params[2];
 	
 		$client = new Elasticsearch\Client();
-	    $params['size'] = 10000000;
+	    $params['size'] = 1000000;
 	
 	    $search_result = $client->search($params);
 	
