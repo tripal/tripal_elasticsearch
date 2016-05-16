@@ -181,7 +181,6 @@ function elastic_search_interface_form_submit($form, &$form_state){
     }
 	//---------end of running elastic search ---------------------
 
-
 	$_SESSION['search_output_arr'] = $search_output_arr;
 
 	$_SESSION['search_hits_count'] = $search_hits_count;
@@ -309,6 +308,7 @@ function _download_table_submit($form, &$form_state){
 		// set memory to unlimited to get enough memory for file writing and download
 		ini_set('memory_limit', '-1');
 		$search_params = explode('|', $_COOKIE['search_params']);
+		$params = array();
 		$params['index'] = $search_params[0];
 		$params['type'] = $search_params[1];
 		$params['body'] = $search_params[2];
@@ -323,7 +323,7 @@ function _download_table_submit($form, &$form_state){
 	    foreach($search_result['hits']['hits'] as $key=>$value){
 	    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
 	        	if($field_name != 'submit'){
-	            	$field = explode('|', $field_name)[1];
+	            	$field = $field_name;
 					$search_output_arr[$key][$field] = $value['_source'][$field];
 	        	}
 	    	}
