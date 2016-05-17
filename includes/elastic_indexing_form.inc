@@ -176,6 +176,8 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 	// and insert this string into the sql query statement.
 	$comma_separated_fields = implode(", ", $_SESSION['selected_fields']);
 	$_SESSION['comma_separated_fields'] = implode(", ", $_SESSION['selected_fields']);
+    // Use the first field to order the database table when implement queries.
+    $order_by_field = $_SESSION['selected_fields'][0];
     //====="SELECT * FROM chado.blast_hit_data ORDER BY RANDOM() LIMIT 1000;"
 
 
@@ -209,7 +211,7 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 			$sql = 'SELECT title, nid FROM node'." ORDER BY nid LIMIT $k OFFSET $offset;";
 		}
 		else {
-			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $selected_table ."  LIMIT $k OFFSET $offset;";
+			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
 		}
 		$item->sql = $sql;
 		// also store selected table
