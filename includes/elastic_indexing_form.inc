@@ -208,7 +208,8 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 		$offset = $k*$offset;
 		$item = new stdClass();
 		if($selected_table == 'index_website'){
-			$sql = 'SELECT title, nid FROM node'." ORDER BY nid LIMIT $k OFFSET $offset;";
+			// select only published nodes
+			$sql = "SELECT title, nid FROM node WHERE status=1 ORDER BY nid LIMIT $k OFFSET $offset;";
 		}
 		else {
 			$sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";

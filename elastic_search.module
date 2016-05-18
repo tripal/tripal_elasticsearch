@@ -454,7 +454,27 @@ function elastic_search_node_insert($node){
  * the indexed doc for the deleted node will be also deleted in elasticsearch
  */
 function elastic_search_node_delete($node){
+  $nid = $node->nid;
+  $params = array();
+  $params = [
+    'index' => 'index_website',
+    'type' => 'index_website',
+    'id' => $nid,
+    'body' => ['fake_field' => 'fake document']
+  ];
+  // create a fake document and index it in case that the node
+  // that is being deleted doesn't exit in elasticsearch
+  $client = new Elasticsearch\Client();
+  $client->index($params);
 
+
+  $params = array();
+  $params = [
+    'index' => 'index_website',
+    'type' => 'index_website',
+    'id' => $nid,
+  ];
+  $client->delete($params);
 }
 
 
