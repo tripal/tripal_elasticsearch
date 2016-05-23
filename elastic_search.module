@@ -142,7 +142,7 @@ function elastic_search_block_info(){
     'status' => TRUE,
     'region' => 'content',
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => 'elastic_search\nelastic_search/*',
+    'pages' => "elastic_search\nelastic_search/*",
     'cache' => DRUPAL_NO_CACHE,
     'weight' => 0,
   );
