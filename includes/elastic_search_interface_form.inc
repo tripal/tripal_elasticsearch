@@ -14,22 +14,22 @@ function elastic_search_interface_form($form, &$form_state){
             $form[$record->search_block_name] = array(
                 '#type' => 'fieldset',
                 '#title' => $record->search_block_name,
-				'#tree' => TRUE,
+        '#tree' => TRUE,
             );          
 
-			$form[$record->search_block_name]['submit'] = array(
-				'#type' => 'submit',
-				'#value' => 'Search|'.$record->search_block_name,
-				'#weight' => '3',
-			);
+      $form[$record->search_block_name]['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Search|'.$record->search_block_name,
+        '#weight' => '3',
+      );
         }       
         // Add fields to the fieldset
-		if(empty($form[$record->table_field]['#title'])){
-			$form[$record->search_block_name][$record->table_field] = array(
-				'#type' => 'fieldset',
-				'#attributes' => array('class' => array('container-inline')),
-			);
-		}
+    if(empty($form[$record->table_field]['#title'])){
+      $form[$record->search_block_name][$record->table_field] = array(
+        '#type' => 'fieldset',
+        '#attributes' => array('class' => array('container-inline')),
+      );
+    }
 /*
         $form[$record->search_block_name][$record->table_field]['search'] = array(
             '#type' => 'select',
@@ -44,47 +44,47 @@ function elastic_search_interface_form($form, &$form_state){
         $form[$record->search_block_name][$record->table_field]['field'] = array(
             '#type' => 'textfield',
             '#title' => $record->table_field,
-			'#title_display' => 'after',
-			'#size' => '40',
+      '#title_display' => 'after',
+      '#size' => '40',
         );      
 
     }   
 
-	if(isset($_SESSION['search_output_arr'])){
-	    $form['from_nth_entry']['nth'] = array(
-	        '#type' => 'textfield',
-	        '#title' => t('Display 1,000 records from nth entry'),
-	        '#size' => 30,
-			'#title_display' => 'after',
-	        '#attributes' => array(
-	            'placeholder' => t('Please enter an offset number')
-	        ),
-	    );
-	    $form['from_nth_entry']['submit'] = array(
-	        '#type' => 'submit',
-	        '#value' => t('Go!'),
-	        '#submit' => array('_from_nth_entry_submit'),
-			'#validate' => array('_from_nth_entry_validate'),
-			'#attributes' => array(
-				'id' => array('from-nth-entry-submit'),
-			),
-	    );
-	
-	
-		/** download_search_results_form handler **/
-	    $form['download_table'] = array(
-	        '#type' => 'submit',
-	        '#value' => 'Download csv',
-			'#submit' => array('_download_table_submit'), 
-	    );
-	}
+  if(isset($_SESSION['search_output_arr'])){
+      $form['from_nth_entry']['nth'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Display 1,000 records from nth entry'),
+          '#size' => 30,
+      '#title_display' => 'after',
+          '#attributes' => array(
+              'placeholder' => t('Please enter an offset number')
+          ),
+      );
+      $form['from_nth_entry']['submit'] = array(
+          '#type' => 'submit',
+          '#value' => t('Go!'),
+          '#submit' => array('_from_nth_entry_submit'),
+      '#validate' => array('_from_nth_entry_validate'),
+      '#attributes' => array(
+        'id' => array('from-nth-entry-submit'),
+      ),
+      );
+  
+  
+    /** download_search_results_form handler **/
+      $form['download_table'] = array(
+          '#type' => 'submit',
+          '#value' => 'Download csv',
+      '#submit' => array('_download_table_submit'), 
+      );
+  }
 
-	//$form['#attributes']['class'][]  = 'elastic_search_interface_form';
-	$form['#attached']['js'] = array(
-		drupal_get_path('module', 'elastic_search').'/js/download.js',
-	);
+  //$form['#attributes']['class'][]  = 'elastic_search_interface_form';
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'elastic_search').'/js/download.js',
+  );
 
-	return $form;
+  return $form;
 }
 
 
@@ -102,33 +102,33 @@ function _from_nth_entry_validate($form, &$form_state){
  *elastic_search_interface_form submit callback
  */
 function elastic_search_interface_form_submit($form, &$form_state){
-	$search_block_name = substr($form_state['values']['op'], strlen('Search|'));
+  $search_block_name = substr($form_state['values']['op'], strlen('Search|'));
 
-	//--------------------run elastic search----------------------------------
+  //--------------------run elastic search----------------------------------
     // Build query statement, just need to replace some of this query string
     // with the input form data
-	$body_curl_head = '{';
+  $body_curl_head = '{';
     $body_head =  '"query" : {"bool" : {"must" : [';
     $query_sentence = '{"query_string" : {"default_field": "_field_", "query": "_keyword_"}},';
     $body_end = ']}}';
-	$body_curl_end = '}';
+  $body_curl_end = '}';
 
-	$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', 
-								'<', '!', '(', ')', '{', '}', '[', 
-								']', '^', '"', '~', '*', '?', ':', '\\', '/');
+  $elastic_special_chars = array('+', '-', '=', '&&', '||', '>', 
+                '<', '!', '(', ')', '{', '}', '[', 
+                ']', '^', '"', '~', '*', '?', ':', '\\', '/');
 
-	$elasticsearch_query_elements = array();
-	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
-		if($field_name != 'submit'){
-			$field = $field_name;
-			$keyword = $search_data['field'];
-			//$searchMethod = $search_data['search'];
-			//$searchMethod = 'fuzzy';	
-			$searchMethod = 'query_string';
+  $elasticsearch_query_elements = array();
+  foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+    if($field_name != 'submit'){
+      $field = $field_name;
+      $keyword = $search_data['field'];
+      //$searchMethod = $search_data['search'];
+      //$searchMethod = 'fuzzy';  
+      $searchMethod = 'query_string';
 
-			if(!empty($keyword)){
-				//$keyword = str_replace($elastic_special_chars, '', $keyword);
-				$keyword = trim($keyword);
+      if(!empty($keyword)){
+        //$keyword = str_replace($elastic_special_chars, '', $keyword);
+        $keyword = trim($keyword);
                 // get the first and the last letter and see if there are '"'.
                 $first_2_letters = substr($keyword, 0, 1);
                 $last_2_letters = substr($keyword, -1, 1);
@@ -141,27 +141,27 @@ function elastic_search_interface_form_submit($form, &$form_state){
                   // if it is not a phrase search, remove all special characters.
                   $keyword = str_replace($elastic_special_chars, ' ', $keyword);
                 }
-				$elasticsearch_query_elements[$field] = _build_elastic_query($searchMethod, $field, $keyword);
-			}
-		} 
-		else{
-			$search_block_name = explode('|', $search_data)[1];
-		}
-	}
+        $elasticsearch_query_elements[$field] = _build_elastic_query($searchMethod, $field, $keyword);
+      }
+    } 
+    else{
+      $search_block_name = explode('|', $search_data)[1];
+    }
+  }
 
-	// get table name from database table 'elastic_search'
-	$results = db_query('SELECT * FROM {elastic_search} WHERE search_block_name=:search_block_name', array(':search_block_name'=>$search_block_name));
-	foreach($results as $record){
-		$table = $record->table_name;
-	}
+  // get table name from database table 'elastic_search'
+  $results = db_query('SELECT * FROM {elastic_search} WHERE search_block_name=:search_block_name', array(':search_block_name'=>$search_block_name));
+  foreach($results as $record){
+    $table = $record->table_name;
+  }
 
     $elasticsearch_query_string = implode(',', $elasticsearch_query_elements);
     $body = $body_curl_head . $body_head . $elasticsearch_query_string.$body_end.$body_curl_end;
 
 
-	// Implement search and obtain search results
+  // Implement search and obtain search results
     $client = new Elasticsearch\Client();
-	$params = array();
+  $params = array();
     $params['index'] = $table;
     $params['type'] = $table;
     $params['body'] = $body;
@@ -180,34 +180,34 @@ function elastic_search_interface_form_submit($form, &$form_state){
 //dpm($search_result['hits']['hits']);
 
 
-	$search_output_arr = array();
+  $search_output_arr = array();
     foreach($search_result['hits']['hits'] as $key=>$value){
-    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
-        	if($field_name != 'submit'){
-            	$field = $field_name;
-				$search_output_arr[$key][$field] = $value['_source'][$field];
-        	}
-    	}
+      foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+          if($field_name != 'submit'){
+              $field = $field_name;
+        $search_output_arr[$key][$field] = $value['_source'][$field];
+          }
+      }
     }
-	//---------end of running elastic search ---------------------
+  //---------end of running elastic search ---------------------
 
-	$_SESSION['search_output_arr'] = $search_output_arr;
+  $_SESSION['search_output_arr'] = $search_output_arr;
 
-	$_SESSION['search_hits_count'] = $search_hits_count;
+  $_SESSION['search_hits_count'] = $search_hits_count;
 
-	// Use $_SESSION to transfer data to page callback function in .module
-	//$_SESSION['search_output_arr'] = _elastic_search_results($search_output_arr);
-	//$_SESSION['search_params'] = $params;
-	//$_SESSION['search_block_name'] = $search_block_name;
+  // Use $_SESSION to transfer data to page callback function in .module
+  //$_SESSION['search_output_arr'] = _elastic_search_results($search_output_arr);
+  //$_SESSION['search_params'] = $params;
+  //$_SESSION['search_block_name'] = $search_block_name;
 
 
-	// Use $_COOKIE to transfer data to other submit function.
-	// store search parameters in a cookie
-	setcookie('search_params', implode('|', $params));
-	// store $search_block_name in a cookie
-	setcookie('search_block_name', $search_block_name);
-	// store hits count in a cookie
-	setcookie('search_hits_count', $search_hits_count);
+  // Use $_COOKIE to transfer data to other submit function.
+  // store search parameters in a cookie
+  setcookie('search_params', implode('|', $params));
+  // store $search_block_name in a cookie
+  setcookie('search_block_name', $search_block_name);
+  // store hits count in a cookie
+  setcookie('search_hits_count', $search_hits_count);
 }
 
 
@@ -234,19 +234,19 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
                 'quercus rubra' => t('Q. rubra'),
             );
 
-	$url_items = explode('/', current_path());
-	if(!empty($url_items[1]) and $url_items[1] == 'organism'){
-		if(!empty($url_items[2]) and !empty($url_items[3])){
-			$organism = $url_items[2].' '.$url_items[3];
+  $url_items = explode('/', current_path());
+  if(!empty($url_items[1]) and $url_items[1] == 'organism'){
+    if(!empty($url_items[2]) and !empty($url_items[3])){
+      $organism = $url_items[2].' '.$url_items[3];
         
-		}
-	}
+    }
+  }
 
     if(isset($form['Transcripts'])){
-		$form['Transcripts']['abbreviation']['field'] = array();
-		$form['Transcripts']['abbreviation']['field']['#type'] = 'select';
-		$form['Transcripts']['abbreviation']['field']['#title'] = 'organism';
-		$form['Transcripts']['abbreviation']['field']['#title_display'] = 'after';
+    $form['Transcripts']['abbreviation']['field'] = array();
+    $form['Transcripts']['abbreviation']['field']['#type'] = 'select';
+    $form['Transcripts']['abbreviation']['field']['#title'] = 'organism';
+    $form['Transcripts']['abbreviation']['field']['#title_display'] = 'after';
         $form['Transcripts']['abbreviation']['field']['#options'] = array(
                '' => t('Any organism'),
                 'A. saccharum' => t('Acer saccharum (Sugar Maple)'),
@@ -266,11 +266,11 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
                 'Q. robur' => t('Quercus robur (Pedunculate Oak)'),
                 'Q. rubra' => t('Quercus rubra (Northern Red Oak)'),
             ); 
-		if(isset($organism)){
-			if(in_array($organism, array_keys($options_default_arr))){
-            	$form['Transcripts']['abbreviation']['field']['#default_value'] = $options_default_arr[$organism];
-        	}
-		}
+    if(isset($organism)){
+      if(in_array($organism, array_keys($options_default_arr))){
+              $form['Transcripts']['abbreviation']['field']['#default_value'] = $options_default_arr[$organism];
+          }
+    }
     }
 }
 
@@ -278,35 +278,35 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
 /** _from_nth_entry form element submit callback **/
 function _from_nth_entry_submit($form, &$form_state){
 
-	if(!empty($_COOKIE['search_params'])){
-		$search_params = explode('|', $_COOKIE['search_params']);
-		$params = array();
-		$params['index'] = $search_params[0];
-		$params['type'] = $search_params[1];
-		$params['body'] = $search_params[2];
-		$client = new Elasticsearch\Client();
-		$params['from'] = $form_state['values']['nth'];
-	    $params['size'] = 1000;
+  if(!empty($_COOKIE['search_params'])){
+    $search_params = explode('|', $_COOKIE['search_params']);
+    $params = array();
+    $params['index'] = $search_params[0];
+    $params['type'] = $search_params[1];
+    $params['body'] = $search_params[2];
+    $client = new Elasticsearch\Client();
+    $params['from'] = $form_state['values']['nth'];
+      $params['size'] = 1000;
 
 
-	    $search_result = $client->search($params);
-	
-		$search_block_name = $_COOKIE['search_block_name'];
-		$search_output_arr = array();
-	    foreach($search_result['hits']['hits'] as $key=>$value){
-	    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
-	        	if($field_name != 'submit'){
-	            	$field = $field_name;
-					$search_output_arr[$key][$field] = $value['_source'][$field];
-	        	}
-	    	}
-	    }
-		//---------end of running elastic search ---------------------
-		$_SESSION['search_output_arr'] = $search_output_arr;
+      $search_result = $client->search($params);
+  
+    $search_block_name = $_COOKIE['search_block_name'];
+    $search_output_arr = array();
+      foreach($search_result['hits']['hits'] as $key=>$value){
+        foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+            if($field_name != 'submit'){
+                $field = $field_name;
+          $search_output_arr[$key][$field] = $value['_source'][$field];
+            }
+        }
+      }
+    //---------end of running elastic search ---------------------
+    $_SESSION['search_output_arr'] = $search_output_arr;
 
-		// store search results in a cookie
-		//setcookie('search_output_arr', _elastic_search_results($search_output_arr));
-	}
+    // store search results in a cookie
+    //setcookie('search_output_arr', _elastic_search_results($search_output_arr));
+  }
 }
 
 
@@ -314,46 +314,46 @@ function _from_nth_entry_submit($form, &$form_state){
 /** download_table form submit **/
 function _download_table_submit($form, &$form_state){
 
-	if(!empty($_COOKIE['search_params'])){
-		// set memory to unlimited to get enough memory for file writing and download
-		ini_set('memory_limit', '-1');
-		$search_params = explode('|', $_COOKIE['search_params']);
-		$params = array();
-		$params['index'] = $search_params[0];
-		$params['type'] = $search_params[1];
-		$params['body'] = $search_params[2];
-	
-		$client = new Elasticsearch\Client();
-	    $params['size'] = 1000000;
-	
-	    $search_result = $client->search($params);
-	
-		$search_block_name = $_COOKIE['search_block_name'];
-		$search_output_arr = array();
-	    foreach($search_result['hits']['hits'] as $key=>$value){
-	    	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
-	        	if($field_name != 'submit'){
-	            	$field = $field_name;
-					$search_output_arr[$key][$field] = $value['_source'][$field];
-	        	}
-	    	}
-	    }
-		//---------end of running elastic search ---------------------
+  if(!empty($_COOKIE['search_params'])){
+    // set memory to unlimited to get enough memory for file writing and download
+    ini_set('memory_limit', '-1');
+    $search_params = explode('|', $_COOKIE['search_params']);
+    $params = array();
+    $params['index'] = $search_params[0];
+    $params['type'] = $search_params[1];
+    $params['body'] = $search_params[2];
+  
+    $client = new Elasticsearch\Client();
+      $params['size'] = 1000000;
+  
+      $search_result = $client->search($params);
+  
+    $search_block_name = $_COOKIE['search_block_name'];
+    $search_output_arr = array();
+      foreach($search_result['hits']['hits'] as $key=>$value){
+        foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
+            if($field_name != 'submit'){
+                $field = $field_name;
+          $search_output_arr[$key][$field] = $value['_source'][$field];
+            }
+        }
+      }
+    //---------end of running elastic search ---------------------
 
-	
-		// create a file pointer connected to the output stream
-		$destination = file_destination('temporary://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
-		$output = fopen($destination, 'w');
+  
+    // create a file pointer connected to the output stream
+    $destination = file_destination('temporary://'.'/elastic_output.csv', FILE_EXISTS_RENAME);
+    $output = fopen($destination, 'w');
 
-    	foreach($search_output_arr as $value){
-			fputcsv($output, $value);
-    	}
+      foreach($search_output_arr as $value){
+      fputcsv($output, $value);
+      }
 
-		// strip off 'temporary://'
-		$filename = substr($destination, 12); 
-		//drupal_goto(drupal_realpath($destination));
-		drupal_goto('sites/default/files/tmp/'. $filename);
-	}
+    // strip off 'temporary://'
+    $filename = substr($destination, 12); 
+    //drupal_goto(drupal_realpath($destination));
+    drupal_goto('sites/default/files/tmp/'. $filename);
+  }
 
 }
 

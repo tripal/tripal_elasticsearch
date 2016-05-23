@@ -1,31 +1,31 @@
 <?php
 
 function delete_elastic_indexed_tables_form($form, &$form_state){
-	$client = new Elasticsearch\Client();
-	$mappings = $client->indices()->getMapping();
-	$indices = array_keys($mappings);
-	$options = array();
-	foreach($indices as $index){
-		$options[$index] = $index;
-	}
+  $client = new Elasticsearch\Client();
+  $mappings = $client->indices()->getMapping();
+  $indices = array_keys($mappings);
+  $options = array();
+  foreach($indices as $index){
+    $options[$index] = $index;
+  }
 
-	$form['elastic_indices'] = array(
-		'#type' => 'checkboxes',
-		'#title' => t('Elastic indices'),
-		'#options' => $options,
-	);
+  $form['elastic_indices'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Elastic indices'),
+    '#options' => $options,
+  );
 
-	$form['delete_indices'] = array(
-		'#type' => 'submit',
-		'#value' => t('Delete indexed tables'),
-		'#prefix' => '<div id="delete-indices-submit">',
-		'#suffix' => '</div>',
-	);
+  $form['delete_indices'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete indexed tables'),
+    '#prefix' => '<div id="delete-indices-submit">',
+    '#suffix' => '</div>',
+  );
 
-	$form['#submit'][] = '_delete_elastic_indexed_tables_submit';
+  $form['#submit'][] = '_delete_elastic_indexed_tables_submit';
 
 
-	return $form;
+  return $form;
 }
 
 

@@ -6,24 +6,24 @@
  * Define a function to sort two dimensional array by values
  */
 function sort_2d_array_by_value($arr, $field, $sort){
-	$sorted_a = array();
-	foreach($arr as $k=>$v){
-		// create an array to store the field values
-		$field_array[$k] = $v[$field]; 
-	}
-	
-	if($sort == 'asc'){
-		asort($field_array);
-	}
-	else{
-		arsort($field_array);
-	}
-	
-	foreach(array_keys($field_array) as $k){
-		$sorted_a[] = $arr[$k];
-	}
-	
-	return $sorted_a;
+  $sorted_a = array();
+  foreach($arr as $k=>$v){
+    // create an array to store the field values
+    $field_array[$k] = $v[$field]; 
+  }
+  
+  if($sort == 'asc'){
+    asort($field_array);
+  }
+  else{
+    arsort($field_array);
+  }
+  
+  foreach(array_keys($field_array) as $k){
+    $sorted_a[] = $arr[$k];
+  }
+  
+  return $sorted_a;
 }
 //================End of sort_2d_array_by_value() =====================
 
@@ -32,35 +32,35 @@ function sort_2d_array_by_value($arr, $field, $sort){
  * Define a function to get the primary key of a table
  */
 function get_primary_key($table_name){
-	if(in_array($table_name, get_chado_table_list())){
-		$table = 'chado.'.$table_name;
-		$primary_key_sql = 'SELECT a.attname
-							FROM   pg_index i
-							JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                     					AND a.attnum = ANY(i.indkey)
-							WHERE  i.indrelid = \''.$table.'\'::regclass
-							AND    i.indisprimary;';
+  if(in_array($table_name, get_chado_table_list())){
+    $table = 'chado.'.$table_name;
+    $primary_key_sql = 'SELECT a.attname
+              FROM   pg_index i
+              JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                               AND a.attnum = ANY(i.indkey)
+              WHERE  i.indrelid = \''.$table.'\'::regclass
+              AND    i.indisprimary;';
 
-		$primary_key = db_query($primary_key_sql)->fetchAssoc();
-	}
-	else{
-		$table = $table_name;
-		$primary_key_sql = 'SELECT a.attname
-							FROM   pg_index i
-							JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                     		AND a.attnum = ANY(i.indkey)
-							WHERE  i.indrelid = \''.$table.'\'::regclass
-							AND    i.indisprimary;';
+    $primary_key = db_query($primary_key_sql)->fetchAssoc();
+  }
+  else{
+    $table = $table_name;
+    $primary_key_sql = 'SELECT a.attname
+              FROM   pg_index i
+              JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                         AND a.attnum = ANY(i.indkey)
+              WHERE  i.indrelid = \''.$table.'\'::regclass
+              AND    i.indisprimary;';
 
-		$primary_key = db_query($primary_key_sql)->fetchAssoc();
-	}
+    $primary_key = db_query($primary_key_sql)->fetchAssoc();
+  }
 
 
-	if(is_array($primary_key)){
-		$primary_key = implode($primary_key);
-	}
+  if(is_array($primary_key)){
+    $primary_key = implode($primary_key);
+  }
 
-	return $primary_key;
+  return $primary_key;
 
 }//============== End of primary key function ================================
 
