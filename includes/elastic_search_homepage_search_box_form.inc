@@ -57,17 +57,17 @@ function elastic_search_homepage_search_box_form_submit($form, &$form_state){
 		$elastic_special_chars = array('+', '-', '=', '&&', '||', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/');
 		// trim all whitespace at the beginning and the end
 		$keyword = trim($keyword);
-		// get the first and the end letter and see if there are '"'.
+		// get the first and the last letter and see if there are '"'.
 		$first_2_letters = substr($keyword, 0, 1);
-		$laster_2_letters = substr($keyword, -1, 1);
-		if($first_2_letters == '"' and $laster_2_letters == '"'){
+		$last_2_letters = substr($keyword, -1, 1);
+		if($first_2_letters == '"' and $last_2_letters == '"'){
 			// if the beginning and the end letters are '"', this is assumed as a phrase search
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
+			$keyword = str_replace($elastic_special_chars, ' ', $keyword);
 			$keyword = '\"'.$keyword.'\"';
 		}
 		else{
 			// if it is not a phrase search, remove all special characters.
-			$keyword = str_replace($elastic_special_chars, '', $keyword);
+			$keyword = str_replace($elastic_special_chars, ' ', $keyword);
 		}
 		$body_content = _build_elastic_query($searchMethod, $field, $keyword);
 		$highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';

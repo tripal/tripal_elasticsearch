@@ -120,17 +120,27 @@ function elastic_search_interface_form_submit($form, &$form_state){
 	$elasticsearch_query_elements = array();
 	foreach($form_state['values'][$search_block_name] as $field_name=>$search_data){
 		if($field_name != 'submit'){
-			//$table = explode('|', $field_name)[0];
-			//$field = explode('|', $field_name)[1];
 			$field = $field_name;
 			$keyword = $search_data['field'];
 			//$searchMethod = $search_data['search'];
-			$searchMethod = 'fuzzy';	
-			//$searchMethod = 'query_string';
+			//$searchMethod = 'fuzzy';	
+			$searchMethod = 'query_string';
 
 			if(!empty($keyword)){
-				$keyword = str_replace($elastic_special_chars, '', $keyword);
+				//$keyword = str_replace($elastic_special_chars, '', $keyword);
 				$keyword = trim($keyword);
+                // get the first and the last letter and see if there are '"'.
+                $first_2_letters = substr($keyword, 0, 1);
+                $last_2_letters = substr($keyword, -1, 1);
+                if($first_2_letters == '"' and $last_2_letters == '"'){
+                  // if the beginning and the end letters are '"', this is assumed as a phrase search
+                  $keyword = str_replace($elastic_special_chars, ' ', $keyword);
+                  $keyword = '\"'.$keyword.'\"';
+                }
+                else{
+                  // if it is not a phrase search, remove all special characters.
+                  $keyword = str_replace($elastic_special_chars, ' ', $keyword);
+                }
 				$elasticsearch_query_elements[$field] = _build_elastic_query($searchMethod, $field, $keyword);
 			}
 		} 

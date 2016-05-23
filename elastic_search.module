@@ -478,4 +478,3 @@ function elastic_search_node_delete($node){
 }
 
 
-
