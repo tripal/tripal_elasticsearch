@@ -242,7 +242,7 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
     }
   }
 
-    if(isset($form['Transcripts'])){
+  if(isset($form['Transcripts'])){
     $form['Transcripts']['abbreviation']['field'] = array();
     $form['Transcripts']['abbreviation']['field']['#type'] = 'select';
     $form['Transcripts']['abbreviation']['field']['#title'] = 'organism';
@@ -271,7 +271,12 @@ function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_
               $form['Transcripts']['abbreviation']['field']['#default_value'] = $options_default_arr[$organism];
           }
     }
-    }
+
+    $form['Transcripts']['hit_description']['field']['#title'] = 'blast hit description';
+    $form['Transcripts']['hit_description']['field']['#description'] = t('(Example keywords: [kinase], [receptor], [kinase OR receptor], [pectinesterase inhibitor])');
+    $form['Transcripts']['uniquename']['field']['#title'] = 'transcript unique name';
+    $form['Transcripts']['uniquename']['field']['#description'] = t('(Example keywords: ["maker-scaffold00001-augustus-gene-3.40-mRNA-1"], [contig1187], [comp22850_c0_seq5 OR contig1187])');
+  }
 }
 
 
