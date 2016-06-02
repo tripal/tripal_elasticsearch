@@ -5,4 +5,5 @@
     //alert("Drupal is awesome!");
 
   }); // end alert
- 
+
+})(jQuery) 

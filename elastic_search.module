@@ -173,6 +173,8 @@ function elastic_search_block_view($delta = ''){
 
   }
 
+drupal_add_js(drupal_get_path('module', 'elastic_search').'/js/hit_description.js');
+
     return $block;
 }
 
@@ -211,6 +213,16 @@ function _elastic_search_results($search_output_arr){
         }
         if(!empty($values['abbreviation']) and !empty($values['genus']) and !empty($values['species'])){
           $values['abbreviation'] = l($values['abbreviation'], 'organism/'.$values['genus'].'/'.$values['species']);
+        }
+        if(!empty($values['hit_description'])){
+          $arr = explode('<br/>', $values['hit_description']);
+          $arr[0] = !empty($arr[0])?$arr[0]:'';
+          $arr[1] = !empty($arr[1])?$arr[1]:'';
+          $arr[2] = !empty($arr[2])?$arr[2]:'';
+          $teaser = '<div class="hit_description_teaser">'.$arr[0].'<br/>'.$arr[1].'<br/>'.$arr[2].'<br/><b>more...</b><br/></div>';
+          $all = '<div class="hit_description_all">'.$values['hit_description'].'</div>';
+          $values['hit_description'] = $teaser.$all;
+          
         }
         $rows[] = array_values($values);
       }
