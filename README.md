@@ -28,12 +28,11 @@ Elasticsearch doesn't run as root, so change the ownership from `root` to anythi
 chown -R username:username elasticsearch-1.7.1
 ```
 
-### Configuration `elasticsearch.yml`
-Add the following code to `elasticsearch.yml` to disable remote access in elasticsearch
-```
-cd elasticsearch-1.7.1/config
-network.host: localhost
-```
+### Configure `elasticsearch.yml`
+
+* `cd elasticsearch-1.7.1/config`
+* Open the configuration file: `vi elasticsearch.yml`
+* Find the line starting with `#network.host:` and add `network.host: localhost` below it
 
 ### Start and stop elasticsearch
 * To start: `cd elasticsearch-1.7.1` and `bin/elasticsdearch`
@@ -41,7 +40,7 @@ network.host: localhost
 
 ### [Run elasticsearch on the backgroud](https://www.elastic.co/guide/en/elasticsearch/reference/current/setup.html)
 * `cd elasticsearch-1.7.1`
-* `bin/elasticsdearch`
+* `bin/elasticsdearch -d`
 
 
 `elastic_search` module can index any chado tables and make data in chado tables searchable. It intearacts with the databases directly, so it is independent of Tripal. 
