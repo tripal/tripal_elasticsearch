@@ -9,7 +9,7 @@
 /**
  * Implements hook_schema().
  */
-function elastic_search_schema(){
+function tripal_elasticsearch_schema(){
   $schema['elastic_search'] = array(
     'description' => 'The table for store data for building search blocks',
     'fields' => array(
@@ -35,7 +35,7 @@ function elastic_search_schema(){
 /**
  * implements hook_install()
  */
-function elastic_search_install(){
+function tripal_elasticsearch_install(){
   $item = array(
       'link_title' => 'Elasticsearch',
       'link_path' => 'elastic_search',

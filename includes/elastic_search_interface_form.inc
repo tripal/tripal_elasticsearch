@@ -81,7 +81,7 @@ function elastic_search_interface_form($form, &$form_state){
 
   //$form['#attributes']['class'][]  = 'elastic_search_interface_form';
   $form['#attached']['js'] = array(
-    drupal_get_path('module', 'elastic_search').'/js/download.js',
+    drupal_get_path('module', 'tripal_elasticsearch').'/js/download.js',
   );
 
   return $form;
@@ -214,7 +214,7 @@ function elastic_search_interface_form_submit($form, &$form_state){
 /**
  * implements hook_form_alter().
  */
-function elastic_search_form_elastic_search_interface_form_alter(&$form, &$form_state){
+function tripal_elasticsearch_form_elastic_search_interface_form_alter(&$form, &$form_state){
             $options_default_arr = array(
                 'acer saccharum' => t('A. saccharum'),
                 'castanea dentata' => t('C. dentata'),
