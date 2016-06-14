@@ -4,7 +4,7 @@
     //$.msg(content: "the page is ready");
     $(".hit_description_all").hide();
 
-    $("#block-elastic_search-elastic_search_tables td").hover(
+    $("#block-tripal_elasticsearch-elastic_search_tables td").hover(
       function(){
         $(this).css("background-color", "#6699ff");
         $(this).find(".hit_description_teaser").hide();
