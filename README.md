@@ -22,7 +22,7 @@ sudo wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-
 tar -xvf elasticsearch-1.7.1.tar.gz
 ```
 
-### Change the ownership of elasticsearch directory from `root` to `mchen33`
+### Change the ownership of elasticsearch directory from `root` to `yourusername`
 Elasticsearch doesn't run as root, so change the ownership from `root` to anything else.
 ```
 chown -R username:username elasticsearch-1.7.1
