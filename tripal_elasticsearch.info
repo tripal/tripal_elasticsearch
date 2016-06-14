@@ -1,0 +1,10 @@
+name = Elasticsearch
+description = Provide website-wide indexing and searching. Also provide interface for indexing and searching for any drupal and chado tables.  
+package = Elasticsearch
+core = 7.x
+dependencies[] = ultimate_cron:ultimate_cron
+dependencies[] = queue_ui:queue_ui
+files[] = elastic_search.module
+
+stylesheets[all][] = css/pace-centerCircle.css
+scripts[] = js/pace.min.js
