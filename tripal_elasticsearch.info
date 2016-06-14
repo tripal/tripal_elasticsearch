@@ -6,5 +6,3 @@ dependencies[] = ultimate_cron:ultimate_cron
 dependencies[] = queue_ui:queue_ui
 files[] = tripal_elasticsearch.module
 
-stylesheets[all][] = css/pace-centerCircle.css
-scripts[] = js/pace.min.js
