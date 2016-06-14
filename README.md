@@ -2,7 +2,7 @@
 
 `elastic_search` is a drupal module which integrates the powerful search engine [elasticsearch](https://www.elastic.co/) with drupal sites, providing general site-wide indexing and search, as well as specific indexing and search for any number of drupal and chado tables. It also provides an easy way to build search interface for individual drupal and chado tables after these tables are elastic-indexed. 
 
-## The dependency of `elastic_search`
+## The dependencies of `elastic_search`
 * The module `elastic_search` depends on the search engine `elasticsearch`. So you need to install [`elasticsearch`](https://www.elastic.co/downloads/elasticsearch) to run this module. 
 * This module use `elasticsearch-php client` library to interact with `elasticsearch`. So you will need to install this library. However, when you install this module, it will come with the `elasticsearch-php client` library.
 
