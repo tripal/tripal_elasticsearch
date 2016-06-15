@@ -3,8 +3,8 @@
 `tripal_elasticsearch` is a drupal module which integrates the powerful search engine [elasticsearch](https://www.elastic.co/) with drupal sites, providing general site-wide indexing and search, as well as specific indexing and search for any number of drupal and chado tables. It also provides an easy way to build search interface for individual drupal and chado tables after these tables are elastic-indexed. 
 
 ## The dependencies of `tripal_elasticsearch`
-* The module `tripal_elasticsearch` depends on the search engine `elasticsearch`. So you need to install [`elasticsearch`](https://www.elastic.co/downloads/elasticsearch) to run this module. 
-* This module use `elasticsearch-php client` library to interact with `elasticsearch`. So you will need to install this library. However, when you install this module, it will come with the `elasticsearch-php client` library.
+* The module `tripal_elasticsearch` depends on the search engine `elasticsearch`. Please follow [`the download and install directions`](https://www.elastic.co/downloads/elasticsearch) to run this module. 
+* This module use `elasticsearch-php client` library to interact with `elasticsearch`. The normal elasticsearch install will come with the `elasticsearch-php client` library.
 
 ## Install elasticsearch
 ### Elasticsearch requires php version > 5.3.9
@@ -23,7 +23,7 @@ tar -xvf elasticsearch-1.7.1.tar.gz
 ```
 
 ### Change the ownership of elasticsearch directory from `root` to `yourusername`
-Elasticsearch doesn't run as root, so change the ownership from `root` to anything else.
+Elasticsearch doesn't run as root, so change the ownership from `root` to a different user.
 ```
 chown -R username:username elasticsearch-1.7.1
 ```
@@ -43,7 +43,7 @@ chown -R username:username elasticsearch-1.7.1
 * `bin/elasticsdearch -d`
 
 
-`tripal_elasticsearch` module can index any chado tables and make data in chado tables searchable. It intearacts with the databases directly, so it is independent of Tripal. 
+The `tripal_elasticsearch` module can index any chado tables and make data in chado tables searchable. It intearacts with the databases directly.
 
 
 ## Install `tripal_elasticsearch` module
@@ -51,7 +51,9 @@ chown -R username:username elasticsearch-1.7.1
 * Download the module `wget https://github.com/tripal/tripal_elasticsearch.git`
 * Run drush command to install: `drush en tripal_elasticsearch -y`
 
-__Currently this module is customized for the [hardwood genomics database](hardwoodgenomics.org). You can still install and run this module. But you may see some warning messages.__
+You can also fork the module from github and contribute to development.
+
+__Currently this module has only been extensively tested on the [hardwood genomics database](hardwoodgenomics.org). We welcome feedback on any problems you have with using it on other sites.__
 
 ## Site-wide indexing
 * Go to __/admin/config/elastic\_search__
