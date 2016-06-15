@@ -402,4 +402,10 @@ function ES_table_blocks_form($form, &$form_state, $table_name){
 function ES_table_blocks_form_submit($form, &$form_state){
   // Use $form_state['input'] instead of $form_state['values'] to get the correct data!!!
 dpm($form_state['input']);
+  $output = '';
+  $output .= '<h2>This is the elasticsearch output</h2>';
+  $output .= l('Example link', 'node/45');
+  $form['output'] = array(
+    '#markup' => $output, 
+  );
 }
