@@ -68,32 +68,6 @@ You will see the page is loading. Do not close the page until the loading is fin
 
 Once the cron queue building is done, the site-wide indexing process will run in the background.
 
-## Specific database tables indexing
-Specific database tables indexing allows user to do:
-* select any tables from the drupal public databases or chado databases to index
-* index joined tables to combine data from different tables
-* select any number of fields from indexed tables for search
-
-* Go to __/admin/config/search/elastic_search/indexing__
-* Select a table from the dropdown
-* select fields from the table that you want to index
-* click `Elasticindex` button
-
-![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
-
-### Build search block for indexed tables
-* Go to __/admin/config/search/elastic_search/search_block_builder__
-* Select a table from the dropdown. All these tables are indexed tables
-* Select fields that you want to give users searching access
-* Enter a unique name for this block. The block name can only contain letters and numbers, starting with letters
-
-![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
-
-All search blocks will be displayed on the `/elastic_search` page
-
-![elastic_search page](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/elastic_search.png)
-
-
 ### Monitor the number of items in the cron queue
 
 Go to __/admin/config/system/queue-ui__ to check how many items remaining in your elastic\_search cron queue. When no items left in the elastic\_search cron queue, the site-wide indexing process is finished.
@@ -122,12 +96,36 @@ You may need to add the jobs to your crontab file to continously trigger your cr
 ```
 
 
+Specific database tables indexing
+-----------------------------------
+Specific database tables indexing allows user to do:
+* select any tables from the drupal public databases or chado databases to index
+* index joined tables to combine data from different tables
+* select any number of fields from indexed tables for search
 
+* Go to __/admin/config/search/elastic_search/indexing__
+* Select a table from the dropdown
+* select fields from the table that you want to index
+* click `Elasticindex` button
+
+![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
+
+### Build search block for indexed tables
+* Go to __/admin/config/search/elastic_search/search_block_builder__
+* Select a table from the dropdown. All these tables are indexed tables
+* Select fields that you want to give users searching access
+* Enter a unique name for this block. The block name can only contain letters and numbers, starting with letters
+
+![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
+
+All search blocks will be displayed on the `/elastic_search` page
+
+![elastic_search page](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/elastic_search.png)
 
 ### Index joined fields from multiple tables
-It is very common that we need to search/filter information from different tables and then display the results. `tripal_elasticsearch` allows you to do so very easily by indexing joined tables. First, you need to join the tables that contain the data that you want to index. Al long as the joined table is in your public database or chado database schema, it will become visible on the dropdown table list. Then you can index the table normally.
+It is very common that we need to search/filter information from different tables and then display the results. `tripal_elasticsearch` allows you to do so very easily by indexing joined tables. First, you need to join the tables that contain the data that you want to index. As long as the joined table is in your public database or chado database schema, it will become visible on the dropdown table list. Then you can index the table normally.
 
-There are many ways to join tables. An easy way for chado tables is do create MViews. After you index the joined tables, you can delete them or the MViews. Below is an example of indexing data from 3 chado tables (chado.feature, chado.organism, and chado.blast\_hit\_data). The joined table name is called __search\_transcripts\_all__
+There are many ways to join tables. An easy way for chado tables is to use the MViews module to create a materialized view. After you index the joined tables, you can delete them. Below is an example of indexing data from 3 chado tables (chado.feature, chado.organism, and chado.blast\_hit\_data). The joined table name is called __search\_transcripts\_all__
 
 ![fields from multiple tables](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/fields-from-multiple-tables.png)
 
