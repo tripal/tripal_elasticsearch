@@ -33,6 +33,7 @@ chown -R username:username elasticsearch-1.7.1
 * `cd elasticsearch-1.7.1/config`
 * Open the configuration file: `vi elasticsearch.yml`
 * Find the line starting with `#network.host:` and add `network.host: localhost` below it
+* This is also your opportunity to change where elasticsearch puts the index files, which can be quite large. See the path.data config line.
 
 ### Start and stop elasticsearch
 * To start: `cd elasticsearch-1.7.1` and `bin/elasticsdearch`
@@ -49,15 +50,17 @@ The `tripal_elasticsearch` module can index any chado tables and make data in ch
 ## Install `tripal_elasticsearch` module
 * Install the module as a custom module: `cd sites/all/modules/custom`
 * Download the module `wget https://github.com/tripal/tripal_elasticsearch.git`
-* Run drush command to install: `drush en tripal_elasticsearch -y`
+* Run drush command to install: `drush en tripal_elasticsearch -y` (If you don't already have dependencies ultimate_cron and queue_ui, this will help you install them as well).
 
 You can also fork the module from github and contribute to development.
 
-__Currently this module has only been extensively tested on the [hardwood genomics database](hardwoodgenomics.org). We welcome feedback on any problems you have with using it on other sites.__
+__Currently this module has only been extensively tested on the [hardwood genomics database](http://hardwoodgenomics.org). We welcome feedback on any problems you have with using it on other sites.__
+
+The module will enable two default blocks, one is a simple search box, the other is for more detailed queries. If you try to use them, they won't work yet. For them to work, you will need to create the index.
 
 ## Site-wide indexing
 * Go to __/admin/config/elastic\_search__
-* Select __index_website__ from the dropdown table list and then click on the submit button
+* Select __index_website__ from the dropdown table list and then click on the "Elasticindex" button
 
 You will see the page is loading. Do not close the page until the loading is finished. A cron queue is being created during this process. This may take one or two minitues depending on how many nodes your website has.
 
