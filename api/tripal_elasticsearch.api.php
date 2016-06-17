@@ -231,7 +231,7 @@ function _build_elastic_search_query($field, $keyword, $searchMethod='query_stri
   $query_string_template = ' {"'.$searchMethod.'":{"default_field":"_field_", "query":"_keyword_", "default_operator":"AND"}} ';
   $search = array("_field_", "_keyword_");
   $replace = array($field, $keyword);
-  $query = str_replace($search, $replace, $query_string);
+  $query = str_replace($search, $replace, $query_string_template);
 
   return $query;
 }
@@ -281,7 +281,10 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
   $body_query_elements = array();
   foreach($field_keyword_pairs as $field=>$keyword){
     //Put queries in an array
-    $body_query_elements[] = _build_elastic_search_query($field, $keyword);
+    if(!empty($keyword)){
+      $keyword = _remove_special_chars($keyword);
+      $body_query_elements[] = _build_elastic_search_query($field, $keyword);
+    }
   }
   $body_query = implode(',', $body_query_elements);
   $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
@@ -297,16 +300,14 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
   $params['size'] = $size;
   $search_results = $client->search($params);
 
-  $search_hits_records = array();
+  $search_hits= array();
   foreach($search_results['hits']['hits'] as $key=>$value){
-    if(!empty($keyword)){
-      foreach($field_keyword_pars as $field=>$keyword){
-        $search_hits_records[$key][$field] = $value['_source'][$field];
+      foreach($field_keyword_pairs as $field=>$keyword){
+        $search_hits[$key][$field] = $value['_source'][$field];
       }
-    }
   }
 
-  return array('search_hits_count'=>$search_hits_count, 'search_hits_records'=>$search_hits_records);
+  return array('search_hits_count'=>$search_hits_count, 'search_hits'=>$search_hits, 'search_results'=>$search_results);
 
 }
 
@@ -314,12 +315,13 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
 
 
 /*
- * This function takes in the search_hits_records array and 
+ * This function takes in the search_hits array and 
  * return a themed table.
  */
-function get_search_hits_records_table($search_hits_records){
+function get_search_hits_table($search_hits){
   // Get table header
-  $elements = array_chunk($search_hits_records);
+  $elements = array_chunk($search_hits, 1);
+  //dpm($elements);
   $header = array();
   foreach($elements[0] as $value){
     foreach(array_keys($value) as $field){
@@ -328,7 +330,11 @@ function get_search_hits_records_table($search_hits_records){
   }
 
   if(isset($_GET['sort']) and isset($_GET['order'])){
-    $sorted_hits_records = sort_2d_array_by_value($search_hits_records, $_GET['order'], $_GET['sort']);
+    $sorted_hits_records = sort_2d_array_by_value($search_hits, $_GET['order'], $_GET['sort']);
+  }
+  else{
+    // By default, the table is sorted by the first column by ascending order.
+    $sorted_hits_records = sort_2d_array_by_value($search_hits, $header[0]['field'], 'asc');
   }
 
   //Get table rows
@@ -343,4 +349,21 @@ function get_search_hits_records_table($search_hits_records){
   $output .= theme('pager', array('quantity', count($rows)));
 
   return $output;
+}
+
+
+
+/*
+ * Test if a string is an elasticsearch index
+ */
+function is_elastic_index($index){
+  $client = new Elasticsearch\Client();
+  $mappings = $client->indices()->getMapping();
+  $indices = array_keys($mappings);
+  $res = false;
+  if(in_array($index, $indices)){
+    $res = true;
+  }
+
+  return $res;
 }

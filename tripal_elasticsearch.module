@@ -62,17 +62,17 @@ function tripal_elasticsearch_menu(){
 
   $items['elastic_search'] = array(
     'title' => '', // t('Elasticsearch'),
-    'page callback' => '_elastic_search_interface_form',
+    'page callback' => 'tripal_elasticsearch_page',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/elastic_search_interface_form.inc',
+    'file' => 'includes/tripal_elasticsearch_blocks_form.inc',
   );
   $items['elastic_search/organism/%'] = array(
     'title' => '', // t('Elasticsearch'),
-    'page callback' => '_elastic_search_interface_form',
+    'page callback' => 'tripal_elasticsearch_page',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/elastic_search_interface_form.inc',
+    'file' => 'includes/tripal_elasticsearch_blocks_form.inc',
   );
   $items['search-website'] = array(
     'title' => '',
@@ -109,17 +109,12 @@ function _elastic_search_blocks(){
 
 
 
-/** page callback to return elastic_search_interface_form. **/
-function _elastic_search_interface_form(){
-  $output = drupal_get_form('elastic_search_interface_form');
-  $output = render($output);
-  if(isset($_SESSION['search_output_arr'])){
-    if(isset($_SESSION['search_hits_count'])){
-      $output .= '<h6><span style="color:red">'.$_SESSION['search_hits_count'].'</span> records were found.</h6>';
-      $output .= '<hr />';
-    }
-  }
-  return $output;
+/*
+ * Create an empty page for hosting tripal_elasticsearch blocks
+ * These blocks are configurable and can be placed anywhere else.
+ */
+function tripal_elasticsearch_page(){
+  return '';
 }
 
 
@@ -128,6 +123,7 @@ function _elastic_search_interface_form(){
  * Implements hook_block_info().
  */
 function tripal_elasticsearch_block_info(){
+  $blocks = array();
   // a search box displayed on the front page
   $blocks['elastic_homepage_search_box'] = array(
     'info' => t('An elastic search box on the home page'),
@@ -139,35 +135,26 @@ function tripal_elasticsearch_block_info(){
 
   $result = db_query('SELECT DISTINCT(table_name) FROM elastic_search');
   foreach($result as $record){
-    $block_name = substr('ES_Form_'.$record->table_name, 0, 32); // For some reason, block name cannot be longer than 32 chars
-    $blocks[$block_name] = array(
-      'info' => t('tripal_elasticsearch block for table '.$record->table_name),
+    // For some reason, block name cannot be longer than 32 chars
+    $block_name_form = substr('elastic form: '.$record->table_name, 0, 32); 
+    $blocks[$block_name_form] = array(
+      'info' => t('tripal_elasticsearch block for search form: '.$record->table_name),
       'status' => TRUE,
       'region' => 'content',
       'visibility' => BLOCK_VISIBILITY_LISTED,
       'pages' => "elastic_search\nelastic_search/*",
       'cache' => DRUPAL_NO_CACHE,
     );
-/*
-    $blocks[$block_name] = array(
-      'info' => t('An tripal_elasticsearch block for table '.$record->table_name),
+    $block_name_hits = substr('elastic hits: '.$record->table_name, 0, 32);
+    $blocks[$block_name_hits] = array(
+      'info' => t('tripal_elasticsearch block for search results: '.$record->table_name),
       'status' => TRUE,
+      'region' => 'content',
       'visibility' => BLOCK_VISIBILITY_LISTED,
       'pages' => "elastic_search\nelastic_search/*",
       'cache' => DRUPAL_NO_CACHE,
     );
-*/
   }
-
-  $blocks['elastic_search_tables'] = array(
-    'info' => t('An elastic search box for search data in database tables'),
-    'status' => TRUE,
-    'region' => 'content',
-    'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => "elastic_search\nelastic_search/*",
-    'cache' => DRUPAL_NO_CACHE,
-    'weight' => 0,
-  );
 
     return $blocks;
 }
@@ -180,50 +167,55 @@ function tripal_elasticsearch_block_view($delta = ''){
 
   $block = array();
   $result = db_query('SELECT DISTINCT(table_name) FROM elastic_search');
+  $table_names = array();
   foreach($result as $record){
-    $block_names[] = substr('ES_'.$record->table_name, 0, 32);
-  }   
+    $table_names[] = $record->table_name;
+  } 
+  // strip off 'ES_form' or 'ES_hits' to get table name
+  $table = substr($delta, 14);
+  if(in_array($table, $table_names)){
+    $form = 'elastic form: '.$table;
+    $hits = 'elastic hits: '.$table;
 
-  if(in_array($delta, $block_names)){
-    $block['subject'] = $delta;
-    //$block['content'] = 'This is block for '.$delta;
-    $table_name = str_replace('ES_', '', $delta);
-    $block['content'] = drupal_get_form('ES_table_blocks_form', $table_name);
-  }
-  else{
-    switch($delta){
-      case 'elastic_search_tables':
-        $block['subject'] = '';
-        if(!empty($_SESSION['search_output_arr']))
-          $block['content'] = _elastic_search_results($_SESSION['search_output_arr']);
-        else
-          $block['content'] = '';
-      break;
-  
-      case 'elastic_homepage_search_box':
-        $block['subject'] = '';
-        $block['content'] = drupal_get_form('elastic_search_homepage_search_box_form');
-      break;
+    // Get search hits
+    $form_input = isset($_SESSION['elastic_form_input'])?$_SESSION['elastic_form_input']:null;    
+    unset($_SESSION[$table.'_form_input']);
+    if(!empty($form_input)){
+      $index_table = _get_field_keyword_pairs($form_input)['table'];
+      $field_keyword_pairs = _get_field_keyword_pairs($form_input)['field_keyword_pairs'];
+      // Only display the results block for the corresponding form block
+      if($table == $index_table and is_elastic_index($index_table)){
+        $search_hits = _run_elastic_search($table, $field_keyword_pairs)['search_hits'];
+        if(!empty($search_hits)){
+          $search_hits_table = get_search_hits_table($search_hits);
+        }
+        else{
+          $search_hits_table = '<font color="red">No records were found.</font>';
+        }
+      }
+      else{
+        $search_hits_table = '<font color="red">No indexed data for table <b>'.$table.'</b>. 
+                              Please index the table first.</font>';
+      }
     }
-  }
-/*
-  switch($delta){
-    case 'elastic_search_tables':
-      $block['subject'] = '';
-      if(!empty($_SESSION['search_output_arr']))
-        $block['content'] = _elastic_search_results($_SESSION['search_output_arr']);
-      else
-        $block['content'] = '';
-    break;
 
-    case 'elastic_homepage_search_box':
-      $block['subject'] = '';
-      $block['content'] = drupal_get_form('elastic_search_homepage_search_box_form');
-    break;
+    switch($delta){
+      case $form:
+        $block['subject'] = $form;
+        $block['content'] = drupal_get_form('ES_table_blocks_form', $table);
+        break;
+      case $hits:
+        $block['subject'] = $hits;
+        if($table != $index_table){
+          $search_hits_table = '';
+        }
+        $block['content'] = $search_hits_table;
+        break;
+    }
+  }  
 
-  }
-*/
-drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/hit_description.js');
+
+  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/hit_description.js');
 
   return $block;
 }
