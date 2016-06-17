@@ -21,6 +21,12 @@ function main_search_box_form($form, &$form_state){
 }
 
 
+function main_search_box_form_submit($form, &$form_state){
+  $_SESSION['main_search_keyword'] = $form_state['values']['search_box'];
+  $form_state['redirect'] = 'search-website';
+} 
+
+
 
 /** elastic_search_homepage_search_box_form submit **/
 function elastic_search_homepage_search_box_form_submit($form, &$form_state){

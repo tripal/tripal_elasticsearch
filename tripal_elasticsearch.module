@@ -233,8 +233,19 @@ function tripal_elasticsearch_block_view($delta = ''){
         $block['content'] = drupal_get_form('main_search_box_form');
         break;
       case 'main_search_results':
+        $main_search_keyword = isset($_SESSION['main_search_keyword'])?$_SESSION['main_search_keyword']:'';
+        unset($_SESSION['main_search_keyword']);
+        $table = 'index_website';
+        $field_keyword_pairs = array('node_content'=>$main_search_keyword); 
+        $search_hits = _run_elastic_search($table, $field_keyword_pairs)['search_hits'];
+        if(!empty($search_hits)){
+          $search_hits_table = get_search_hits_table($search_hits);
+        }
+        else{
+          $search_hits_table = '<font color="red">No records were found.</font>';
+        }
         $block['subject'] = '';
-        $block['content'] = 'This is your website search results';
+        $block['content'] = $search_hits_table;
     }
   }
 
