@@ -224,3 +224,123 @@ function _build_elastic_query($searchMethod, $field, $keyword){
 
 
 
+/* 
+ * Build elatic search queries
+ */
+function _build_elastic_search_query($field, $keyword, $searchMethod='query_string'){
+  $query_string_template = ' {"'.$searchMethod.'":{"default_field":"_field_", "query":"_keyword_", "default_operator":"AND"}} ';
+  $search = array("_field_", "_keyword_");
+  $replace = array($field, $keyword);
+  $query = str_replace($search, $replace, $query_string);
+
+  return $query;
+}
+
+
+
+/*
+ * Escape special characters for elasticsearch
+ */
+function _remove_special_chars($keyword){
+  $elastic_special_chars = array('+', '-', '=', '&&', '||', '>',
+                                 '<', '!', '(', ')', '{', '}', '[',
+                                 ']', '^', '"', '~', '*', '?', ':', '\\', '/');
+
+  $keyword = trim($keyword);
+  // Check if $keyword starts and ends with double quotations
+  $start = substr($keyword, 0, 1);
+  $end = substr($keyword, -1, 1);
+  $keyword = str_replace($elastic_special_chars, ' ', $keyword);
+  if($start == '"' and $end == '"'){
+    $keyword = '\"'.$keyword.'\"';
+  }
+
+  return $keyword;
+}
+
+
+
+/*
+ * This function takes form input and return an array, of which
+ * the keys are field names and values are corresponding keywords.
+ */
+function _get_field_keyword_pairs($form_input){
+  $table = array_keys($form_input)[0];
+  $field_keyword_pairs = $form_input[$table];
+  return array('table'=>$table, 'field_keyword_pairs'=>$field_keyword_pairs);
+}
+
+
+function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
+
+  $body_curl_head = '{';
+  $body_boolean_head = '"query" : {"bool" : {"must" : [';
+  $body_boolean_end = ']}}';
+  $body_curl_end = '}';
+
+  $body_query_elements = array();
+  foreach($field_keyword_pairs as $field=>$keyword){
+    //Put queries in an array
+    $body_query_elements[] = _build_elastic_search_query($field, $keyword);
+  }
+  $body_query = implode(',', $body_query_elements);
+  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
+
+  $client = new Elasticsearch\Client();
+  $params = array();
+  $params['index'] = $table;
+  $params['type'] = $table;
+  $params['body'] = $body;
+  $search_hits_count = $client->count($params)['count'];
+
+  $params['from'] = $from;
+  $params['size'] = $size;
+  $search_results = $client->search($params);
+
+  $search_hits_records = array();
+  foreach($search_results['hits']['hits'] as $key=>$value){
+    if(!empty($keyword)){
+      foreach($field_keyword_pars as $field=>$keyword){
+        $search_hits_records[$key][$field] = $value['_source'][$field];
+      }
+    }
+  }
+
+  return array('search_hits_count'=>$search_hits_count, 'search_hits_records'=>$search_hits_records);
+
+}
+
+
+
+
+/*
+ * This function takes in the search_hits_records array and 
+ * return a themed table.
+ */
+function get_search_hits_records_table($search_hits_records){
+  // Get table header
+  $elements = array_chunk($search_hits_records);
+  $header = array();
+  foreach($elements[0] as $value){
+    foreach(array_keys($value) as $field){
+      $header[] = array('data'=>$field, 'field'=>$field);
+    }
+  }
+
+  if(isset($_GET['sort']) and isset($_GET['order'])){
+    $sorted_hits_records = sort_2d_array_by_value($search_hits_records, $_GET['order'], $_GET['sort']);
+  }
+
+  //Get table rows
+  foreach($sorted_hits_records as $values){
+    $rows[] = array_values($values);
+  }
+
+  $per_page = 10;
+  $current_page = pager_default_initialize(count($rows), $per_page);
+  $chunks = array_chunk($rows, $per_page, TRUE);
+  $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page] ));
+  $output .= theme('pager', array('quantity', count($rows)));
+
+  return $output;
+}
