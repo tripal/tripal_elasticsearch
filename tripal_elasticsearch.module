@@ -207,12 +207,11 @@ function tripal_elasticsearch_block_view($delta = ''){
                                   '</em></span> records were found. ';
         $start = strval($search_from) + 1;
         if($search_hits_count<1000){
-          $count = $search_hits_count;
+          $end = $search_hits_count;
         }
         else{
-          $count = 1000;
+          $end = $start + 1000;
         }
-        $end = $start + $count;
         $search_hits_count_html .= 'Records from '. 
                                    '<span style="color:red"><em>'.$start.'</em></span>'. 
                                    ' to '. 
