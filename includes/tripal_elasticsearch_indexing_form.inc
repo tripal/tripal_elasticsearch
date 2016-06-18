@@ -113,13 +113,13 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
   // Get selected fields=============
   $field_list = get_column_list($selected_table);
   $selected_fields_keys = $form_state['values']['fields'];
-  $_SESSION['selected_fields'] = array();
+  $selected_fields = array();
 
   if(!empty($selected_fields_keys)){
     foreach($selected_fields_keys as $key){
       // check if $key is an alphanumeric character.
       if(ctype_alnum($key)){
-        $_SESSION['selected_fields'][] = $field_list[$key];
+        $selected_fields[] = $field_list[$key];
       }
     }
   }
@@ -132,10 +132,9 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
 
   // separate the selected fields by ','.
   // and insert this string into the sql query statement.
-  $comma_separated_fields = implode(", ", $_SESSION['selected_fields']);
-  $_SESSION['comma_separated_fields'] = implode(", ", $_SESSION['selected_fields']);
+  $comma_separated_fields = implode(", ", $selected_fields);
     // Use the first field to order the database table when implement queries.
-    $order_by_field = $_SESSION['selected_fields'][0];
+    $order_by_field = $selected_fields[0];
     //====="SELECT * FROM chado.blast_hit_data ORDER BY RANDOM() LIMIT 1000;"
 
 
@@ -170,7 +169,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
       $sql = "SELECT title, nid FROM node WHERE status=1 ORDER BY nid LIMIT $k OFFSET $offset;";
     }
     else {
-      $sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
+      $sql = "SELECT ". $comma_separated_fields. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
     }
     $item->sql = $sql;
     // also store selected table

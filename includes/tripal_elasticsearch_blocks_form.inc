@@ -1,8 +1,10 @@
 <?php
 
-
-
-function ES_table_blocks_form($form, &$form_state, $table_name){
+/*
+ * Select all tables and corresponding fields from database table elastic_search
+ * and then build search forms
+ */
+function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
   $result = db_query('SELECT DISTINCT(table_name),search_block_name FROM elastic_search WHERE table_name=:table_name', array(':table_name'=>$table_name));
   foreach($result as $record){
     $table_name = $record->table_name;
@@ -33,7 +35,7 @@ function ES_table_blocks_form($form, &$form_state, $table_name){
 }
 
 
-function ES_table_blocks_form_submit($form, &$form_state){
+function tripal_elasticsearch_blocks_form_submit($form, &$form_state){
   // Use $form_state['input'] instead of $form_state['values'] to get the correct data!!!
   $_SESSION['elastic_form_input'] = $form_state['input'];
 }

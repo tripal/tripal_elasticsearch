@@ -215,7 +215,7 @@ function tripal_elasticsearch_block_view($delta = ''){
     switch($delta){
       case $form:
         $block['subject'] = $form;
-        $block['content'] = drupal_get_form('ES_table_blocks_form', $table);
+        $block['content'] = drupal_get_form('tripal_elasticsearch_blocks_form', $table);
         break;
       case $hits:
         $block['subject'] = $hits;
