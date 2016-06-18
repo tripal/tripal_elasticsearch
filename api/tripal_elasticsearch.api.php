@@ -271,6 +271,65 @@ function _get_field_keyword_pairs($form_input){
 }
 
 
+
+/*
+ * Takes in a table name and field-keyword pairs array and run elasticsearch for site wide search
+ */
+function _run_elastic_main_search($table, $field_keyword_pairs, $size=100){
+
+  $body_curl_head = '{';
+  $body_boolean_head = '"query" : {"bool" : {"must" : [';
+  $body_boolean_end = ']}}';
+  $body_curl_end = '}';
+
+  $body_query_elements = array();
+  foreach($field_keyword_pairs as $field=>$keyword){
+    //Put queries in an array
+    if(!empty($keyword)){
+      $keyword = _remove_special_chars($keyword);
+      $body_query_elements[] = _build_elastic_search_query($field, $keyword);
+    }
+  }
+  $body_query = implode(',', $body_query_elements);
+  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
+
+  $client = new Elasticsearch\Client();
+  $params = array();
+  $params['index'] = $table;
+  $params['type'] = $table;
+  $params['body'] = $body;
+  $search_hits_count = $client->count($params)['count'];
+
+  $highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';
+  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.','.$highlight.$body_curl_end;
+  $params['body'] = $body;
+  $params['size'] = $size;
+  $search_results = $client->search($params);
+
+  $main_search_hits= array();
+  foreach($search_results['hits']['hits'] as $key=>$value){
+      if(!empty($value)){
+        $node_id = $value['_source']['node_id'];
+        $node_title = $value['_source']['node_title'];
+        $node_content = implode('......', $value['highlight']['node_content']);
+        $node_content = strip_tags($node_content, '<em><b>');
+
+        $main_search_hits[$key]['node_id'] = $node_id;
+        $main_search_hits[$key]['node_title'] = $node_title;
+        $main_search_hits[$key]['node_content'] = $node_content;
+      }
+  }
+
+  return array('search_hits_count'=>$search_hits_count, 'main_search_hits'=>$main_search_hits);
+
+}
+
+
+
+
+/*
+ * Takes in a table name and field-keyword pairs array and run elasticsearch
+ */
 function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
 
   $body_curl_head = '{';
@@ -312,6 +371,35 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
 }
 
 
+/*
+ * This function takes in the search_hits array from elastic main search and
+ * returns a themed table.
+ */
+function get_main_search_hits_table($main_search_hits, $main_search_hits_count){
+  $output = '';
+  if(!empty($main_search_hits)){
+    $title = '<h6><span style="color:red"><em>'.$main_search_hits_count.'</em></span> records were found. The first ';
+    $title .= '<span style="color:red"><em>'. count($main_search_hits).'</em></span> records were displayed.</h6>';
+    foreach($main_search_hits as $value){
+      $row = '<h5>'.l($value['node_title'], 'node/'.$value['node_id']).'</h5>';
+      $row .= '<p>'.$value['node_content'].'</p>';
+      $rows[] = array('row' =>$row); 
+    }
+    $per_page = 10;
+    $current_page = pager_default_initialize(count($rows), $per_page);
+    // split list into page sized chunks
+    $chunks = array_chunk($rows, $per_page, TRUE);
+    // show the appropriate items from the list
+    $output .= theme('table', array('header'=>array(), 'rows'=>$chunks[$current_page]));
+    $output .= theme('pager', array('quantity', count($rows)));
+    $output = $title.$output;
+  }
+  else{
+    $output .= '<h6>No records were found</h6>';
+  }
+
+  return $output; 
+}
 
 
 /*

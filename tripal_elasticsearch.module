@@ -237,15 +237,18 @@ function tripal_elasticsearch_block_view($delta = ''){
         unset($_SESSION['main_search_keyword']);
         $table = 'index_website';
         $field_keyword_pairs = array('node_content'=>$main_search_keyword); 
-        $search_hits = _run_elastic_search($table, $field_keyword_pairs)['search_hits'];
-        if(!empty($search_hits)){
-          $search_hits_table = get_search_hits_table($search_hits);
+        if(!empty($main_search_keyword)){
+          $main_search_hits = _run_elastic_main_search($table, $field_keyword_pairs)['main_search_hits'];
+          if(!empty($main_search_hits)){
+            $main_search_hits_count = _run_elastic_main_search($table, $field_keyword_pairs)['search_hits_count'];
+            $main_search_hits_table = get_main_search_hits_table($main_search_hits, $main_search_hits_count);
+          }
         }
         else{
-          $search_hits_table = '<font color="red">No records were found.</font>';
+          $main_search_hits_table = '<font color="red">No records were found.</font>';
         }
         $block['subject'] = '';
-        $block['content'] = $search_hits_table;
+        $block['content'] = $main_search_hits_table;
     }
   }
 
