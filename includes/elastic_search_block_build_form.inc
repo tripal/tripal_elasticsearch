@@ -6,35 +6,29 @@
 /** elastic_search_form handler.**/
 function elastic_search_block_build_form($form, &$form_state) {
 
-    // You have to create a new $client to get access to the elasticsearch
-    $client = new Elasticsearch\Client();
-    $mappings = $client->indices()->getMapping();
-    $indices = array_keys($mappings);
+  // You have to create a new $client to get access to the elasticsearch
+  $client = new Elasticsearch\Client();
+  $mappings = $client->indices()->getMapping();
+  $indices = array_keys($mappings);
 
 
   // $indices is an array consisting of all indexed tables
   $form['search_block'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Build search block'),
+    '#title' => t('Build tripal_elasticsearch block'),
         '#prefix' => '<div id="search_block">',
         '#suffix' => '</div>',
   );
 
-    // Add search block name
-    $form['search_block']['search_block_name'] = array(
-        '#type' => 'textfield',
-        '#description' => t('Please input a name for the search block you want to add to the search interface.'),
-        '#title' => t('Name of elastic search block'),
-    );
   // Build search box for all selected fields
-    $form['search_block']['all_selected_fields'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Elastic search block'),
-    ); 
+  $form['search_block']['all_selected_fields'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('tripal_elasticsearch block'),
+  ); 
 
   $form['search_block']['indexed_tables'] = array(
     '#type' => 'select',
-    '#title' => t('Select tables for searching'),
+    '#title' => t('Select table for building searc block'),
     '#options' => elastic_search_get_table_list_options(),
     '#default_value' => t('Select a table'),
     '#ajax' => array(
@@ -90,8 +84,6 @@ function elastic_search_block_build_form($form, &$form_state) {
     '#submit' => array('_add_elastic_search_block'),
   );  
   
-
-  $form['#validate'][] = '_search_block_name_validate';
   
   return $form;  
 }
@@ -109,46 +101,27 @@ function _elastic_search_block_build_ajax($form, &$form_state){
 
 
 
-/**
- * search block name validation
- */
-function _search_block_name_validate($form, &$form_state){
-  if(empty($form_state['values']['search_block_name'])){
-    form_set_error('search_block_name', t('Search block name cannot be empty'));
-  }
-  if(preg_match("/[^a-z0-9]/i", $form_state['values']['search_block_name'])){
-    form_set_error('search_block_name', t('Only characters and digits are allowed in a search block name.'));
-  }
-
-}
-
-
 /** elastic_search_block_build_form submit callback **/
 // store form elements for building a list of blocks and for building a search interface.
 function _add_elastic_search_block($form, &$form_state){
-  $block_name = $form_state['values']['search_block_name'];
 
 
-$table_name = $form_state['values']['indexed_tables'];
-$record = array();
-// Delete the block in the database if that block name already exists
-$delete_search_block = db_delete('elastic_search')
-              ->condition('search_block_name', $block_name)
+  $table_name = $form_state['values']['indexed_tables'];
+  $record = array();
+  // Delete the block in the database if that block name already exists
+  $delete_search_block = db_delete('elastic_search')
+              ->condition('table_name', $table_name)
               ->execute();
-foreach($form_state['values'][$table_name] as $field){
-  if(!empty($field)){
-    $record['search_block_name'] = $form_state['values']['search_block_name'];
-    $record['table_name'] = $table_name;
-    $record['table_field'] = $field;
-    // write record into the elastic_search table in database
-    drupal_write_record('elastic_search', $record);
+  foreach($form_state['values'][$table_name] as $field){
+    if(!empty($field)){
+      $record['table_name'] = $table_name;
+      $record['table_field'] = $field;
+      // write record into the elastic_search table in database
+      drupal_write_record('elastic_search', $record);
+    }
   }
-}
+  
 
-
-  // store form element for building block list and search interface.
-  $_SESSION['elastic_search_blocks'][$block_name] = $form['search_block']['all_selected_fields'];
-  variable_set('elastic_search_blocks', $_SESSION['elastic_search_blocks']);
 
   $form_state['redirect'] = 'admin/config/search/elastic_search/search_blocks';
 }
