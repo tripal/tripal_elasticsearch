@@ -16,47 +16,47 @@ function tripal_elasticsearch_menu(){
     'title' => 'Elastic search',
     'description' => 'Configure elastic indexing and build search interface',
     'page callback' => 'drupal_goto',
-    'page arguments' => array($pre . '/indexing'),
+    'page arguments' => array($pre . '/tripal_elasticsearch_indexing'),
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
   );
 
 
-    $items[$pre.'/indexing'] = array(
+  $items[$pre.'/tripal_elasticsearch_indexing'] = array(
     'title' => t('Indexing'),
-    'page callback' => '_elastic_indexing_form',
+    'page callback' => 'tripal_elasticsearch_indexing_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/elastic_indexing_form.inc',
+    'file' => 'includes/tripal_elasticsearch_indexing_form.inc',
     'weight' => 0,
     );
-  $items[$pre.'/delete_elastic_indexed_tables'] = array(
-    'title' => t('Delete indexed tables'),
-    'page callback' => '_delete_elastic_indexed_tables',
+  $items[$pre.'/delete_tripal_elasticsearch_indices'] = array(
+    'title' => t('Delete indices'),
+    'page callback' => 'delete_tripal_elasticsearch_indices_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/delete_elastic_indexed_tables.inc',
+    'file' => 'includes/delete_tripal_elasticsearch_indices_form.inc',
     'weight' => 1,
   );
-  $items[$pre.'/search_block_builder'] = array(
-    'title' => t('Build search block'),
-    'page callback' => '_elastic_search_block_build',
+  $items[$pre.'/build_tripal_elasticsearch_block'] = array(
+    'title' => t('Build tripal_elasticsearch block'),
+    'page callback' => 'build_tripal_elasticelastic_block_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/elastic_search_block_build_form.inc',
+    'file' => 'includes/build_tripal_elasticsearch_block_form.inc',
     'weight' => 2,
   );
 
-  $items[$pre.'/search_blocks'] = array(
-    'title' => t('Elastic search blocks'),
-    'page callback' => '_elastic_search_blocks',
+  $items[$pre.'/delete_tripal_elasticsearch_blocks'] = array(
+    'title' => t('Delete tripal_lasticsearch blocks'),
+    'page callback' => 'delete_tripal_elasticsearch_blocks_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/elastic_search_blocks_form.inc',
+    'file' => 'includes/delete_tripal_elasticsearch_blocks_form.inc',
     'weight' => 3,
   );
 
@@ -87,24 +87,24 @@ function tripal_elasticsearch_menu(){
 
 
 /** page callback to return elastic_indexing_form **/
-function _elastic_indexing_form(){
-  return drupal_get_form('elastic_indexing_form');
+function tripal_elasticsearch_indexing_page(){
+  return drupal_get_form('tripal_elasticsearch_indexing_form');
 }
 
 /** page callback to return delete_elastic_indices_form **/
-function _delete_elastic_indexed_tables(){
-  return drupal_get_form('delete_elastic_indexed_tables_form');
+function delete_tripal_elasticsearch_indices_page(){
+  return drupal_get_form('delete_tripal_elasticsearch_indices_form');
 }
 
 
 /** page callback to return elastic_search_block_build form **/
-function _elastic_search_block_build(){
-  return drupal_get_form('elastic_search_block_build_form');
+function build_tripal_elasticelastic_block_page(){
+  return drupal_get_form('build_tripal_elasticsearch_block_form');
 }
 
 /** page callback to return elastic_search_blocks form. **/
-function _elastic_search_blocks(){
-  return drupal_get_form('elastic_search_blocks_form');
+function delete_tripal_elasticsearch_blocks_page(){
+  return drupal_get_form('delete_tripal_elasticsearch_blocks_form');
 }
 
 
