@@ -266,8 +266,10 @@ function _remove_special_chars($keyword){
  */
 function _get_field_keyword_pairs($form_input){
   $table = array_keys($form_input)[0];
+  $search_from = $form_input[$table]['search_from'];
+  unset($form_input[$table]['search_from']);
   $field_keyword_pairs = $form_input[$table];
-  return array('table'=>$table, 'field_keyword_pairs'=>$field_keyword_pairs);
+  return array('table'=>$table, 'field_keyword_pairs'=>$field_keyword_pairs, 'search_from'=>$search_from);
 }
 
 
