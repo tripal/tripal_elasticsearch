@@ -10,7 +10,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
     $table_name = $record->table_name;
     $form[$table_name] = array(
       '#type' => 'fieldset',
-      '#title' => $table_name,
+      '#title' => '',
       '#tree' => TRUE,
     );
     $columns = db_query('SELECT table_field FROM elastic_search WHERE table_name=:table_name', array(':table_name'=>$table_name))
