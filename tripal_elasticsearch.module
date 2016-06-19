@@ -198,7 +198,8 @@ function tripal_elasticsearch_block_view($delta = ''){
       $index_table = _get_field_keyword_pairs($form_input)['table'];
       $field_keyword_pairs = _get_field_keyword_pairs($form_input)['field_keyword_pairs'];
       $search_from = _get_field_keyword_pairs($form_input)['search_from'];
-      $search_from = !empty($search_from)?$search_from:0;
+      $search_from = intval($search_from);
+      //$search_from = !empty($search_from)?$search_from:0;
       // Only display the results block for the corresponding form block
       if($table == $index_table and is_elastic_index($index_table)){
         $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=$search_from)['search_hits'];

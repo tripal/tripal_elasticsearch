@@ -31,7 +31,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
       '#size' => 20,
       '#title_display' => 'after',
       '#attributes' => array(
-        'placeholder' => t('Enter an integer'),
+        'placeholder' => t('Enter an integer or nothing'),
       ),
     );
     
@@ -49,3 +49,5 @@ function tripal_elasticsearch_blocks_form_submit($form, &$form_state){
   // Use $form_state['input'] instead of $form_state['values'] to get the correct data!!!
   $_SESSION['elastic_form_input'] = $form_state['input'];
 }
+
+
