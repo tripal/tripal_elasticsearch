@@ -5,7 +5,7 @@
  * and then build search forms
  */
 function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
-  $result = db_query('SELECT DISTINCT(table_name),search_block_name FROM elastic_search WHERE table_name=:table_name', array(':table_name'=>$table_name));
+  $result = db_query('SELECT DISTINCT(table_name) FROM elastic_search WHERE table_name=:table_name', array(':table_name'=>$table_name));
   foreach($result as $record){
     $table_name = $record->table_name;
     $form[$table_name] = array(

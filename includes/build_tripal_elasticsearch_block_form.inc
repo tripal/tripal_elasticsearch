@@ -17,8 +17,8 @@ function build_tripal_elasticsearch_block_form($form, &$form_state) {
   $form['search_block'] = array(
     '#type' => 'fieldset',
     '#title' => t('Build tripal_elasticsearch block'),
-        '#prefix' => '<div id="search_block">',
-        '#suffix' => '</div>',
+    '#prefix' => '<div id="search_block">',
+    '#suffix' => '</div>',
   );
 
   // Build search block for all selected fields
