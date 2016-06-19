@@ -28,10 +28,10 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
     $form[$table_name]['search_from'] = array(
       '#type' => 'textfield',
       '#title' => t('(1000 search hits will be displayed at maximum. Enter an integer to set up an offset.)'),
-      '#size' => 20,
+      '#size' => 30,
       '#title_display' => 'after',
       '#attributes' => array(
-        'placeholder' => t('Enter an integer or nothing'),
+        'placeholder' => t('No input or enter an integer'),
       ),
     );
     
