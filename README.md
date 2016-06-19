@@ -43,10 +43,6 @@ chown -R username:username elasticsearch-1.7.1
 * `cd elasticsearch-1.7.1`
 * `bin/elasticsdearch -d`
 
-
-The `tripal_elasticsearch` module can index any chado tables and make data in chado tables searchable. It intearacts with the databases directly.
-
-
 ## Install `tripal_elasticsearch` module
 * Install the module as a custom module: `cd sites/all/modules/custom`
 * Download the module `wget https://github.com/tripal/tripal_elasticsearch.git`
@@ -59,34 +55,36 @@ __Currently this module has only been extensively tested on the [hardwood genomi
 The module will enable two default blocks, one is a simple search box, the other is for more detailed queries. If you try to use them, they won't work yet. For them to work, you will need to create the index.
 
 ## Site-wide indexing
-* Go to __/admin/config/elastic\_search__
+To implement a site wide search, the `tripal_elasticsearch` module indexes the content of every Drupal node. This includes much of the chado database content if it has been synced to Drupal. However, `tripal_elasticsearch` can also be used to directly index chado tables and thus to build very specific and customizable search interfaces based on the data from those chado tables. For the first example, we'll set up the site wide search.
+
+* Go to __sitename.org/admin/config/elastic\_search__
 * Select __index_website__ from the dropdown table list and then click on the "Elasticindex" button
 
 You will see the page is loading. Do not close the page until the loading is finished. A cron queue is being created during this process. This may take one or two minitues depending on how many nodes your website has.
 
 ![index_website](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/index_website_not_exist.png)
 
-Once the cron queue building is done, the site-wide indexing process will run in the background.
+Once the cron queue is built, the site-wide indexing process will be automatically run by the cron jobs that you set up for Drupal. However, this is likely to be very slow. Below is more information on monitoring and speeding this process up.
 
 ### Monitor the number of items in the cron queue
 
-Go to __/admin/config/system/queue-ui__ to check how many items remaining in your elastic\_search cron queue. When no items left in the elastic\_search cron queue, the site-wide indexing process is finished.
+Go to __sitename.org/admin/config/system/queue-ui__ to check how many items remaining in your elastic\_search cron queue. When no items left in the elastic\_search cron queue, the site-wide indexing process is finished.
 
 ![queue ui](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/queue_items-number.png)
 
 ### Run your elastic_search cron queue with multiple threads
 With the help of the __ultimate_cron__ module, you can run a cron queue with multiple threads. This will significantly speed up the indexing process.
 
-Go to __/admin/config/system/cron/jobs/list/queue_elastic_queue/edit__ and select the number of threads you want to run
+Go to __sitename.org/admin/config/system/cron/jobs/list/queue_elastic_queue/edit__ and select the number of threads you want to run
 ![ultimate cron](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/cron.png)
 
-You may need to add the jobs to your crontab file to continously trigger your cron jobs if your website don't have frequent requests. Below is an example:
+You may want to add additional cron jobs to your crontab file to continously trigger these jobs if your website doesn't have frequent requests. Below is an example:
 
 * login to your server
 * `crontab -e` to open the crontab file
 * Add the command lines below to your crontab file. You may add more lines, depending on how many threads you set up.
 ```
-*/5 * * * * drush cron-run queue_elastic_queue --options=thread=21 --root=path/to/you/drupal/site/root
+*/5 * * * * drush cron-run queue_elastic_queue --options=thread=1 --root=path/to/you/drupal/site/root
 */5 * * * * drush cron-run queue_elastic_queue_2 --options=thread=2 --root=path/to/you/drupal/site/root
 */5 * * * * drush cron-run queue_elastic_queue_3 --options=thread=3 --root=path/to/you/drupal/site/root
 */5 * * * * drush cron-run queue_elastic_queue_4 --options=thread=4 --root=path/to/you/drupal/site/root
@@ -96,33 +94,50 @@ You may need to add the jobs to your crontab file to continously trigger your cr
 ```
 
 
-Specific database tables indexing
------------------------------------
-Specific database tables indexing allows user to do:
+Customized Searching of Specific Database Tables
+------------------------------------------------
+Specific database tables indexing allows the user to:
 * select any tables from the drupal public databases or chado databases to index
-* index joined tables to combine data from different tables
-* select any number of fields from indexed tables for search
+* index joined tables to combine data from different tables (for example, searching for features while filtering on organism)
+* select any number of fields from indexed tables for search (for example, customize the feature search by an associated analysis and by keyword from the blast hit descriptions)
 
-* Go to __/admin/config/search/elastic_search/indexing__
+Here are the general steps:
+* Go to __sitename.org/admin/config/search/elastic_search/indexing__
 * Select a table from the dropdown
 * select fields from the table that you want to index
 * click `Elasticindex` button
 
-![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
-
-### Build search block for indexed tables
-* Go to __/admin/config/search/elastic_search/search_block_builder__
+Next, build the search block for the indexed table
+* Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
 * Select a table from the dropdown. All these tables are indexed tables
 * Select fields that you want to give users searching access
 * Enter a unique name for this block. The block name can only contain letters and numbers, starting with letters
 
+All search blocks will be displayed on the `/elastic_search` page
+
+## Example - Organism Search: 
+Building a customized organism search block.
+* Go to __sitename.org/admin/config/search/elastic_search/indexing__
+* Select the organism table from the dropdown
+* Select fields from the table that you want to index, such as abbreviation, common name, genus, species
+* Click `Elasticindex` button
+
+![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
+
+### Build search block for indexed tables
+* Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
+* Select a table from the dropdown and select the fields abbreviation, common name, genus, species
+* Name the block organismSearch. 
+
 ![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
 
-All search blocks will be displayed on the `/elastic_search` page
+You can test the new search block on the `sitename.org/elastic_search` page
 
 ![elastic_search page](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/elastic_search.png)
 
-### Index joined fields from multiple tables
+### Example: Index joined fields from multiple tables
+This example will build a transcript search block that allows the user to specify an organism, a blast hit description and/or a transcript unique name.
+
 It is very common that we need to search/filter information from different tables and then display the results. `tripal_elasticsearch` allows you to do so very easily by indexing joined tables. First, you need to join the tables that contain the data that you want to index. As long as the joined table is in your public database or chado database schema, it will become visible on the dropdown table list. Then you can index the table normally.
 
 There are many ways to join tables. An easy way for chado tables is to use the MViews module to create a materialized view. After you index the joined tables, you can delete them. Below is an example of indexing data from 3 chado tables (chado.feature, chado.organism, and chado.blast\_hit\_data). The joined table name is called __search\_transcripts\_all__
