@@ -62,7 +62,9 @@ To implement a site wide search, the `tripal_elasticsearch` module indexes the c
 
 You will see the page is loading. Do not close the page until the loading is finished. A cron queue is being created during this process. This may take one or two minitues depending on how many nodes your website has.
 
-![index_website](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/index_website_not_exist.png)
+![index_website](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/index_website.png)
+
+If the website has been indexed(indicated as the red sentence in the picture above), you may delete the index and then re-index it. To delet an index, go to __sitename.org//admin/config/search/elastic_search/delete_tripal_elasticsearch_indices__.
 
 Once the cron queue is built, the site-wide indexing process will be automatically run by the cron jobs that you set up for Drupal. However, this is likely to be very slow. Below is more information on monitoring and speeding this process up.
 
