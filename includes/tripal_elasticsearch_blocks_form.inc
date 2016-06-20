@@ -37,7 +37,14 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
     
     $form[$table_name]['submit'] = array(
       '#type' => 'submit',
-      '#value' => t('Search|'.$table_name),
+      '#value' => t('Search'),
+      '#submit' => array('tripal_elasticsearch_blocks_form_submit_search'),
+    );
+
+    $form[$table_name]['download'] = array(
+      '#type' => 'submit',
+      '#value' => t('Download all search hits as csv file'),
+      '#submit' => array('tripal_elasticsearch_blocks_form_submit_download'), 
     );
   }
 
@@ -45,9 +52,13 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
 }
 
 
-function tripal_elasticsearch_blocks_form_submit($form, &$form_state){
+function tripal_elasticsearch_blocks_form_submit_search($form, &$form_state){
   // Use $form_state['input'] instead of $form_state['values'] to get the correct data!!!
   $_SESSION['elastic_form_input'] = $form_state['input'];
 }
 
+
+function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
+  dpm($form_state['input']);
+}
 
