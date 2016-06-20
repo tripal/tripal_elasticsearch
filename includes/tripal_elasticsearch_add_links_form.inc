@@ -35,10 +35,12 @@ function tripal_elasticsearch_add_links_form($form, &$form_state){
         '#title' => $field,
         '#size' => 60,
         '#title_display' => 'after',
+/*
         '#ajax' => array(
           'callback' => 'add_links_ajax',
           'wrapper' => 'add_links',
         ),
+*/
       );
     }
 
@@ -65,7 +67,6 @@ function tripal_elasticsearch_add_links_form_submit($form, &$form_state){
               ->execute();
   $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
                  ->fetchAll();
- 
   $record = array();
   foreach($columns as $field){
     $field = $field->table_field;
