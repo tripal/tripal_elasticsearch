@@ -96,10 +96,10 @@ You may want to add additional cron jobs to your crontab file to continously tri
 
 Customized Searching of Specific Database Tables
 ------------------------------------------------
-Specific database tables indexing allows the user to:
-* select any tables from the drupal public databases or chado databases to index
+By indexing specific database tables, new types of searching are enabled: 
+* select any tables from the drupal public databases or chado databases to index, regardless of whether or how they are synchronized as Drupal nodes
 * index joined tables to combine data from different tables (for example, searching for features while filtering on organism)
-* select any number of fields from indexed tables for search (for example, customize the feature search by an associated analysis and by keyword from the blast hit descriptions)
+* select specific fields from indexed tables for searching (for example, customize the feature search by an associated analysis and by keyword from the blast hit descriptions)
 
 Here are the general steps:
 * Go to __sitename.org/admin/config/search/elastic_search/indexing__
@@ -109,11 +109,11 @@ Here are the general steps:
 
 Next, build the search block for the indexed table
 * Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
-* Select a table from the dropdown. All these tables are indexed tables
+* Select a table from the dropdown. All the tables listed have been successfully indexed
 * Select fields that you want to give users searching access
 * Enter a unique name for this block. The block name can only contain letters and numbers, starting with letters
 
-All search blocks will be displayed on the `/elastic_search` page
+All search blocks will be displayed on the `/elastic_search` page. 
 
 ## Example - Organism Search: 
 Building a customized organism search block.
