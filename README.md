@@ -107,6 +107,8 @@ Here are the general steps:
 * select fields from the table that you want to index
 * click `Elasticindex` button
 
+![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
+
 Next, build the search block for the indexed table
 * Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
 * Select a table from the dropdown. All the tables listed have been successfully indexed
@@ -115,27 +117,45 @@ Next, build the search block for the indexed table
 
 All search blocks will be displayed on the `/elastic_search` page. 
 
-## Example - Organism Search: 
+![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
+
+### Example 1: Organism Search: 
 Building a customized organism search block.
 * Go to __sitename.org/admin/config/search/elastic_search/indexing__
 * Select the organism table from the dropdown
 * Select fields from the table that you want to index, such as abbreviation, common name, genus, species
 * Click `Elasticindex` button
 
-![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
+![Example 1 Step 1 Index the table](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_1_index.png)
+
+You can see that the index job(s) is in the queue by going to __sitename.org/admin/config/system/queue-ui__. When there is no longer any job in the queue, the indexing is complete.
+
+![Example 1 Step 2 Check the queue](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_2_queue.png)
 
 ### Build search block for indexed tables
 * Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
 * Select a table from the dropdown and select the fields abbreviation, common name, genus, species
 * Name the block organismSearch. 
 
-![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
+![Example 1 Step 3 Build the block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_3_block.png)
+This will create two blocks - one that holds the search form and one that holds the search results. By default, both are displayed on the `sitename.org/elastic_search` page only.
 
-You can test the new search block on the `sitename.org/elastic_search` page
+You can test the new search block on the `sitename.org/elastic_search` page. 
+![Example 1 Step 4 Test the block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_4_test.png)
 
-![elastic_search page](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/elastic_search.png)
+At this point, you will notice that a result is being returned, but the fields are not linked to the page you want (i.e., not clickable). We need to build paths from the search result fields to the correct site URL. For organisms, we know that the organism page is `sitename.org/organism/genus/species`
 
-### Example: Index joined fields from multiple tables
+Navigate to __sitename.org/admin/config/search/elastic_search/tripal_elasticsearch_add_links__
+
+Select the organism table. For each column of results, there is a text box. In that text box, you can build a URL to link to a Drupal page. You can specify how to use the results fields to build the URL. For example, the search results for organism include fields called 'genus' and 'species'. We can embed them in brackets to buld the URL that will always link to the page of interest:
+
+![Example 1 Step 5 Add result paths](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_5_paths.png)
+
+Navigate to __sitename.org/elastic_search__ to check that the search box and results box are functioning and linking as desired.
+
+![Example 1 Step 6 Working organism search](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_6_final.png)
+
+### Example 2: Index joined fields from multiple tables
 This example will build a transcript search block that allows the user to specify an organism, a blast hit description and/or a transcript unique name.
 
 It is very common that we need to search/filter information from different tables and then display the results. `tripal_elasticsearch` allows you to do so very easily by indexing joined tables. First, you need to join the tables that contain the data that you want to index. As long as the joined table is in your public database or chado database schema, it will become visible on the dropdown table list. Then you can index the table normally.
