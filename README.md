@@ -126,7 +126,7 @@ Building a customized organism search block.
 * Select fields from the table that you want to index, such as abbreviation, common name, genus, species
 * Click `Elasticindex` button
 
-![Example 1 Step 1 Index the table](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_1_index.png)
+![Example 1 Step 1 Index the table](images/E1_1_index.png)
 
 You can see that the index job(s) is in the queue by going to __sitename.org/admin/config/system/queue-ui__. When there is no longer any job in the queue, the indexing is complete.
 
