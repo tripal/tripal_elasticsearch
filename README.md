@@ -58,7 +58,7 @@ The module will enable two default blocks, one is a simple search box, the other
 To implement a site wide search, the `tripal_elasticsearch` module indexes the content of every Drupal node. This includes much of the chado database content if it has been synced to Drupal. However, `tripal_elasticsearch` can also be used to directly index chado tables and thus to build very specific and customizable search interfaces based on the data from those chado tables. For the first example, we'll set up the site wide search.
 
 * Go to __sitename.org/admin/config/elastic\_search__
-* Select __index_website__ from the dropdown table list and then click on the "Elasticindex" button
+* Select __index_website__ from the dropdown table list and then click on the "Index" button
 
 You will see the page is loading. Do not close the page until the loading is finished. A cron queue is being created during this process. This may take one or two minitues depending on how many nodes your website has.
 
@@ -102,29 +102,30 @@ By indexing specific database tables, new types of searching are enabled:
 * select specific fields from indexed tables for searching (for example, customize the feature search by an associated analysis and by keyword from the blast hit descriptions)
 
 Here are the general steps:
-* Go to __sitename.org/admin/config/search/elastic_search/indexing__
+* Go to __sitename.org/admin/config/search/elastic_search/tripal_elasticsearch_indexing__
 * Select a table from the dropdown
 * select fields from the table that you want to index
-* click `Elasticindex` button
+* click `Index` button
 
 ![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
 
 Next, build the search block for the indexed table
-* Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
+* Go to __sitename.org/admin/config/search/elastic_search/build_tripal_elasticsearch_block__
 * Select a table from the dropdown. All the tables listed have been successfully indexed
 * Select fields that you want to give users searching access
-* Enter a unique name for this block. The block name can only contain letters and numbers, starting with letters
+* Click 'Add elastisearch block' button
+* Clear cache with drush command `drush cc all` or go to `sitename.org/admin/config/development/performance` and click `Clear all caches` button
 
-All search blocks will be displayed on the `/elastic_search` page. 
+All search blocks will be displayed on the `sitename.org/elastic_search` page by default. However, these blocks are configurable and can be moved to any other pages.  
 
 ![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
 
 ### Example 1: Organism Search: 
 Building a customized organism search block.
-* Go to __sitename.org/admin/config/search/elastic_search/indexing__
+* Go to __sitename.org/admin/config/search/elastic_search/tripal_elasticsearch_indexing__
 * Select the organism table from the dropdown
 * Select fields from the table that you want to index, such as abbreviation, common name, genus, species
-* Click `Elasticindex` button
+* Click `Index` button
 
 ![Example 1 Step 1 Index the table](images/E1_1_index.png)
 
