@@ -51,7 +51,7 @@ function tripal_elasticsearch_menu(){
   );
 
   $items[$pre.'/delete_tripal_elasticsearch_blocks'] = array(
-    'title' => t('Delete tripal_lasticsearch blocks'),
+    'title' => t('Delete tripal_elasticsearch blocks'),
     'page callback' => 'delete_tripal_elasticsearch_blocks_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
