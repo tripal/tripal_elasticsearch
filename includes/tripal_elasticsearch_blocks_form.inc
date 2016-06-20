@@ -1,5 +1,7 @@
 <?php
 
+  require_once drupal_get_path('module', 'tripal_elasticsearch').'/api/tripal_elasticsearch.api.php';
+
 /*
  * Select all tables and corresponding fields from database table elastic_search
  * and then build search forms
@@ -59,6 +61,32 @@ function tripal_elasticsearch_blocks_form_submit_search($form, &$form_state){
 
 
 function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
-  dpm($form_state['input']);
+  $table = _get_field_keyword_pairs($form_state['input'])['table'];
+  $field_keyword_pairs = _get_field_keyword_pairs($form_state['input'])['field_keyword_pairs'];
+  // Allow to download 1,000,000 records at maximum
+  if(!empty($search_hits)){
+  $search_hits = _run_elastic_search($table, $field_keyword_pairs, $size=1000000)['search_hits'];
+
+  // Create a file pointer connected to the output stream
+  $random_str = random_string($str_length = 5);
+  $destination = file_destination('temporary://'.'/tripal_elasticsearch_'.$random_str.'csv', FILE_EXISTS_RENAME);
+  $output = fopen($destination, 'w');
+
+  foreach($search_hits as $hit){
+    fputcsv($output, $hit);
+  }
+
+  // strip off 'temprary://'
+  $filename = substr($destination, 12);
+  drupal_goto('sites/default/files/tmp/'. $filename);
+  }
+  else{
+    drupal_set_message(t('No data available.'), 'error');
+  }
 }
 
+
+function random_string($str_length){
+  $random_string = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $str_length);
+  return $random_string;
+}
