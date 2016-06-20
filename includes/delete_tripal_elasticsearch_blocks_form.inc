@@ -4,7 +4,7 @@
 function delete_tripal_elasticsearch_blocks_form($form, &$form_state){
                  
   // Options to delete blocks
-  $res = db_select('elastic_search', 'e')
+  $res = db_select('tripal_elasticsearch', 'e')
         ->fields('e')
         ->execute()
         ->fetchAllAssoc('table_name');
@@ -36,7 +36,7 @@ function delete_tripal_elasticsearch_blocks_form_submit($form, &$form_state){
   $delete_blocks = $form_state['values']['delete_search_blocks'];
   foreach($delete_blocks as $table_name){
     if(!empty($table_name)){
-      db_delete('elastic_search')
+      db_delete('tripal_elasticsearch')
         ->condition('table_name', $table_name)
         ->execute();
     }

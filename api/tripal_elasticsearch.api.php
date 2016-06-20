@@ -359,7 +359,7 @@ function get_main_search_hits_table($main_search_hits, $main_search_hits_count){
  * This function takes in the search_hits array and 
  * return a themed table.
  */
-function get_search_hits_table($search_hits){
+function get_search_hits_table($search_hits, $table){
   // Get table header
   $elements = array_chunk($search_hits, 1);
   //dpm($elements);
@@ -380,6 +380,22 @@ function get_search_hits_table($search_hits){
 
   //Get table rows
   foreach($sorted_hits_records as $values){
+    // add links to search results
+    $records = db_query('SELECT DISTINCT(table_field), page_link FROM tripal_elasticsearch_add_links WHERE table_name=:table_name', array(':table_name'=>$table))
+               ->fetchAll();
+    foreach($records as $record){
+      preg_match_all('/\[.+?\]/', $record->page_link, $matches);
+      $pattern = array();
+      $replace = array();
+      foreach($matches[0] as $match){
+        $field = str_replace('[', '', $match);
+        $field = str_replace(']', '', $field);
+        $pattern[] = $match;
+        $replace[] = $values[$field];
+      }
+      $link = str_replace($pattern, $replace, $record->page_link);
+      $values[$record->table_field] = l($values[$record->table_field], $link);
+    }
     $rows[] = array_values($values);
   }
 

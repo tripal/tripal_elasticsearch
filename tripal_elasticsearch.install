@@ -10,13 +10,9 @@
  * Implements hook_schema().
  */
 function tripal_elasticsearch_schema(){
-  $schema['elastic_search'] = array(
+  $schema['tripal_elasticsearch'] = array(
     'description' => 'The table for store data for building search blocks',
     'fields' => array(
-      'search_block_name' => array(
-        'type' => 'varchar',
-        'length' => '255',
-      ),
       'table_name' => array(
         'type' => 'varchar',
         'length' => '255',
@@ -25,6 +21,24 @@ function tripal_elasticsearch_schema(){
         'type' => 'varchar',
         'length' => '255',
       ),
+    ),
+  );
+
+  $schema['tripal_elasticsearch_add_links'] = array(
+    'description' => t('A table for storing data for adding page links to search results'),
+    'fields' => array(
+      'table_name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'table_field' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'page_link' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ), 
     ),
   );
 

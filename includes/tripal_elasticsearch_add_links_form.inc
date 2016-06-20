@@ -2,7 +2,7 @@
 
 
 function tripal_elasticsearch_add_links_form($form, &$form_state){
-  $result = db_query('SELECT DISTINCT(table_name) FROM elastic_search');
+  $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
   $tables = array('Select a table');
   foreach($result as $record){
     $tables[$record->table_name] = $record->table_name;
@@ -26,7 +26,7 @@ function tripal_elasticsearch_add_links_form($form, &$form_state){
 
   if(!empty($form_state['values']['table'])){
     $table_name = $form_state['values']['table'];
-    $columns = db_query('SELECT table_field FROM elastic_search WHERE table_name=:table_name', array(':table_name'=>$table_name))
+    $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
                  ->fetchAll();
     foreach($columns as $field){
       $field = $field->table_field;
@@ -59,5 +59,23 @@ function add_links_ajax($form, &$form_state){
 }
 
 function tripal_elasticsearch_add_links_form_submit($form, &$form_state){
+  $table_name = $form_state['input']['table'];
+  $delete_table_name = db_delete('tripal_elasticsearch_add_links')
+              ->condition('table_name', $table_name)
+              ->execute();
+  $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
+                 ->fetchAll();
+ 
+  $record = array();
+  foreach($columns as $field){
+    $field = $field->table_field;
+    if(!empty($form_state['input'][$field])){
+      $record['table_name'] = $table_name;
+      $record['table_field'] = $field;
+      $record['page_link'] = $form_state['input'][$field];
+    }
+    drupal_write_record('tripal_elasticsearch_add_links', $record);
+  }
+
   dpm($form_state['input']);
 }

@@ -110,7 +110,7 @@ function add_tripal_elasticsearch_block($form, &$form_state){
   $table_name = $form_state['values']['indexed_tables'];
   $record = array();
   // Delete the table and its fields in the database if that table name already exists
-  $delete_search_block = db_delete('elastic_search')
+  $delete_table_name = db_delete('tripal_elasticsearch')
               ->condition('table_name', $table_name)
               ->execute();
   foreach($form_state['values'][$table_name] as $field){
@@ -118,7 +118,7 @@ function add_tripal_elasticsearch_block($form, &$form_state){
       $record['table_name'] = $table_name;
       $record['table_field'] = $field;
       // write record into the elastic_search table in database
-      drupal_write_record('elastic_search', $record);
+      drupal_write_record('tripal_elasticsearch', $record);
     }
   }
   

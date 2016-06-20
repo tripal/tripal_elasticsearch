@@ -154,7 +154,7 @@ function tripal_elasticsearch_block_info(){
     'cache' => DRUPAL_NO_CACHE,
   );  
 
-  $result = db_query('SELECT DISTINCT(table_name) FROM elastic_search');
+  $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
   foreach($result as $record){
     // For some reason, block name cannot be longer than 32 chars
     $block_name_form = substr('Elastic form: '.$record->table_name, 0, 32); 
@@ -187,7 +187,7 @@ function tripal_elasticsearch_block_info(){
 function tripal_elasticsearch_block_view($delta = ''){
 
   $block = array();
-  $result = db_query('SELECT DISTINCT(table_name) FROM elastic_search');
+  $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
   $table_names = array();
   foreach($result as $record){
     $table_names[] = $record->table_name;
@@ -225,7 +225,7 @@ function tripal_elasticsearch_block_view($delta = ''){
                                    '<span style="color:red"><em>'.$end.'</em></span>'. 
                                    ' are displayed.</h6>';
         if(!empty($search_hits)){
-          $search_hits_table = get_search_hits_table($search_hits);
+          $search_hits_table = get_search_hits_table($search_hits, $table);
           $search_hits_table = $search_hits_count_html.$search_hits_table;
         }
         else{
