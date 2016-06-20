@@ -77,5 +77,4 @@ function tripal_elasticsearch_add_links_form_submit($form, &$form_state){
     drupal_write_record('tripal_elasticsearch_add_links', $record);
   }
 
-  dpm($form_state['input']);
 }

@@ -64,21 +64,21 @@ function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
   $table = _get_field_keyword_pairs($form_state['input'])['table'];
   $field_keyword_pairs = _get_field_keyword_pairs($form_state['input'])['field_keyword_pairs'];
   // Allow to download 1,000,000 records at maximum
-  if(!empty($search_hits)){
-  $search_hits = _run_elastic_search($table, $field_keyword_pairs, $size=1000000)['search_hits'];
-
-  // Create a file pointer connected to the output stream
-  $random_str = random_string($str_length = 5);
-  $destination = file_destination('temporary://'.'/tripal_elasticsearch_'.$random_str.'csv', FILE_EXISTS_RENAME);
-  $output = fopen($destination, 'w');
-
-  foreach($search_hits as $hit){
-    fputcsv($output, $hit);
-  }
-
-  // strip off 'temprary://'
-  $filename = substr($destination, 12);
-  drupal_goto('sites/default/files/tmp/'. $filename);
+  if(is_elastic_index($table)){
+    $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000000)['search_hits'];
+  
+    // Create a file pointer connected to the output stream
+    $random_str = random_string($str_length = 5);
+    $destination = file_destination('temporary://'.'/tripal_elasticsearch_'.$random_str.'.csv', FILE_EXISTS_RENAME);
+    $output = fopen($destination, 'w');
+  
+    foreach($search_hits as $hit){
+      fputcsv($output, $hit);
+    }
+  
+    // strip off 'temprary://'
+    $filename = substr($destination, 12);
+    drupal_goto('sites/default/files/tmp/'. $filename);
   }
   else{
     drupal_set_message(t('No data available.'), 'error');
