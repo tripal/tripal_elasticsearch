@@ -130,18 +130,18 @@ Building a customized organism search block.
 
 You can see that the index job(s) is in the queue by going to __sitename.org/admin/config/system/queue-ui__. When there is no longer any job in the queue, the indexing is complete.
 
-![Example 1 Step 2 Check the queue](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_2_queue.png)
+![Example 1 Step 2 Check the queue](images/E1_2_queue.png)
 
 ### Build search block for indexed tables
 * Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
 * Select a table from the dropdown and select the fields abbreviation, common name, genus, species
 * Name the block organismSearch. 
 
-![Example 1 Step 3 Build the block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_3_block.png)
+![Example 1 Step 3 Build the block](images/E1_3_block.png)
 This will create two blocks - one that holds the search form and one that holds the search results. By default, both are displayed on the `sitename.org/elastic_search` page only.
 
 You can test the new search block on the `sitename.org/elastic_search` page. 
-![Example 1 Step 4 Test the block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_4_test.png)
+![Example 1 Step 4 Test the block](images/E1_4_test.png)
 
 At this point, you will notice that a result is being returned, but the fields are not linked to the page you want (i.e., not clickable). We need to build paths from the search result fields to the correct site URL. For organisms, we know that the organism page is `sitename.org/organism/genus/species`
 
@@ -149,11 +149,11 @@ Navigate to __sitename.org/admin/config/search/elastic_search/tripal_elasticsear
 
 Select the organism table. For each column of results, there is a text box. In that text box, you can build a URL to link to a Drupal page. You can specify how to use the results fields to build the URL. For example, the search results for organism include fields called 'genus' and 'species'. We can embed them in brackets to buld the URL that will always link to the page of interest:
 
-![Example 1 Step 5 Add result paths](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_5_paths.png)
+![Example 1 Step 5 Add result paths](images/E1_5_paths.png)
 
 Navigate to __sitename.org/elastic_search__ to check that the search box and results box are functioning and linking as desired.
 
-![Example 1 Step 6 Working organism search](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/E1_6_final.png)
+![Example 1 Step 6 Working organism search](images/E1_6_final.png)
 
 ### Example 2: Index joined fields from multiple tables
 This example will build a transcript search block that allows the user to specify an organism, a blast hit description and/or a transcript unique name.
