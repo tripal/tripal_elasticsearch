@@ -79,3 +79,38 @@ function tripal_elasticsearch_add_links_form_submit($form, &$form_state){
   }
 
 }
+
+
+
+
+function tripal_elasticsearch_add_links_example_form($form, &$form_state){
+  $form['add_links'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Example: add page links to search results',
+  );
+
+  $form['add_links']['abbreviation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('abbreviation'),
+    '#title_display' => 'after',
+    '#default_value' => t('organism/[genus]/[species]'),
+  );
+  $form['add_links']['common_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('common_name'),
+    '#title_display' => 'after',
+  );
+  $form['add_links']['genus'] = array(
+    '#type' => 'textfield',
+    '#title' => t('genus'),
+    '#title_display' => 'after',
+  );
+  $form['add_links']['species'] = array(
+    '#type' => 'textfield',
+    '#title' => t('species'),
+    '#title_display' => 'after',
+    '#default_value' => t('organism/[genus]/[species]'),
+  );
+
+  return $form;
+}
