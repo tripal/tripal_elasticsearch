@@ -6,46 +6,7 @@
  * dropdown.
  */
 
-function elastic_indexing_form($form, &$form_state){
-
-
-
-
-  //=====Create a table to display indexed tables and their fields===========
-  $rows = array();
-  $header = array('Indexed table', 'Indexed fields');
-  // You have to create a new $client to get access to the elasticsearch
-  $client = new Elasticsearch\Client();
-  $mappings = $client->indices()->getMapping();
-  $indices = array_keys($mappings);
-  if(!empty($indices)){
-    foreach($indices as $index){
-      $fields = array_keys($mappings[$index]['mappings'][$index]['properties']);
-      if(!empty($fields)){
-        $rows[] = array($index, implode(', ', $fields));
-      //  $variables['elastic_indexing_form'][$index] = $fields;
-      }
-    }
-  }
-  $variables['elastic_indexing_form']['table'] = theme('table', array('header' => $header, 'rows' => $rows ));
-  $variables['elastic_indexing_form']['table'] .= theme('pager');
-  //=========================================================================
-
-
-
-  // Create an area to display the already indexed data.
-  $form['indexed_block'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('All your indexed tables are below'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  
-  $form['indexed_block']['indexed_table'] = array(
-    '#type' => 'item',
-    '#markup' => $variables['elastic_indexing_form']['table'],
-  );
-
+function tripal_elasticsearch_indexing_form($form, &$form_state){
 
 
   // Get the list of tables to populate the table dropdown
@@ -61,7 +22,7 @@ function elastic_indexing_form($form, &$form_state){
 
   $form['indexing_table'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Elastic-index your data'),
+    '#title' => t('tripal_elasticsearch indexing'),
     // The entire enclosing div created here gets replaced when table_dropdown
     // is changed.
     '#prefix' => '<div id="dropdown_fields_replace">',
@@ -70,7 +31,7 @@ function elastic_indexing_form($form, &$form_state){
 
   $form['indexing_table']['table_dropdown'] = array(
     '#type' => 'select',
-    '#title' => 'Select a table to elastic-index',
+    '#title' => 'Select a table to index',
     '#options' => $options_first,
     '#default_value' => $selected,
     // bind an ajax callback to the change event (which is the default for the
@@ -86,13 +47,14 @@ function elastic_indexing_form($form, &$form_state){
 
   $form['indexing_table']['indexing_fields'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Select fields to elastic-index'),
+    '#title' => t('Select fields to index'),
   );
 
   // Check if a table is already indexed.
-  $condition = in_array($options_first[$selected], $indices);
-//  if($condition) {
-  if(!empty($condition)){
+  $client = new Elasticsearch\Client();
+  $mappings = $client->indices()->getMapping();
+  $indices = array_keys($mappings);
+  if(in_array($options_first[$selected], $indices)){
     $form['indexing_table']['indexing_fields']['checking_table'] = array(
       '#type' => 'item',
       '#markup' => '<font color="red"><b>'.t("$options_first[$selected] already exists in elasticsearch.<br /> 
@@ -114,8 +76,7 @@ Please select another item to index, or DELETE this item first and then re-index
 
   $form['indexing_table']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Elasticindex'),
-    '#submit' => array('elastic_indexing_table_and_fields'),
+    '#value' => t('Index'),
   );
 
 
@@ -140,13 +101,10 @@ function table_dependent_dropdown_callback($form, &$form_state){
 }
 
 
-
-
-
 /**
  * submit callback function
  */
-function elastic_indexing_table_and_fields($form, &$form_state){
+function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
   //Get selected table
   $table_list = get_table_list();
   $selected_table_key = $form_state['values']['table_dropdown'];
@@ -155,13 +113,13 @@ function elastic_indexing_table_and_fields($form, &$form_state){
   // Get selected fields=============
   $field_list = get_column_list($selected_table);
   $selected_fields_keys = $form_state['values']['fields'];
-  $_SESSION['selected_fields'] = array();
+  $selected_fields = array();
 
   if(!empty($selected_fields_keys)){
     foreach($selected_fields_keys as $key){
       // check if $key is an alphanumeric character.
       if(ctype_alnum($key)){
-        $_SESSION['selected_fields'][] = $field_list[$key];
+        $selected_fields[] = $field_list[$key];
       }
     }
   }
@@ -174,10 +132,9 @@ function elastic_indexing_table_and_fields($form, &$form_state){
 
   // separate the selected fields by ','.
   // and insert this string into the sql query statement.
-  $comma_separated_fields = implode(", ", $_SESSION['selected_fields']);
-  $_SESSION['comma_separated_fields'] = implode(", ", $_SESSION['selected_fields']);
+  $comma_separated_fields = implode(", ", $selected_fields);
     // Use the first field to order the database table when implement queries.
-    $order_by_field = $_SESSION['selected_fields'][0];
+    $order_by_field = $selected_fields[0];
     //====="SELECT * FROM chado.blast_hit_data ORDER BY RANDOM() LIMIT 1000;"
 
 
@@ -212,7 +169,7 @@ function elastic_indexing_table_and_fields($form, &$form_state){
       $sql = "SELECT title, nid FROM node WHERE status=1 ORDER BY nid LIMIT $k OFFSET $offset;";
     }
     else {
-      $sql = "SELECT ". $_SESSION['comma_separated_fields']. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
+      $sql = "SELECT ". $comma_separated_fields. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
     }
     $item->sql = $sql;
     // also store selected table

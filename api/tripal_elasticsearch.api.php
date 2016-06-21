@@ -174,53 +174,254 @@ function flatten($arr, $prefix = '') {
 
 
 
-/** function to build elastic query for each field **/
-function _build_elastic_query($searchMethod, $field, $keyword){
 
-    switch($searchMethod){
-        case 'query_string':
-            $query_string = ' {"query_string":{"default_field":"_field_", "query":"_keyword_", "default_operator":"AND"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-            break;
-        case 'match':
-            $query_string = ' {"match":{"_field_":"_keyword_"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-            break;
-        case 'fuzzy':
-            $query_string = ' {"match":{"_field_": {"query":"_keyword_", "fuzziness":"AUTO", "operator":"AND" }}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-            break;
-        case 'match_phrase':
-            $query_string = ' {"match_phrase": {"_field_":"_keyword_"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-            break;
-        case 'sort_ascending':
-            $query_string = ' {"_field_":{"order":"asc"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-            break;
-        case 'sort_descending':
-            $query_string = ' {"_field_":{"order":"desc"}} ';
-            $search = array("_field_", "_keyword_");
-            $replace = array($field, $keyword);
-            $final_query_string = str_replace($search, $replace, $query_string);
-            break;
-        case 'range':
-            break;
+/* 
+ * Build elatic search queries
+ */
+function _build_elastic_search_query($field, $keyword, $searchMethod='query_string'){
+  $query_string_template = ' {"'.$searchMethod.'":{"default_field":"_field_", "query":"_keyword_", "default_operator":"AND"}} ';
+  $search = array("_field_", "_keyword_");
+  $replace = array($field, $keyword);
+  $query = str_replace($search, $replace, $query_string_template);
+
+  return $query;
+}
+
+
+
+/*
+ * Escape special characters for elasticsearch
+ */
+function _remove_special_chars($keyword){
+  $elastic_special_chars = array('+', '-', '=', '&&', '||', '>',
+                                 '<', '!', '(', ')', '{', '}', '[',
+                                 ']', '^', '"', '~', '*', '?', ':', '\\', '/');
+
+  $keyword = trim($keyword);
+  // Check if $keyword starts and ends with double quotations
+  $start = substr($keyword, 0, 1);
+  $end = substr($keyword, -1, 1);
+  $keyword = str_replace($elastic_special_chars, ' ', $keyword);
+  if($start == '"' and $end == '"'){
+    $keyword = '\"'.$keyword.'\"';
+  }
+
+  return $keyword;
+}
+
+
+
+/*
+ * This function takes form input and return an array, of which
+ * the keys are field names and values are corresponding keywords.
+ */
+function _get_field_keyword_pairs($form_input){
+  $table = array_keys($form_input)[0];
+  $search_from = $form_input[$table]['search_from'];
+  unset($form_input[$table]['search_from']);
+  $field_keyword_pairs = $form_input[$table];
+  return array('table'=>$table, 'field_keyword_pairs'=>$field_keyword_pairs, 'search_from'=>$search_from);
+}
+
+
+
+/*
+ * Takes in a table name and field-keyword pairs array and run elasticsearch for site wide search
+ */
+function _run_elastic_main_search($table, $field_keyword_pairs, $size=100){
+
+  $body_curl_head = '{';
+  $body_boolean_head = '"query" : {"bool" : {"must" : [';
+  $body_boolean_end = ']}}';
+  $body_curl_end = '}';
+
+  $body_query_elements = array();
+  foreach($field_keyword_pairs as $field=>$keyword){
+    //Put queries in an array
+    if(!empty($keyword)){
+      $keyword = _remove_special_chars($keyword);
+      $body_query_elements[] = _build_elastic_search_query($field, $keyword);
     }
+  }
+  $body_query = implode(',', $body_query_elements);
+  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
 
-    return $final_query_string;
+  $client = new Elasticsearch\Client();
+  $params = array();
+  $params['index'] = $table;
+  $params['type'] = $table;
+  $params['body'] = $body;
+  $search_hits_count = $client->count($params)['count'];
+
+  $highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';
+  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.','.$highlight.$body_curl_end;
+  $params['body'] = $body;
+  $params['size'] = $size;
+  $search_results = $client->search($params);
+
+  $main_search_hits= array();
+  foreach($search_results['hits']['hits'] as $key=>$value){
+      if(!empty($value)){
+        $node_id = $value['_source']['node_id'];
+        $node_title = $value['_source']['node_title'];
+        $node_content = implode('......', $value['highlight']['node_content']);
+        $node_content = strip_tags($node_content, '<em><b>');
+
+        $main_search_hits[$key]['node_id'] = $node_id;
+        $main_search_hits[$key]['node_title'] = $node_title;
+        $main_search_hits[$key]['node_content'] = $node_content;
+      }
+  }
+
+  return array('search_hits_count'=>$search_hits_count, 'main_search_hits'=>$main_search_hits);
+
 }
 
 
 
 
+/*
+ * Takes in a table name and field-keyword pairs array and run elasticsearch
+ */
+function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
+
+  $body_curl_head = '{';
+  $body_boolean_head = '"query" : {"bool" : {"must" : [';
+  $body_boolean_end = ']}}';
+  $body_curl_end = '}';
+
+  $body_query_elements = array();
+  foreach($field_keyword_pairs as $field=>$keyword){
+    //Put queries in an array
+    if(!empty($keyword)){
+      $keyword = _remove_special_chars($keyword);
+      $body_query_elements[] = _build_elastic_search_query($field, $keyword);
+    }
+  }
+  $body_query = implode(',', $body_query_elements);
+  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
+
+  $client = new Elasticsearch\Client();
+  $params = array();
+  $params['index'] = $table;
+  $params['type'] = $table;
+  $params['body'] = $body;
+  $search_hits_count = $client->count($params)['count'];
+
+  $params['from'] = $from;
+  $params['size'] = $size;
+  $search_results = $client->search($params);
+
+  $search_hits= array();
+  foreach($search_results['hits']['hits'] as $key=>$value){
+      foreach($field_keyword_pairs as $field=>$keyword){
+        $search_hits[$key][$field] = $value['_source'][$field];
+      }
+  }
+
+  return array('search_hits_count'=>$search_hits_count, 'search_hits'=>$search_hits, 'search_results'=>$search_results);
+
+}
+
+
+/*
+ * This function takes in the search_hits array from elastic main search and
+ * returns a themed table.
+ */
+function get_main_search_hits_table($main_search_hits, $main_search_hits_count){
+  $output = '';
+  if(!empty($main_search_hits)){
+    $title = '<h6><span style="color:red"><em>'.$main_search_hits_count.'</em></span> records were found. The first ';
+    $title .= '<span style="color:red"><em>'. count($main_search_hits).'</em></span> records were displayed.</h6>';
+    foreach($main_search_hits as $value){
+      $row = '<h5>'.l($value['node_title'], 'node/'.$value['node_id']).'</h5>';
+      $row .= '<p>'.$value['node_content'].'</p>';
+      $rows[] = array('row' =>$row); 
+    }
+    $per_page = 10;
+    $current_page = pager_default_initialize(count($rows), $per_page);
+    // split list into page sized chunks
+    $chunks = array_chunk($rows, $per_page, TRUE);
+    // show the appropriate items from the list
+    $output .= theme('table', array('header'=>array(), 'rows'=>$chunks[$current_page]));
+    $output .= theme('pager', array('quantity', count($rows)));
+    $output = $title.$output;
+  }
+  else{
+    $output .= '<h6>No records were found</h6>';
+  }
+
+  return $output; 
+}
+
+
+/*
+ * This function takes in the search_hits array and 
+ * return a themed table.
+ */
+function get_search_hits_table($search_hits, $table){
+  // Get table header
+  $elements = array_chunk($search_hits, 1);
+  //dpm($elements);
+  $header = array();
+  foreach($elements[0] as $value){
+    foreach(array_keys($value) as $field){
+      $header[] = array('data'=>$field, 'field'=>$field);
+    }
+  }
+
+  if(isset($_GET['sort']) and isset($_GET['order'])){
+    $sorted_hits_records = sort_2d_array_by_value($search_hits, $_GET['order'], $_GET['sort']);
+  }
+  else{
+    // By default, the table is sorted by the first column by ascending order.
+    $sorted_hits_records = sort_2d_array_by_value($search_hits, $header[0]['field'], 'asc');
+  }
+
+  //Get table rows
+  foreach($sorted_hits_records as $values){
+    // add links to search results
+    $records = db_query('SELECT DISTINCT(table_field), page_link FROM tripal_elasticsearch_add_links WHERE table_name=:table_name', array(':table_name'=>$table))
+               ->fetchAll();
+    $row = $values;
+    foreach($records as $record){
+      preg_match_all('/\[.+?\]/', $record->page_link, $matches);
+      $pattern = array();
+      $replace = array();
+      foreach($matches[0] as $match){
+        $field = str_replace('[', '', $match);
+        $field = str_replace(']', '', $field);
+        $pattern[] = $match;
+        $replace[] = $values[$field];
+      }
+      $link = str_replace($pattern, $replace, $record->page_link);
+      $row[$record->table_field] = l($values[$record->table_field], $link);
+    }
+    $rows[] = array_values($row);
+  }
+
+  $per_page = 10;
+  $current_page = pager_default_initialize(count($rows), $per_page);
+  $chunks = array_chunk($rows, $per_page, TRUE);
+  $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page] ));
+  $output .= theme('pager', array('quantity', count($rows)));
+
+  return $output;
+}
+
+
+
+/*
+ * Test if a string is an elasticsearch index
+ */
+function is_elastic_index($index){
+  $client = new Elasticsearch\Client();
+  $mappings = $client->indices()->getMapping();
+  $indices = array_keys($mappings);
+  $res = false;
+  if(in_array($index, $indices)){
+    $res = true;
+  }
+
+  return $res;
+}
