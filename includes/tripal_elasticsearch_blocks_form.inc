@@ -45,8 +45,13 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
 
     $form[$table_name]['download'] = array(
       '#type' => 'submit',
-      '#value' => t('Download all search hits as csv file'),
+      '#value' => t('Download'),
       '#submit' => array('tripal_elasticsearch_blocks_form_submit_download'), 
+    );
+
+    $form[$table_name]['usage_description'] = array(
+      '#type' => 'item',
+      '#markup' => '<br/><p><b>Search:</b> clicking "Search" without keywords input will return all available records.</p> <p><b>Download:</b> clicking "Download" without keywords input will download all available records as a csv file. Clicking "Download" with keywords input will implement a search and download the returned search records into a csv file.</p>',
     );
   }
 
