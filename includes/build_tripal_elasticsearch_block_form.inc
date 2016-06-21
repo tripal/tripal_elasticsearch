@@ -123,7 +123,7 @@ function add_tripal_elasticsearch_block($form, &$form_state){
   }
   
 
-  $form_state['redirect'] = 'admin/config/search/elastic_search/delete_tripal_elasticsearch_blocks';
+  $form_state['redirect'] = 'admin/config/search/elastic_search/tripal_elasticsearch_add_links';
 }
 
 
