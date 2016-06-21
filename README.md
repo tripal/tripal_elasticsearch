@@ -57,7 +57,7 @@ The module will enable two default blocks, one is a simple search box, the other
 ## Site-wide indexing
 To implement a site wide search, the `tripal_elasticsearch` module indexes the content of every Drupal node. This includes much of the chado database content if it has been synced to Drupal. However, `tripal_elasticsearch` can also be used to directly index chado tables and thus to build very specific and customizable search interfaces based on the data from those chado tables. For the first example, we'll set up the site wide search.
 
-* Go to __sitename.org/admin/config/elastic\_search__
+* Go to __sitename.org/admin/config/search/elastic_search/tripal_elasticsearch_indexing__
 * Select __index_website__ from the dropdown table list and then click on the "Elasticindex" button
 
 You will see the page is loading. Do not close the page until the loading is finished. A cron queue is being created during this process. This may take one or two minitues depending on how many nodes your website has.
@@ -102,7 +102,7 @@ By indexing specific database tables, new types of searching are enabled:
 * select specific fields from indexed tables for searching (for example, customize the feature search by an associated analysis and by keyword from the blast hit descriptions)
 
 Here are the general steps:
-* Go to __sitename.org/admin/config/search/elastic_search/indexing__
+* Go to __sitename.org/admin/config/search/elastic_search/tripal_elasticsearch_indexing__
 * Select a table from the dropdown
 * select fields from the table that you want to index
 * click `Elasticindex` button
@@ -110,7 +110,7 @@ Here are the general steps:
 ![specific database tables indexing](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/specific-database-table-index.png)
 
 Next, build the search block for the indexed table
-* Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
+* Go to __sitename.org/admin/config/search/elastic_search/build_tripal_elasticsearch_block__
 * Select a table from the dropdown. All the tables listed have been successfully indexed
 * Select fields that you want to give users searching access
 * Enter a unique name for this block. The block name can only contain letters and numbers, starting with letters
@@ -120,8 +120,8 @@ All search blocks will be displayed on the `/elastic_search` page.
 ![build search block](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/build-search-block.png)
 
 ### Example 1: Organism Search: 
-Building a customized organism search block.
-* Go to __sitename.org/admin/config/search/elastic_search/indexing__
+First, build the index: 
+* Go to __sitename.org/admin/config/search/elastic_search/tripal_elasticsearch_indexing__
 * Select the organism table from the dropdown
 * Select fields from the table that you want to index, such as abbreviation, common name, genus, species
 * Click `Elasticindex` button
@@ -133,7 +133,7 @@ You can see that the index job(s) is in the queue by going to __sitename.org/adm
 ![Example 1 Step 2 Check the queue](images/E1_2_queue.png)
 
 ### Build search block for indexed tables
-* Go to __sitename.org/admin/config/search/elastic_search/search_block_builder__
+* Go to __sitename.org/admin/config/search/elastic_search/build_tripal_elasticsearch_block__
 * Select a table from the dropdown and select the fields abbreviation, common name, genus, species
 * Name the block organismSearch. 
 
@@ -160,7 +160,73 @@ This example will build a transcript search block that allows the user to specif
 
 It is very common that we need to search/filter information from different tables and then display the results. `tripal_elasticsearch` allows you to do so very easily by indexing joined tables. First, you need to join the tables that contain the data that you want to index. As long as the joined table is in your public database or chado database schema, it will become visible on the dropdown table list. Then you can index the table normally.
 
-There are many ways to join tables. An easy way for chado tables is to use the MViews module to create a materialized view. After you index the joined tables, you can delete them. Below is an example of indexing data from 3 chado tables (chado.feature, chado.organism, and chado.blast\_hit\_data). The joined table name is called __search\_transcripts\_all__
+There are many ways to join tables. An easy way for chado tables is to use the MViews module to create a materialized view. After you index the joined tables, you can delete them. Now we'll go through an example of indexing data from 3 chado tables (chado.feature, chado.organism, and chado.blast\_hit\_data). 
+
+Create the materialized view. Visit __sitename.orgadmin/tripal/schema/mviews/new__ and fill out the form to create a materialized view called __search_features_all__.
+
+![Example 2 Step 1 Create MView](images/E2_1_mvname.png)
+
+For the array:
+````
+array (
+  'description' => 'This view joins feature uniquenames to BLAST hit information (description, e-value, and hit score) and organism information (genus, species, common_name).',
+  'table' => 'search_features_all',
+  'fields' => array (
+    'uniquename' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+    'hit_description' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+    'hit_best_eval' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+    'hit_best_score' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+    'common_name' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+    'genus' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+    'species' => array (
+      'type' => 'text',
+      'not null' => true,
+    ),
+  ),
+)
+````
+
+For the SQL query:
+````
+SELECT f.uniquename AS uniquename, b.hit_description AS hit_description, b.hit_best_eval AS hit_best_eval, b.hit_best_score AS hit_best_score, o.common_name AS common_name, o.genus AS genus, o.species AS species
+FROM 
+chado.feature f
+INNER JOIN chado.blast_hit_data b ON b.feature_id = f.feature_id
+INNER JOIN chado.organism o ON f.organism_id = o.organism_id
+````
+
+After entering this information, click Add.  You then need to go to the list of materialized views and click "populate" for the data to be added to the table. After the cron job is run, the administrative page for Mviews will tell you how many records were added.
+
+(In case you see no records - You'll notice this Mview uses the blast_hit_data table, which is only populated if you selected to add keywords when you added blast results). 
+
+The rest of the instructions are now identical to indexing any other table for searching.
+
+Do the indexing:
+* Go to __sitename.org/admin/config/search/elastic_search/indexing__
+* Select the search_features_all table from the dropdown
+* Select fields from the table that you want to index, such as uniquename, hit_description, common name, genus, species
+* Click `Elasticindex` button
+
+![Example 2 Step 2 Index MView](images/E2_2_index.png)
+
 
 ![fields from multiple tables](https://github.com/MingChen0919/elastic_search_documentation/blob/elastic_search-to-github/images/fields-from-multiple-tables.png)
 
