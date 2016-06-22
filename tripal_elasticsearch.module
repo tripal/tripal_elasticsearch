@@ -160,7 +160,7 @@ function tripal_elasticsearch_block_info(){
   $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
   foreach($result as $record){
     // For some reason, block name cannot be longer than 32 chars
-    $block_name_form = substr('Elastic form: '.$record->table_name, 0, 32); 
+    $block_name_form = 'Search: '.$record->table_name; 
     $blocks[$block_name_form] = array(
       'info' => t('tripal_elasticsearch block for search form: '.$record->table_name),
       'status' => TRUE,
@@ -169,7 +169,7 @@ function tripal_elasticsearch_block_info(){
       'pages' => "elastic_search\nelastic_search/*",
       'cache' => DRUPAL_NO_CACHE,
     );
-    $block_name_hits = substr('Elastic hits: '.$record->table_name, 0, 32);
+    $block_name_hits = 'Hits: '.$record->table_name;
     $blocks[$block_name_hits] = array(
       'info' => t('tripal_elasticsearch block for search results: '.$record->table_name),
       'status' => TRUE,
@@ -196,10 +196,12 @@ function tripal_elasticsearch_block_view($delta = ''){
     $table_names[] = $record->table_name;
   } 
   // strip off 'ES_form' or 'ES_hits' to get table name
-  $table = substr($delta, 14);
+  //$table = substr($delta, 14);
+  $table = str_replace('Search: ', '', $delta);
+  $table = str_replace('Hits: ', '', $table);
   if(in_array($table, $table_names)){
-    $form = 'Elastic form: '.$table;
-    $hits = 'Elastic hits: '.$table;
+    $form = 'Search: '.$table;
+    $hits = 'Hits: '.$table;
 
     // Get search hits
     $form_input = isset($_SESSION['elastic_form_input'])?$_SESSION['elastic_form_input']:null;    
