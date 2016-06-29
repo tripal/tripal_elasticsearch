@@ -68,6 +68,15 @@ function tripal_elasticsearch_menu(){
     'file' => 'includes/tripal_elasticsearch_add_links_form.inc',
     'weight' => 4,
   );
+  $items[$pre.'/tripal_elasticsearch_alter_form'] = array(
+    'title' => t('Alter form fields'),
+    'page callback' => 'tripal_elasticsearch_alter_form_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal_elasticsearch_alter_form.inc',
+    'weight' => 4,
+  );
 
   $items['elastic_search'] = array(
     'title' => '', // t('Elasticsearch'),
@@ -117,6 +126,10 @@ function tripal_elasticsearch_add_links_page(){
   $form = drupal_get_form('tripal_elasticsearch_add_links_form');
   $output = drupal_render($example_form).drupal_render($form);
   return $output;
+}
+
+function tripal_elasticsearch_alter_form_page(){
+  return drupal_get_form('tripal_elasticsearch_alter_form');
 }
 
 /*
@@ -525,4 +538,7 @@ function tripal_elasticsearch_node_delete($node){
   ];
   $client->delete($params);
 }
+
+
+
 
