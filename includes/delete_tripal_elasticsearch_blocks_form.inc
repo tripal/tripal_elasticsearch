@@ -39,6 +39,10 @@ function delete_tripal_elasticsearch_blocks_form_submit($form, &$form_state){
       db_delete('tripal_elasticsearch')
         ->condition('table_name', $table_name)
         ->execute();
+
+      db_delete('tripal_elasticsearch_add_links')
+        ->condition('table_name', $table_name)
+        ->execute();
     }
   }
   
