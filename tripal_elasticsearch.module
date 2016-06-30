@@ -79,7 +79,7 @@ function tripal_elasticsearch_menu(){
   );
 
   $items['elastic_search'] = array(
-    'title' => '', // t('Elasticsearch'),
+    'title' => '', 
     'page callback' => 'tripal_elasticsearch_page',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,

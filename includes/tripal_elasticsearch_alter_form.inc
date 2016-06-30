@@ -9,6 +9,7 @@ function tripal_elasticsearch_alter_form($form, &$form_state){
   $form['alter_field'] = array(
     '#type' => 'fieldset',
     '#title' => 'Alter form fields',
+    '#tree' => true,
     '#prefix' => '<div id="alter_field">',
     '#suffix' => '</div>',
   );
@@ -20,8 +21,8 @@ function tripal_elasticsearch_alter_form($form, &$form_state){
       'wrapper' => 'alter_field',
     ),
   );
-  if(!empty($form_state['values']['table'])){
-    $table_name = $form_state['values']['table'];
+  if(!empty($form_state['values']['alter_field']['table'])){
+    $table_name = $form_state['values']['alter_field']['table'];
     $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
                  ->fetchAll();
     foreach($columns as $field){
@@ -47,6 +48,13 @@ function tripal_elasticsearch_alter_form($form, &$form_state){
       );
     }
 
+
+    $form['alter_field']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+    );
+
+
   }
 
   return $form;
@@ -64,12 +72,19 @@ function alter_field_ajax($form, &$form_state){
  * tripal_elasticsearch_form_tripal_elasticsearch_alter_form_alter hook.
  */
 function tripal_elasticsearch_form_tripal_elasticsearch_alter_form_alter($form, &$form_state){
-  dpm($form);
+  dpm('test text');
 }
 
 /*
  * tripal_elasticsearch_alter_form submit
  */
 function tripal_elasticsearch_alter_form_submit($form, &$form_state){
-  //dpm($form_state);
+  dpm($form_state['values']);
+}
+
+
+
+
+function tripal_elasticsearch_form_alter(&$form, &$form_state, $form_id){
+  dpm($form);
 }

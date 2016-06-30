@@ -21,6 +21,26 @@ function tripal_elasticsearch_schema(){
         'type' => 'varchar',
         'length' => '255',
       ),
+      'form_field_type' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'form_field_title' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'form_field_default_value' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'form_field_options' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'form_field_weight' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
     ),
   );
 
