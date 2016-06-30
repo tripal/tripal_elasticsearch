@@ -46,7 +46,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
           break;
       } 
 
-      $weight = $column->form_field_weight;
+      //$weight = $column->form_field_weight;
     }
   
     $form[$table_name]['search_from'] = array(
@@ -54,7 +54,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
       '#title' => t('(1000 search hits will be displayed at maximum. Enter an integer to set up an offset.)'),
       '#size' => 30,
       '#title_display' => 'after',
-      '#weight' => $weight+1,
+      '#weight' => 997,
       '#attributes' => array(
         'placeholder' => t('No input or enter an integer'),
       ),
@@ -64,20 +64,20 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
       '#type' => 'submit',
       '#value' => t('Search'),
       '#submit' => array('tripal_elasticsearch_blocks_form_submit_search'),
-      '#weight' => $weight+2,
+      '#weight' => 998,
     );
 
     $form[$table_name]['download'] = array(
       '#type' => 'submit',
       '#value' => t('Download'),
       '#submit' => array('tripal_elasticsearch_blocks_form_submit_download'), 
-      '#weight' => $weight+3,
+      '#weight' => 999,
     );
 
     $form[$table_name]['usage_description'] = array(
       '#type' => 'item',
       '#markup' => '<br/><p><b>Search:</b> clicking "Search" without keywords input will return all available records.</p> <p><b>Download:</b> clicking "Download" without keywords input will download all available records as a csv file. Clicking "Download" with keywords input will implement a search and download the returned search records into a csv file.</p>',
-      '#weight' => $weight+4,
+      '#weight' => 1000,
     );
   }
 
