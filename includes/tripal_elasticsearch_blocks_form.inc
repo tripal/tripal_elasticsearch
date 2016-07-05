@@ -97,7 +97,7 @@ function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
   // Allow to download 1,000,000 records at maximum
   if(is_elastic_index($table)){
     ini_set('memory_limit', '-1');
-    $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=10000)['search_hits'];
+    $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000000)['search_hits'];
   
     // Create a file pointer connected to the output stream
     $random_str = random_string($str_length = 5);

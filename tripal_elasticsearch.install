@@ -66,15 +66,4 @@ function tripal_elasticsearch_schema(){
 }
   
 
-/**
- * implements hook_install()
- */
-function tripal_elasticsearch_install(){
-  $item = array(
-      'link_title' => 'Elasticsearch',
-      'link_path' => 'elastic_search',
-      'menu_name' => 'main-menu',
-      'weight' => 99,
-  );
-  menu_link_save($item);
-}
+
