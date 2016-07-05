@@ -32,13 +32,13 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
           );         
           break;
         case 'select':
-          $options_first_items = array('select_an_item' => 'Select an item');
+          $options_first_items = array('Any' => 'Any');
           $options_rest_items = explode(',', $column->form_field_options);
           $options = array_merge($options_first_items, $options_rest_items);
           $form[$table_name][$item] = array(
             '#type' => $column->form_field_type,
             '#title' => $column->form_field_title,
-            '#default_value' => $options['select_an_item'],
+            '#default_value' => $options['Any'],
             '#options' => $options,
             '#title_display' => 'after',
             '#weight' => $column->form_field_weight,
@@ -86,8 +86,15 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
 
 
 function tripal_elasticsearch_blocks_form_submit_search($form, &$form_state){
+  $table = array_keys($form)[0];
   // Use $form_state['input'] instead of $form_state['values'] to get the correct data!!!
   $_SESSION['elastic_form_input'] = $form_state['input'];
+  // If select 'Any', set select options as empty so that searching will return all hits.
+  foreach(element_children($form[$table]) as $field){
+    if($form[$table][$field]['#type'] == 'select' and $form[$table][$field]['#default_value'] == 'Any'){
+      $_SESSION['elastic_form_input'][$table][$field] = ''; 
+    }   
+  }
 }
 
 
