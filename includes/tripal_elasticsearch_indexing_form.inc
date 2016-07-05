@@ -158,10 +158,13 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
     $k = 1000;
   }
   // the number of database queries for a selected table
+  $queue_N = 8; // split items into N queues
   $n = intval($row_count/$k);
   $queue = DrupalQueue::get('elastic_queue');
   $offsets = range(0, $n);
   foreach($offsets as $offset){
+    $queue_n = $offset % $queue_N; 
+    $queue = DrupalQueue::get('elastic_queue_'.$queue_n);
     $offset = $k*$offset;
     $item = new stdClass();
     if($selected_table == 'index_website'){

@@ -304,11 +304,15 @@ function tripal_elasticsearch_block_view($delta = ''){
  * implement hook_cron_queue_info()
  */
 function tripal_elasticsearch_cron_queue_info(){
-  $queues['elastic_queue'] = array(
-    'worker callback' => 'elasticindexing_queue_item',
-    //'time' => 60 * 60 * 2,  ## the amount of time drupal spends on calling the worker function. 
-    'time' => 30,
-  );
+  // Define N queues
+  $queue_N = 8;
+  for($n = 0; $n < $queue_N; $n++){
+    $queues['elastic_queue_'.$n] = array(
+      'worker callback' => 'elasticindexing_queue_item',
+      //'time' => 60 * 60 * 2,  ## the amount of time drupal spends on calling the worker function. 
+      'time' => 30,
+    );
+  }
 
   return $queues;
 }
