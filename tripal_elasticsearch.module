@@ -491,7 +491,10 @@ function elasticindexing_queue_item($item){
  * Any node updates will also update the corresponding elasticsearch docs.
  */
 function tripal_elasticsearch_node_update($node){
-  $queue = DrupalQueue::get('elastic_queue');
+  $queue_N = 8;
+  // randomly assign the updated node to a queue
+  $n = rand(0, $queue_N-1);
+  $queue = DrupalQueue::get('elastic_queue_'.$n);
   $nid = $node->nid;
   $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
   $item = new stdClass();
@@ -505,7 +508,10 @@ function tripal_elasticsearch_node_update($node){
  * Any new nodes will be added to the  elasticsearch cron queue.
  */
 function tripal_elasticsearch_node_insert($node){
-  $queue = DrupalQueue::get('elastic_queue');
+  $queue_N = 8;
+  // randomly assign the inserted node to a queue
+  $n = rand(0, $queue_N-1);
+  $queue = DrupalQueue::get('elastic_queue_'.$n);
   $nid = $node->nid;
   $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
   $item = new stdClass();
