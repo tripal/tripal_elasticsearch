@@ -304,8 +304,8 @@ function tripal_elasticsearch_block_view($delta = ''){
  * implement hook_cron_queue_info()
  */
 function tripal_elasticsearch_cron_queue_info(){
-  // Define N queues
-  $queue_N = 8;
+  // Define N=10 queues
+  $queue_N = 10;
   for($n = 0; $n < $queue_N; $n++){
     $queues['elastic_queue_'.$n] = array(
       'worker callback' => 'elasticindexing_queue_item',
@@ -491,7 +491,7 @@ function elasticindexing_queue_item($item){
  * Any node updates will also update the corresponding elasticsearch docs.
  */
 function tripal_elasticsearch_node_update($node){
-  $queue_N = 8;
+  $queue_N = 10;
   // randomly assign the updated node to a queue
   $n = rand(0, $queue_N-1);
   $queue = DrupalQueue::get('elastic_queue_'.$n);
@@ -508,7 +508,7 @@ function tripal_elasticsearch_node_update($node){
  * Any new nodes will be added to the  elasticsearch cron queue.
  */
 function tripal_elasticsearch_node_insert($node){
-  $queue_N = 8;
+  $queue_N = 10;
   // randomly assign the inserted node to a queue
   $n = rand(0, $queue_N-1);
   $queue = DrupalQueue::get('elastic_queue_'.$n);

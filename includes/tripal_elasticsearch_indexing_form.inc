@@ -29,6 +29,25 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
     '#suffix' => '</div>',
   );
 
+  $form['indexing_table']['queue_N'] = array(
+    '#type' => 'select',
+    '#title' => 'Number of cron queues',
+    '#default_value' => 1,
+    '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the first n
+                         queues will be used for indexing jobs. Use more queues if your server has high ability
+                         for multi-threads process.'),
+    '#options' => array(1=>'1',
+                        2=>'2',
+                        3=>'3',
+                        4=>'4',
+                        5=>'5',
+                        6=>'6',
+                        7=>'7',
+                        8=>'8',
+                        9=>'9',
+                        10=>'10')
+  );
+
   $form['indexing_table']['table_dropdown'] = array(
     '#type' => 'select',
     '#title' => 'Select a table to index',
@@ -158,7 +177,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
     $k = 1000;
   }
   // the number of database queries for a selected table
-  $queue_N = 8; // split items into N queues
+  $queue_N = $form_state['values']['queue_N']; // split items into N queues
   $n = intval($row_count/$k);
   $queue = DrupalQueue::get('elastic_queue');
   $offsets = range(0, $n);
