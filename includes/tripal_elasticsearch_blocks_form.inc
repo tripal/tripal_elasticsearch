@@ -109,15 +109,15 @@ function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
     // Create a file pointer connected to the output stream
     $random_str = random_string($str_length = 5);
     $destination = file_destination('temporary://'.'tripal_elasticsearch_'.$random_str.'.csv', FILE_EXISTS_RENAME);
+    // write content into file
     $output = fopen($destination, 'w');
-  
     foreach($search_hits as $hit){
       fputcsv($output, $hit);
     }
   
-    // strip off 'temprary://'
-    $filename = substr($destination, 12);
-    drupal_goto('sites/default/files/tmp/'. $filename);
+    // download file
+    drupal_add_http_header('Content-Type', 'text/csv; utf-8');
+    file_transfer($destination, array());
   }
   else{
     drupal_set_message(t('No data available.'), 'error');
@@ -129,3 +129,6 @@ function random_string($str_length){
   $random_string = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $str_length);
   return $random_string;
 }
+
+
+
