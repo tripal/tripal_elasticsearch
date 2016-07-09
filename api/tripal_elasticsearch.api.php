@@ -31,6 +31,7 @@ function sort_2d_array_by_value($arr, $field, $sort){
 /**
  * Define a function to get the primary key of a table
  */
+/*
 function get_primary_key($table_name){
   if(in_array($table_name, get_chado_table_list())){
     $table = 'chado.'.$table_name;
@@ -63,7 +64,7 @@ function get_primary_key($table_name){
   return $primary_key;
 
 }//============== End of primary key function ================================
-
+*/
 
 
 
