@@ -2,7 +2,9 @@ name = Tripal Elasticsearch
 description = Provide website-wide indexing and searching. Also provide interface for indexing and searching for any drupal and chado tables.  
 package = Elasticsearch
 core = 7.x
-;dependencies[] = ultimate_cron:ultimate_cron
+configuration = admin/tripal/extension/tripal_elasticsearch
+
+dependencies[] = views
 dependencies[] = queue_ui:queue_ui
 files[] = tripal_elasticsearch.module
 

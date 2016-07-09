@@ -11,9 +11,10 @@ set_time_limit(0);
  * Implementation of hook_menu().
  */
 function tripal_elasticsearch_menu(){
-  $pre = 'admin/config/search/elastic_search';
+  //$pre = 'admin/config/search/elastic_search';
+  $pre = 'admin/tripal/extension/tripal_elasticsearch';
   $items[$pre] = array(
-    'title' => 'Elastic search',
+    'title' => 'Tripal Elasticsearch',
     'description' => 'Configure elastic indexing and build search interface',
     'page callback' => 'drupal_goto',
     'page arguments' => array($pre . '/tripal_elasticsearch_indexing'),

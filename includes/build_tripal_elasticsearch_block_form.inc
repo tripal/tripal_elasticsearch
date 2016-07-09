@@ -130,7 +130,8 @@ function add_tripal_elasticsearch_block($form, &$form_state){
   }
   
 
-  $form_state['redirect'] = 'admin/config/search/elastic_search/tripal_elasticsearch_add_links';
+  //$form_state['redirect'] = 'admin/config/search/elastic_search/tripal_elasticsearch_add_links';
+  $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/tripal_elasticsearch_add_links';
 }
 
 

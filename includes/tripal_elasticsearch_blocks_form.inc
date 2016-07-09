@@ -108,7 +108,7 @@ function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
   
     // Create a file pointer connected to the output stream
     $random_str = random_string($str_length = 5);
-    $destination = file_destination('temporary://'.'/tripal_elasticsearch_'.$random_str.'.csv', FILE_EXISTS_RENAME);
+    $destination = file_destination('temporary://'.'tripal_elasticsearch_'.$random_str.'.csv', FILE_EXISTS_RENAME);
     $output = fopen($destination, 'w');
   
     foreach($search_hits as $hit){
