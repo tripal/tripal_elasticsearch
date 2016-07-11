@@ -284,9 +284,12 @@ function tripal_elasticsearch_block_view($delta = ''){
             $main_search_hits_count = _run_elastic_main_search($table, $field_keyword_pairs)['search_hits_count'];
             $main_search_hits_table = get_main_search_hits_table($main_search_hits, $main_search_hits_count);
           }
+          else{
+            $main_search_hits_table = '<h2><font color="red">No records were found.</font></h2>';
+          }  
         }
         else{
-          $main_search_hits_table = '<font color="red">No records were found.</font>';
+          $main_search_hits_table = '';
         }
         $block['subject'] = '';
         $block['content'] = $main_search_hits_table;
