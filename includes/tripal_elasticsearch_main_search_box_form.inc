@@ -8,7 +8,7 @@ function main_search_box_form($form, &$form_state){
   );
   $form['search']['search_box'] = array(
     '#type' => 'textfield',
-    '#size' => 40,
+    //'#size' => 40,
   );  
 
   $form['search']['search_submit'] = array(

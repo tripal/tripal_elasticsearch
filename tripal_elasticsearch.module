@@ -3,6 +3,7 @@
   require_once drupal_get_path('module', 'tripal_elasticsearch').'/vendor/autoload.php';
   require_once drupal_get_path('module', 'tripal_elasticsearch').'/api/tripal_elasticsearch.api.php';
   require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_main_search_box_form.inc';
+  require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_main_search_box_form.inc';
 
 
 set_time_limit(0);
@@ -157,13 +158,13 @@ function tripal_elasticsearch_block_info(){
   $blocks['main_search_box'] = array(
     'info' => t('tripal_elasticsearch main search box'),
     'status' => TRUE,
-    'region' => 'content',
+    'region' => 'header',
     'cache' => DRUPAL_NO_CACHE,
     'weight' => -99,
   );
   // Block for main search results
   $blocks['main_search_results'] = array(
-    'info' => t('tripal_elasticsearch main search box'),
+    'info' => t('tripal_elasticsearch main search results'),
     'status' => TRUE,
     'region' => 'content',
     'visibility' => BLOCK_VISIBILITY_LISTED,
