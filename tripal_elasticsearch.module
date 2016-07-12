@@ -275,7 +275,7 @@ function tripal_elasticsearch_block_view($delta = ''){
         break;
       case 'main_search_results':
         $main_search_keyword = isset($_SESSION['main_search_keyword'])?$_SESSION['main_search_keyword']:'';
-        unset($_SESSION['main_search_keyword']);
+        //unset($_SESSION['main_search_keyword']);
         $table = 'index_website';
         $field_keyword_pairs = array('node_content'=>$main_search_keyword); 
         if(!empty($main_search_keyword)){
