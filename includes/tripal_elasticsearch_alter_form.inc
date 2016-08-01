@@ -24,9 +24,28 @@ function tripal_elasticsearch_alter_form($form, &$form_state){
   if(!empty($form_state['values']['alter_field']['table'])){
     $table_name = $form_state['values']['alter_field']['table'];
     $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
-                 ->fetchAll();
+                 ->fetchCol(0);
     foreach($columns as $field){
-      $field = $field->table_field;
+      //$field = $field->table_field;
+      // count unique entries in this field
+      // if entry number is larger than 1000, only textfield is available for field type
+      // if entry number is equal or less than 1000, both textfield and select (drop-down list)
+      // are available for field type
+      $one_fieldtype = array('textfield' => 'textfield');
+      $two_fieldtypes = array('select'=>'select (drop-down list)', 'textfield'=>'textfield');
+      $sql_unique_entries = "SELECT COUNT(DISTINCT($field)) FROM {".$table_name."}";
+      $unique_entries = chado_query($sql_unique_entries)->fetchCol('count');
+      $entry_count = $unique_entries[0]; 
+      $options = ($entry_count > 100)? $one_fieldtype: $two_fieldtypes;
+      $options_content = '';
+      if($entry_count > 100){
+        $options = $one_fieldtype;
+      } else {
+        $options = $two_fieldtypes;
+        $sql = "SELECT DISTINCT($field) FROM {".$table_name."}";
+        $options_content = chado_query($sql)->fetchCol(0);
+      }
+      //========
       $form['alter_field'][$field] = array(
         '#type' => 'fieldset',
         '#title' => $field,
@@ -35,7 +54,9 @@ function tripal_elasticsearch_alter_form($form, &$form_state){
         '#type' => 'radios',
         '#title' => t('Field type'),
         '#default_value' => t('textfield'),
-        '#options' => array('select'=>'select', 'textfield'=>'textfield'),
+        //'#options' => array('select'=>'select (drop-down list)', 'textfield'=>'textfield'),
+        '#options' => $options,
+        '#description' => t('Only textfield type is available if this field has more than 100 unique entries.'),
       );
       $form['alter_field'][$field]['field_title'] = array(
         '#type' => 'textfield',
@@ -49,6 +70,7 @@ function tripal_elasticsearch_alter_form($form, &$form_state){
       $form['alter_field'][$field]['field_options'] = array(
         '#type' => 'textarea',
         '#title' => t('Field options'),
+        '#default_value' => implode(',', $options_content),
       );
       $form['alter_field'][$field]['field_weight'] = array(
         '#type' => 'select',
