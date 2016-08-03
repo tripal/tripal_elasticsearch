@@ -36,6 +36,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
           $form_field_options = explode(',', $column->form_field_options);
           // make key = value 
           foreach($form_field_options as $value){
+            $value = trim($value);
             $options_rest_items[$value] = $value;
           }
           // The first option is 'Any'

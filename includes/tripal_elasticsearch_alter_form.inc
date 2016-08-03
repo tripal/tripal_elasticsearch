@@ -118,7 +118,11 @@ function tripal_elasticsearch_alter_form_submit($form, &$form_state){
     $record['form_field_type'] = $form_state['values']['alter_field'][$table_field]['field_type'];
     $record['form_field_title'] = $form_state['values']['alter_field'][$table_field]['field_title'];
     $record['form_field_value'] = $form_state['values']['alter_field'][$table_field]['field_default_value'];
-    $record['form_field_options'] = $form_state['values']['alter_field'][$table_field]['field_options'];
+    if($record['form_field_type'] == 'textfield'){
+      $record['form_field_options'] = '';
+    } else {
+      $record['form_field_options'] = $form_state['values']['alter_field'][$table_field]['field_options'];
+    }
     $record['form_field_weight'] = $form_state['values']['alter_field'][$table_field]['field_weight'];
   
     drupal_write_record('tripal_elasticsearch', $record);
