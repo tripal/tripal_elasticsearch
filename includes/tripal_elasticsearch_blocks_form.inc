@@ -74,14 +74,15 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
 
     $form[$table_name]['download'] = array(
       '#type' => 'submit',
-      '#value' => t('Download'),
+      '#value' => t('Download table'),
       '#submit' => array('tripal_elasticsearch_blocks_form_submit_download'), 
       '#weight' => 999,
     );
 
     $form[$table_name]['usage_description'] = array(
       '#type' => 'item',
-      '#markup' => '<br/><p><b>Search:</b> clicking "Search" without keywords input will return all available records.</p> <p><b>Download:</b> clicking "Download" without keywords input will download all available records as a csv file. Clicking "Download" with keywords input will implement a search and download the returned search records into a csv file.</p>',
+      '#markup' => '<br/><p><b>Search:</b> clicking "Search" without keywords input will return all available records.</p>',
+      // <p><b>Download:</b> clicking "Download" without keywords input will download all available records as a csv file. Clicking "Download" with keywords input will implement a search and download the returned search records into a csv file.</p>',
       '#weight' => 1000,
     );
   }
@@ -104,8 +105,10 @@ function tripal_elasticsearch_blocks_form_submit_search($form, &$form_state){
 
 
 function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
-  $table = _get_field_keyword_pairs($form_state['input'])['table'];
-  $field_keyword_pairs = _get_field_keyword_pairs($form_state['input'])['field_keyword_pairs'];
+  //$table = _get_field_keyword_pairs($form_state['input'])['table'];
+  //$field_keyword_pairs = _get_field_keyword_pairs($form_state['input'])['field_keyword_pairs'];
+  $table = _get_field_keyword_pairs($_SESSION['elastic_form_input'])['table'];
+  $field_keyword_pairs = _get_field_keyword_pairs($_SESSION['elastic_form_input'])['field_keyword_pairs'];
   // Allow to download 1,000,000 records at maximum
   if(is_elastic_index($table)){
     ini_set('memory_limit', '-1');
