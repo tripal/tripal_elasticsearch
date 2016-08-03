@@ -34,12 +34,12 @@ function tripal_elasticsearch_schema(){
         'length' => '255',
       ),
       'form_field_options' => array(
-        'type' => 'varchar',
-        'length' => '255',
-      ),
-      'form_field_weight' => array(
         'type' => 'text',
         //'length' => '255',
+      ),
+      'form_field_weight' => array(
+        'type' => 'varchar',
+        'length' => '255',
       ),
     ),
   );
