@@ -328,7 +328,7 @@ function elasticindexing_queue_item($item){
 
   $index = str_replace('chado.', '', $selected_table);
   $sql = $item->sql;
-  $result = db_query($sql);
+  $result = db_query($sql)->fetchAll();
 
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
@@ -336,8 +336,6 @@ function elasticindexing_queue_item($item){
   if($selected_table == 'index_website'){
     // INDEX THE ENTIRE WEBSITE
       if(!in_array($index, $indices)){
-          foreach($result as $record){
-                $doc = objectToArray($record);
 
           $properties['node_title'] = array('type' => 'string', 'analyzer' => $index);
           $properties['node_id'] = array('type' => 'string', 'analyzer' => $index);
@@ -347,43 +345,52 @@ function elasticindexing_queue_item($item){
               '_default_' => array('properties' => $properties),
           );
 
+          $params = array();
+          $params = [
+              'index' => $index,
+              'body' => [
+                  'settings' => [
+                      'number_of_shards' => 1,
+                      'number_of_replicas' => 0,
+                      'max_result_window' => 100000,
+                      'analysis' => [
+                          'filter' => [
+                              'myTokenFilter1' => [
+                                  'type' => 'word_delimiter',
+                                  'split_on_numerics' => 'false'
+                              ]
+                          ],
+                          'char_filter' => [
+                              'my_html' => [
+                                  'type' => 'html_strip',
+                              ]
+                          ],
+                          'analyzer' => [
+                              $index => [
+                                  'type' => 'custom',
+                                  'tokenizer' => 'standard',
+                                  'char_filter' => ['my_html'],
+                                  'filter' => ['myTokenFilter1', 'lowercase']
+                              ]
+                          ]
+                      ]
+                  ],
+                  'mappings' => $mappings
+              ]
+          ];
 
-                $params = array();
-                $params = [
-                    'index' => $index,
-                    'body' => [
-                        'settings' => [
-                            'number_of_shards' => 1,
-                            'number_of_replicas' => 0,
-                            'analysis' => [
-                                'filter' => [
-                                    'myTokenFilter1' => [
-                                        'type' => 'word_delimiter',
-                    'split_on_numerics' => 'false'
-                                    ]
-                                ],
-                                'char_filter' => [
-                                    'my_html' => [
-                                        'type' => 'html_strip',
-                                    ]
-                                ],
-                                'analyzer' => [
-                                    $index => [
-                                        'type' => 'custom',
-                                        'tokenizer' => 'standard',
-                                        'char_filter' => ['my_html'],
-                                        'filter' => ['myTokenFilter1', 'lowercase']
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'mappings' => $mappings
-                    ]
-                ];
-
-                $client->indices()->create($params);
-                break;
-            }
+          try {
+            $client->indices()->create($params);
+          } catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $ex) {
+            // If several cron tasks run in parallel, we can encounter a race condition where the index didn't exist
+            // when calling getMapping, but got created before getting here
+            $reason = json_decode($ex->getMessage());
+            if (!empty($reason) && isset($reason->error) && isset($reason->error->type) && $reason->error->type == "index_already_exists_exception")
+              print 'Index already exits, skipping creation';
+            else
+              // Other exception, we don't know what to do, rethrow it
+              throw $ex;
+          }
 
         }
         foreach($result as $record){
@@ -416,56 +423,65 @@ function elasticindexing_queue_item($item){
     else {  // index a selected table
 
         if(!in_array($index, $indices)){
-            foreach($result as $record){
-                $doc = objectToArray($record);
+          $doc = objectToArray($result[0]);
 
-                $properties = array();
-                foreach(array_keys($doc) as $field) {
-                    //$field = array('type' => 'string', 'analyzer' => $index);
-                    $properties[$field] = array('type' => 'string', 'analyzer' => $index);
-                }
-                $mappings = array(
-                    '_default_' => array('properties' => $properties),
-                );
+          $properties = array();
+          foreach(array_keys($doc) as $field) {
+              //$field = array('type' => 'string', 'analyzer' => $index);
+              $properties[$field] = array('type' => 'string', 'analyzer' => $index);
+          }
 
+          $mappings = array(
+              '_default_' => array('properties' => $properties),
+          );
 
-                $params = array();
-                $params = [
-                    'index' => $index,
-                    'body' => [
-                        'settings' => [
-                            'number_of_shards' => 1,
-                            'number_of_replicas' => 0,
-                            'analysis' => [
-                                'filter' => [
-                                    'myTokenFilter1' => [
-                                        'type' => 'word_delimiter',
-                    'split_on_numerics' => 'false'
-                                    ]
-                                ],
-                                'char_filter' => [
-                                    'my_html' => [
-                                        'type' => 'html_strip',
-                                    ]
-                                ],
-                                'analyzer' => [
-                                    $index => [
-                                        'type' => 'custom',
-                                        'tokenizer' => 'standard',
-                                        'char_filter' => ['my_html'],
-                                        'filter' => ['myTokenFilter1', 'lowercase']
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'mappings' => $mappings
-                    ]
-                ];
+          $params = array();
+          $params = [
+              'index' => $index,
+              'body' => [
+                  'settings' => [
+                      'number_of_shards' => 1,
+                      'number_of_replicas' => 0,
+                      'max_result_window' => 100000,
+                      'analysis' => [
+                          'filter' => [
+                              'myTokenFilter1' => [
+                                  'type' => 'word_delimiter',
+                                  'split_on_numerics' => 'false'
+                              ]
+                          ],
+                          'char_filter' => [
+                              'my_html' => [
+                                  'type' => 'html_strip',
+                              ]
+                          ],
+                          'analyzer' => [
+                              $index => [
+                                  'type' => 'custom',
+                                  'tokenizer' => 'standard',
+                                  'char_filter' => ['my_html'],
+                                  'filter' => ['myTokenFilter1', 'lowercase']
+                              ]
+                          ]
+                      ]
+                  ],
+                  'mappings' => $mappings
+              ]
+          ];
 
-                $client->indices()->create($params);
-                break;
-            }
-    }
+          try {
+            $client->indices()->create($params);
+          } catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $ex) {
+            // If several cron tasks run in parallel, we can encounter a race condition where the index didn't exist
+            // when calling getMapping, but got created before getting here
+            $reason = json_decode($ex->getMessage());
+            if (!empty($reason) && isset($reason->error) && isset($reason->error->type) && $reason->error->type == "index_already_exists_exception")
+              print 'Index already exits, skipping creation';
+            else
+              // Other exception, we don't know what to do, rethrow it
+              throw $ex;
+          }
+        }
 
         foreach($result as $record){
             $doc = objectToArray($record);
