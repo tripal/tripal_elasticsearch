@@ -81,14 +81,7 @@ function tripal_elasticsearch_menu(){
   );
 
   $items['elastic_search'] = array(
-    'title' => '', 
-    'page callback' => 'tripal_elasticsearch_page',
-    'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/tripal_elasticsearch_blocks_form.inc',
-  );
-  $items['elastic_search/organism/%'] = array(
-    'title' => '', // t('Elasticsearch'),
+    'title' => 'Advanced search',
     'page callback' => 'tripal_elasticsearch_page',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,
@@ -98,7 +91,7 @@ function tripal_elasticsearch_menu(){
     'title' => '',
     'page callback' => 'tripal_elasticsearch_main_search_page',
     'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_VISIBLE_IN_BREADCRUMB,
     'file' => 'includes/tripal_elasticsearch_main_search_box_form.inc',
   );
 
@@ -170,12 +163,12 @@ function tripal_elasticsearch_block_info(){
     'visibility' => BLOCK_VISIBILITY_LISTED,
     'pages' => "search-website",
     'cache' => DRUPAL_NO_CACHE,
-  );  
+  );
 
   $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
   foreach($result as $record){
     // For some reason, block name cannot be longer than 32 chars
-    $block_name_form = 'Search: '.$record->table_name; 
+    $block_name_form = 'Search: '.$record->table_name;
     $blocks[$block_name_form] = array(
       'info' => t('tripal_elasticsearch block for search form: '.$record->table_name),
       'status' => TRUE,
@@ -209,22 +202,24 @@ function tripal_elasticsearch_block_view($delta = ''){
   $table_names = array();
   foreach($result as $record){
     $table_names[] = $record->table_name;
-  } 
+  }
   // strip off 'ES_form' or 'ES_hits' to get table name
   //$table = substr($delta, 14);
   $table = str_replace('Search: ', '', $delta);
   $table = str_replace('Hits: ', '', $table);
+
   if(in_array($table, $table_names)){
     $form = 'Search: '.$table;
     $hits = 'Hits: '.$table;
 
     // Get search hits
-    $form_input = isset($_SESSION['elastic_form_input'])?$_SESSION['elastic_form_input']:null;    
+    $form_input = isset($_SESSION['elastic_form_input'])?$_SESSION['elastic_form_input']:null;
     if(!empty($form_input)){
       $index_table = _get_field_keyword_pairs($form_input)['table'];
       $field_keyword_pairs = _get_field_keyword_pairs($form_input)['field_keyword_pairs'];
       $search_from = _get_field_keyword_pairs($form_input)['search_from'];
       $search_from = intval($search_from);
+
       //$search_from = !empty($search_from)?$search_from:0;
       // Only display the results block for the corresponding form block
       if($table == $index_table and is_elastic_index($index_table)){
@@ -239,10 +234,10 @@ function tripal_elasticsearch_block_view($delta = ''){
         else{
           $end = $start + 999;
         }
-        $search_hits_count_html .= 'Records from '. 
-                                   '<span style="color:red"><em>'.$start.'</em></span>'. 
-                                   ' to '. 
-                                   '<span style="color:red"><em>'.$end.'</em></span>'. 
+        $search_hits_count_html .= 'Records from '.
+                                   '<span style="color:red"><em>'.$start.'</em></span>'.
+                                   ' to '.
+                                   '<span style="color:red"><em>'.$end.'</em></span>'.
                                    ' are displayed.</h6>';
         if(!empty($search_hits)){
           $search_hits_table = get_search_hits_table($search_hits, $table);
@@ -266,7 +261,7 @@ function tripal_elasticsearch_block_view($delta = ''){
         $block['content'] = !empty($search_hits_table)?$search_hits_table:'';
         break;
     }
-  }  
+  }
   else{ // display the main search box block
     switch($delta){
       case 'main_search_box':
@@ -275,9 +270,9 @@ function tripal_elasticsearch_block_view($delta = ''){
         break;
       case 'main_search_results':
         $main_search_keyword = isset($_SESSION['main_search_keyword'])?$_SESSION['main_search_keyword']:'';
-        //unset($_SESSION['main_search_keyword']);
+
         $table = 'index_website';
-        $field_keyword_pairs = array('node_content'=>$main_search_keyword); 
+        $field_keyword_pairs = array('node_content'=>$main_search_keyword);
         if(!empty($main_search_keyword)){
           $main_search_hits = _run_elastic_main_search($table, $field_keyword_pairs)['main_search_hits'];
           if(!empty($main_search_hits)){
@@ -286,7 +281,7 @@ function tripal_elasticsearch_block_view($delta = ''){
           }
           else{
             $main_search_hits_table = '<h2><font color="red">No records were found.</font></h2>';
-          }  
+          }
         }
         else{
           $main_search_hits_table = '';
@@ -314,7 +309,7 @@ function tripal_elasticsearch_cron_queue_info(){
   for($n = 0; $n < $queue_N; $n++){
     $queues['elastic_queue_'.$n] = array(
       'worker callback' => 'elasticindexing_queue_item',
-      //'time' => 60 * 60 * 2,  ## the amount of time drupal spends on calling the worker function. 
+      //'time' => 60 * 60 * 2,  ## the amount of time drupal spends on calling the worker function.
       'time' => 30,
     );
   }
@@ -327,68 +322,75 @@ function tripal_elasticsearch_cron_queue_info(){
  * queue worker function
  */
 function elasticindexing_queue_item($item){
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
 
   $selected_table = $item->selected_table;
 
   $index = str_replace('chado.', '', $selected_table);
   $sql = $item->sql;
-  $result = db_query($sql);
+  $result = db_query($sql)->fetchAll();
 
   $mappings = $client->indices()->getMapping();
-    $indices = array_keys($mappings);
+  $indices = array_keys($mappings);
 
   if($selected_table == 'index_website'){
     // INDEX THE ENTIRE WEBSITE
       if(!in_array($index, $indices)){
-          foreach($result as $record){
-                $doc = objectToArray($record);
 
-                $properties['node_title'] = array('type' => 'string', 'analyzer' => $index);
-                $properties['node_id'] = array('type' => 'string', 'analyzer' => $index);
-                $properties['node_content'] = array('type' => 'string', 'analyzer' => $index);
+          $properties['node_title'] = array('type' => 'string', 'analyzer' => $index);
+          $properties['node_id'] = array('type' => 'string', 'analyzer' => $index);
+          $properties['node_content'] = array('type' => 'string', 'analyzer' => $index);
 
-                $mappings = array(
-                    '_default_' => array('properties' => $properties),
-                );
+          $mappings = array(
+              '_default_' => array('properties' => $properties),
+          );
 
+          $params = array();
+          $params = [
+              'index' => $index,
+              'body' => [
+                  'settings' => [
+                      'number_of_shards' => 1,
+                      'number_of_replicas' => 0,
+                      'max_result_window' => 100000,
+                      'analysis' => [
+                          'filter' => [
+                              'myTokenFilter1' => [
+                                  'type' => 'word_delimiter',
+                                  'split_on_numerics' => 'false'
+                              ]
+                          ],
+                          'char_filter' => [
+                              'my_html' => [
+                                  'type' => 'html_strip',
+                              ]
+                          ],
+                          'analyzer' => [
+                              $index => [
+                                  'type' => 'custom',
+                                  'tokenizer' => 'standard',
+                                  'char_filter' => ['my_html'],
+                                  'filter' => ['myTokenFilter1', 'lowercase']
+                              ]
+                          ]
+                      ]
+                  ],
+                  'mappings' => $mappings
+              ]
+          ];
 
-                $params = array();
-                $params = [
-                    'index' => $index,
-                    'body' => [
-                        'settings' => [
-                            'number_of_shards' => 1,
-                            'number_of_replicas' => 0,
-                            'analysis' => [
-                                'filter' => [
-                                    'myTokenFilter1' => [
-                                        'type' => 'word_delimiter',
-                    'split_on_numerics' => 'false'
-                                    ]
-                                ],
-                                'char_filter' => [
-                                    'my_html' => [
-                                        'type' => 'html_strip',
-                                    ]
-                                ],
-                                'analyzer' => [
-                                    $index => [
-                                        'type' => 'custom',
-                                        'tokenizer' => 'standard',
-                                        'char_filter' => ['my_html'],
-                                        'filter' => ['myTokenFilter1', 'lowercase']
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'mappings' => $mappings
-                    ]
-                ];
-
-                $client->indices()->create($params);
-                break;
-            }
+          try {
+            $client->indices()->create($params);
+          } catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $ex) {
+            // If several cron tasks run in parallel, we can encounter a race condition where the index didn't exist
+            // when calling getMapping, but got created before getting here
+            $reason = json_decode($ex->getMessage());
+            if (!empty($reason) && isset($reason->error) && isset($reason->error->type) && $reason->error->type == "index_already_exists_exception")
+              print 'Index already exits, skipping creation';
+            else
+              // Other exception, we don't know what to do, rethrow it
+              throw $ex;
+          }
 
         }
         foreach($result as $record){
@@ -400,76 +402,86 @@ function elasticindexing_queue_item($item){
             $body['node_id'] = $doc['nid'];
             $body['node_title'] = $doc['title'];
 
-      $node = node_load($doc['nid']);
+            $node = node_load($doc['nid']);
             $node_element = node_view($node);
             $node_html = drupal_render_children($node_element);
             // combine the title and content so that searching the content will also searching the title.
-      $body['node_content'] = $doc['title'].strip_tags($node_html);
+            $body['node_content'] = $doc['title'].strip_tags($node_html);
             //$node_string = $body;
 
-      //$params['body'] = array('node_content' => $node_string);
-      $params['body'] = $body;
-      // use node ID as the document ID.
-      $params['id'] = $doc['nid'];
+            //$params['body'] = array('node_content' => $node_string);
+            $params['body'] = $body;
+            // use node ID as the document ID.
+            $params['id'] = $doc['nid'];
             $client->index($params);
 
         } // end foreach($result as $record)
 
-  watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
+        watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
+
         if(!in_array($index, $indices)){
-            foreach($result as $record){
-                $doc = objectToArray($record);
+          $doc = objectToArray($result[0]);
 
-                $properties = array();
-                foreach(array_keys($doc) as $field) {
-                    //$field = array('type' => 'string', 'analyzer' => $index);
-                    $properties[$field] = array('type' => 'string', 'analyzer' => $index);
-                }
-                $mappings = array(
-                    '_default_' => array('properties' => $properties),
-                );
+          $properties = array();
+          foreach(array_keys($doc) as $field) {
+              //$field = array('type' => 'string', 'analyzer' => $index);
+              $properties[$field] = array('type' => 'string', 'analyzer' => $index);
+          }
 
+          $mappings = array(
+              '_default_' => array('properties' => $properties),
+          );
 
-                $params = array();
-                $params = [
-                    'index' => $index,
-                    'body' => [
-                        'settings' => [
-                            'number_of_shards' => 1,
-                            'number_of_replicas' => 0,
-                            'analysis' => [
-                                'filter' => [
-                                    'myTokenFilter1' => [
-                                        'type' => 'word_delimiter',
-                    'split_on_numerics' => 'false'
-                                    ]
-                                ],
-                                'char_filter' => [
-                                    'my_html' => [
-                                        'type' => 'html_strip',
-                                    ]
-                                ],
-                                'analyzer' => [
-                                    $index => [
-                                        'type' => 'custom',
-                                        'tokenizer' => 'standard',
-                                        'char_filter' => ['my_html'],
-                                        'filter' => ['myTokenFilter1', 'lowercase']
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'mappings' => $mappings
-                    ]
-                ];
+          $params = array();
+          $params = [
+              'index' => $index,
+              'body' => [
+                  'settings' => [
+                      'number_of_shards' => 1,
+                      'number_of_replicas' => 0,
+                      'max_result_window' => 100000,
+                      'analysis' => [
+                          'filter' => [
+                              'myTokenFilter1' => [
+                                  'type' => 'word_delimiter',
+                                  'split_on_numerics' => 'false'
+                              ]
+                          ],
+                          'char_filter' => [
+                              'my_html' => [
+                                  'type' => 'html_strip',
+                              ]
+                          ],
+                          'analyzer' => [
+                              $index => [
+                                  'type' => 'custom',
+                                  'tokenizer' => 'standard',
+                                  'char_filter' => ['my_html'],
+                                  'filter' => ['myTokenFilter1', 'lowercase']
+                              ]
+                          ]
+                      ]
+                  ],
+                  'mappings' => $mappings
+              ]
+          ];
 
-                $client->indices()->create($params);
-                break;
-            }
-    }
+          try {
+            $client->indices()->create($params);
+          } catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $ex) {
+            // If several cron tasks run in parallel, we can encounter a race condition where the index didn't exist
+            // when calling getMapping, but got created before getting here
+            $reason = json_decode($ex->getMessage());
+            if (!empty($reason) && isset($reason->error) && isset($reason->error->type) && $reason->error->type == "index_already_exists_exception")
+              print 'Index already exits, skipping creation';
+            else
+              // Other exception, we don't know what to do, rethrow it
+              throw $ex;
+          }
+        }
 
         foreach($result as $record){
             $doc = objectToArray($record);
@@ -477,12 +489,12 @@ function elasticindexing_queue_item($item){
             $params = array();
             $params['index'] = $index;
             $params['type'] = str_replace('chado.', '', $selected_table);
-      $params['body'] = $doc;
+            $params['body'] = $doc;
 
             $client->index($params);
-        } 
+        }
 
-  watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
+        watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
   }
 
@@ -541,7 +553,7 @@ function tripal_elasticsearch_node_delete($node){
   ];
   // create a fake document and index it in case that the node
   // that is being deleted doesn't exit in elasticsearch
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
   $client->index($params);
 
 
@@ -554,5 +566,7 @@ function tripal_elasticsearch_node_delete($node){
   $client->delete($params);
 }
 
-
-
+// Hide the drupal built-in search box
+function tripal_elasticsearch_block_view_search_form_alter(&$data, $block) {
+  $data = NULL;
+}

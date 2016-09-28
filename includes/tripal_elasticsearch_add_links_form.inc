@@ -46,7 +46,7 @@ function tripal_elasticsearch_add_links_form($form, &$form_state){
 
   }
 
-  
+
   $form['add_links']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Add links'),
@@ -61,23 +61,7 @@ function add_links_ajax($form, &$form_state){
 }
 
 function tripal_elasticsearch_add_links_form_submit($form, &$form_state){
-  $table_name = $form_state['input']['table'];
-  $delete_table_name = db_delete('tripal_elasticsearch_add_links')
-              ->condition('table_name', $table_name)
-              ->execute();
-  $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
-                 ->fetchAll();
-  $record = array();
-  foreach($columns as $field){
-    $field = $field->table_field;
-    if(!empty($form_state['input'][$field])){
-      $record['table_name'] = $table_name;
-      $record['table_field'] = $field;
-      $record['page_link'] = $form_state['input'][$field];
-    }
-    drupal_write_record('tripal_elasticsearch_add_links', $record);
-  }
-
+  tripal_elasticsearch_add_links($form_state['input']['table'], $form_state['input']);
 }
 
 
@@ -102,7 +86,7 @@ function tripal_elasticsearch_add_links_example_form($form, &$form_state){
   $description .= 'in this case, we can link search results to their corresponding organism pages by adding dynamic links to the fields. </p>';
   $description .= '<p><b>A dynamic link is created by replacing variable values in URL with corresponding field names within "[]".</b></p>';
   $description .= '<p>The example below shows how to add links to search results in fields <b>abbreviation</b> and <b>species</b>.</p>';
-  
+
   $form['add_links']['description'] = array(
     '#type' => 'item',
     '#markup' => $description,
