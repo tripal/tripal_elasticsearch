@@ -35,8 +35,6 @@ function build_tripal_elasticsearch_block_form($form, &$form_state) {
   );
 
 
-  // Create an array to store all selected fields
-  $all_selected_fields = array();
   if(!empty($form_state['values']['indexed_tables'])){
     $selected_table = $form_state['values']['indexed_tables'];
     if(!empty($selected_table)){
