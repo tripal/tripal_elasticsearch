@@ -62,7 +62,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
     ),
   );
 
-  
+
 
   $form['indexing_table']['indexing_fields'] = array(
     '#type' => 'fieldset',
@@ -76,7 +76,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
   if(in_array($options_first[$selected], $indices)){
     $form['indexing_table']['indexing_fields']['checking_table'] = array(
       '#type' => 'item',
-      '#markup' => '<font color="red"><b>'.t("$options_first[$selected] already exists in elasticsearch.<br /> 
+      '#markup' => '<font color="red"><b>'.t("$options_first[$selected] already exists in elasticsearch.<br />
 Please select another item to index, or DELETE this item first and then re-index it!"). '</b></font>',
     );
   }
@@ -202,6 +202,3 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
   $form['rebuild'] = TRUE;
 
 }
-
-
-

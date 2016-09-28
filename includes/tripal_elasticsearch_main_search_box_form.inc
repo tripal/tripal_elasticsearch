@@ -9,7 +9,7 @@ function main_search_box_form($form, &$form_state){
   $form['search']['search_box'] = array(
     '#type' => 'textfield',
     //'#size' => 40,
-  );  
+  );
 
   $form['search']['search_submit'] = array(
     '#type' => 'submit',
@@ -24,8 +24,4 @@ function main_search_box_form($form, &$form_state){
 function main_search_box_form_submit($form, &$form_state){
   $_SESSION['main_search_keyword'] = $form_state['values']['search_box'];
   $form_state['redirect'] = 'search-website';
-} 
-
-
-
-
+}

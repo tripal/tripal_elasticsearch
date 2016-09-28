@@ -26,15 +26,15 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
             '#type' => $column->form_field_type,
             '#title' => $column->form_field_title,
             '#default_value' => $column->form_field_default_value,
-            '#size' => 40, 
+            '#size' => 40,
             '#title_display' => 'after',
             '#weight' => $column->form_field_weight,
-          );         
+          );
           break;
         case 'select':
           $options_first_items = array('_SelectAnyItem_' => 'Any');
           $form_field_options = explode(',', $column->form_field_options);
-          // make key = value 
+          // make key = value
           foreach($form_field_options as $value){
             $value = trim($value);
             $options_rest_items[$value] = $value;
@@ -48,13 +48,13 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
             '#options' => $options,
             '#title_display' => 'after',
             '#weight' => $column->form_field_weight,
-          );  
+          );
           break;
-      } 
+      }
 
       //$weight = $column->form_field_weight;
     }
-  
+
     $form[$table_name]['search_from'] = array(
       '#type' => 'textfield',
       '#title' => t('(1000 search hits will be displayed at maximum. Enter an integer to set up an offset.)'),
@@ -65,7 +65,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
         'placeholder' => t('No input or enter an integer'),
       ),
     );
-    
+
     $form[$table_name]['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Search'),
@@ -76,7 +76,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
     $form[$table_name]['download'] = array(
       '#type' => 'submit',
       '#value' => t('Download table'),
-      '#submit' => array('tripal_elasticsearch_blocks_form_submit_download'), 
+      '#submit' => array('tripal_elasticsearch_blocks_form_submit_download'),
       '#weight' => 999,
     );
 
@@ -99,8 +99,8 @@ function tripal_elasticsearch_blocks_form_submit_search($form, &$form_state){
   // If select 'Any', set select options as empty so that searching will return all hits.
   foreach(array_keys($_SESSION['elastic_form_input'][$table]) as $field){
     if($_SESSION['elastic_form_input'][$table][$field] == '_SelectAnyItem_'){
-      $_SESSION['elastic_form_input'][$table][$field] = ''; 
-    }   
+      $_SESSION['elastic_form_input'][$table][$field] = '';
+    }
   }
 }
 
@@ -110,11 +110,11 @@ function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
   //$field_keyword_pairs = _get_field_keyword_pairs($form_state['input'])['field_keyword_pairs'];
   $table = _get_field_keyword_pairs($_SESSION['elastic_form_input'])['table'];
   $field_keyword_pairs = _get_field_keyword_pairs($_SESSION['elastic_form_input'])['field_keyword_pairs'];
-  // Allow to download 1,000,000 records at maximum
+  // Allow to download 100,000 records at maximum
   if(is_elastic_index($table)){
     ini_set('memory_limit', '-1');
-    $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000000)['search_hits'];
-  
+    $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=100000)['search_hits'];
+
     // Create a file pointer connected to the output stream
     $random_str = random_string($str_length = 5);
     $destination = file_destination('temporary://'.'tripal_elasticsearch_'.$random_str.'.csv', FILE_EXISTS_RENAME);
@@ -123,7 +123,7 @@ function tripal_elasticsearch_blocks_form_submit_download($form, &$form_state){
     foreach($search_hits as $hit){
       fputcsv($output, $hit);
     }
-  
+
     // download file
     drupal_add_http_header('Content-Type', 'text/csv; utf-8');
     file_transfer($destination, array());
@@ -138,6 +138,3 @@ function random_string($str_length){
   $random_string = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $str_length);
   return $random_string;
 }
-
-
-

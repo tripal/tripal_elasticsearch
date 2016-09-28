@@ -9,20 +9,20 @@ function sort_2d_array_by_value($arr, $field, $sort){
   $sorted_a = array();
   foreach($arr as $k=>$v){
     // create an array to store the field values
-    $field_array[$k] = $v[$field]; 
+    $field_array[$k] = $v[$field];
   }
-  
+
   if($sort == 'asc'){
     asort($field_array);
   }
   else{
     arsort($field_array);
   }
-  
+
   foreach(array_keys($field_array) as $k){
     $sorted_a[] = $arr[$k];
   }
-  
+
   return $sorted_a;
 }
 //================End of sort_2d_array_by_value() =====================
@@ -176,7 +176,7 @@ function flatten($arr, $prefix = '') {
 
 
 
-/* 
+/*
  * Build elatic search queries
  */
 function _build_elastic_search_query($field, $keyword, $searchMethod='query_string'){
@@ -337,7 +337,7 @@ function get_main_search_hits_table($main_search_hits, $main_search_hits_count){
     foreach($main_search_hits as $value){
       $row = '<h5>'.l($value['node_title'], 'node/'.$value['node_id']).'</h5>';
       $row .= '<p>'.$value['node_content'].'</p>';
-      $rows[] = array('row' =>$row); 
+      $rows[] = array('row' =>$row);
     }
     $per_page = 10;
     $current_page = pager_default_initialize(count($rows), $per_page);
@@ -352,12 +352,12 @@ function get_main_search_hits_table($main_search_hits, $main_search_hits_count){
     $output .= '<h6>No records were found</h6>';
   }
 
-  return $output; 
+  return $output;
 }
 
 
 /*
- * This function takes in the search_hits array and 
+ * This function takes in the search_hits array and
  * return a themed table.
  */
 function get_search_hits_table($search_hits, $table){

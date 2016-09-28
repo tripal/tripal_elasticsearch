@@ -46,7 +46,7 @@ function tripal_elasticsearch_add_links_form($form, &$form_state){
 
   }
 
-  
+
   $form['add_links']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Add links'),
@@ -102,7 +102,7 @@ function tripal_elasticsearch_add_links_example_form($form, &$form_state){
   $description .= 'in this case, we can link search results to their corresponding organism pages by adding dynamic links to the fields. </p>';
   $description .= '<p><b>A dynamic link is created by replacing variable values in URL with corresponding field names within "[]".</b></p>';
   $description .= '<p>The example below shows how to add links to search results in fields <b>abbreviation</b> and <b>species</b>.</p>';
-  
+
   $form['add_links']['description'] = array(
     '#type' => 'item',
     '#markup' => $description,
