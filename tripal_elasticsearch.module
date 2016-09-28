@@ -81,14 +81,7 @@ function tripal_elasticsearch_menu(){
   );
 
   $items['elastic_search'] = array(
-    'title' => '', 
-    'page callback' => 'tripal_elasticsearch_page',
-    'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/tripal_elasticsearch_blocks_form.inc',
-  );
-  $items['elastic_search/organism/%'] = array(
-    'title' => '', // t('Elasticsearch'),
+    'title' => 'Advanced search',
     'page callback' => 'tripal_elasticsearch_page',
     'access callback' => TRUE,
     'type' => MENU_NORMAL_ITEM,
@@ -98,7 +91,7 @@ function tripal_elasticsearch_menu(){
     'title' => '',
     'page callback' => 'tripal_elasticsearch_main_search_page',
     'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_VISIBLE_IN_BREADCRUMB,
     'file' => 'includes/tripal_elasticsearch_main_search_box_form.inc',
   );
 
