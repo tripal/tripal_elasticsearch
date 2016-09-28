@@ -557,5 +557,7 @@ function tripal_elasticsearch_node_delete($node){
   $client->delete($params);
 }
 
-
-
+// Hide the drupal built-in search box
+function tripal_elasticsearch_block_view_search_form_alter(&$data, $block) {
+  $data = NULL;
+}
