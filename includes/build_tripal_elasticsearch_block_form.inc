@@ -101,29 +101,8 @@ function build_tripal_elasticsearch_block_form_ajax($form, &$form_state){
 function add_tripal_elasticsearch_block($form, &$form_state){
 
   $table_name = $form_state['values']['indexed_tables'];
-  $record = array();
-  // Delete the table and its fields in the database if that table name already exists
-  $delete_table_name = db_delete('tripal_elasticsearch')
-              ->condition('table_name', $table_name)
-              ->execute();
-  $i = 0;
-  foreach($form_state['values'][$table_name] as $field){
-    if(!empty($field)){
-      $i++;
-      $record['table_name'] = $table_name;
-      $record['table_field'] = $field;
-      $record['form_field_type'] = 'textfield';
-      $record['form_field_title'] = $field;
-      $record['form_field_default_value'] = '';
-      $form['form_field_options'] = '';
-      $record['form_field_weight'] = $i;
-      // write record into the elastic_search table in database
-      drupal_write_record('tripal_elasticsearch', $record);
-    }
-  }
-  
+  tripal_elasticsearch_add_block($form_state['values']['indexed_tables'], $form_state['values'][$table_name]);
 
-  //$form_state['redirect'] = 'admin/config/search/elastic_search/tripal_elasticsearch_add_links';
   $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/tripal_elasticsearch_add_links';
 }
 

@@ -124,80 +124,8 @@ function table_dependent_dropdown_callback($form, &$form_state){
  * submit callback function
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
-  //Get selected table
-  $table_list = get_table_list();
-  $selected_table_key = $form_state['values']['table_dropdown'];
-  $selected_table = $table_list[$selected_table_key];
 
-  // Get selected fields=============
-  $field_list = get_column_list($selected_table);
-  $selected_fields_keys = $form_state['values']['fields'];
-  $selected_fields = array();
-
-  if(!empty($selected_fields_keys)){
-    foreach($selected_fields_keys as $key){
-      // check if $key is an alphanumeric character.
-      if(ctype_alnum($key)){
-        $selected_fields[] = $field_list[$key];
-      }
-    }
-  }
-
-
-  // Add 'chado.' to the front of table name if it is a chado table
-  if(in_array($selected_table, get_chado_table_list())){
-    $selected_table = 'chado.' . $selected_table;
-  }
-
-  // separate the selected fields by ','.
-  // and insert this string into the sql query statement.
-  $comma_separated_fields = implode(", ", $selected_fields);
-    // Use the first field to order the database table when implement queries.
-    $order_by_field = $selected_fields[0];
-    //====="SELECT * FROM chado.blast_hit_data ORDER BY RANDOM() LIMIT 1000;"
-
-
-  // get row count of the selected table
-  if($selected_table == 'index_website'){
-    $sql_rowcount = "SELECT COUNT(*) FROM node;";
-  }
-  else {
-    $sql_rowcount = "SELECT COUNT(*) FROM ".$selected_table.";";
-  }
-  $row_count = db_query($sql_rowcount)->fetchAssoc();
-  $row_count = implode($row_count);
-
-
-  // fetch 1000 rows for a single database query
-  if($selected_table == 'index_website'){
-    // It's better to set a small $k when the doc to be index is very large, e.g. a whole webpage.
-    $k = 100;
-  }
-  else {
-    $k = 1000;
-  }
-  // the number of database queries for a selected table
-  $queue_N = $form_state['values']['queue_N']; // split items into N queues
-  $n = intval($row_count/$k);
-  $queue = DrupalQueue::get('elastic_queue');
-  $offsets = range(0, $n);
-  foreach($offsets as $offset){
-    $queue_n = $offset % $queue_N; 
-    $queue = DrupalQueue::get('elastic_queue_'.$queue_n);
-    $offset = $k*$offset;
-    $item = new stdClass();
-    if($selected_table == 'index_website'){
-      // select only published nodes
-      $sql = "SELECT title, nid FROM node WHERE status=1 ORDER BY nid LIMIT $k OFFSET $offset;";
-    }
-    else {
-      $sql = "SELECT ". $comma_separated_fields. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
-    }
-    $item->sql = $sql;
-    // also store selected table
-    $item->selected_table = $selected_table;
-    $queue->createItem($item);  
-  }
+  run_elasticsearch_indexing($form_state['values']['table_dropdown'], $form_state['values']['queue_N'], $form_state['values']['fields']);
 
   $form['rebuild'] = TRUE;
 

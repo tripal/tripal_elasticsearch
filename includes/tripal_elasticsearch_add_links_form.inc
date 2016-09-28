@@ -61,23 +61,7 @@ function add_links_ajax($form, &$form_state){
 }
 
 function tripal_elasticsearch_add_links_form_submit($form, &$form_state){
-  $table_name = $form_state['input']['table'];
-  $delete_table_name = db_delete('tripal_elasticsearch_add_links')
-              ->condition('table_name', $table_name)
-              ->execute();
-  $columns = db_query('SELECT table_field FROM tripal_elasticsearch WHERE table_name=:table_name', array(':table_name'=>$table_name))
-                 ->fetchAll();
-  $record = array();
-  foreach($columns as $field){
-    $field = $field->table_field;
-    if(!empty($form_state['input'][$field])){
-      $record['table_name'] = $table_name;
-      $record['table_field'] = $field;
-      $record['page_link'] = $form_state['input'][$field];
-    }
-    drupal_write_record('tripal_elasticsearch_add_links', $record);
-  }
-
+  tripal_elasticsearch_add_links($form_state['input']['table'], $form_state['input']);
 }
 
 
