@@ -247,7 +247,7 @@ function _run_elastic_main_search($table, $field_keyword_pairs, $size=100){
   $body_query = implode(',', $body_query_elements);
   $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
 
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
   $params = array();
   $params['index'] = $table;
   $params['type'] = $table;
@@ -302,7 +302,7 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
   $body_query = implode(',', $body_query_elements);
   $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
 
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
   $params = array();
   $params['index'] = $table;
   $params['type'] = $table;
@@ -416,7 +416,7 @@ function get_search_hits_table($search_hits, $table){
  * Test if a string is an elasticsearch index
  */
 function is_elastic_index($index){
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
   $res = false;

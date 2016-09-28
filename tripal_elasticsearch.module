@@ -329,7 +329,7 @@ function tripal_elasticsearch_cron_queue_info(){
  * queue worker function
  */
 function elasticindexing_queue_item($item){
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
 
   $selected_table = $item->selected_table;
 
@@ -544,7 +544,7 @@ function tripal_elasticsearch_node_delete($node){
   ];
   // create a fake document and index it in case that the node
   // that is being deleted doesn't exit in elasticsearch
-  $client = new Elasticsearch\Client();
+  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
   $client->index($params);
 
 
