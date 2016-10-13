@@ -3,7 +3,7 @@
   require_once drupal_get_path('module', 'tripal_elasticsearch').'/vendor/autoload.php';
   require_once drupal_get_path('module', 'tripal_elasticsearch').'/api/tripal_elasticsearch.api.php';
   require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_main_search_box_form.inc';
-  require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_main_search_box_form.inc';
+  require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_blocks_form.inc';
 
 
 set_time_limit(0);
