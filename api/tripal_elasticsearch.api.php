@@ -404,7 +404,7 @@ function get_search_hits_table($search_hits, $table){
   $per_page = 10;
   $current_page = pager_default_initialize(count($rows), $per_page);
   $chunks = array_chunk($rows, $per_page, TRUE);
-  $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page]), array('id' => 'elasticsearch_hits_table'));
+  $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page], 'attributes' => array('id' => 'elasticsearch_hits_table')));
   $output .= theme('pager', array('quantity', count($rows)));
 
   return $output;
