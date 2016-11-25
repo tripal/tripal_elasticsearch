@@ -1,7 +1,7 @@
 <?php
 
 function delete_tripal_elasticsearch_indices_form($form, &$form_state){
-  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
   $options = array();
@@ -29,7 +29,7 @@ function delete_tripal_elasticsearch_indices_form($form, &$form_state){
 
 
 function delete_tripal_elasticsearch_indices_form_submit($form, &$form_state){
-    $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
+    $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
     foreach($form_state['values']['tripal_elasticsearch_indices'] as $index){
         if(!empty($index)){
             $params['index'] = $index;

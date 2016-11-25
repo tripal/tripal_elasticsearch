@@ -1,9 +1,4 @@
 <?php
-/**
- * User: zach
- * Date: 01/20/2014
- * Time: 14:34:49 pm
- */
 
 namespace Elasticsearch\Endpoints\Indices\Template;
 
@@ -14,17 +9,15 @@ use Elasticsearch\Common\Exceptions;
  * Class Get
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints\Indices\Template
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @package  Elasticsearch\Endpoints\Indices\Template
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
-
 class Get extends AbstractEndpoint
 {
     // The name of the template
     private $name;
-
 
     /**
      * @param $name
@@ -38,15 +31,15 @@ class Get extends AbstractEndpoint
         }
 
         $this->name = $name;
+
         return $this;
     }
-
 
     /**
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $name = $this->name;
         $uri   = "/_template";
@@ -58,11 +51,10 @@ class Get extends AbstractEndpoint
         return $uri;
     }
 
-
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
         return array(
             'flat_settings',
@@ -71,11 +63,10 @@ class Get extends AbstractEndpoint
         );
     }
 
-
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

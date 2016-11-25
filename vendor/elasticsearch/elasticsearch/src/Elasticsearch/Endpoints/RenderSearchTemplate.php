@@ -10,9 +10,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package Elasticsearch\Endpoints
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 
 class RenderSearchTemplate extends AbstractEndpoint
@@ -33,13 +33,11 @@ class RenderSearchTemplate extends AbstractEndpoint
         return $this;
     }
 
-
-
     /**
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         $id = $this->id;
 
@@ -52,30 +50,27 @@ class RenderSearchTemplate extends AbstractEndpoint
         return $uri;
     }
 
-
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
         return array();
     }
-
 
     /**
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    protected function getBody()
+    public function getBody()
     {
         return $this->body;
     }
 
-
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

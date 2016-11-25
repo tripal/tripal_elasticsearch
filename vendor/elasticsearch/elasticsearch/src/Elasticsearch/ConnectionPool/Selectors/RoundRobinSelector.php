@@ -1,12 +1,6 @@
 <?php
-/**
- * User: zach
- * Date: 5/1/13
- * Time: 10:02 PM
- */
 
 namespace Elasticsearch\ConnectionPool\Selectors;
-
 
 use Elasticsearch\Connections\ConnectionInterface;
 
@@ -15,33 +9,28 @@ use Elasticsearch\Connections\ConnectionInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\ConnectionPool\Selectors\ConnectionPool
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
 class RoundRobinSelector implements SelectorInterface
 {
-
     /**
      * @var int
      */
     private $current = 0;
 
-
     /**
-     * Select the next connectioion in the sequence
+     * Select the next connection in the sequence
      *
-     * @param array $connections Array of connections to choose from
+     * @param  ConnectionInterface[] $connections an array of ConnectionInterface instances to choose from
      *
-     * @return ConnectionInterface
+     * @return \Elasticsearch\Connections\ConnectionInterface
      */
     public function select($connections)
     {
         $this->current += 1;
 
         return $connections[$this->current % count($connections)];
-
     }
-
-
-}//end class
+}
