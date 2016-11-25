@@ -322,7 +322,7 @@ function tripal_elasticsearch_cron_queue_info(){
  * queue worker function
  */
 function elasticindexing_queue_item($item){
-  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
 
   $selected_table = $item->selected_table;
 
@@ -384,9 +384,9 @@ function elasticindexing_queue_item($item){
           } catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $ex) {
             // If several cron tasks run in parallel, we can encounter a race condition where the index didn't exist
             // when calling getMapping, but got created before getting here
-            $reason = json_decode($ex->getMessage());
-            if (!empty($reason) && isset($reason->error) && isset($reason->error->type) && $reason->error->type == "index_already_exists_exception")
-              print 'Index already exits, skipping creation';
+            $allowed_reason = "index_already_exists_exception";
+            if (substr( $ex->getMessage(), 0, strlen($allowed_reason) ) === $allowed_reason)
+              print 'Index already exists, skipping creation';
             else
               // Other exception, we don't know what to do, rethrow it
               throw $ex;
@@ -553,7 +553,7 @@ function tripal_elasticsearch_node_delete($node){
   ];
   // create a fake document and index it in case that the node
   // that is being deleted doesn't exit in elasticsearch
-  $client = new Elasticsearch\Client(variable_get('elasticsearch_hosts', array()));
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
   $client->index($params);
 
 

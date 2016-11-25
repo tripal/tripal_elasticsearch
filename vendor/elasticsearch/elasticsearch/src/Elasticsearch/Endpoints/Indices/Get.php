@@ -1,9 +1,4 @@
 <?php
-/**
- * User: zach
- * Date: 09/25/2014
- * Time: 11:35::00 AM
- */
 
 namespace Elasticsearch\Endpoints\Indices;
 
@@ -14,22 +9,20 @@ use Elasticsearch\Common\Exceptions;
  * Class Get
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints\Get
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @package  Elasticsearch\Endpoints\Get
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
-
 class Get extends AbstractEndpoint
 {
-
     private $feature;
 
     /**
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
@@ -58,14 +51,14 @@ class Get extends AbstractEndpoint
         }
 
         $this->feature = $feature;
+
         return $this;
     }
-
 
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
         return array(
             'local',
@@ -76,11 +69,10 @@ class Get extends AbstractEndpoint
         );
     }
 
-
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'GET';
     }

@@ -1,9 +1,4 @@
 <?php
-/**
- * User: zach
- * Date: 01/20/2014
- * Time: 14:34:49 pm
- */
 
 namespace Elasticsearch\Endpoints\Snapshot\Repository;
 
@@ -14,17 +9,15 @@ use Elasticsearch\Common\Exceptions;
  * Class Create
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints\Snapshot\Repository
- * @author   Zachary Tong <zachary.tong@elasticsearch.com>
+ * @package  Elasticsearch\Endpoints\Snapshot\Repository
+ * @author   Zachary Tong <zach@elastic.co>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elasticsearch.org
+ * @link     http://elastic.co
  */
-
 class Create extends AbstractEndpoint
 {
     // A repository name
     private $repository;
-
 
     /**
      * @param array $body
@@ -38,12 +31,10 @@ class Create extends AbstractEndpoint
             return $this;
         }
 
-
         $this->body = $body;
+
         return $this;
     }
-
-
 
     /**
      * @param $repository
@@ -57,15 +48,15 @@ class Create extends AbstractEndpoint
         }
 
         $this->repository = $repository;
+
         return $this;
     }
-
 
     /**
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    protected function getURI()
+    public function getURI()
     {
         if (isset($this->repository) !== true) {
             throw new Exceptions\RuntimeException(
@@ -82,11 +73,10 @@ class Create extends AbstractEndpoint
         return $uri;
     }
 
-
     /**
      * @return string[]
      */
-    protected function getParamWhitelist()
+    public function getParamWhitelist()
     {
         return array(
             'master_timeout',
@@ -94,24 +84,23 @@ class Create extends AbstractEndpoint
         );
     }
 
-
     /**
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    protected function getBody()
+    public function getBody()
     {
         if (isset($this->body) !== true) {
             throw new Exceptions\RuntimeException('Body is required for Create Repository');
         }
+
         return $this->body;
     }
-
 
     /**
      * @return string
      */
-    protected function getMethod()
+    public function getMethod()
     {
         return 'PUT';
     }
