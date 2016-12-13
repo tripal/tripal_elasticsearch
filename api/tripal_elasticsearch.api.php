@@ -247,7 +247,7 @@ function _run_elastic_main_search($table, $field_keyword_pairs, $size=100){
   $body_query = implode(',', $body_query_elements);
   $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
 
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $params = array();
   $params['index'] = $table;
   $params['type'] = $table;
@@ -302,7 +302,7 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
   $body_query = implode(',', $body_query_elements);
   $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.$body_curl_end;
 
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $params = array();
   $params['index'] = $table;
   $params['type'] = $table;
@@ -416,7 +416,7 @@ function get_search_hits_table($search_hits, $table){
  * Test if a string is an elasticsearch index
  */
 function is_elastic_index($index){
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
   $res = false;
@@ -548,4 +548,27 @@ function tripal_elasticsearch_add_links($table_name, $fields) {
     drupal_write_record('tripal_elasticsearch_add_links', $record);
   }
 
+}
+
+
+
+/*
+ * Return cluster health information into an array. If no alive nodes found, this function returns a message.
+ */
+function get_cluster_health(){
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  $params['v'] = true;
+  //$params['help'] = true;
+  try{
+    $client_health = $client->cat()->health($params);
+    $client_health = preg_split('/\s+/', $client_health);
+    foreach(range(0, 13) as $i){
+      $client_health_arr[$client_health[$i]] = $client_health[$i+14];
+    }
+    $output = $client_health_arr;
+  } catch (\Exception $e) {
+    $output = $e->getMessage();
+  }
+
+  return $output;
 }

@@ -5,7 +5,7 @@
 function build_tripal_elasticsearch_block_form($form, &$form_state) {
 
   // You have to create a new $client to get access to the elasticsearch
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
 
@@ -111,7 +111,7 @@ function add_tripal_elasticsearch_block($form, &$form_state){
 // generate table_list options
 function get_indexed_tables(){
     // You have to create a new $client to get access to the elasticsearch
-    $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+    $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
     $mappings = $client->indices()->getMapping();
     $indices = array_keys($mappings);
     $table_list['Select a table'] = 'Select a table';

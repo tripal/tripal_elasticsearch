@@ -8,6 +8,10 @@
 
 set_time_limit(0);
 
+/*
+ * Set default elasticsearch host to localhost:9200
+ */
+
 /**
  * Implementation of hook_menu().
  */
@@ -18,11 +22,20 @@ function tripal_elasticsearch_menu(){
     'title' => 'Tripal Elasticsearch',
     'description' => 'Configure elastic indexing and build search interface',
     'page callback' => 'drupal_goto',
-    'page arguments' => array($pre . '/tripal_elasticsearch_indexing'),
+    'page arguments' => array($pre . '/connect_to_elasticsearch_cluster'),
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
   );
 
+  $items[$pre.'/connect_to_elasticsearch_cluster'] = array(
+    'title' => t('Connect to elasticsearch cluster'),
+    'page callback' => 'connect_to_elasticsearch_cluster_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/connect_to_elasticsearch_cluster_form.inc',
+    'weight' => 1,
+    ); 
 
   $items[$pre.'/tripal_elasticsearch_indexing'] = array(
     'title' => t('Indexing'),
@@ -31,7 +44,7 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal_elasticsearch_indexing_form.inc',
-    'weight' => 0,
+    'weight' => 2,
     );
   $items[$pre.'/delete_tripal_elasticsearch_indices'] = array(
     'title' => t('Delete indices'),
@@ -40,7 +53,7 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/delete_tripal_elasticsearch_indices_form.inc',
-    'weight' => 1,
+    'weight' => 3,
   );
   $items[$pre.'/build_tripal_elasticsearch_block'] = array(
     'title' => t('Build tripal_elasticsearch block'),
@@ -49,7 +62,7 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/build_tripal_elasticsearch_block_form.inc',
-    'weight' => 2,
+    'weight' => 4,
   );
 
   $items[$pre.'/delete_tripal_elasticsearch_blocks'] = array(
@@ -59,7 +72,7 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/delete_tripal_elasticsearch_blocks_form.inc',
-    'weight' => 3,
+    'weight' => 5,
   );
   $items[$pre.'/tripal_elasticsearch_add_links'] = array(
     'title' => t('Add page links'),
@@ -68,7 +81,7 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal_elasticsearch_add_links_form.inc',
-    'weight' => 4,
+    'weight' => 6,
   );
   $items[$pre.'/tripal_elasticsearch_alter_form'] = array(
     'title' => t('Alter form fields'),
@@ -77,7 +90,7 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal_elasticsearch_alter_form.inc',
-    'weight' => 4,
+    'weight' => 7,
   );
 
   $items['elastic_search'] = array(
@@ -98,6 +111,10 @@ function tripal_elasticsearch_menu(){
   return $items;
 }
 
+
+function connect_to_elasticsearch_cluster_page(){
+  return drupal_get_form('connect_to_elasticsearch_cluster_form');
+}
 
 function tripal_elasticsearch_indexing_page(){
   return drupal_get_form('tripal_elasticsearch_indexing_form');
@@ -322,7 +339,7 @@ function tripal_elasticsearch_cron_queue_info(){
  * queue worker function
  */
 function elasticindexing_queue_item($item){
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
 
   $selected_table = $item->selected_table;
 
@@ -350,8 +367,8 @@ function elasticindexing_queue_item($item){
               'index' => $index,
               'body' => [
                   'settings' => [
-                      'number_of_shards' => 1,
-                      'number_of_replicas' => 0,
+                      'number_of_shards' => 3,
+                      'number_of_replicas' => 1,
                       'max_result_window' => 100000,
                       'analysis' => [
                           'filter' => [
@@ -440,8 +457,8 @@ function elasticindexing_queue_item($item){
               'index' => $index,
               'body' => [
                   'settings' => [
-                      'number_of_shards' => 1,
-                      'number_of_replicas' => 0,
+                      'number_of_shards' => 3,
+                      'number_of_replicas' => 1,
                       'max_result_window' => 100000,
                       'analysis' => [
                           'filter' => [
@@ -553,7 +570,7 @@ function tripal_elasticsearch_node_delete($node){
   ];
   // create a fake document and index it in case that the node
   // that is being deleted doesn't exit in elasticsearch
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $client->index($params);
 
 
