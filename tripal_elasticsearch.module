@@ -114,16 +114,40 @@ function connect_to_elasticsearch_cluster_page(){
 }
 
 function tripal_elasticsearch_indexing_page(){
-  return drupal_get_form('tripal_elasticsearch_indexing_form');
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  try{
+    $client_health = $client->cat()->health();
+    return drupal_get_form('tripal_elasticsearch_indexing_form');
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
+    return $output;
+  }
 }
 
 function delete_tripal_elasticsearch_indices_page(){
-  return drupal_get_form('delete_tripal_elasticsearch_indices_form');
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  try{
+    $client_health = $client->cat()->health();
+    return drupal_get_form('delete_tripal_elasticsearch_indices_form');
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
+    return $output;
+  }
 }
 
 
 function build_tripal_elasticelastic_block_page(){
-  return drupal_get_form('build_tripal_elasticsearch_block_form');
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  try{
+    $client_health = $client->cat()->health();
+    return drupal_get_form('build_tripal_elasticsearch_block_form');
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
+    return $output;
+  }
 }
 
 function delete_tripal_elasticsearch_blocks_page(){
@@ -291,7 +315,11 @@ function tripal_elasticsearch_block_view($delta = ''){
           $main_search_hits = _run_elastic_main_search($table, $field_keyword_pairs)['main_search_hits'];
           if(!empty($main_search_hits)){
             $main_search_hits_count = _run_elastic_main_search($table, $field_keyword_pairs)['search_hits_count'];
-            $main_search_hits_table = get_main_search_hits_table($main_search_hits, $main_search_hits_count);
+            if($main_search_hits_count == 'Error'){
+              $main_search_hits_table = "<h2>The search engine is under maintainance. Please retry later.</h2>";
+            } else {
+              $main_search_hits_table = get_main_search_hits_table($main_search_hits, $main_search_hits_count);
+            }
           }
           else{
             $main_search_hits_table = '<h2><font color="red">No records were found.</font></h2>';

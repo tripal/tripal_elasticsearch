@@ -252,29 +252,36 @@ function _run_elastic_main_search($table, $field_keyword_pairs, $size=100){
   $params['index'] = $table;
   $params['type'] = $table;
   $params['body'] = $body;
-  $search_hits_count = $client->count($params)['count'];
-
-  $highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';
-  $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.','.$highlight.$body_curl_end;
-  $params['body'] = $body;
-  $params['size'] = $size;
-  $search_results = $client->search($params);
-
-  $main_search_hits= array();
-  foreach($search_results['hits']['hits'] as $key=>$value){
-      if(!empty($value)){
-        $node_id = $value['_source']['node_id'];
-        $node_title = $value['_source']['node_title'];
-        $node_content = implode('......', $value['highlight']['node_content']);
-        $node_content = strip_tags($node_content, '<em><b>');
-
-        $main_search_hits[$key]['node_id'] = $node_id;
-        $main_search_hits[$key]['node_title'] = $node_title;
-        $main_search_hits[$key]['node_content'] = $node_content;
-      }
+  try{
+    $search_hits_count = $client->count($params)['count'];
+  
+    $highlight = '"highlight":{"pre_tags":["<em><b>"], "post_tags":["</b></em>"], "fields":{"node_content":{"fragment_size":150}}}';
+    $body = $body_curl_head.$body_boolean_head.$body_query.$body_boolean_end.','.$highlight.$body_curl_end;
+    $params['body'] = $body;
+    $params['size'] = $size;
+    $search_results = $client->search($params);
+  
+    $main_search_hits= array();
+    foreach($search_results['hits']['hits'] as $key=>$value){
+        if(!empty($value)){
+          $node_id = $value['_source']['node_id'];
+          $node_title = $value['_source']['node_title'];
+          $node_content = implode('......', $value['highlight']['node_content']);
+          $node_content = strip_tags($node_content, '<em><b>');
+  
+          $main_search_hits[$key]['node_id'] = $node_id;
+          $main_search_hits[$key]['node_title'] = $node_title;
+          $main_search_hits[$key]['node_content'] = $node_content;
+        }
+    }
+  
+    return array('search_hits_count'=>$search_hits_count, 'main_search_hits'=>$main_search_hits);
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $search_hits_count = 'Error';
+    $main_search_hits = $message;
+    return array('search_hits_count'=>$search_hits_count, 'main_search_hits'=>$main_search_hits);
   }
-
-  return array('search_hits_count'=>$search_hits_count, 'main_search_hits'=>$main_search_hits);
 
 }
 
@@ -307,20 +314,28 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
   $params['index'] = $table;
   $params['type'] = $table;
   $params['body'] = $body;
-  $search_hits_count = $client->count($params)['count'];
-
-  $params['from'] = $from;
-  $params['size'] = $size;
-  $search_results = $client->search($params);
-
-  $search_hits= array();
-  foreach($search_results['hits']['hits'] as $key=>$value){
-      foreach($field_keyword_pairs as $field=>$keyword){
-        $search_hits[$key][$field] = $value['_source'][$field];
-      }
+  try{
+    $search_hits_count = $client->count($params)['count'];
+  
+    $params['from'] = $from;
+    $params['size'] = $size;
+    $search_results = $client->search($params);
+  
+    $search_hits= array();
+    foreach($search_results['hits']['hits'] as $key=>$value){
+        foreach($field_keyword_pairs as $field=>$keyword){
+          $search_hits[$key][$field] = $value['_source'][$field];
+        }
+    }
+  
+    return array('search_hits_count'=>$search_hits_count, 'search_hits'=>$search_hits, 'search_results'=>$search_results);
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $search_hits_count = 'Error';
+    $search_hits = $message;
+    $search_results = Null;
+    return array('search_hits_count'=>$search_hits_count, 'search_hits'=>$search_hits, 'search_results'=>$search_results);
   }
-
-  return array('search_hits_count'=>$search_hits_count, 'search_hits'=>$search_hits, 'search_results'=>$search_results);
 
 }
 
@@ -573,7 +588,7 @@ function get_cluster_health(){
     $output .= '</ul>';
   } catch (\Exception $e) {
     $message = $e->getMessage();
-    $output = "<h2><font color='red'>$message. Please check if your elasticsearch instance is running normally.</font></h2>";
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
   }
 
   return $output;
