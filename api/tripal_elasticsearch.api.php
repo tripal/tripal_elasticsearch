@@ -565,9 +565,15 @@ function get_cluster_health(){
     foreach(range(0, 13) as $i){
       $client_health_arr[$client_health[$i]] = $client_health[$i+14];
     }
-    $output = $client_health_arr;
+    $output = "<h2>Elasticsearch cluster health information:</h2>\n";
+    $output .= '<ul>';
+    foreach($client_health_arr as $key=>$value){
+      $output .= "<li><b>$key:</b> $value</li>";
+    }
+    $output .= '</ul>';
   } catch (\Exception $e) {
-    $output = $e->getMessage();
+    $message = $e->getMessage();
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch instance is running normally.</font></h2>";
   }
 
   return $output;

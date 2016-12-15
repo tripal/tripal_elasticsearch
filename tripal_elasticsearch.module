@@ -8,9 +8,6 @@
 
 set_time_limit(0);
 
-/*
- * Set default elasticsearch host to localhost:9200
- */
 
 /**
  * Implementation of hook_menu().

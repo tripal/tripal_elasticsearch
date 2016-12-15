@@ -4,7 +4,9 @@ require_once drupal_get_path('module', 'tripal_elasticsearch').'/api/tripal_elas
 
 function connect_to_elasticsearch_cluster_form($form, &$form_state){
 
-  dpm(get_cluster_health());
+  $form['cluster_health'] = array(
+    '#markup' => get_cluster_health(), 
+  );
   //$connectionPoll = (array) $client->transport->connectionPool;
   //dpm($connectionPoll);
   //dpm($client->cat()->health());
