@@ -392,8 +392,8 @@ function elasticindexing_queue_item($item){
               'index' => $index,
               'body' => [
                   'settings' => [
-                      'number_of_shards' => 3,
-                      'number_of_replicas' => 1,
+                      'number_of_shards' => 5,
+                      'number_of_replicas' => 0,
                       'max_result_window' => 100000,
                       'analysis' => [
                           'filter' => [
@@ -435,29 +435,42 @@ function elasticindexing_queue_item($item){
           }
 
         }
+ 
+        $params = ['body' => []];
         foreach($result as $record){
             $doc = objectToArray($record);
-            $params = array();
-            $params['index'] = $index;
-            $params['type'] = str_replace('chado.', '', $selected_table);
+
+            //$params = array();
+            //$params['index'] = $index;
+            //$params['type'] = str_replace('chado.', '', $selected_table);
+            //$params['id'] = $doc['nid'];
 
             $body['node_id'] = $doc['nid'];
             $body['node_title'] = $doc['title'];
-
             $node = node_load($doc['nid']);
             $node_element = node_view($node);
             $node_html = drupal_render_children($node_element);
             // combine the title and content so that searching the content will also searching the title.
-            $body['node_content'] = $doc['title'].strip_tags($node_html);
+            $node_content = $doc['title'].strip_tags($node_html);
+            $node_content_merge_space = preg_replace('!\s+!', ' ', $node_content);
+            $body['node_content'] = $node_content_merge_space;
             //$node_string = $body;
 
             //$params['body'] = array('node_content' => $node_string);
-            $params['body'] = $body;
-            // use node ID as the document ID.
-            $params['id'] = $doc['nid'];
-            $client->index($params);
+            //$params['body'] = $body;
+            //$client->index($params);
 
+            // bulk indexing
+            $params['body'][] = [
+               'index' => [
+                 '_index' => $index,
+                 '_type' => str_replace('chado.', '', $selected_table),
+                 '_id' => $doc['nid'],
+               ],
+            ];
+            $params['body'][] = $body;
         } // end foreach($result as $record)
+        $responses = $client->bulk($params);
 
         watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
@@ -482,8 +495,8 @@ function elasticindexing_queue_item($item){
               'index' => $index,
               'body' => [
                   'settings' => [
-                      'number_of_shards' => 3,
-                      'number_of_replicas' => 1,
+                      'number_of_shards' => 5,
+                      'number_of_replicas' => 0,
                       'max_result_window' => 100000,
                       'analysis' => [
                           'filter' => [
@@ -525,16 +538,29 @@ function elasticindexing_queue_item($item){
           }
         }
 
+        $params = ['body' => []];
         foreach($result as $record){
             $doc = objectToArray($record);
 
+            /*
             $params = array();
             $params['index'] = $index;
             $params['type'] = str_replace('chado.', '', $selected_table);
             $params['body'] = $doc;
+            */
 
-            $client->index($params);
+            // bulk indexing
+            $params['body'][] = [
+               'index' => [
+                 '_index' => $index,
+                 '_type' => str_replace('chado.', '', $selected_table),
+               ],
+            ];
+            $params['body'][] = $doc;
+
+            //$client->index($params);
         }
+        $responses = $client->bulk($params);
 
         watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
