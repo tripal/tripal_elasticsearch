@@ -438,40 +438,26 @@ function elasticindexing_queue_item($item){
  
         $params = ['body' => []];
         foreach($result as $record){
-            $doc = objectToArray($record);
-
-            //$params = array();
-            //$params['index'] = $index;
-            //$params['type'] = str_replace('chado.', '', $selected_table);
-            //$params['id'] = $doc['nid'];
-
-            $body['node_id'] = $doc['nid'];
-            $body['node_title'] = $doc['title'];
-            $node = node_load($doc['nid']);
-            $node_element = node_view($node);
-            $node_html = drupal_render_children($node_element);
-            // combine the title and content so that searching the content will also searching the title.
-            $node_content = $doc['title'].strip_tags($node_html);
-            $node_content_merge_space = preg_replace('!\s+!', ' ', $node_content);
-            $body['node_content'] = $node_content_merge_space;
-            //$node_string = $body;
-
-            //$params['body'] = array('node_content' => $node_string);
-            //$params['body'] = $body;
-            //$client->index($params);
+            $body['node_id'] = $record->nid; 
+            $body['node_title'] = $record->title; 
+            $page_html = file_get_contents($GLOBALS['base_url'].'/node/'.$nid);
+            // remove generated jQuery script
+            $page_html =  preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $page_html);
+            $page_content = strip_tags($page_html);
+            $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
+            
 
             // bulk indexing
             $params['body'][] = [
                'index' => [
                  '_index' => $index,
                  '_type' => str_replace('chado.', '', $selected_table),
-                 '_id' => $doc['nid'],
+                 '_id' => $record->nid,
                ],
             ];
             $params['body'][] = $body;
         } // end foreach($result as $record)
         $responses = $client->bulk($params);
-
         watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
 
     } // end if($selected_table == 'index_website')
