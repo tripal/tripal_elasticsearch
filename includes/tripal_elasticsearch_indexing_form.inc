@@ -95,7 +95,8 @@ Please select another item to index, or DELETE this item first and then re-index
 
   $form['indexing_table']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Index'),
+    '#suffix' => t('Please do not re-submit.'),
+    '#value' => t('Submit'),
   );
 
 

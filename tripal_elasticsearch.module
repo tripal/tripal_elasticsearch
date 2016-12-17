@@ -441,9 +441,11 @@ function elasticindexing_queue_item($item){
             $body['node_id'] = $record->nid; 
             $body['node_title'] = $record->title; 
             $page_html = file_get_contents($GLOBALS['base_url'].'/node/'.$nid);
+            // add one space to html tags to void words catenation after stripping html tags
+            $page_html = str_replace( '<', ' <', $page_html);
             // remove generated jQuery script
             $page_html =  preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $page_html);
-            $page_content = strip_tags($page_html);
+            $page_content = $record->title.' '.strip_tags($page_html);
             $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
             
 
