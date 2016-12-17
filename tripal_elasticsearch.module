@@ -441,11 +441,19 @@ function elasticindexing_queue_item($item){
             $body['node_id'] = $record->nid; 
             $body['node_title'] = $record->title; 
             $page_html = file_get_contents($GLOBALS['base_url'].'/node/'.$body['node_id']);
+            // remove raw sequences
+            $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">'). "(.|\n)*".preg_quote('</pre>');
+            $page_html = preg_replace("!".$pattern_1."!U", ' ', $page_html);
+            // remove query sequences
+            $pattern_2 = preg_quote('<pre>Query')."(.|\n)*".preg_quote('</pre>');
+            $page_html = preg_replace("!".$pattern_2."!U", ' ', $page_html);
             // add one space to html tags to avoid words catenation after stripping html tags
             $page_html = str_replace( '<', ' <', $page_html);
             // remove generated jQuery script
             $page_html =  preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $page_html);
+            // make page title searchable
             $page_content = $record->title.' '.strip_tags($page_html);
+            // merge multiple spaces into one
             $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
             
 
