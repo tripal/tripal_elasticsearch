@@ -440,6 +440,8 @@ function elasticindexing_queue_item($item){
         foreach($result as $record){
             $body['node_id'] = $record->nid; 
             $body['node_title'] = $record->title; 
+
+            //========== This chunk of code limits the indexing speed ==============
             $page_html = file_get_contents($GLOBALS['base_url'].'/node/'.$body['node_id']);
             // remove raw sequences
             $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">'). "(.|\n)*".preg_quote('</pre>');
@@ -455,7 +457,8 @@ function elasticindexing_queue_item($item){
             $page_content = $record->title.' '.strip_tags($page_html);
             // merge multiple spaces into one
             $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
-            
+            //=======================================================================
+
 
             // bulk indexing
             $params['body'][] = [
@@ -465,11 +468,13 @@ function elasticindexing_queue_item($item){
                  '_id' => $record->nid,
                ],
             ];
-            watchdog('elastic_search page', 'Page added to bulk indexing'. format_date(time()));
+            watchdog('elastic_search page', 'The content of node '.$record->nid.' was generated - '. format_date(time()));
             $params['body'][] = $body;
+            watchdog('elastic_search index body', 'Node '.$record->nid.' was added to bulk indexing - '.format_date(time()));
         } // end foreach($result as $record)
         $responses = $client->bulk($params);
-        watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
+        $params = ['body' => []];
+        watchdog('elastic_search cron queue', '1000 nodes have been indexed - '. format_date(time()));
 
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
