@@ -465,6 +465,7 @@ function elasticindexing_queue_item($item){
                  '_id' => $record->nid,
                ],
             ];
+            watchdog('elastic_search page', 'Page added to bulk indexing'. format_date(time()));
             $params['body'][] = $body;
         } // end foreach($result as $record)
         $responses = $client->bulk($params);

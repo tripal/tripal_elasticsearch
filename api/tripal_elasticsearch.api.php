@@ -347,8 +347,7 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
 function get_main_search_hits_table($main_search_hits, $main_search_hits_count){
   $output = '';
   if(!empty($main_search_hits)){
-    $title = '<h6><span style="color:red"><em>'.$main_search_hits_count.'</em></span> records were found. The first ';
-    $title .= '<span style="color:red"><em>'. count($main_search_hits).'</em></span> records were displayed.</h6>';
+    $title = '<h6><span style="color:red"><em>'.$main_search_hits_count.'</em></span> records were found.';
     foreach($main_search_hits as $value){
       $row = '<h5>'.l($value['node_title'], 'node/'.$value['node_id']).'</h5>';
       $row .= '<p>'.$value['node_content'].'</p>';
@@ -486,7 +485,7 @@ function run_elasticsearch_indexing($table_dropdown, $queue_N, $fields){
   // fetch 1000 rows for a single database query
   if($selected_table == 'index_website'){
     // It's better to set a small $k when the doc to be index is very large, e.g. a whole webpage.
-    $k = 100;
+    $k = 1000;
   }
   else {
     $k = 1000;
