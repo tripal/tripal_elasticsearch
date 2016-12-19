@@ -460,23 +460,16 @@ function elasticindexing_queue_item($item){
             $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
             //=======================================================================
 
-
-            // bulk indexing
-            $params['body'][] = [
-               'index' => [
-                 '_index' => $index,
-                 '_type' => str_replace('chado.', '', $selected_table),
-                 '_id' => $record->nid,
-               ],
+            // indexing one by one
+            $params = [
+              'index' => $index,
+              'type' => str_replace('chado.', '', $selected_table),
+              'id' => $record->nid,
+              'body' => $body,
             ];
-            watchdog('elastic_search page', 'The content of node '.$record->nid.' was generated - '. format_date(time()));
-            $params['body'][] = $body;
-            watchdog('elastic_search index body', 'Node '.$record->nid.' was added to bulk indexing - '.format_date(time()));
+            $responses = $client->index($params);
+            watchdog('Tripal elasticsearch', 'Indexed node '.$record->nid.' - '.format_date(time()));
         } // end foreach($result as $record)
-        $responses = $client->bulk($params);
-        watchdog('elastic_search cron queue', '1000 nodes have been indexed - '. format_date(time()));
-        $params = ['body' => []];
-
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
 
@@ -543,25 +536,17 @@ function elasticindexing_queue_item($item){
 
         $sql = $item->sql;
         $result = db_query($sql)->fetchAll();
-        $params = ['body' => []];
         foreach($result as $record){
             $doc = objectToArray($record);
-
-            // bulk indexing
-            $params['body'][] = [
-               'index' => [
-                 '_index' => $index,
-                 '_type' => str_replace('chado.', '', $selected_table),
-               ],
+            // indexing one by one
+            $params = [
+              'index' => $index,
+              'type' => str_replace('chado.', '', $selected_table),
+              'body' => $doc,
             ];
-            $params['body'][] = $doc;
-            watchdog('elastic_search index body', '1000 records from table '.$selected_table.' have been added to bulk indexing - '.format_date(time()));
-
-            //$client->index($params);
+            $responses = $client->index($params);
+            watchdog('Tripal elasticsearch', 'Indexed 1000 records from '.$selected_table.' - '.format_date(time()));
         }
-        $responses = $client->bulk($params);
-        watchdog('elastic_search cron queue', '1000 records from table '.$selected_table.' have been indexed -'. format_date(time()));
-
   }
 
 }

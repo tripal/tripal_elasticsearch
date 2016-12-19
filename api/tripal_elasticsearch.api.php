@@ -485,7 +485,7 @@ function run_elasticsearch_indexing($table_dropdown, $queue_N, $fields){
   // fetch 1000 rows for a single database query
   if($selected_table == 'index_website'){
     // It's better to set a small $k when the doc to be index is very large, e.g. a whole webpage.
-    $k = 100;
+    $k = 1000;
   }
   else {
     $k = 1000;
