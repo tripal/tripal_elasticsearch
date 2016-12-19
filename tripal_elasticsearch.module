@@ -369,11 +369,10 @@ function elasticindexing_queue_item($item){
   $selected_table = $item->selected_table;
 
   $index = str_replace('chado.', '', $selected_table);
-  $sql = $item->sql;
-  $result = db_query($sql)->fetchAll();
 
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
+
 
   if($selected_table == 'index_website'){
     // INDEX THE ENTIRE WEBSITE
@@ -436,7 +435,9 @@ function elasticindexing_queue_item($item){
 
         }
  
-        $params = ['body' => []];
+
+        $sql = $item->sql;
+        $result = db_query($sql)->fetchAll();
         foreach($result as $record){
             $body['node_id'] = $record->nid; 
             $body['node_title'] = $record->title; 
@@ -473,8 +474,8 @@ function elasticindexing_queue_item($item){
             watchdog('elastic_search index body', 'Node '.$record->nid.' was added to bulk indexing - '.format_date(time()));
         } // end foreach($result as $record)
         $responses = $client->bulk($params);
-        $params = ['body' => []];
         watchdog('elastic_search cron queue', '1000 nodes have been indexed - '. format_date(time()));
+        $params = ['body' => []];
 
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
@@ -540,16 +541,11 @@ function elasticindexing_queue_item($item){
           }
         }
 
+        $sql = $item->sql;
+        $result = db_query($sql)->fetchAll();
         $params = ['body' => []];
         foreach($result as $record){
             $doc = objectToArray($record);
-
-            /*
-            $params = array();
-            $params['index'] = $index;
-            $params['type'] = str_replace('chado.', '', $selected_table);
-            $params['body'] = $doc;
-            */
 
             // bulk indexing
             $params['body'][] = [
@@ -559,12 +555,12 @@ function elasticindexing_queue_item($item){
                ],
             ];
             $params['body'][] = $doc;
+            watchdog('elastic_search index body', '1000 records from table '.$selected_table.' have been added to bulk indexing - '.format_date(time()));
 
             //$client->index($params);
         }
         $responses = $client->bulk($params);
-
-        watchdog('elastic_search cron queue', 'Queue "elastic_queue" processed item at time '. format_date(time()));
+        watchdog('elastic_search cron queue', '1000 records from table '.$selected_table.' have been indexed -'. format_date(time()));
 
   }
 
