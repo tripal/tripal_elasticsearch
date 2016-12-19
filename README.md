@@ -1,3 +1,23 @@
+## Install tripal_elasticsearch module
+
+Before you can use this module, you need to set up an elasticsearch cluster on either the same host as your drupal site, or on a different host or cloud. Please refer to [https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html) for setting up elasticsearch.
+
+To install **tripal_elasticsearch**
+
+```
+cd drupal_root/sites/all/modules
+git clone https://github.com/tripal/tripal_elasticsearch.git
+drush en tripal_elasticsearch -y
+```
+
+## Connect to your running elasticsearch cluster
+
+You will need the domain name or ip address of your elasticsearch host and the port. By default, the **tripal_elasticsearch** module will automatically connect to the elasticsearch cluster running on your local host with port 9200. You can change this using the admin page:
+**admin/tripal/extension/tripal_elasticsearch/connect_to_elasticsearch_cluster**
+
+
+
+
 # tripal_elasticsearch
 
 `tripal_elasticsearch` is a drupal module which integrates the powerful search engine [elasticsearch](https://www.elastic.co/) with drupal sites, providing general site-wide indexing and search, as well as specific indexing and search for any number of drupal and chado tables. It also provides an easy way to build search interface for individual drupal and chado tables after these tables are elastic-indexed.
