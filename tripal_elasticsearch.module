@@ -468,7 +468,7 @@ function elasticindexing_queue_item($item){
               'body' => $body,
             ];
             $responses = $client->index($params);
-            watchdog('Tripal elasticsearch', 'Indexed node '.$record->nid.' - '.format_date(time()));
+            watchdog('Tripal elasticsearch: indexing website', 'Indexed node '.$record->nid.' - '.format_date(time()));
         } // end foreach($result as $record)
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
@@ -545,7 +545,7 @@ function elasticindexing_queue_item($item){
               'body' => $doc,
             ];
             $responses = $client->index($params);
-            watchdog('Tripal elasticsearch', 'Indexed 1000 records from '.$selected_table.' - '.format_date(time()));
+            watchdog('Tripal elasticsearch: indexing table', 'Indexed 1000 records from '.$selected_table.' - '.format_date(time()));
         }
   }
 
