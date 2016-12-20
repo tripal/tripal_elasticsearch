@@ -15,6 +15,7 @@ drush en tripal_elasticsearch -y
 You will need the domain name or ip address of your elasticsearch host and the port. By default, the **tripal_elasticsearch** module will automatically connect to the elasticsearch cluster running on your local host with port 9200. You can change this using the admin page:
 **admin/tripal/extension/tripal_elasticsearch/connect_to_elasticsearch_cluster**
 
+![Connect to elasticsearch cluster](images/cluster-connected.png)
 
 
 
