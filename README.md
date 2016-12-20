@@ -17,7 +17,21 @@ You will need the domain name or ip address of your elasticsearch host and the p
 
 ![Connect to elasticsearch cluster](images/cluster-connected.png)
 
+If the cluster is successfully connected, the cluster health information will display.
 
+## Index the entire website
+
+To index the entire website, you go to **admin/tripal/extension/tripal_elasticsearch/tripal_elasticsearch_indexing** and select *index_website* and then submit. You can select up to 10 cron queues. For website indexing, the published node ids are obtained from the database. Then the corresponding html code is extracted and deparsed to generated strings for indexing. Sequences strings are excluded from indexing since they are meaningless. If you have 1,000,000 published nodes on your website, and you index the website with 5 cron queues, 1,000,000 will be generated and evenly distributed to the 5 cron queues. Then you will be able to set up 5 threads for parallel indexing.
+
+![indexing website](images/index-already-exits.png)
+
+If the index already exists, and you re-index without deleting the existing index, you will generate redundant data for that particular index.
+
+## Index specific database tables
+
+You can also select a table from the database to index. And you can specify which fields from that table you want to index. Below is an example of indexing a joined table which consists of data from chado.feature, chado.organism and chado.blast_hit_data. 
+
+![indexing table](images/index-blast-merged-transcripts.png)
 
 # tripal_elasticsearch
 
