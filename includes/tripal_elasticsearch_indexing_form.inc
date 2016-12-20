@@ -70,7 +70,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
   );
 
   // Check if a table is already indexed.
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array()))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
   if(in_array($options_first[$selected], $indices)){

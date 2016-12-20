@@ -39,7 +39,7 @@ function build_tripal_elasticsearch_block_form($form, &$form_state) {
     $selected_table = $form_state['values']['indexed_tables'];
     if(!empty($selected_table)){
       // get list of fields for the selected table
-      $fields = array_keys($mappings[$selected_table]['mappings']['_default_']['properties']);
+      $fields = array_keys($mappings[$selected_table]['mappings'][$selected_table]['properties']);
 
       // note that this form field is within a for loop.
       // It creates a form field for each table, with table fields as being displayed
