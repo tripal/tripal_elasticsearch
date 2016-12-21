@@ -316,7 +316,7 @@ function tripal_elasticsearch_block_view($delta = ''){
           if(!empty($main_search_hits)){
             $main_search_hits_count = _run_elastic_main_search($table, $field_keyword_pairs)['search_hits_count'];
             if($main_search_hits_count == 'Error'){
-              $main_search_hits_table = "<h2>The search engine is under maintainance. Please retry later.</h2>";
+              $main_search_hits_table = "<h2>The search is not available now. Please try again later.</h2>";
             } else {
               $main_search_hits_table = get_main_search_hits_table($main_search_hits, $main_search_hits_count);
             }
