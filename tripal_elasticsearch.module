@@ -373,6 +373,8 @@ function elasticindexing_queue_item($item){
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
 
+  $sql = $item->sql;
+  $result = db_query($sql)->fetchAll();
 
   if($selected_table == 'index_website'){
     // INDEX THE ENTIRE WEBSITE
@@ -436,8 +438,6 @@ function elasticindexing_queue_item($item){
         }
  
 
-        $sql = $item->sql;
-        $result = db_query($sql)->fetchAll();
         foreach($result as $record){
             $body['node_id'] = $record->nid; 
             $body['node_title'] = $record->title; 
@@ -534,8 +534,6 @@ function elasticindexing_queue_item($item){
           }
         }
 
-        $sql = $item->sql;
-        $result = db_query($sql)->fetchAll();
         foreach($result as $record){
             $doc = objectToArray($record);
             // indexing one by one
