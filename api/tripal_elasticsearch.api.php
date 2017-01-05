@@ -180,7 +180,7 @@ function flatten($arr, $prefix = '') {
  * Build elatic search queries
  */
 function _build_elastic_search_query($field, $keyword, $searchMethod='query_string'){
-  $query_string_template = ' {"'.$searchMethod.'":{"default_field":"_field_", "query":"_keyword_", "default_operator":"AND"}} ';
+  $query_string_template = ' {"'.$searchMethod.'":{"default_field":"_field_", "query":"_keyword_", "default_operator":"OR"}} ';
   $search = array("_field_", "_keyword_");
   $replace = array($field, $keyword);
   $query = str_replace($search, $replace, $query_string_template);
