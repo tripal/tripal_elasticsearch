@@ -373,9 +373,6 @@ function elasticindexing_queue_item($item){
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
 
-  $sql = $item->sql;
-  $result = db_query($sql)->fetchAll();
-
   if($selected_table == 'index_website'){
     // INDEX THE ENTIRE WEBSITE
       if(!in_array($index, $indices)){
@@ -437,6 +434,8 @@ function elasticindexing_queue_item($item){
 
         }
  
+        $sql = $item->sql;
+        $result = db_query($sql)->fetchAll();
 
         foreach($result as $record){
             $body['node_id'] = $record->nid; 
@@ -472,6 +471,8 @@ function elasticindexing_queue_item($item){
         } // end foreach($result as $record)
     } // end if($selected_table == 'index_website')
     else {  // index a selected table
+        $sql = $item->sql;
+        $result = db_query($sql)->fetchAll();
 
         if(!in_array($index, $indices)){
           $doc = objectToArray($result[0]);
@@ -522,6 +523,7 @@ function elasticindexing_queue_item($item){
 
           try {
             $client->indices()->create($params);
+            sleep(5);
           } catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $ex) {
             // If several cron tasks run in parallel, we can encounter a race condition where the index didn't exist
             // when calling getMapping, but got created before getting here
@@ -533,6 +535,9 @@ function elasticindexing_queue_item($item){
               throw $ex;
           }
         }
+  
+        $sql = $item->sql;
+        $result = db_query($sql)->fetchAll();
 
         foreach($result as $record){
             $doc = objectToArray($record);
@@ -543,7 +548,7 @@ function elasticindexing_queue_item($item){
               'body' => $doc,
             ];
             $responses = $client->index($params);
-            watchdog('Tripal elasticsearch: indexing table', 'Indexed 1000 records from '.$selected_table.' - '.format_date(time()));
+            watchdog('Tripal elasticsearch: indexing table', 'Indexed 1 record from '.$selected_table.' - '.format_date(time()));
         }
   }
 
