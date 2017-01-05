@@ -194,9 +194,11 @@ function _build_elastic_search_query($field, $keyword, $searchMethod='query_stri
  * Escape special characters for elasticsearch
  */
 function _remove_special_chars($keyword){
+  /*
   $elastic_special_chars = array('+', '-', '=', '&&', '||', '>',
                                  '<', '!', '(', ')', '{', '}', '[',
                                  ']', '^', '"', '~', '*', '?', ':', '\\', '/');
+
 
   $keyword = trim($keyword);
   // Check if $keyword starts and ends with double quotations
@@ -206,7 +208,9 @@ function _remove_special_chars($keyword){
   if($start == '"' and $end == '"'){
     $keyword = '\"'.$keyword.'\"';
   }
+  */
 
+  $keyword = str_replace('"', '\"', $keyword);
   return $keyword;
 }
 
