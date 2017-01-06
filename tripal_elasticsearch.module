@@ -286,7 +286,7 @@ function tripal_elasticsearch_block_view($delta = ''){
           $search_hits_table = $search_hits_count_html.$search_hits_table;
         }
         else{
-          $search_hits_table = '<font color="red">No records were found. Or the offset number was larger than the total search hits</font>';
+          $search_hits_table = '<font color="red">No records were found';
         }
       }
       else{
