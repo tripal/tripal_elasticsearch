@@ -55,6 +55,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
       //$weight = $column->form_field_weight;
     }
 
+    /*
     $form[$table_name]['search_from'] = array(
       '#type' => 'textfield',
       '#title' => t('(1000 search hits will be displayed at maximum. Enter an integer to set up an offset.)'),
@@ -65,6 +66,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
         'placeholder' => t('No input or enter an integer'),
       ),
     );
+    */ 
 
     $form[$table_name]['submit'] = array(
       '#type' => 'submit',
@@ -82,7 +84,7 @@ function tripal_elasticsearch_blocks_form($form, &$form_state, $table_name){
 
     $form[$table_name]['usage_description'] = array(
       '#type' => 'item',
-      '#markup' => '<br/><p><b>Search:</b> clicking "Search" without keywords input will return all available records.</p>',
+      '#markup' => '<br/><p><b>Search:</b> clicking on the search button without keywords input will return all available records.</p>',
       // <p><b>Download:</b> clicking "Download" without keywords input will download all available records as a csv file. Clicking "Download" with keywords input will implement a search and download the returned search records into a csv file.</p>',
       '#weight' => 1000,
     );

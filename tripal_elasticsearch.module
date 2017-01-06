@@ -272,11 +272,15 @@ function tripal_elasticsearch_block_view($delta = ''){
         else{
           $end = $start + 999;
         }
+        /*
         $search_hits_count_html .= 'Records from '.
                                    '<span style="color:red"><em>'.$start.'</em></span>'.
                                    ' to '.
                                    '<span style="color:red"><em>'.$end.'</em></span>'.
                                    ' are displayed.</h6>';
+        */
+        $search_hits_count_html .= '<span style="color:red"><em>'.$end.'</em></span>'.
+                                   ' are displayed. You can click the download button to download all '.$search_hits_count.' results. </h6>';
         if(!empty($search_hits)){
           $search_hits_table = get_search_hits_table($search_hits, $table);
           $search_hits_table = $search_hits_count_html.$search_hits_table;
