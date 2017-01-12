@@ -79,12 +79,12 @@ function tripal_elasticsearch_menu(){
     );
   $items[$pre.'/indices_management/delete_indices'] = array(
     'title' => t('Delete indices'),
-    'page callback' => 'delete_tripal_elasticsearch_indices_page',
+    'page callback' => 'tripal_elasticsearch_delete_indices_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
-    'file' => 'includes/delete_tripal_elasticsearch_indices_form.inc',
+    'file' => 'tripal_elasticsearch.admin.inc',
   );
   $items[$pre.'/build_tripal_elasticsearch_block'] = array(
     'title' => t('Build tripal_elasticsearch block'),
@@ -149,19 +149,6 @@ function connect_to_elasticsearch_cluster_page(){
   return drupal_get_form('connect_to_elasticsearch_cluster_form');
 }
 
-
-
-function delete_tripal_elasticsearch_indices_page(){
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
-  try{
-    $client_health = $client->cat()->health();
-    return drupal_get_form('delete_tripal_elasticsearch_indices_form');
-  } catch (\Exception $e) {
-    $message = $e->getMessage();
-    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
-    return $output;
-  }
-}
 
 
 function build_tripal_elasticelastic_block_page(){

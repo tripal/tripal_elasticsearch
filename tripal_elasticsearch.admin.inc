@@ -1,6 +1,8 @@
 <?php
 
-require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_indexing_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_indexing_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_create_index_from_templates_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_delete_indices_form.inc';
 
 /**
  * @file
@@ -28,7 +30,7 @@ function create_index_page () {
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
     $client_health = $client->cat()->health();
-    return 'some text';
+    return drupal_get_form('tripal_elasticsearch_create_index_from_templates_form');
   } catch (\Exception $e) {
     $message = $e->getMessage();
     $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
@@ -68,3 +70,18 @@ function indexing_page(){
   }
 }
 
+
+/**
+ * menu callback for deleting indices page
+ */
+function tripal_elasticsearch_delete_indices_page(){
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  try{
+    $client_health = $client->cat()->health();
+    return drupal_get_form('tripal_elasticsearch_delete_indices_form');
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
+    return $output;
+  }
+}
