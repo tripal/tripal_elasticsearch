@@ -19,9 +19,17 @@ function tripal_elasticsearch_menu(){
     'title' => 'Tripal Elasticsearch',
     'description' => 'Configure elastic indexing and build search interface',
     'page callback' => 'drupal_goto',
-    'page arguments' => array($pre . '/connect_to_elasticsearch_cluster'),
+    'page arguments' => array($pre . '/admin_pages'),
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
+  );
+  $items[$pre.'/admin_pages'] = array(
+    'title' => 'Tripal Elasticsearch Administration',
+    'description' => 'Tripal Elasticsearch Administration Pages',
+    'page callback' => 'tripal_elasticsearch_admin_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'file' => 'tripal_elasticsearch.admin.inc',
   );
 
   $items[$pre.'/connect_to_elasticsearch_cluster'] = array(
@@ -29,28 +37,38 @@ function tripal_elasticsearch_menu(){
     'page callback' => 'connect_to_elasticsearch_cluster_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/connect_to_elasticsearch_cluster_form.inc',
     'weight' => 1,
     ); 
-
-  $items[$pre.'/tripal_elasticsearch_indexing'] = array(
-    'title' => t('Indexing'),
-    'page callback' => 'tripal_elasticsearch_indexing_page',
+  $items[$pre.'/indices_management'] = array(
+    'title' => t('Elasticsearch indices management'),
+    'description' => t('Administrative pages for managing elasticsearch indices'),
+    'page callback' => 'indexing_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
+    'file' => 'tripal_elasticsearch.admin.inc',
+  );
+  $items[$pre.'indices_management/create_index'] = array(
+    'title' => t('Create Index'),
+    'page callback' => 'create_index_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),    
     'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/tripal_elasticsearch_indexing_form.inc',
+    'weight' => 1,
+  );
+  $items[$pre.'/indices_management/indexing'] = array(
+    'title' => t('Indexing'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 2,
     );
-  $items[$pre.'/delete_tripal_elasticsearch_indices'] = array(
+  $items[$pre.'/indices_management/delete_indices'] = array(
     'title' => t('Delete indices'),
     'page callback' => 'delete_tripal_elasticsearch_indices_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/delete_tripal_elasticsearch_indices_form.inc',
-    'weight' => 3,
   );
   $items[$pre.'/build_tripal_elasticsearch_block'] = array(
     'title' => t('Build tripal_elasticsearch block'),
@@ -109,21 +127,13 @@ function tripal_elasticsearch_menu(){
 }
 
 
+
+
 function connect_to_elasticsearch_cluster_page(){
   return drupal_get_form('connect_to_elasticsearch_cluster_form');
 }
 
-function tripal_elasticsearch_indexing_page(){
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
-  try{
-    $client_health = $client->cat()->health();
-    return drupal_get_form('tripal_elasticsearch_indexing_form');
-  } catch (\Exception $e) {
-    $message = $e->getMessage();
-    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
-    return $output;
-  }
-}
+
 
 function delete_tripal_elasticsearch_indices_page(){
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
