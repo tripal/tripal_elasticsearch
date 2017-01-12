@@ -49,13 +49,28 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'indices_management/create_index'] = array(
+  $items[$pre.'/indices_management/create_index'] = array(
     'title' => t('Create Index'),
     'page callback' => 'create_index_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),    
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
+    'file' => 'tripal_elasticsearch.admin.inc',
+  );
+  $items[$pre.'/indices_management/create_index/from_templates'] = array(
+    'title' => t('Create Index from Templates'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items[$pre.'/indices_management/create_index/create_custom_index'] = array(
+    'title' => t('Create Custome Index'),
+    'page callback' => 'create_custom_index_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    'file' => 'tripal_elasticsearch.admin.inc',
   );
   $items[$pre.'/indices_management/indexing'] = array(
     'title' => t('Indexing'),
@@ -68,6 +83,7 @@ function tripal_elasticsearch_menu(){
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
     'file' => 'includes/delete_tripal_elasticsearch_indices_form.inc',
   );
   $items[$pre.'/build_tripal_elasticsearch_block'] = array(

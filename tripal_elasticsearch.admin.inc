@@ -28,7 +28,7 @@ function create_index_page () {
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
     $client_health = $client->cat()->health();
-    return drupal_get_form('tripal_elasticsearch_indexing_form');
+    return 'some text';
   } catch (\Exception $e) {
     $message = $e->getMessage();
     $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
@@ -37,6 +37,21 @@ function create_index_page () {
   return '';
 }
 
+/**
+ * menu callback for creating custom index page
+ */
+function create_custom_index_page () {
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  try{
+    $client_health = $client->cat()->health();
+    return 'create custom index';
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
+    return $output;
+  }
+  return '';
+}
 
 /**
  * Menu callback which shows administrative pages for indices management.
@@ -53,9 +68,3 @@ function indexing_page(){
   }
 }
 
-/*
-function  index_management_page() {
-  $output = t('This page is for elasticsearch indices management');
-  return $output;
-}
-*/
