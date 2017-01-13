@@ -38,7 +38,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
     $form['database_table'] = array(
       '#type' => 'select',
       '#title' => t('Select a database table'),
-      '#description' => t('Select a database table to index. Select "index_website" will index all web pages.'),
+      '#description' => t('Select a database table to index. Select "index_website" to index all web pages.'),
       '#options' => get_table_list(), 
       '#ajax' => array(
         'callback' => 'display_table_fields_ajax',
@@ -46,6 +46,14 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
       ),
     );
 
+
+    $form['display_table_fields'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Input base url of your site'),
+      '#description' => t('Please input the base url of your site.'),
+    );
+
+    $table = !empty($form_state['values']['database_table']) ? $form_state['values']['database_table'] : 'index_website';
     // display table fields
     $form['display_table_fields'] = array(
       '#type' => 'checkboxes',
@@ -83,13 +91,15 @@ function display_table_fields_ajax ($form, &$form_state) {
 }
 
 
+
+
 /**
  * submit callback function
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
   $index = $form_state['values']['indices'];
   $queue_number = $form_state['values']['queue_number'];
-  variable_set('queue_number', $queue_number);
+  //variable_set('queue_number', $queue_number);
   $table = $form_state['values']['database_table'];
   $table_fields = $form_state['values']['display_table_fields'];
   foreach($table_fields as $key=>$value) {
@@ -116,7 +126,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
     } else {
       $comma_separated_fields = implode(',', array_keys($table_fields)); 
       // use the first field to sort the table
-      $order_by_field = array_keys($table_fields)[0];
+      $order_by_field = array_shift($table_fields);
       $sql = "SELECT ". $comma_separated_fields. " FROM " . $table ." ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
     }
     $item->index = $index;
@@ -125,15 +135,6 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
     $queue->createItem($item);
   }
 
-  //run_elasticsearch_indexing($form_state['values']['table_dropdown'], $form_state['values']['queue_N'], $form_state['values']['fields']);
-}
-
-
-/**
- * function to run indexing jobs
- */
-function _run_elasticsearch_indexing ($index, $table, $table_fields, $queue_number) {
-  
 }
 
 

@@ -64,7 +64,6 @@ function get_primary_key($table_name){
   return $primary_key;
 
 }//============== End of primary key function ================================
-*/
 
 
 
@@ -140,7 +139,7 @@ function get_table_list() {
       $chado_tables[$table] = $table;
     }
 
-    $table_list = array('node' => 'index_website') + $public_tables + $chado_tables;
+    $table_list = array('index_website' => 'index_website') + $public_tables + $chado_tables;
 
     return $table_list;
 }
@@ -464,84 +463,6 @@ function is_elastic_index($index){
 }
 
 
-function run_elasticsearch_indexing($table_dropdown, $queue_N, $fields){
-  //Get selected table
-  $table_list = get_table_list();
-  $selected_table_key = $table_dropdown;
-  $selected_table = $table_list[$selected_table_key];
-
-  // Get selected fields=============
-  $field_list = get_column_list($selected_table);
-  $selected_fields = array();
-
-  if(!empty($fields)){
-    foreach($fields as $key){
-      // check if $key is an alphanumeric character.
-      if(ctype_alnum($key)){
-        $selected_fields[] = $field_list[$key];
-      }
-    }
-  }
-
-  // Add 'chado.' to the front of table name if it is a chado table
-  if(in_array($selected_table, get_chado_table_list())){
-    $selected_table = 'chado.' . $selected_table;
-  }
-
-  // separate the selected fields by ','.
-  // and insert this string into the sql query statement.
-  $comma_separated_fields = implode(", ", $selected_fields);
-
-
-  // get row count of the selected table
-  if($selected_table == 'index_website'){
-    $sql_rowcount = "SELECT COUNT(*) FROM node;";
-  }
-  else {
-    $sql_rowcount = "SELECT COUNT(*) FROM ".$selected_table.";";
-  }
-  $row_count = db_query($sql_rowcount)->fetchAssoc();
-  $row_count = implode($row_count);
-
-
-  // fetch 1000 rows for a single database query
-  if($selected_table == 'index_website'){
-    // It's better to set a small $k when the doc to be index is very large, e.g. a whole webpage.
-    $k = 1000;
-  }
-  else {
-    $k = 1000;
-  }
-  // the number of database queries for a selected table
-  $queue_N = $queue_N; // split items into N queues
-  $n = intval($row_count/$k);
-  $queue = DrupalQueue::get('elastic_queue');
-  $offsets = range(0, $n);
-  foreach($offsets as $offset){
-    $queue_n = $offset % $queue_N;
-    $queue = DrupalQueue::get('elastic_queue_'.$queue_n);
-    $offset = $k*$offset;
-    $item = new stdClass();
-    if($selected_table == 'index_website'){
-      // select only published nodes
-      $sql = "SELECT title, nid FROM node WHERE status=1 ORDER BY nid LIMIT $k OFFSET $offset;";
-    }
-    else {
-      // Use the first field to order the database table when implement queries.
-      if (!empty($selected_fields)) {
-        $order_by_field = $selected_fields[0];
-      } else if (!empty($field_list)) {
-        $order_by_field = $field_list[0];
-      }
-
-      $sql = "SELECT ". $comma_separated_fields. " FROM " . $selected_table ." ORDER BY $order_by_field LIMIT $k OFFSET $offset;";
-    }
-    $item->sql = $sql;
-    // also store selected table
-    $item->selected_table = $selected_table;
-    $queue->createItem($item);
-  }
-}
 
 function tripal_elasticsearch_add_block($indexed_table, $fields){
 

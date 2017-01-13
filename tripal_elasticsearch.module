@@ -413,7 +413,7 @@ function elastic_indexing_queue_item($item){
       // indexing one by one
       $params = [
         'index' => $index,
-        'type' => str_replace('chado.', '', $table),
+        'type' => $table,
         'id' => $record->nid,
         'body' => $body,
       ];
@@ -426,7 +426,7 @@ function elastic_indexing_queue_item($item){
       // indexing one by one
       $params = [
         'index' => $index,
-        'type' => str_replace('chado.', '', $table),
+        'type' => $table,
         'body' => $doc,
       ];
       $responses = $client->index($params);
