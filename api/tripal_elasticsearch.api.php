@@ -95,18 +95,25 @@ function get_chado_table_list() {
  * This function takes a table name and return all the column names
  */
 function get_column_list($table_name) {
-    $sql_column_list = "SELECT column_name FROM information_schema.columns WHERE (table_schema = 'public'OR table_schema = 'chado') AND table_name = :selected_table;";
-    $result_column = db_query($sql_column_list, array(':selected_table' => $table_name));
-    $input_column = $result_column->fetchAll();
-    $column_list = array();
-
-    $k = 0;
-    foreach($input_column as $value) {
-        $column_list[$k] = $value->column_name;
-        $k++;
+    $table_columns = array();
+    $sql_public_table = "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = :selected_table;";
+    $sql_chado_table = "SELECT column_name FROM information_schema.columns WHERE table_schema = 'chado' AND table_name = :selected_table;";
+    if (preg_match('/^chado\./', $table_name)) {
+      $table_name = preg_replace('/^chado\./', '', $table_name);
+      $query = db_query($sql_chado_table, array(':selected_table' => $table_name));
+      foreach($query as $record) {
+        $field = $record->column_name;
+        $table_columns[$field] = $field;
+      }
+    } else {
+      $query = db_query($sql_public_table, array(':selected_table' => $table_name));
+      foreach($query as $record) {
+        $field = $record->column_name;
+        $table_columns[$field] = $field;
+      }
     }
 
-    return $column_list;
+  return $table_columns;
 }
 
 /**
@@ -116,16 +123,24 @@ function get_column_list($table_name) {
 function get_table_list() {
 
     $sql_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'public' OR table_schema = 'chado') ORDER BY table_name;";
-    $result_table = db_query($sql_table_list);
-    $input_table = $result_table->fetchAll();
 
-
-    $table_list = array('index_website');
-    $i = 1;
-    foreach ($input_table as $value) {
-        $table_list[$i] = $value->table_name;
-        $i++;
+    // get table list from the public schema
+    $sql_public_tables = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;";
+    $public_tables_query = db_query($sql_public_tables);
+    foreach($public_tables_query as $record) {
+      $table = $record->table_name;
+      $public_tables[$table] = $table;
     }
+
+    // get table list from the chado schema
+    $sql_chado_tables = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'chado' ORDER BY table_name;";
+    $chado_tables_query = db_query($sql_chado_tables);
+    foreach($chado_tables_query as $record) {
+      $table = 'chado.'.$record->table_name;
+      $chado_tables[$table] = $table;
+    }
+
+    $table_list = array('node' => 'index_website') + $public_tables + $chado_tables;
 
     return $table_list;
 }
