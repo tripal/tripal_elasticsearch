@@ -1,5 +1,5 @@
 {
-  "index": "tripal_elasticsearch_1",
+  "index": "tripal_elasticsearch",
   "body": {
       "settings": {
           "number_of_shards": 3,

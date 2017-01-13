@@ -81,7 +81,6 @@ function tripal_elasticsearch_delete_indices_page(){
     return drupal_get_form('tripal_elasticsearch_delete_indices_form');
   } catch (\Exception $e) {
     $message = $e->getMessage();
-    $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
-    return $output;
+    drupal_set_message($message, 'warning');
   }
 }

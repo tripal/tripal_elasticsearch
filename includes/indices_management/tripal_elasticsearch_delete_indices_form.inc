@@ -1,5 +1,9 @@
 <?php
 
+
+/**
+ * form handler for deleting indices
+ */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state){
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $mappings = $client->indices()->getMapping();
