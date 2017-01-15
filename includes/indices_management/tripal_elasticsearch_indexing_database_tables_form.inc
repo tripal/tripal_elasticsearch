@@ -92,7 +92,7 @@ function display_table_fields_ajax ($form, &$form_state) {
 /**
  * submit callback function
  */
-function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
+function tripal_elasticsearch_indexing_database_tables_form_submit($form, &$form_state){
   $index = $form_state['values']['indices'];
   $queue_number = $form_state['values']['queue_number'];
   //variable_set('queue_number', $queue_number);

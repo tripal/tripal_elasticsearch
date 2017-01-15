@@ -38,7 +38,7 @@ function tripal_elasticsearch_indexing_website_form($form, &$form_state){
       '#type' => 'textfield',
       '#title' => t('Enter your website base url'),
       '#description' => t('Enter the base url of your website. Examples: "http://www.example.com"; 
-                           "http://www.example.com:8080"')
+                           "http://www.example.com:8080". Please do not add forward slash (/) at the end.')
     );
     $form['submit'] = array(
       '#type' => 'submit',
