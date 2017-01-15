@@ -8,16 +8,24 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state){
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   $mappings = $client->indices()->getMapping();
   $indices = array_keys($mappings);
-  $options = array();
-  foreach($indices as $index){
-    $options[$index] = $index;
+  foreach($indices as $key=>$index){
+    $indices[$index] = $index;
+    unset($indices);
   }
 
-  $form['tripal_elasticsearch_indices'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('tripal_elasticsearch indices'),
-    '#options' => $options,
+  $form['indices'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Choose an item to delete'),
+    '#options' => array('Select an index' => 'Select an index') + $indices,
+    '#default_value' => 'mappings',
+    '#ajax' => array(
+      'callback' => 'display_mappings_ajax',
+      'wrapper' => 'display_mappings_options',
+    ),
   );
+
+  $selected_index = !empty($form_state['values']['indices']) ? $form_state['values']['indices'] : '';
+  
 
   $form['delete_indices'] = array(
     '#type' => 'submit',

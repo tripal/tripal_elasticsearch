@@ -105,7 +105,7 @@ function tripal_elasticsearch_indexing_database_tables_form_submit($form, &$form
   }
 
   // get row count of selected table
-  $sql = ($table == "index_website") ? "SELECT COUNT(*) FROM node;" : "SELECT COUNT(*) FROM ".$table.";";
+  $sql = "SELECT COUNT(*) FROM ".$table.";";
   $record = db_query($sql)->fetchAssoc();
   $row_count = $record['count'];
 

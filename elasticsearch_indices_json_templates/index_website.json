@@ -1,0 +1,34 @@
+{
+  "index": "index_website",
+  "body": {
+      "settings": {
+          "number_of_shards": 3,
+          "number_of_replicas": 1,
+          "max_result_window": 100000,
+          "analysis": {
+            "filter": {
+              "myTokenFilter1": {
+                "type": "word_delimiter",
+                "split_on_numerics": "false"
+              }
+            },
+            "char_filter": {
+              "my_html": {
+                "type": "html_strip"
+              }
+            },
+            "analyzer": {
+              "tripal_elasticsearch_1": {
+                "type": "custom",
+                "tokenizer": "standard",
+                "char_filter": ["my_html"],
+                "filter": [
+                    "myTokenFilter1",
+                    "lowercase"
+                  ]
+              }
+            }
+          }
+        }
+  }
+}

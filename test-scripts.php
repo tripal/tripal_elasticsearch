@@ -2,6 +2,10 @@
 
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/vendor/autoload.php';
 
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  $mappings = $client->indices()->getMapping();
+  var_dump($mappings);
+/*
   $sql = "SELECT nid FROM node WHERE status=1 ORDER BY nid LIMIT 1;";
   $result = db_query($sql)->fetchAll();
   foreach($result as $record) {
@@ -9,7 +13,6 @@ require_once drupal_get_path('module', 'tripal_elasticsearch').'/vendor/autoload
   }
 
 
-/*
     $sql_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'public' OR table_schema = 'chado') ORDER BY table_name;";
     $sql_public_tables = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;";
     $public_tables = db_query($sql_public_tables);
