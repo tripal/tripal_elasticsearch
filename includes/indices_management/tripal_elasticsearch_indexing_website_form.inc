@@ -55,6 +55,28 @@ function tripal_elasticsearch_indexing_website_form($form, &$form_state){
 }
 
 
+/**
+ * form validation function
+ */
+function tripal_elasticsearch_indexing_website_form_validate($form, &$form_state){
+
+  $sql = "SELECT nid FROM node WHERE status=1 ORDER BY nid LIMIT 1;";
+  $result = db_query($sql)->fetchAll();
+  foreach($result as $record) {
+    $nid = $record->nid;
+  }
+  $website_base_url = $form_state['values']['website_base_url']; 
+  try {
+    @ $content = file_get_contents($website_base_url.'/node/'.$nid);
+    if ($content === false) {
+      $error_message = t('The website base url is invalid. Please check your website base url.');
+      form_set_error('website_base_url', $error_message);
+    }
+  } catch (Exception $e) {
+    form_set_error('website_base_url', $e->getMessage());
+  }
+}
+
 
 /**
  * submit callback function
@@ -66,7 +88,7 @@ function tripal_elasticsearch_indexing_website_form_submit($form, &$form_state){
   $website_base_url = $form_state['values']['website_base_url'];
 
   // get row count of selected table
-  $sql = ($table == "index_website") ? "SELECT COUNT(*) FROM node;" : "SELECT COUNT(*) FROM ".$table.";";
+  $sql = "SELECT COUNT(*) FROM node;";
   $record = db_query($sql)->fetchAssoc();
   $row_count = $record['count'];
 
