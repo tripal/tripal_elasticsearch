@@ -3,7 +3,7 @@
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_indexing_website_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_indexing_database_tables_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_create_index_from_templates_form.inc';
-require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_delete_indices_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_delete_indexed_data_form.inc';
 
 /**
  * @file
@@ -90,11 +90,11 @@ function indexing_database_tables_page(){
 /**
  * menu callback for deleting indices page
  */
-function tripal_elasticsearch_delete_indices_page(){
+function tripal_elasticsearch_delete_indexed_data_page(){
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
     $client_health = $client->cat()->health();
-    return drupal_get_form('tripal_elasticsearch_delete_indices_form');
+    return drupal_get_form('tripal_elasticsearch_delete_indexed_data_form');
   } catch (\Exception $e) {
     $message = $e->getMessage();
     drupal_set_message($message, 'warning');

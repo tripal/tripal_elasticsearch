@@ -95,9 +95,9 @@ function tripal_elasticsearch_menu(){
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
     );
-  $items[$pre.'/indices_management/delete_indices'] = array(
-    'title' => t('Delete indices'),
-    'page callback' => 'tripal_elasticsearch_delete_indices_page',
+  $items[$pre.'/indices_management/delete_indexed_data'] = array(
+    'title' => t('Delete Indexed Data'),
+    'page callback' => 'tripal_elasticsearch_delete_indexed_data_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
