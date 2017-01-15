@@ -44,7 +44,7 @@ function tripal_elasticsearch_menu(){
   $items[$pre.'/indices_management'] = array(
     'title' => t('Elasticsearch indices management'),
     'description' => t('Administrative pages for managing elasticsearch indices'),
-    'page callback' => 'indexing_page',
+    'page callback' => 'indexing_website_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'file' => 'tripal_elasticsearch.admin.inc',
@@ -54,7 +54,7 @@ function tripal_elasticsearch_menu(){
     'page callback' => 'create_index_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),    
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
@@ -74,8 +74,26 @@ function tripal_elasticsearch_menu(){
   );
   $items[$pre.'/indices_management/indexing'] = array(
     'title' => t('Indexing'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'page callback' => 'indexing_website_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
     'weight' => 2,
+    'file' => 'tripal_elasticsearch.admin.inc',
+    );
+  $items[$pre.'/indices_management/indexing/indexing_website'] = array(
+    'title' => t('Indexing Website'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 1,
+    );
+  $items[$pre.'/indices_management/indexing/indexing_database_tables'] = array(
+    'title' => t('Indexing Database Tables'),
+    'page callback' => 'indexing_database_tables_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    'file' => 'tripal_elasticsearch.admin.inc',
     );
   $items[$pre.'/indices_management/delete_indices'] = array(
     'title' => t('Delete indices'),
