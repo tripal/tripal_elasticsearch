@@ -34,21 +34,11 @@ function tripal_elasticsearch_indexing_website_form($form, &$form_state){
       '#options' => $queue_number_array,
     );
 
-
-    $form['database_table'] = array(
-      '#type' => 'select',
-      '#title' => t('Select a database table'),
-      '#description' => t('Select a database table to index. Select "index_website" to index all web pages.'),
-      '#options' => get_table_list(), 
-      '#ajax' => array(
-        'callback' => 'display_table_fields_ajax',
-        'wrapper' => 'display_table_fields',
-      ),
-    );
-
     $form['website_base_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Enter your website base url'),
+      '#description' => t('Enter the base url of your website. Examples: "http://www.example.com"; 
+                           "http://www.example.com:8080"')
     );
     $form['submit'] = array(
       '#type' => 'submit',
@@ -72,14 +62,8 @@ function tripal_elasticsearch_indexing_website_form($form, &$form_state){
 function tripal_elasticsearch_indexing_website_form_submit($form, &$form_state){
   $index = $form_state['values']['indices'];
   $queue_number = $form_state['values']['queue_number'];
-  //variable_set('queue_number', $queue_number);
-  $table = $form_state['values']['database_table'];
-  $table_fields = $form_state['values']['display_table_fields'];
-  foreach($table_fields as $key=>$value) {
-    if(! is_string($value)) {
-      unset($table_fields[$key]);
-    }
-  }
+  $table = 'index_website';
+  $website_base_url = $form_state['values']['website_base_url'];
 
   // get row count of selected table
   $sql = ($table == "index_website") ? "SELECT COUNT(*) FROM node;" : "SELECT COUNT(*) FROM ".$table.";";
@@ -98,6 +82,7 @@ function tripal_elasticsearch_indexing_website_form_submit($form, &$form_state){
     $item->index = $index;
     $item->table = $table;
     $item->sql = $sql;
+    $item->website_base_url = $website_base_url;
     $queue->createItem($item);
   }
 

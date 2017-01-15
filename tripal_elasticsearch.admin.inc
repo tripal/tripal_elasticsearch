@@ -73,6 +73,21 @@ function indexing_website_page(){
 
 
 /**
+ * Menu callback for indexing database tables.
+ */
+function indexing_database_tables_page(){
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  try{
+    $client_health = $client->cat()->health();
+    return drupal_get_form('tripal_elasticsearch_indexing_database_tables_form');
+  } catch (\Exception $e) {
+    $message = $e->getMessage();
+    drupal_set_message($message, 'warning');
+    return $output;
+  }
+}
+
+/**
  * menu callback for deleting indices page
  */
 function tripal_elasticsearch_delete_indices_page(){
@@ -89,9 +104,4 @@ function tripal_elasticsearch_delete_indices_page(){
 
 
 
-/**
- * menu callback for indexing database tables
- */
-function indexing_database_tables_page() {
-  return 'database tables';
-} 
+ 

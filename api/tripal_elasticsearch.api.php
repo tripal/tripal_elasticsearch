@@ -139,7 +139,7 @@ function get_table_list() {
       $chado_tables[$table] = $table;
     }
 
-    $table_list = array('index_website' => 'index_website') + $public_tables + $chado_tables;
+    $table_list = $public_tables + $chado_tables;
 
     return $table_list;
 }

@@ -54,7 +54,7 @@ function tripal_elasticsearch_menu(){
     'page callback' => 'create_index_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),    
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK,
     'weight' => 1,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
@@ -77,7 +77,7 @@ function tripal_elasticsearch_menu(){
     'page callback' => 'indexing_website_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
     );
@@ -405,13 +405,14 @@ function elastic_indexing_queue_item($item){
   $sql = $item->sql;
   $result = db_query($sql)->fetchAll();
 
-  if($index == "index_website") {
+  if($table == "index_website") {
+    $website_base_url = $item->website_base_url;
     foreach($result as $record) {
       $body['node_id'] = $record->nid; 
       $body['node_title'] = $record->title; 
 
       //========== This chunk of code limits the indexing speed ==============
-      $page_html = file_get_contents($GLOBALS['base_url'].'/node/'.$body['node_id']);
+      $page_html = file_get_contents($website_base_url.'/node/'.$body['node_id']);
       // remove raw sequences
       $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">'). "(.|\n)*".preg_quote('</pre>');
       $page_html = preg_replace("!".$pattern_1."!U", ' ', $page_html);
@@ -448,7 +449,7 @@ function elastic_indexing_queue_item($item){
         'body' => $doc,
       ];
       $responses = $client->index($params);
-      watchdog('Tripal elasticsearch: indexing table', 'Indexed 1 record from '.$selected_table.' - '.format_date(time()));
+      watchdog('Tripal elasticsearch: indexing table', 'Indexed 1 record from '.$table.' - '.format_date(time()));
     }
   }
 

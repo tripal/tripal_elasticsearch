@@ -4,7 +4,7 @@
 /**
  * The fileds options are dependent on the table selected in previous dropdown.
  */
-function tripal_elasticsearch_indexing_form($form, &$form_state){
+function tripal_elasticsearch_indexing_database_tables_form($form, &$form_state){
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
     // get a list of created indices
@@ -38,8 +38,8 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
     $form['database_table'] = array(
       '#type' => 'select',
       '#title' => t('Select a database table'),
-      '#description' => t('Select a database table to index. Select "index_website" to index all web pages.'),
-      '#options' => get_table_list(), 
+      '#description' => t('Select a database table to index'),
+      '#options' => array('Select a table' => 'Select a table') + get_table_list(), 
       '#ajax' => array(
         'callback' => 'display_table_fields_ajax',
         'wrapper' => 'display_table_fields',
@@ -83,10 +83,6 @@ function tripal_elasticsearch_indexing_form($form, &$form_state){
  * display table fields ajax callback
  */
 function display_table_fields_ajax ($form, &$form_state) {
-  $table = $form_state['values']['database_table'];
-  if($table == 'index_website') {
-    $form['display_table_fields']['#description'] = t('No need to select fields for table "index_website"'); 
-  }
   return $form['display_table_fields'];
 }
 
@@ -121,14 +117,12 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state){
     $queue = DrupalQueue::get($queue_id);
     $OFFSET = $k * $offset;
     $item = new stdClass();
-    if ($table == "index_website") {
-      $sql = "SELECT title, nid FROM node WHERE status=1 ORDER BY nid LIMIT $k OFFSET $OFFSET;";
-    } else {
-      $comma_separated_fields = implode(',', array_keys($table_fields)); 
-      // use the first field to sort the table
-      $order_by_field = array_shift($table_fields);
-      $sql = "SELECT ". $comma_separated_fields. " FROM " . $table ." ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
-    }
+  
+    $comma_separated_fields = implode(',', array_keys($table_fields)); 
+    // use the first field to sort the table
+    $order_by_field = array_shift($table_fields);
+    $sql = "SELECT ". $comma_separated_fields. " FROM " . $table ." ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
+
     $item->index = $index;
     $item->table = $table;
     $item->sql = $sql;
