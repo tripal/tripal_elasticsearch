@@ -9,9 +9,9 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class State extends AbstractEndpoint
 {
@@ -41,11 +41,11 @@ class State extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $index = $this->index;
         $metric = $this->metric;
-        $uri   = "/_cluster/state";
+        $uri = "/_cluster/state";
 
         if (isset($metric) === true && isset($index) === true) {
             $uri = "/_cluster/state/$metric/$index";
@@ -59,23 +59,23 @@ class State extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'local',
             'master_timeout',
             'flat_settings',
             'index_templates',
-            'expand_wildcards',
             'ignore_unavailable',
-            'allow_no_indices'
-        );
+            'allow_no_indices',
+            'expand_wildcards',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

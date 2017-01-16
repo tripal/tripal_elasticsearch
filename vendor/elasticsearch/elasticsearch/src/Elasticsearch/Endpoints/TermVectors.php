@@ -9,12 +9,27 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class TermVectors extends AbstractEndpoint
 {
+    /**
+     * @var boolean
+     */
+    protected $shouldUseDeprecated;
+
+    /**
+     * @return $this
+     */
+    public function useDeprecated()
+    {
+        $this->shouldUseDeprecated = true;
+
+        return $this;
+    }
+
     /**
      * @param array $body
      *
@@ -36,28 +51,27 @@ class TermVectors extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
-                'index is required for TermVectors'
+                'index is required for TermVector'
             );
         }
         if (isset($this->type) !== true) {
             throw new Exceptions\RuntimeException(
-                'type is required for TermVectors'
+                'type is required for TermVector'
             );
         }
         if (isset($this->id) !== true) {
             throw new Exceptions\RuntimeException(
-                'id is required for TermVectors'
+                'id is required for TermVector'
             );
         }
-
         $index = $this->index;
-        $type  = $this->type;
-        $id    = $this->id;
-        $uri   = "/$index/$type/$id/_termvectors";
+        $type = $this->type;
+        $id = $this->id;
+        $uri = "/$index/$type/$id/_termvector" . ($this->shouldUseDeprecated ? '' : 's');
 
         return $uri;
     }
@@ -65,11 +79,12 @@ class TermVectors extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'term_statistics',
             'field_statistics',
+            'dfs',
             'fields',
             'offsets',
             'positions',
@@ -77,14 +92,16 @@ class TermVectors extends AbstractEndpoint
             'preference',
             'routing',
             'parent',
-            'realtime'
-        );
+            'realtime',
+            'version',
+            'version_type',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'POST';
     }

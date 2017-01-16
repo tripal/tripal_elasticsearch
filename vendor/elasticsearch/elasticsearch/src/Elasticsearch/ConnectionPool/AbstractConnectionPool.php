@@ -13,9 +13,9 @@ use Elasticsearch\Connections\ConnectionInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\ConnectionPool
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 abstract class AbstractConnectionPool implements ConnectionPoolInterface
 {

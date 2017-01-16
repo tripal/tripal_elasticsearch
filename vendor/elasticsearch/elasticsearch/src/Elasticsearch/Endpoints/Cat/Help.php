@@ -9,18 +9,18 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cat
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Help extends AbstractEndpoint
 {
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
-        $uri   = "/_cat";
+        $uri = "/_cat";
 
         return $uri;
     }
@@ -28,18 +28,17 @@ class Help extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'help',
-            's'
-        );
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

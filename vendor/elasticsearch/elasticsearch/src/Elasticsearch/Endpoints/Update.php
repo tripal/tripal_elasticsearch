@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Update extends AbstractEndpoint
 {
@@ -36,7 +36,7 @@ class Update extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->id) !== true) {
             throw new Exceptions\RuntimeException(
@@ -56,7 +56,7 @@ class Update extends AbstractEndpoint
         $id = $this->id;
         $index = $this->index;
         $type = $this->type;
-        $uri   = "/$index/$type/$id/_update";
+        $uri = "/$index/$type/$id/_update";
 
         if (isset($index) === true && isset($type) === true && isset($id) === true) {
             $uri = "/$index/$type/$id/_update";
@@ -68,9 +68,9 @@ class Update extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'consistency',
             'fields',
             'lang',
@@ -80,19 +80,20 @@ class Update extends AbstractEndpoint
             'retry_on_conflict',
             'routing',
             'script',
+            'script_id',
+            'scripted_upsert',
             'timeout',
             'timestamp',
             'ttl',
             'version',
             'version_type',
-            '_source'
-        );
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'POST';
     }

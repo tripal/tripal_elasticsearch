@@ -210,8 +210,7 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($goodConnection, $ret);
     }
 
-    public function testCustomConnectionPoolIT()
-    {
+    public function testCustomConnectionPoolIT() {
         $clientBuilder = \Elasticsearch\ClientBuilder::create();
         $clientBuilder->setHosts(['localhost:1']);
         $client = $clientBuilder

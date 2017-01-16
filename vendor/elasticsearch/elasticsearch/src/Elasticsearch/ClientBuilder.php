@@ -10,7 +10,6 @@ use Elasticsearch\ConnectionPool\StaticNoPingConnectionPool;
 use Elasticsearch\Connections\Connection;
 use Elasticsearch\Connections\ConnectionFactory;
 use Elasticsearch\Connections\ConnectionFactoryInterface;
-use Elasticsearch\Namespaces\NamespaceBuilderInterface;
 use Elasticsearch\Serializers\SerializerInterface;
 use Elasticsearch\ConnectionPool\Selectors;
 use Elasticsearch\Serializers\SmartSerializer;
@@ -28,9 +27,9 @@ use Monolog\Processor\IntrospectionProcessor;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Common\Exceptions
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
   */
 class ClientBuilder
 {
@@ -39,9 +38,6 @@ class ClientBuilder
 
     /** @var callback */
     private $endpoint;
-
-    /** @var NamespaceBuilderInterface[] */
-    private $registeredNamespacesBuilders = [];
 
     /** @var  ConnectionFactoryInterface */
     private $connectionFactory;
@@ -70,6 +66,9 @@ class ClientBuilder
 
     /** @var array */
     private $hosts;
+
+    /** @var array */
+    private $connectionParams;
 
     /** @var  int */
     private $retries;
@@ -110,8 +109,7 @@ class ClientBuilder
      * @throws Common\Exceptions\RuntimeException
      * @return \Elasticsearch\Client
      */
-    public static function fromConfig($config, $quiet = false)
-    {
+    public static function fromConfig($config, $quiet = false) {
         $builder = new self;
         foreach ($config as $key => $value) {
             $method = "set$key";
@@ -235,17 +233,6 @@ class ClientBuilder
     }
 
     /**
-     * @param NamespaceBuilderInterface $namespaceBuilder
-     * @return $this
-     */
-    public function registerNamespace(NamespaceBuilderInterface $namespaceBuilder)
-    {
-        $this->registeredNamespacesBuilders[] = $namespaceBuilder;
-
-        return $this;
-    }
-
-    /**
      * @param \Elasticsearch\Transport $transport
      * @return $this
      */
@@ -308,6 +295,17 @@ class ClientBuilder
     public function setHosts($hosts)
     {
         $this->hosts = $hosts;
+
+        return $this;
+    }
+
+    /**
+     * @param array $params
+     * @return $this
+     */
+    public function setConnectionParams(array $params)
+    {
+        $this->connectionParams = $params;
 
         return $this;
     }
@@ -425,8 +423,10 @@ class ClientBuilder
         }
 
         if (is_null($this->connectionFactory)) {
-            $connectionParams = [];
-            $this->connectionFactory = new ConnectionFactory($this->handler, $connectionParams, $this->serializer, $this->logger, $this->tracer);
+            if (is_null($this->connectionParams)) {
+                $this->connectionParams = [];
+            }
+            $this->connectionFactory = new ConnectionFactory($this->handler, $this->connectionParams, $this->serializer, $this->logger, $this->tracer);
         }
 
         if (is_null($this->hosts)) {
@@ -442,36 +442,30 @@ class ClientBuilder
         $this->buildTransport();
 
         if (is_null($this->endpoint)) {
+            $transport = $this->transport;
             $serializer = $this->serializer;
 
-            $this->endpoint = function ($class) use ($serializer) {
+            $this->endpoint = function ($class) use ($transport, $serializer) {
                 $fullPath = '\\Elasticsearch\\Endpoints\\' . $class;
-                if ($class === 'Bulk' || $class === 'Msearch' || $class === 'MPercolate') {
-                    return new $fullPath($serializer);
+                if ($class === 'Bulk' || $class === 'MSearch' || $class === 'MPercolate') {
+                    return new $fullPath($transport, $serializer);
                 } else {
-                    return new $fullPath();
+                    return new $fullPath($transport);
                 }
             };
         }
 
-        $registeredNamespaces = [];
-        foreach ($this->registeredNamespacesBuilders as $builder) {
-            /** @var $builder NamespaceBuilderInterface */
-            $registeredNamespaces[$builder->getName()] = $builder->getObject($this->transport, $this->serializer);
-        }
-
-        return $this->instantiate($this->transport, $this->endpoint, $registeredNamespaces);
+        return $this->instantiate($this->transport, $this->endpoint);
     }
 
     /**
      * @param Transport $transport
      * @param callable $endpoint
-     * @param Object[] $registeredNamespaces
      * @return Client
      */
-    protected function instantiate(Transport $transport, callable $endpoint, array $registeredNamespaces)
+    protected function instantiate(Transport $transport, callable $endpoint)
     {
-        return new Client($transport, $endpoint, $registeredNamespaces);
+        return new Client($transport, $endpoint);
     }
 
     private function buildLoggers()

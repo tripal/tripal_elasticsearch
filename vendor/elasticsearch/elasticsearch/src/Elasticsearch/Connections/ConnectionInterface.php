@@ -11,9 +11,9 @@ use Psr\Log\LoggerInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Connections
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 interface ConnectionInterface
 {
@@ -36,27 +36,6 @@ interface ConnectionInterface
      * @return string
      */
     public function getTransportSchema();
-
-    /**
-     * Get the hostname for this connection
-     *
-     * @return string
-     */
-    public function getHost();
-
-    /**
-     * Get the username:password string for this connection, null if not set
-     *
-     * @return null|string
-     */
-    public function getUserPass();
-
-    /**
-     * Get the URL path suffix, null if not set
-     *
-     * @return null|string;
-     */
-    public function getPath();
 
     /**
      * Check to see if this instance is marked as 'alive'

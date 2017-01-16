@@ -6,7 +6,6 @@ use Elasticsearch\Common\Exceptions;
 use Elasticsearch\ConnectionPool\AbstractConnectionPool;
 use Elasticsearch\Connections\Connection;
 use Elasticsearch\Connections\ConnectionInterface;
-use GuzzleHttp\Ring\Future\FutureArrayInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -14,9 +13,9 @@ use Psr\Log\LoggerInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Transport
 {
@@ -82,7 +81,7 @@ class Transport
      * @param array $options
      *
      * @throws Common\Exceptions\NoNodesAvailableException|\Exception
-     * @return FutureArrayInterface
+     * @return array
      */
     public function performRequest($method, $uri, $params = null, $body = null, $options = [])
     {
@@ -120,27 +119,6 @@ class Transport
             });
 
         return $future;
-    }
-
-    /**
-     * @param FutureArrayInterface $result  Response of a request (promise)
-     * @param array                $options Options for transport
-     *
-     * @return callable|array
-     */
-    public function resultOrFuture($result, $options = [])
-    {
-        $response = null;
-        $async = isset($options['client']['future']) ? $options['client']['future'] : null;
-        if (is_null($async) || $async === false) {
-            do {
-                $result = $result->wait();
-            } while ($result instanceof FutureArrayInterface);
-
-            return $result;
-        } elseif ($async === true || $async === 'lazy') {
-            return $result;
-        }
     }
 
     /**

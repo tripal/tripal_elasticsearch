@@ -4,7 +4,7 @@
 /**
  * form handler to create index from a template file.
  */
-function tripal_elasticsearch_create_index_from_templates_form ($form, &$form_state) {
+function tripal_elasticsearch_create_index_template_from_file_form ($form, &$form_state) {
   // get index json templates file names
   $index_json_templaes_array_begin = array('Select a template' => 'Plase select a template');
   $index_json_templates = scandir(drupal_get_path('module', 'tripal_elasticsearch').'/elasticsearch_indices_json_templates', SCANDIR_SORT_ASCENDING);

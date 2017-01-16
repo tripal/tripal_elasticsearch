@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Suggest extends AbstractEndpoint
 {
@@ -35,10 +35,10 @@ class Suggest extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $index = $this->index;
-        $uri   = "/_suggest";
+        $uri = "/_suggest";
 
         if (isset($index) === true) {
             $uri = "/$index/_suggest";
@@ -50,23 +50,23 @@ class Suggest extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
             'preference',
             'routing',
             'source',
-        );
+        ];
     }
 
     /**
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    public function getBody()
+    protected function getBody()
     {
         if (isset($this->body) !== true) {
             throw new Exceptions\RuntimeException('Body is required for Suggest');
@@ -78,7 +78,7 @@ class Suggest extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

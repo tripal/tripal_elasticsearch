@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Indices;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
  * Class Create
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Create extends AbstractEndpoint
 {
@@ -37,7 +37,7 @@ class Create extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
@@ -45,7 +45,7 @@ class Create extends AbstractEndpoint
             );
         }
         $index = $this->index;
-        $uri   = "/$index";
+        $uri = "/$index";
 
         if (isset($index) === true) {
             $uri = "/$index";
@@ -57,21 +57,25 @@ class Create extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'timeout',
             'master_timeout',
             'update_all_types',
-            'wait_for_active_shards'
-        );
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
+        if (is_array($this->body) && isset($this->body['mappings']) === true) {
+            return 'POST';
+        } elseif (is_object($this->body) && isset($this->body->mappings) === true) {
+            return 'POST';
+        }
         return 'PUT';
     }
 }

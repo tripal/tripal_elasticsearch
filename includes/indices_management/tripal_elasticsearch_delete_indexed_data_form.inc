@@ -27,7 +27,9 @@ function tripal_elasticsearch_delete_indexed_data_form($form, &$form_state){
   if(!empty($form_state['values']['indices'])) {
     $selected_index = $form_state['values']['indices'];
     $types = array_keys($mappings[$selected_index]['mappings']);
-    $mappings_options = $types;
+    foreach($types as $type) {
+      $mappings_options[$type] = $type;
+    }
   } else {
     $mappings_options = array();
   }
@@ -60,16 +62,29 @@ function display_mappings_ajax($form, &$form_state) {
 }
 
 
+/**
+ * form validation
+ */
+function tripal_elasticsearch_delete_indexed_data_form_validate($form, &$form_state) {
+  if(empty($form_state['values']['mappings'])) {
+    form_set_error('mappings', t('Please select index and mappings'));
+  }
+}
 
 function tripal_elasticsearch_delete_indexed_data_form_submit($form, &$form_state){
-    $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
-
-/*
-    foreach($form_state['values']['tripal_elasticsearch_indices'] as $index){
-        if(!empty($index)){
-            $params['index'] = $index;
-            $client->indices()->delete($params);
-        }
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  $index = $form_state['values']['indices'];
+  $types = $form_state['values']['mappings'];
+  try {
+    foreach($types as $type) {
+      $params = array();
+      $params['index'] = array($index);
+      $params['type'] = $type;
+      dpm($params);
+      $response = $client->indices()->deleteMapping($params);
     }
-*/
+  } catch (Exception $e) {
+    drupal_set_message($e->getMessage(), 'warning');
+  }
+
 }

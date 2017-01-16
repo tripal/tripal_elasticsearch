@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Script;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
  * Class Get
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Script
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Get extends AbstractEndpoint
 {
@@ -39,7 +39,7 @@ class Get extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->lang) !== true) {
             throw new Exceptions\RuntimeException(
@@ -51,9 +51,9 @@ class Get extends AbstractEndpoint
                 'id is required for put'
             );
         }
-        $id   = $this->id;
+        $id = $this->id;
         $lang = $this->lang;
-        $uri  = "/_scripts/$lang/$id";
+        $uri = "/_scripts/$lang/$id";
 
         return $uri;
     }
@@ -61,18 +61,18 @@ class Get extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'version_type',
-            'version'
-        );
+            'version',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

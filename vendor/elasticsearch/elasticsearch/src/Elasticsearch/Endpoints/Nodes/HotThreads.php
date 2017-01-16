@@ -1,25 +1,25 @@
 <?php
 
-namespace Elasticsearch\Endpoints\Cluster\Nodes;
+namespace Elasticsearch\Endpoints\Nodes;
 
 /**
  * Class Hotthreads
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster\Nodes
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class HotThreads extends AbstractNodesEndpoint
 {
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $node_id = $this->nodeID;
-        $uri   = "/_cluster/nodes/hotthreads";
+        $uri = "/_cluster/nodes/hotthreads";
 
         if (isset($node_id) === true) {
             $uri = "/_cluster/nodes/$node_id/hotthreads";
@@ -31,20 +31,22 @@ class HotThreads extends AbstractNodesEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'interval',
             'snapshots',
             'threads',
+            'ignore_idle_threads',
             'type',
-        );
+            'timeout',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

@@ -31,4 +31,5 @@ class SimpleConnectionPool extends AbstractConnectionPool implements ConnectionP
     public function scheduleCheck()
     {
     }
+
 }

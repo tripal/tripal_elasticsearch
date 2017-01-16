@@ -1,15 +1,15 @@
 <?php
 
-namespace Elasticsearch\Endpoints\Cluster\Nodes;
+namespace Elasticsearch\Endpoints\Nodes;
 
 /**
  * Class Info
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cluster\Nodes
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Info extends AbstractNodesEndpoint
 {
@@ -39,11 +39,11 @@ class Info extends AbstractNodesEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $node_id = $this->nodeID;
         $metric = $this->metric;
-        $uri   = "/_nodes";
+        $uri = "/_nodes";
 
         if (isset($node_id) === true && isset($metric) === true) {
             $uri = "/_nodes/$node_id/$metric";
@@ -59,18 +59,19 @@ class Info extends AbstractNodesEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'flat_settings',
             'human',
-        );
+            'timeout',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

@@ -3,7 +3,6 @@
 namespace Elasticsearch\Endpoints;
 
 use Elasticsearch\Common\Exceptions\UnexpectedValueException;
-use Elasticsearch\Serializers\SerializerInterface;
 use Elasticsearch\Transport;
 use Exception;
 use GuzzleHttp\Ring\Future\FutureArrayInterface;
@@ -13,14 +12,14 @@ use GuzzleHttp\Ring\Future\FutureArrayInterface;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 abstract class AbstractEndpoint
 {
-    /** @var array  */
-    protected $params = array();
+    /** @var array */
+    protected $params = [];
 
     /** @var  string */
     protected $index = null;
@@ -37,38 +36,63 @@ abstract class AbstractEndpoint
     /** @var  array */
     protected $body = null;
 
-    /** @var array  */
-    private $options = [];
+    /** @var \Elasticsearch\Transport */
+    private $transport = null;
 
-    /** @var  SerializerInterface */
-    protected $serializer;
+    /** @var array */
+    private $options = [];
 
     /**
      * @return string[]
      */
-    abstract public function getParamWhitelist();
+    abstract protected function getParamWhitelist();
 
     /**
      * @return string
      */
-    abstract public function getURI();
+    abstract protected function getURI();
 
     /**
      * @return string
      */
-    abstract public function getMethod();
+    abstract protected function getMethod();
 
+    /**
+     * @param Transport $transport
+     */
+    public function __construct($transport)
+    {
+        $this->transport = $transport;
+    }
+
+    /**
+     * @throws \Exception
+     * @return array
+     */
+    public function performRequest()
+    {
+        $promise = $this->transport->performRequest(
+            $this->getMethod(),
+            $this->getURI(),
+            $this->params,
+            $this->getBody(),
+            $this->options
+        );
+
+        return $promise;
+    }
 
     /**
      * Set the parameters for this endpoint
      *
      * @param string[] $params Array of parameters
+     *
      * @return $this
      */
     public function setParams($params)
     {
         if (is_object($params) === true) {
-            $params = (array) $params;
+            $params = (array)$params;
         }
 
         $this->checkUserParams($params);
@@ -77,22 +101,6 @@ abstract class AbstractEndpoint
         $this->params = $this->convertArraysToStrings($params);
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getParams()
-    {
-        return $this->params;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
     }
 
     /**
@@ -154,9 +162,29 @@ abstract class AbstractEndpoint
     }
 
     /**
+     * @param $result
+     *
+     * @return callable|array
+     */
+    public function resultOrFuture($result)
+    {
+        $response = null;
+        $async = isset($this->options['client']['future']) ? $this->options['client']['future'] : null;
+        if (is_null($async) || $async === false) {
+            do {
+                $result = $result->wait();
+            } while ($result instanceof FutureArrayInterface);
+
+            return $result;
+        } elseif ($async === true || $async === 'lazy') {
+            return $result;
+        }
+    }
+
+    /**
      * @return array
      */
-    public function getBody()
+    protected function getBody()
     {
         return $this->body;
     }
@@ -168,11 +196,11 @@ abstract class AbstractEndpoint
      */
     protected function getOptionalURI($endpoint)
     {
-        $uri = array();
+        $uri = [];
         $uri[] = $this->getOptionalIndex();
         $uri[] = $this->getOptionalType();
         $uri[] = $endpoint;
-        $uri =  array_filter($uri);
+        $uri = array_filter($uri);
 
         return '/' . implode('/', $uri);
     }
@@ -212,15 +240,17 @@ abstract class AbstractEndpoint
             return; //no params, just return.
         }
 
-        $whitelist = array_merge($this->getParamWhitelist(), array('client', 'custom', 'filter_path'));
+        $whitelist = array_merge($this->getParamWhitelist(), ['client', 'custom', 'filter_path']);
 
         foreach ($params as $key => $value) {
             if (array_search($key, $whitelist) === false) {
-                throw new UnexpectedValueException(sprintf(
-                    '"%s" is not a valid parameter. Allowed parameters are: "%s"',
-                    $key,
-                    implode('", "', $whitelist)
-                ));
+                throw new UnexpectedValueException(
+                    sprintf(
+                        '"%s" is not a valid parameter. Allowed parameters are: "%s"',
+                        $key,
+                        implode('", "', $whitelist)
+                    )
+                );
             }
         }
     }

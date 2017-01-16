@@ -9,9 +9,9 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Cat
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Aliases extends AbstractEndpoint
 {
@@ -37,10 +37,10 @@ class Aliases extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $name = $this->name;
-        $uri   = "/_cat/aliases";
+        $uri = "/_cat/aliases";
 
         if (isset($name) === true) {
             $uri = "/_cat/aliases/$name";
@@ -52,23 +52,21 @@ class Aliases extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'local',
             'master_timeout',
             'h',
             'help',
             'v',
-            'format',
-            's'
-        );
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

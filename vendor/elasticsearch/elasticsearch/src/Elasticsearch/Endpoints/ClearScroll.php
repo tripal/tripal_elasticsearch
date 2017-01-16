@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class ClearScroll extends AbstractEndpoint
 {
@@ -23,7 +23,7 @@ class ClearScroll extends AbstractEndpoint
      *
      * @return $this
      */
-    public function setScroll_Id($scroll_id)
+    public function setScrollId($scroll_id)
     {
         if (isset($scroll_id) !== true) {
             return $this;
@@ -38,7 +38,7 @@ class ClearScroll extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->scroll_id) !== true) {
             throw new Exceptions\RuntimeException(
@@ -46,7 +46,7 @@ class ClearScroll extends AbstractEndpoint
             );
         }
         $scroll_id = $this->scroll_id;
-        $uri   = "/_search/scroll/$scroll_id";
+        $uri = "/_search/scroll/$scroll_id";
 
         if (isset($scroll_id) === true) {
             $uri = "/_search/scroll/$scroll_id";
@@ -58,16 +58,16 @@ class ClearScroll extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
-        );
+        return [
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'DELETE';
     }

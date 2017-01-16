@@ -49,23 +49,23 @@ function tripal_elasticsearch_menu(){
     'access arguments' => array('administer users'),
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'/indices_management/create_index'] = array(
-    'title' => t('Create Index'),
-    'page callback' => 'create_index_page',
+  $items[$pre.'/indices_management/create_index_template'] = array(
+    'title' => t('Create Index Template'),
+    'page callback' => 'create_index_template_from_file_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),    
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'/indices_management/create_index/from_templates'] = array(
-    'title' => t('Create Index from Templates'),
+  $items[$pre.'/indices_management/create_index_template/template_from_file'] = array(
+    'title' => t('Template from File'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   );
-  $items[$pre.'/indices_management/create_index/create_custom_index'] = array(
-    'title' => t('Create Custome Index'),
-    'page callback' => 'create_custom_index_page',
+  $items[$pre.'/indices_management/create_index_template/custom_template'] = array(
+    'title' => t('Custome Template'),
+    'page callback' => 'create_custom_index_template_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,

@@ -30,8 +30,12 @@ The class defines the following methods:
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
-       ['wait_for_completion'] = (bool) Should this request wait until the operation has completed before returning
+$params['repository']          = (string) A repository name (Required)
+       ['snapshot']            = (string) A snapshot name (Required)
+       ['master_timeout']      = (time) Explicit operation timeout for connection to master node
+       ['wait_for_completion'] = (boolean) Should this request wait until the operation has completed before
+returning (default: false)
+       ['body']                = The snapshot definition
        ['body']  = (array) Request body
 */
 
@@ -52,8 +56,11 @@ $response = $client->snapshot()->create($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
-       ['timeout'] = (time) Explicit operation timeout
+$params['repository']     = (string) A repository name (Required)
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
+       ['timeout']        = (time) Explicit operation timeout
+       ['verify']         = (boolean) Whether to verify the repository after creation
+       ['body']           = The repository definition
        ['body']  = (array) Request body
 */
 
@@ -74,7 +81,9 @@ $response = $client->snapshot()->createRepository($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
+$params['repository']     = (string) A repository name (Required)
+       ['snapshot']       = (string) A snapshot name (Required)
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
        ['body']  = (array) Request body
 */
 
@@ -95,8 +104,9 @@ $response = $client->snapshot()->delete($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
-       ['timeout'] = (time) Explicit operation timeout
+$params['repository']     = (list) A comma-separated list of repository names (Required)
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
+       ['timeout']        = (time) Explicit operation timeout
        ['body']  = (array) Request body
 */
 
@@ -117,7 +127,9 @@ $response = $client->snapshot()->deleteRepository($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
+$params['repository']     = (string) A repository name (Required)
+       ['snapshot']       = (list) A comma-separated list of snapshot names (Required)
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
        ['body']  = (array) Request body
 */
 
@@ -138,8 +150,10 @@ $response = $client->snapshot()->get($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
-       ['timeout'] = (time) Explicit operation timeout
+$params['repository']     = (list) A comma-separated list of repository names
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
+       ['local']          = (boolean) Return local information, do not retrieve the state from master node
+(default: false)
        ['body']  = (array) Request body
 */
 
@@ -160,8 +174,12 @@ $response = $client->snapshot()->getRepository($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
-       ['wait_for_completion'] = (bool) Should this request wait until the operation has completed before returning
+$params['repository']          = (string) A repository name (Required)
+       ['snapshot']            = (string) A snapshot name (Required)
+       ['master_timeout']      = (time) Explicit operation timeout for connection to master node
+       ['wait_for_completion'] = (boolean) Should this request wait until the operation has completed before
+returning (default: false)
+       ['body']                = Details of what to restore
        ['body']  = (array) Request body
 */
 
@@ -182,7 +200,9 @@ $response = $client->snapshot()->restore($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
+$params['repository']     = (string) A repository name
+       ['snapshot']       = (list) A comma-separated list of snapshot names
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
        ['body']  = (array) Request body
 */
 
@@ -203,8 +223,9 @@ $response = $client->snapshot()->status($params);
 [source,php]
 ----
 /*
-$params['master_timeout'] = (time) Explicit operation timeout for connection to master node
-       ['timeout'] = (time) Explicit operation timeout
+$params['repository']     = (string) A repository name (Required)
+       ['master_timeout'] = (time) Explicit operation timeout for connection to master node
+       ['timeout']        = (time) Explicit operation timeout
        ['body']  = (array) Request body
 */
 

@@ -2,7 +2,6 @@
 
 namespace Elasticsearch\Endpoints;
 
-use Elasticsearch\Common\Exceptions\InvalidArgumentException;
 use Elasticsearch\Common\Exceptions;
 
 /**
@@ -10,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Search extends AbstractEndpoint
 {
@@ -36,11 +35,11 @@ class Search extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $index = $this->index;
         $type = $this->type;
-        $uri   = "/_search";
+        $uri = "/_search";
 
         if (isset($index) === true && isset($type) === true) {
             $uri = "/$index/$type/_search";
@@ -56,14 +55,17 @@ class Search extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'analyzer',
             'analyze_wildcard',
             'default_operator',
             'df',
             'explain',
+            'fields',
+            'fielddata_fields',
+            'filter_path',
             'from',
             'ignore_unavailable',
             'allow_no_indices',
@@ -84,23 +86,23 @@ class Search extends AbstractEndpoint
             '_source',
             '_source_exclude',
             '_source_include',
+            'terminate_after',
             'stats',
             'suggest_field',
             'suggest_mode',
             'suggest_size',
             'suggest_text',
             'timeout',
+            'track_scores',
             'version',
-            'fielddata_fields',
-            'docvalue_fields',
-            'filter_path'
-        );
+            'request_cache',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

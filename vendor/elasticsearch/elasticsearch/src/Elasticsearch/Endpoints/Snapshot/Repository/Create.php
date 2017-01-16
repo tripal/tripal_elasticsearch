@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Snapshot\Repository;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
  * Class Create
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Snapshot\Repository
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Create extends AbstractEndpoint
 {
@@ -56,7 +56,7 @@ class Create extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->repository) !== true) {
             throw new Exceptions\RuntimeException(
@@ -64,7 +64,7 @@ class Create extends AbstractEndpoint
             );
         }
         $repository = $this->repository;
-        $uri   = "/_snapshot/$repository";
+        $uri = "/_snapshot/$repository";
 
         if (isset($repository) === true) {
             $uri = "/_snapshot/$repository";
@@ -76,19 +76,20 @@ class Create extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'master_timeout',
             'timeout',
-        );
+            'verify',
+        ];
     }
 
     /**
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    public function getBody()
+    protected function getBody()
     {
         if (isset($this->body) !== true) {
             throw new Exceptions\RuntimeException('Body is required for Create Repository');
@@ -100,7 +101,7 @@ class Create extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'PUT';
     }

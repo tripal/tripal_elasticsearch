@@ -8,12 +8,11 @@
         verbose="true"
 >
     <php>
-        <env name="ES_TEST_HOST" value="http://localhost:9200"/>
+        <server name="ES_TEST_HOST" value="http://localhost:9200"/>
     </php>
     <testsuites>
         <testsuite>
             <directory>tests</directory>
-            <exclude>tests/Elasticsearch/Tests/YamlRunnerTest.php</exclude>
         </testsuite>
     </testsuites>
     <filter>

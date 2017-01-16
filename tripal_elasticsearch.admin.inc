@@ -2,7 +2,7 @@
 
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_indexing_website_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_indexing_database_tables_form.inc';
-require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_create_index_from_templates_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_create_index_template_from_file_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/indices_management/tripal_elasticsearch_delete_indexed_data_form.inc';
 
 /**
@@ -27,11 +27,11 @@ function tripal_elasticsearch_admin_page() {
 /**
  * menu callback to display page for creating indices.
  */
-function create_index_page () {
+function create_index_template_from_file_page () {
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
     $client_health = $client->cat()->health();
-    return drupal_get_form('tripal_elasticsearch_create_index_from_templates_form');
+    return drupal_get_form('tripal_elasticsearch_create_index_template_from_file_form');
   } catch (\Exception $e) {
     $message = $e->getMessage();
     $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
@@ -43,7 +43,7 @@ function create_index_page () {
 /**
  * menu callback for creating custom index page
  */
-function create_custom_index_page () {
+function create_custom_index_template_page () {
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
     $client_health = $client->cat()->health();

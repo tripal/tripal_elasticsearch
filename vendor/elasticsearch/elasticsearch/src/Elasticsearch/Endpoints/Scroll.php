@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Scroll extends AbstractEndpoint
 {
@@ -32,14 +32,6 @@ class Scroll extends AbstractEndpoint
         $this->body = $body;
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getBody()
-    {
-        return $this->body;
     }
 
     public function setClearScroll($clear)
@@ -66,28 +58,38 @@ class Scroll extends AbstractEndpoint
     }
 
     /**
+     * @return array
+     */
+    protected function getBody()
+    {
+        return $this->body;
+    }
+
+    /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
-        $uri   = "/_search/scroll";
+        $uri = "/_search/scroll";
+
         return $uri;
     }
 
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'scroll',
-        );
+            'scroll_id',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         if ($this->clear == true) {
             return 'DELETE';

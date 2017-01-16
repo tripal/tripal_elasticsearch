@@ -9,59 +9,69 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  * Class Get
  *
  * @category Elasticsearch
- * @package  Elasticsearch\Endpoints\Tasks
- * @author   Zachary Tong <zach@elastic.co>
+ * @package Elasticsearch\Endpoints\Tasks *
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Get extends AbstractEndpoint
 {
-    private $taskId;
+    // Return the task with specified id (node_id:task_number)
+    private $task_id;
+
 
     /**
-     * @param string $taskId
+     * @param $task_id
      *
-     * @throws \Elasticsearch\Common\Exceptions\InvalidArgumentException
      * @return $this
      */
-    public function setTaskId($taskId)
+    public function setTaskId($task_id)
     {
-        if (isset($taskId) !== true) {
+        if (isset($task_id) !== true) {
             return $this;
         }
 
-        $this->taskId = $taskId;
+        $this->task_id = $task_id;
 
         return $this;
     }
 
+
     /**
-     * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
-        if (isset($this->taskId) === true) {
-            return "/_tasks/{$this->taskId}";
+        $task_id = $this->task_id;
+        $uri = "/_tasks";
+        if (isset($task_id) === true) {
+            $uri = "/_tasks/$task_id";
         }
 
-        return "/_tasks";
+        return $uri;
     }
+
 
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
-            'wait_for_completion'
-        );
+        return [
+            'node_id',
+            'actions',
+            'detailed',
+            'parent_node',
+            'parent_task',
+            'wait_for_completion',
+        ];
     }
+
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

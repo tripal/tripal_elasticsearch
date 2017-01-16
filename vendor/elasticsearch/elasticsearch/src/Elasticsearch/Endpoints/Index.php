@@ -9,13 +9,13 @@ use Elasticsearch\Common\Exceptions;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Index extends AbstractEndpoint
 {
-    /** @var bool  */
+    /** @var bool */
     private $createIfAbsent = false;
 
     /**
@@ -49,7 +49,7 @@ class Index extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->index) !== true) {
             throw new Exceptions\RuntimeException(
@@ -63,43 +63,56 @@ class Index extends AbstractEndpoint
             );
         }
 
-        $id    = $this->id;
+        $id = $this->id;
         $index = $this->index;
-        $type  = $this->type;
-        $uri   = "/$index/$type";
+        $type = $this->type;
+        $uri = "/$index/$type";
 
         if (isset($id) === true) {
             $uri = "/$index/$type/$id";
         }
+
+        if ($this->createIfAbsent === true) {
+            $uri .= $this->addCreateFlag();
+        }
+
         return $uri;
+    }
+
+    private function addCreateFlag()
+    {
+        if (isset($this->id) === true) {
+            return '/_create';
+        } else {
+            $this->params['op_type'] = 'create';
+
+            return "";
+        }
     }
 
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'consistency',
             'op_type',
             'parent',
-            'percolate',
             'refresh',
-            'replication',
             'routing',
             'timeout',
             'timestamp',
             'ttl',
             'version',
             'version_type',
-            'pipeline'
-        );
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         if (isset($this->id) === true) {
             return 'PUT';
@@ -112,7 +125,7 @@ class Index extends AbstractEndpoint
      * @return array
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      */
-    public function getBody()
+    protected function getBody()
     {
         if (isset($this->body) !== true) {
             throw new Exceptions\RuntimeException('Document body must be set for index request');

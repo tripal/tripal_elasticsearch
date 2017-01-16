@@ -15,14 +15,14 @@ use Mockery as m;
 class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
 {
 
-    public function tearDown()
-    {
+    public function tearDown() {
         m::close();
     }
 
-    public function testWithNoResults()
-    {
+    public function testWithNoResults() {
+
         $search_params = array(
+            'search_type' => 'scan',
             'scroll'      => '5m',
             'index'       => 'twitter',
             'size'        => 1000,
@@ -42,7 +42,32 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->andReturn(array('_scroll_id' => 'scroll_id_01'));
 
         $mock_client->shouldReceive('scroll')
-            ->never();
+            ->once()
+            ->ordered()
+            ->with(
+                array(
+                    'scroll_id' => 'scroll_id_01',
+                    'scroll'    => '5m'
+                )
+            )
+            ->andReturn(
+                array(
+                    '_scroll_id' => 'scroll_id_02',
+                    'hits' => array(
+                        'hits' => array(
+                        )
+                    )
+                )
+            );
+
+        $mock_client->shouldReceive('scroll')
+            ->never()
+            ->with(
+                array(
+                    'scroll_id' => 'scroll_id_02',
+                    'scroll'    => '5m'
+                )
+            );
 
         $mock_client->shouldReceive('clearScroll')
             ->once()
@@ -52,12 +77,16 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
 
         $responses = new SearchResponseIterator($mock_client, $search_params);
 
-        $this->assertCount(0, $responses);
+        foreach($responses as $i => $response) {
+        }
+
+        $this->assertEquals(0, $i);
     }
 
-    public function testWithHits()
+    public function testWithScan()
     {
         $search_params = array(
+            'search_type' => 'scan',
             'scroll'      => '5m',
             'index'       => 'twitter',
             'size'        => 1000,
@@ -74,85 +103,72 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->once()
             ->ordered()
             ->with($search_params)
-            ->andReturn([
-                '_scroll_id' => 'scroll_id_01',
-                'hits' => [
-                    'hits' => [
-                        [
-                            'foo' => 'bar'
-                        ]
-                    ]
-                ]
-            ]);
+            ->andReturn(array('_scroll_id' => 'scroll_id_01'));
 
         $mock_client->shouldReceive('scroll')
             ->once()
             ->ordered()
             ->with(
-                [
+                array(
                     'scroll_id'  => 'scroll_id_01',
                     'scroll' => '5m'
-                ]
+                )
             )
             ->andReturn(
-                [
+                array(
                     '_scroll_id' => 'scroll_id_02',
-                    'hits' => [
-                        'hits' => [
-                            [
-                                'foo' => 'bar'
-                            ]
-                        ]
-                    ]
-                ]);
-
-        $mock_client->shouldReceive('scroll')
-            ->once()
-            ->ordered()
-            ->with(
-                [
-                    'scroll_id'  => 'scroll_id_02',
-                    'scroll' => '5m'
-                ]
-            )
-            ->andReturn(
-                [
-                    '_scroll_id' => 'scroll_id_03',
-                    'hits' => [
-                        'hits' => [
-                            [
-                                'foo' => 'bar'
-                            ]
-                        ]
-                    ]
-                ]
+                    'hits' => array(
+                        'hits' => array(
+                            array()
+                        )
+                    )
+                )
             );
 
         $mock_client->shouldReceive('scroll')
             ->once()
             ->ordered()
             ->with(
-                [
-                    'scroll_id'  => 'scroll_id_03',
+                array(
+                    'scroll_id'  => 'scroll_id_02',
                     'scroll' => '5m'
-                ]
+                )
             )
             ->andReturn(
-                [
+                array(
+                    '_scroll_id' => 'scroll_id_03',
+                    'hits' => array(
+                        'hits' => array(
+                            array()
+                        )
+                    )
+                )
+            );
+
+        $mock_client->shouldReceive('scroll')
+            ->once()
+            ->ordered()
+            ->with(
+                array(
+                    'scroll_id'  => 'scroll_id_03',
+                    'scroll' => '5m'
+                )
+            )
+            ->andReturn(
+                array(
                     '_scroll_id' => 'scroll_id_04',
-                    'hits' => [
-                        'hits' => []
-                    ]
-                ]
+                    'hits' => array(
+                    )
+                )
             );
 
         $mock_client->shouldReceive('scroll')
             ->never()
             ->with(
-                [
+                array(
                     'scroll_id'  => 'scroll_id_04',
                     'scroll' => '5m'
-                ]
+                )
             );
 
         $mock_client->shouldReceive('clearScroll')
@@ -162,6 +178,10 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
 
         $responses = new SearchResponseIterator($mock_client, $search_params);
 
-        $this->assertCount(4, $responses);
+        foreach($responses as $i => $response) {
+        }
+
+        $this->assertEquals(2, $i);
     }
+
 }

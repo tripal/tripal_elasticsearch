@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Indices\Validate;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
  * Class Query
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices\Validate
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Query extends AbstractEndpoint
 {
@@ -36,7 +36,7 @@ class Query extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         return $this->getOptionalURI('_validate/query');
     }
@@ -44,27 +44,31 @@ class Query extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'explain',
+            'ignore_unavailable',
             'ignore_indices',
+            'allow_no_indices',
+            'expand_wildcards',
             'operation_threading',
             'source',
             'q',
-            'df',
-            'default_operator',
             'analyzer',
             'analyze_wildcard',
+            'default_operator',
+            'df',
             'lenient',
-            'lowercase_expanded_terms'
-        );
+            'lowercase_expanded_terms',
+            'rewrite',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

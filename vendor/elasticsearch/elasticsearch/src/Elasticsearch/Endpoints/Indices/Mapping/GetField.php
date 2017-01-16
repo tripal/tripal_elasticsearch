@@ -2,17 +2,17 @@
 
 namespace Elasticsearch\Endpoints\Indices\Mapping;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
+use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
  * Class GetField
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices\Mapping
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class GetField extends AbstractEndpoint
 {
@@ -43,7 +43,7 @@ class GetField extends AbstractEndpoint
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         if (isset($this->fields) !== true) {
             throw new Exceptions\RuntimeException(
@@ -52,27 +52,27 @@ class GetField extends AbstractEndpoint
         }
         $uri = $this->getOptionalURI('_mapping/field');
 
-        return $uri.'/'.$this->fields;
+        return $uri . '/' . $this->fields;
     }
 
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'include_defaults',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-            'local'
-        );
+            'local',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

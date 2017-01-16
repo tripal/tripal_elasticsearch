@@ -5,26 +5,26 @@ namespace Elasticsearch\Endpoints\Indices;
 use Elasticsearch\Endpoints\AbstractEndpoint;
 
 /**
- * Class Snapshotindex
+ * Class Optimize
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
-class Snapshotindex extends AbstractEndpoint
+class Optimize extends AbstractEndpoint
 {
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $index = $this->index;
-        $uri   = "/_gateway/snapshot";
+        $uri = "/_optimize";
 
         if (isset($index) === true) {
-            $uri = "/$index/_gateway/snapshot";
+            $uri = "/$index/_optimize";
         }
 
         return $uri;
@@ -33,19 +33,24 @@ class Snapshotindex extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
+            'flush',
             'ignore_unavailable',
             'allow_no_indices',
             'expand_wildcards',
-        );
+            'max_num_segments',
+            'only_expunge_deletes',
+            'operation_threading',
+            'wait_for_merge',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'POST';
     }

@@ -11,16 +11,15 @@ use Iterator;
  * @package  Elasticsearch\Helper\Iterators
  * @author   Arturo Mejia <arturo.mejia@kreatetechnology.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  * @see      Iterator
  */
-class SearchHitIterator implements Iterator, \Countable
-{
+class SearchHitIterator implements Iterator, \Countable {
 
     /**
      * @var SearchResponseIterator
      */
-    private $search_responses;
+    private   $search_responses;
 
     /**
      * @var int
@@ -65,7 +64,7 @@ class SearchHitIterator implements Iterator, \Countable
 
         // The first page may be empty. In that case, the next page is fetched.
         $current_page = $this->search_responses->current();
-        if ($this->search_responses->valid() && empty($current_page['hits']['hits'])) {
+        if($this->search_responses->valid() && empty($current_page['hits']['hits'])) {
             $this->search_responses->next();
         }
 
@@ -90,7 +89,7 @@ class SearchHitIterator implements Iterator, \Countable
         $this->current_key++;
         $this->current_hit_index++;
         $current_page = $this->search_responses->current();
-        if (isset($current_page['hits']['hits'][$this->current_hit_index])) {
+        if(isset($current_page['hits']['hits'][$this->current_hit_index])) {
             $this->current_hit_data = $current_page['hits']['hits'][$this->current_hit_index];
         } else {
             $this->search_responses->next();
@@ -138,13 +137,14 @@ class SearchHitIterator implements Iterator, \Countable
      */
     private function readPageData()
     {
-        if ($this->search_responses->valid()) {
+        if($this->search_responses->valid()) {
             $current_page = $this->search_responses->current();
             $this->current_hit_index = 0;
             $this->current_hit_data = $current_page['hits']['hits'][$this->current_hit_index];
         } else {
             $this->current_hit_data = null;
         }
+
     }
 
     /**

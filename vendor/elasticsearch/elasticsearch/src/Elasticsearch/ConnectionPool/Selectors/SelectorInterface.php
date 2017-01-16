@@ -7,9 +7,9 @@ namespace Elasticsearch\ConnectionPool\Selectors;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Connections\Selectors
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 interface SelectorInterface
 {

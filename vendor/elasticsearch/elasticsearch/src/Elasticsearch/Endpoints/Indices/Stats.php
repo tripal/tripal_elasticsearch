@@ -9,9 +9,9 @@ use Elasticsearch\Endpoints\AbstractEndpoint;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Endpoints\Indices
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class Stats extends AbstractEndpoint
 {
@@ -41,11 +41,11 @@ class Stats extends AbstractEndpoint
     /**
      * @return string
      */
-    public function getURI()
+    protected function getURI()
     {
         $index = $this->index;
         $metric = $this->metric;
-        $uri   = "/_stats";
+        $uri = "/_stats";
 
         if (isset($index) === true && isset($metric) === true) {
             $uri = "/$index/_stats/$metric";
@@ -61,9 +61,9 @@ class Stats extends AbstractEndpoint
     /**
      * @return string[]
      */
-    public function getParamWhitelist()
+    protected function getParamWhitelist()
     {
-        return array(
+        return [
             'completion_fields',
             'fielddata_fields',
             'fields',
@@ -71,14 +71,14 @@ class Stats extends AbstractEndpoint
             'human',
             'level',
             'types',
-            'metric'
-        );
+            'metric',
+        ];
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    protected function getMethod()
     {
         return 'GET';
     }

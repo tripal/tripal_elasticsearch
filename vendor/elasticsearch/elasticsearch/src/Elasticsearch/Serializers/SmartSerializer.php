@@ -9,9 +9,9 @@ use Elasticsearch\Common\Exceptions\Serializer\JsonErrorException;
  *
  * @category Elasticsearch
  * @package  Elasticsearch\Serializers\JSONSerializer
- * @author   Zachary Tong <zach@elastic.co>
+ * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
- * @link     http://elastic.co
+ * @link     http://elasticsearch.org
  */
 class SmartSerializer implements SerializerInterface
 {
@@ -27,7 +27,7 @@ class SmartSerializer implements SerializerInterface
         if (is_string($data) === true) {
             return $data;
         } else {
-            $data = json_encode($data, JSON_PRESERVE_ZERO_FRACTION);
+            $data = json_encode($data);
             if ($data === '[]') {
                 return '{}';
             } else {
