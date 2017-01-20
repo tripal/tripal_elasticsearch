@@ -25,6 +25,20 @@ function sort_2d_array_by_value($arr, $field, $sort) {
   return $sorted_a;
 }
 
+function sort2d(&$arr, $field, $order = 'asc') {
+  usort(
+    $arr,
+    function ($a, $b) use ($field, $order) {
+      if ($order === 'asc') {
+        return $a[$field] > $b[$field];
+      }
+      else {
+        return $b[$field] > $a[$field];
+      }
+    }
+  );
+}
+
 //================End of sort_2d_array_by_value() =====================
 
 
