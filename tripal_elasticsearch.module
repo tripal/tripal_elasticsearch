@@ -1,9 +1,9 @@
 <?php
 
-  require_once drupal_get_path('module', 'tripal_elasticsearch').'/vendor/autoload.php';
-  require_once drupal_get_path('module', 'tripal_elasticsearch').'/api/tripal_elasticsearch.api.php';
-  require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_main_search_box_form.inc';
-  require_once drupal_get_path('module', 'tripal_elasticsearch').'/includes/tripal_elasticsearch_blocks_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/vendor/autoload.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/tripal_elasticsearch.api.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/tripal_elasticsearch_main_search_box_form.inc';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/tripal_elasticsearch_blocks_form.inc';
 
 
 set_time_limit(0);
@@ -12,7 +12,7 @@ set_time_limit(0);
 /**
  * Implementation of hook_menu().
  */
-function tripal_elasticsearch_menu(){
+function tripal_elasticsearch_menu() {
   //$pre = 'admin/config/search/elastic_search';
   $pre = 'admin/tripal/extension/tripal_elasticsearch';
   $items[$pre] = array(
@@ -23,7 +23,7 @@ function tripal_elasticsearch_menu(){
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
   );
-  $items[$pre.'/admin_pages'] = array(
+  $items[$pre . '/admin_pages'] = array(
     'title' => 'Tripal Elasticsearch Administration',
     'description' => 'Tripal Elasticsearch Administration Pages',
     'page callback' => 'tripal_elasticsearch_admin_page',
@@ -32,7 +32,7 @@ function tripal_elasticsearch_menu(){
     'file' => 'tripal_elasticsearch.admin.inc',
   );
 
-  $items[$pre.'/connect_to_elasticsearch_cluster'] = array(
+  $items[$pre . '/connect_to_elasticsearch_cluster'] = array(
     'title' => t('Connect to elasticsearch cluster'),
     'page callback' => 'connect_to_elasticsearch_cluster_page',
     'access callback' => 'user_access',
@@ -40,30 +40,32 @@ function tripal_elasticsearch_menu(){
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/connect_to_elasticsearch_cluster_form.inc',
     'weight' => 1,
-    ); 
-  $items[$pre.'/indices_management'] = array(
+  );
+  $items[$pre . '/indices_management'] = array(
     'title' => t('Elasticsearch indices management'),
-    'description' => t('Administrative pages for managing elasticsearch indices'),
+    'description' => t(
+      'Administrative pages for managing elasticsearch indices'
+    ),
     'page callback' => 'indexing_website_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'/indices_management/create_index_template'] = array(
+  $items[$pre . '/indices_management/create_index_template'] = array(
     'title' => t('Create Index Template'),
     'page callback' => 'create_index_template_from_file_page',
     'access callback' => 'user_access',
-    'access arguments' => array('administer users'),    
+    'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'/indices_management/create_index_template/template_from_file'] = array(
+  $items[$pre . '/indices_management/create_index_template/template_from_file'] = array(
     'title' => t('Template from File'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   );
-  $items[$pre.'/indices_management/create_index_template/custom_template'] = array(
+  $items[$pre . '/indices_management/create_index_template/custom_template'] = array(
     'title' => t('Custome Template'),
     'page callback' => 'create_custom_index_template_page',
     'access callback' => 'user_access',
@@ -72,7 +74,7 @@ function tripal_elasticsearch_menu(){
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'/indices_management/indexing'] = array(
+  $items[$pre . '/indices_management/indexing'] = array(
     'title' => t('Indexing'),
     'page callback' => 'indexing_website_page',
     'access callback' => 'user_access',
@@ -80,13 +82,13 @@ function tripal_elasticsearch_menu(){
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
-    );
-  $items[$pre.'/indices_management/indexing/indexing_website'] = array(
+  );
+  $items[$pre . '/indices_management/indexing/indexing_website'] = array(
     'title' => t('Indexing Website'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
-    );
-  $items[$pre.'/indices_management/indexing/indexing_database_tables'] = array(
+  );
+  $items[$pre . '/indices_management/indexing/indexing_database_tables'] = array(
     'title' => t('Indexing Database Tables'),
     'page callback' => 'indexing_database_tables_page',
     'access callback' => 'user_access',
@@ -94,8 +96,8 @@ function tripal_elasticsearch_menu(){
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
-    );
-  $items[$pre.'/indices_management/delete_indexed_data'] = array(
+  );
+  $items[$pre . '/indices_management/delete_indexed_data'] = array(
     'title' => t('Delete Indexed Data'),
     'page callback' => 'tripal_elasticsearch_delete_indexed_data_page',
     'access callback' => 'user_access',
@@ -104,7 +106,7 @@ function tripal_elasticsearch_menu(){
     'weight' => 3,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre.'/build_tripal_elasticsearch_block'] = array(
+  $items[$pre . '/build_tripal_elasticsearch_block'] = array(
     'title' => t('Build tripal_elasticsearch block'),
     'page callback' => 'build_tripal_elasticelastic_block_page',
     'access callback' => 'user_access',
@@ -114,7 +116,7 @@ function tripal_elasticsearch_menu(){
     'weight' => 4,
   );
 
-  $items[$pre.'/delete_tripal_elasticsearch_blocks'] = array(
+  $items[$pre . '/delete_tripal_elasticsearch_blocks'] = array(
     'title' => t('Delete tripal_elasticsearch blocks'),
     'page callback' => 'delete_tripal_elasticsearch_blocks_page',
     'access callback' => 'user_access',
@@ -123,7 +125,7 @@ function tripal_elasticsearch_menu(){
     'file' => 'includes/delete_tripal_elasticsearch_blocks_form.inc',
     'weight' => 5,
   );
-  $items[$pre.'/tripal_elasticsearch_add_links'] = array(
+  $items[$pre . '/tripal_elasticsearch_add_links'] = array(
     'title' => t('Add page links'),
     'page callback' => 'tripal_elasticsearch_add_links_page',
     'access callback' => 'user_access',
@@ -132,7 +134,7 @@ function tripal_elasticsearch_menu(){
     'file' => 'includes/tripal_elasticsearch_add_links_form.inc',
     'weight' => 6,
   );
-  $items[$pre.'/tripal_elasticsearch_alter_form'] = array(
+  $items[$pre . '/tripal_elasticsearch_alter_form'] = array(
     'title' => t('Alter form fields'),
     'page callback' => 'tripal_elasticsearch_alter_form_page',
     'access callback' => 'user_access',
@@ -161,17 +163,16 @@ function tripal_elasticsearch_menu(){
 }
 
 
-
-
-function connect_to_elasticsearch_cluster_page(){
+function connect_to_elasticsearch_cluster_page() {
   return drupal_get_form('connect_to_elasticsearch_cluster_form');
 }
 
 
-
-function build_tripal_elasticelastic_block_page(){
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
-  try{
+function build_tripal_elasticelastic_block_page() {
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(
+    variable_get('elasticsearch_hosts', array('localhost:9200'))
+  )->build();
+  try {
     $client_health = $client->cat()->health();
     return drupal_get_form('build_tripal_elasticsearch_block_form');
   } catch (\Exception $e) {
@@ -181,18 +182,20 @@ function build_tripal_elasticelastic_block_page(){
   }
 }
 
-function delete_tripal_elasticsearch_blocks_page(){
+function delete_tripal_elasticsearch_blocks_page() {
   return drupal_get_form('delete_tripal_elasticsearch_blocks_form');
 }
 
-function tripal_elasticsearch_add_links_page(){
-  $example_form = drupal_get_form('tripal_elasticsearch_add_links_example_form');
+function tripal_elasticsearch_add_links_page() {
+  $example_form = drupal_get_form(
+    'tripal_elasticsearch_add_links_example_form'
+  );
   $form = drupal_get_form('tripal_elasticsearch_add_links_form');
-  $output = drupal_render($example_form).drupal_render($form);
+  $output = drupal_render($example_form) . drupal_render($form);
   return $output;
 }
 
-function tripal_elasticsearch_alter_form_page(){
+function tripal_elasticsearch_alter_form_page() {
   return drupal_get_form('tripal_elasticsearch_alter_form');
 }
 
@@ -200,21 +203,21 @@ function tripal_elasticsearch_alter_form_page(){
  * Create an empty page for hosting tripal_elasticsearch blocks
  * These blocks are configurable and can be placed anywhere else.
  */
-function tripal_elasticsearch_page(){
+function tripal_elasticsearch_page() {
   return '';
 }
 
 /*
  * Create an empty page for site wide searching results.
  */
-function tripal_elasticsearch_main_search_page(){
+function tripal_elasticsearch_main_search_page() {
   return '';
 }
 
 /**
  * Implements hook_block_info().
  */
-function tripal_elasticsearch_block_info(){
+function tripal_elasticsearch_block_info() {
   $blocks = array();
   // Block for main search box.
   $blocks['main_search_box'] = array(
@@ -235,20 +238,24 @@ function tripal_elasticsearch_block_info(){
   );
 
   $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
-  foreach($result as $record){
+  foreach ($result as $record) {
     // For some reason, block name cannot be longer than 32 chars
-    $block_name_form = 'Search: '.$record->table_name;
+    $block_name_form = 'Search: ' . $record->table_name;
     $blocks[$block_name_form] = array(
-      'info' => t('tripal_elasticsearch block for search form: '.$record->table_name),
+      'info' => t(
+        'tripal_elasticsearch block for search form: ' . $record->table_name
+      ),
       'status' => TRUE,
       'region' => 'content',
       'visibility' => BLOCK_VISIBILITY_LISTED,
       'pages' => "elastic_search\nelastic_search/*",
       'cache' => DRUPAL_NO_CACHE,
     );
-    $block_name_hits = 'Hits: '.$record->table_name;
+    $block_name_hits = 'Hits: ' . $record->table_name;
     $blocks[$block_name_hits] = array(
-      'info' => t('tripal_elasticsearch block for search results: '.$record->table_name),
+      'info' => t(
+        'tripal_elasticsearch block for search results: ' . $record->table_name
+      ),
       'status' => TRUE,
       'region' => 'content',
       'visibility' => BLOCK_VISIBILITY_LISTED,
@@ -257,19 +264,19 @@ function tripal_elasticsearch_block_info(){
     );
   }
 
-    return $blocks;
+  return $blocks;
 }
 
 
 /**
  * Implements hook_block_view().
  */
-function tripal_elasticsearch_block_view($delta = ''){
+function tripal_elasticsearch_block_view($delta = '') {
 
   $block = array();
   $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
   $table_names = array();
-  foreach($result as $record){
+  foreach ($result as $record) {
     $table_names[] = $record->table_name;
   }
   // strip off 'ES_form' or 'ES_hits' to get table name
@@ -277,30 +284,38 @@ function tripal_elasticsearch_block_view($delta = ''){
   $table = str_replace('Search: ', '', $delta);
   $table = str_replace('Hits: ', '', $table);
 
-  if(in_array($table, $table_names)){
-    $form = 'Search: '.$table;
-    $hits = 'Hits: '.$table;
+  if (in_array($table, $table_names)) {
+    $form = 'Search: ' . $table;
+    $hits = 'Hits: ' . $table;
 
     // Get search hits
-    $form_input = isset($_SESSION['elastic_form_input'])?$_SESSION['elastic_form_input']:null;
-    if(!empty($form_input)){
+    $form_input = isset($_SESSION['elastic_form_input']) ? $_SESSION['elastic_form_input'] : NULL;
+    if (!empty($form_input)) {
       $index_table = _get_field_keyword_pairs($form_input)['table'];
-      $field_keyword_pairs = _get_field_keyword_pairs($form_input)['field_keyword_pairs'];
+      $field_keyword_pairs = _get_field_keyword_pairs(
+                               $form_input
+                             )['field_keyword_pairs'];
       $search_from = _get_field_keyword_pairs($form_input)['search_from'];
       $search_from = intval($search_from);
 
       //$search_from = !empty($search_from)?$search_from:0;
       // Only display the results block for the corresponding form block
-      if($table == $index_table and is_elastic_index($index_table)){
-        $search_hits = _run_elastic_search($table, $field_keyword_pairs, $from=$search_from)['search_hits'];
-        $search_hits_count = _run_elastic_search($table, $field_keyword_pairs)['search_hits_count'];
-        $search_hits_count_html = '<h6><span style="color:red"><em>'.$search_hits_count.
-                                  '</em></span> records were found. ';
+      if ($table == $index_table and is_elastic_index($index_table)) {
+        $search_hits = _run_elastic_search(
+                         $table,
+                         $field_keyword_pairs,
+                         $from = $search_from
+                       )['search_hits'];
+        $search_hits_count = _run_elastic_search(
+                               $table,
+                               $field_keyword_pairs
+                             )['search_hits_count'];
+        $search_hits_count_html = '<h6><span style="color:red"><em>' . $search_hits_count . '</em></span> records were found. ';
         $start = strval($search_from) + 1;
-        if($start+999>$search_hits_count){
+        if ($start + 999 > $search_hits_count) {
           $end = $search_hits_count;
         }
-        else{
+        else {
           $end = $start + 999;
         }
         /*
@@ -310,57 +325,69 @@ function tripal_elasticsearch_block_view($delta = ''){
                                    '<span style="color:red"><em>'.$end.'</em></span>'.
                                    ' are displayed.</h6>';
         */
-        $search_hits_count_html .= '<span style="color:red"><em>'.$end.'</em></span>'.
-                                   ' are displayed. You can click the download button to download all '.$search_hits_count.' results. </h6>';
-        if(!empty($search_hits)){
+        $search_hits_count_html .= '<span style="color:red"><em>' . $end . '</em></span>' . ' are displayed. You can click the download button to download all ' . $search_hits_count . ' results. </h6>';
+        if (!empty($search_hits)) {
           $search_hits_table = get_search_hits_table($search_hits, $table);
-          $search_hits_table = $search_hits_count_html.$search_hits_table;
+          $search_hits_table = $search_hits_count_html . $search_hits_table;
         }
-        else{
+        else {
           $search_hits_table = '<font color="red">No records were found';
         }
       }
-      else{
+      else {
         $search_hits_table = '';
       }
     }// ======= End of getting search hits=================
-    switch($delta){
+    switch ($delta) {
       case $form:
         $block['subject'] = $form;
-        $block['content'] = drupal_get_form('tripal_elasticsearch_blocks_form', $table);
+        $block['content'] = drupal_get_form(
+          'tripal_elasticsearch_blocks_form',
+          $table
+        );
         break;
       case $hits:
         $block['subject'] = $hits;
-        $block['content'] = !empty($search_hits_table)?$search_hits_table:'';
+        $block['content'] = !empty($search_hits_table) ? $search_hits_table : '';
         break;
     }
   }
-  else{ // display the main search box block
-    switch($delta){
+  else { // display the main search box block
+    switch ($delta) {
       case 'main_search_box':
         $block['subject'] = '';
         $block['content'] = drupal_get_form('main_search_box_form');
         break;
       case 'main_search_results':
-        $main_search_keyword = isset($_SESSION['main_search_keyword'])?$_SESSION['main_search_keyword']:'';
+        $main_search_keyword = isset($_SESSION['main_search_keyword']) ? $_SESSION['main_search_keyword'] : '';
 
         $table = 'index_website';
-        $field_keyword_pairs = array('node_content'=>$main_search_keyword);
-        if(!empty($main_search_keyword)){
-          $main_search_hits = _run_elastic_main_search($table, $field_keyword_pairs)['main_search_hits'];
-          if(!empty($main_search_hits)){
-            $main_search_hits_count = _run_elastic_main_search($table, $field_keyword_pairs)['search_hits_count'];
-            if($main_search_hits_count == 'Error'){
+        $field_keyword_pairs = array('node_content' => $main_search_keyword);
+        if (!empty($main_search_keyword)) {
+          $main_search_hits = _run_elastic_main_search(
+                                $table,
+                                $field_keyword_pairs
+                              )['main_search_hits'];
+          if (!empty($main_search_hits)) {
+            $main_search_hits_count = _run_elastic_main_search(
+                                        $table,
+                                        $field_keyword_pairs
+                                      )['search_hits_count'];
+            if ($main_search_hits_count == 'Error') {
               $main_search_hits_table = "<h2>The search is not available now. Please try again later.</h2>";
-            } else {
-              $main_search_hits_table = get_main_search_hits_table($main_search_hits, $main_search_hits_count);
+            }
+            else {
+              $main_search_hits_table = get_main_search_hits_table(
+                $main_search_hits,
+                $main_search_hits_count
+              );
             }
           }
-          else{
+          else {
             $main_search_hits_table = '<h2><font color="red">No records were found.</font></h2>';
           }
         }
-        else{
+        else {
           $main_search_hits_table = '';
         }
         $block['subject'] = '';
@@ -369,22 +396,22 @@ function tripal_elasticsearch_block_view($delta = ''){
   }
 
 
-  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/hit_description.js');
+  drupal_add_js(
+    drupal_get_path('module', 'tripal_elasticsearch') . '/js/hit_description.js'
+  );
 
   return $block;
 }
 
 
-
-
 /**
  * implement hook_cron_queue_info()
  */
-function tripal_elasticsearch_cron_queue_info(){
+function tripal_elasticsearch_cron_queue_info() {
   // Define N=10 queues
   $queue_N = 10;
-  for($n = 0; $n < $queue_N; $n++){
-    $queues['elastic_queue_'.$n] = array(
+  for ($n = 0; $n < $queue_N; $n++) {
+    $queues['elastic_queue_' . $n] = array(
       'worker callback' => 'elastic_indexing_queue_item',
       //'time' => 60 * 60 * 2,  ## the amount of time drupal spends on calling the worker function.
       'time' => 115,
@@ -398,33 +425,43 @@ function tripal_elasticsearch_cron_queue_info(){
 /**
  * queue worker function
  */
-function elastic_indexing_queue_item($item){
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+function elastic_indexing_queue_item($item) {
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(
+    variable_get('elasticsearch_hosts', array('localhost:9200'))
+  )->build();
   $index = $item->index;
   $table = $item->table;
   $sql = $item->sql;
   $result = db_query($sql)->fetchAll();
 
-  if($table == "index_website") {
+  if ($table == "index_website") {
     $website_base_url = $item->website_base_url;
-    foreach($result as $record) {
-      $body['node_id'] = $record->nid; 
-      $body['node_title'] = $record->title; 
+    foreach ($result as $record) {
+      $body['node_id'] = $record->nid;
+      $body['node_title'] = $record->title;
 
       //========== This chunk of code limits the indexing speed ==============
-      $page_html = file_get_contents($website_base_url.'/node/'.$body['node_id']);
+      $page_html = file_get_contents(
+        $website_base_url . '/node/' . $body['node_id']
+      );
       // remove raw sequences
-      $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">'). "(.|\n)*".preg_quote('</pre>');
-      $page_html = preg_replace("!".$pattern_1."!U", ' ', $page_html);
+      $pattern_1 = preg_quote(
+          '<pre class="tripal_feature-sequence">'
+        ) . "(.|\n)*" . preg_quote('</pre>');
+      $page_html = preg_replace("!" . $pattern_1 . "!U", ' ', $page_html);
       // remove query sequences
-      $pattern_2 = preg_quote('<pre>Query')."(.|\n)*".preg_quote('</pre>');
-      $page_html = preg_replace("!".$pattern_2."!U", ' ', $page_html);
+      $pattern_2 = preg_quote('<pre>Query') . "(.|\n)*" . preg_quote('</pre>');
+      $page_html = preg_replace("!" . $pattern_2 . "!U", ' ', $page_html);
       // add one space to html tags to avoid words catenation after stripping html tags
-      $page_html = str_replace( '<', ' <', $page_html);
+      $page_html = str_replace('<', ' <', $page_html);
       // remove generated jQuery script
-      $page_html =  preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $page_html);
+      $page_html = preg_replace(
+        '/<script\b[^>]*>(.*?)<\/script>/is',
+        "",
+        $page_html
+      );
       // make page title searchable
-      $page_content = $record->title.' '.strip_tags($page_html);
+      $page_content = $record->title . ' ' . strip_tags($page_html);
       // merge multiple spaces into one
       $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
       //=======================================================================
@@ -437,10 +474,14 @@ function elastic_indexing_queue_item($item){
         'body' => $body,
       ];
       $responses = $client->index($params);
-      watchdog('Tripal elasticsearch: indexing website', 'Indexed node '.$record->nid.' - '.format_date(time()));
+      watchdog(
+        'Tripal elasticsearch: indexing website',
+        'Indexed node ' . $record->nid . ' - ' . format_date(time())
+      );
     }
-  } else {
-    foreach($result as $record) {
+  }
+  else {
+    foreach ($result as $record) {
       $doc = objectToArray($record);
       // indexing one by one
       $params = [
@@ -449,24 +490,25 @@ function elastic_indexing_queue_item($item){
         'body' => $doc,
       ];
       $responses = $client->index($params);
-      watchdog('Tripal elasticsearch: indexing table', 'Indexed 1 record from '.$table.' - '.format_date(time()));
+      watchdog(
+        'Tripal elasticsearch: indexing table',
+        'Indexed 1 record from ' . $table . ' - ' . format_date(time())
+      );
     }
   }
 
 }
 
 
-
-
 /**
  * implements hook_node_update().
  * Any node updates will also update the corresponding elasticsearch docs.
  */
-function tripal_elasticsearch_node_update($node){
+function tripal_elasticsearch_node_update($node) {
   $queue_N = 10;
   // randomly assign the updated node to a queue
-  $n = rand(0, $queue_N-1);
-  $queue = DrupalQueue::get('elastic_queue_'.$n);
+  $n = rand(0, $queue_N - 1);
+  $queue = DrupalQueue::get('elastic_queue_' . $n);
   $nid = $node->nid;
   $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
   $item = new stdClass();
@@ -479,11 +521,11 @@ function tripal_elasticsearch_node_update($node){
  * implements hook_node_insert().
  * Any new nodes will be added to the  elasticsearch cron queue.
  */
-function tripal_elasticsearch_node_insert($node){
+function tripal_elasticsearch_node_insert($node) {
   $queue_N = 10;
   // randomly assign the inserted node to a queue
-  $n = rand(0, $queue_N-1);
-  $queue = DrupalQueue::get('elastic_queue_'.$n);
+  $n = rand(0, $queue_N - 1);
+  $queue = DrupalQueue::get('elastic_queue_' . $n);
   $nid = $node->nid;
   $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
   $item = new stdClass();
@@ -497,18 +539,20 @@ function tripal_elasticsearch_node_insert($node){
  * Implements hook_node_delete().
  * the indexed doc for the deleted node will be also deleted in elasticsearch
  */
-function tripal_elasticsearch_node_delete($node){
+function tripal_elasticsearch_node_delete($node) {
   $nid = $node->nid;
   $params = array();
   $params = [
     'index' => 'index_website',
     'type' => 'index_website',
     'id' => $nid,
-    'body' => ['fake_field' => 'fake document']
+    'body' => ['fake_field' => 'fake document'],
   ];
   // create a fake document and index it in case that the node
   // that is being deleted doesn't exit in elasticsearch
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+  $client = Elasticsearch\ClientBuilder::create()->setHosts(
+    variable_get('elasticsearch_hosts', array('localhost:9200'))
+  )->build();
   $client->index($params);
 
 
