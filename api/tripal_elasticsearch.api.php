@@ -25,6 +25,14 @@ function sort_2d_array_by_value($arr, $field, $sort) {
   return $sorted_a;
 }
 
+/**
+ * Sorts a 2d array.
+ *
+ * @author Abdullah Almsaeed
+ * @param $arr
+ * @param $field
+ * @param string $order
+ */
 function sort2d(&$arr, $field, $order = 'asc') {
   usort(
     $arr,
