@@ -34,18 +34,16 @@ function tripal_elasticsearch_indexing_database_tables_form($form, &$form_state)
       '#options' => $queue_number_array,
     );
 
-
     $form['database_table'] = array(
-      '#type' => 'select',
-      '#title' => t('Select a database table'),
-      '#description' => t('Select a database table to index'),
-      '#options' => array('Select a table' => 'Select a table') + get_table_list(), 
-      '#ajax' => array(
-        'callback' => 'display_table_fields_ajax',
-        'wrapper' => 'display_table_fields',
-      ),
+        '#type' => 'select',
+        '#title' => t('Select a database table'),
+        '#description' => t('Select a database table to index'),
+        '#options' => array('Select a table' => 'Select a table') + get_table_list(),
+        '#ajax' => array(
+            'callback' => 'display_table_fields_ajax',
+            'wrapper' => 'display_table_fields',
+        ),
     );
-
 
     $form['display_table_fields'] = array(
       '#type' => 'textfield',
@@ -55,14 +53,33 @@ function tripal_elasticsearch_indexing_database_tables_form($form, &$form_state)
 
     $table = !empty($form_state['values']['database_table']) ? $form_state['values']['database_table'] : 'index_website';
     // display table fields
-    $form['display_table_fields'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Select table fields to index'),
-      '#description' => t('Please select at least on fields'),
-      '#options' => get_column_list($table), 
-      '#prefix' => '<div id="display_table_fields">',
-      '#suffix' => '</div>',
-    );
+      $tableselect_rows = array();
+      foreach(get_column_list($table) as $field) {
+          $tableselect_rows[$field] = array(
+              'field' => $field,
+              //'mapping_type' => get_elastic_mapping_types(),
+              'mapping_type' => array(
+                  'data' => array(
+                      '#type' => 'select',
+                      '#name' => $field,
+                      '#options' => get_elastic_mapping_types()
+                  )
+              ),
+          );
+      }
+      $header = array(
+          'field' => t('Field'),
+          'mapping_type' => t('Mapping type'),
+      );
+      $form['display_table_fields'] = array(
+          '#type' => 'tableselect',
+          '#tree' => true,
+          '#header' => $header,
+          '#options' => $tableselect_rows,
+          '#empty' => t('No fields available.'),
+          '#prefix' => '<div id="display_table_fields">',
+          '#suffix' => '</div>',
+      );
 
     $form['submit'] = array(
       '#type' => 'submit',
@@ -132,3 +149,24 @@ function tripal_elasticsearch_indexing_database_tables_form_submit($form, &$form
 }
 
 
+/**
+ * form select element for elastic mapping types
+ */
+function get_elastic_mapping_types () {
+    $mapping_types = array(
+        'text' => 'text',
+        'keyword' => 'keyword',
+        'date' => 'date',
+        'long' => 'long',
+        'double' => 'double',
+        'boolean' => 'boolean',
+        'ip' => 'ip',
+        'object' => 'object',
+        'nested' => 'nested',
+        'geo_point' => 'geo_point',
+        'geo_shape' => 'geo_shape',
+        'completion' => 'completion',
+    );
+    //return theme('select', array('element' => $element));
+    return $mapping_types;
+}

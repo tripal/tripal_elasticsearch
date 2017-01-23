@@ -42,70 +42,39 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   );
   $items[$pre . '/indices_management'] = array(
-    'title' => t('Elasticsearch indices management'),
-    'description' => t(
-      'Administrative pages for managing elasticsearch indices'
-    ),
+    'title' => t('Indexing Website'),
     'page callback' => 'indexing_website_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
-    'file' => 'tripal_elasticsearch.admin.inc',
-  );
-  $items[$pre . '/indices_management/create_index_template'] = array(
-    'title' => t('Create Index Template'),
-    'page callback' => 'create_index_template_from_file_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
-    'file' => 'tripal_elasticsearch.admin.inc',
-  );
-  $items[$pre . '/indices_management/create_index_template/template_from_file'] = array(
-    'title' => t('Template from File'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 1,
-  );
-  $items[$pre . '/indices_management/create_index_template/custom_template'] = array(
-    'title' => t('Custome Template'),
-    'page callback' => 'create_custom_index_template_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_NORMAL_ITEM,
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre . '/indices_management/indexing'] = array(
-    'title' => t('Indexing'),
-    'page callback' => 'indexing_website_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 2,
-    'file' => 'tripal_elasticsearch.admin.inc',
-  );
-  $items[$pre . '/indices_management/indexing/indexing_website'] = array(
+  $items[$pre . '/indices_management/indexing_website'] = array(
     'title' => t('Indexing Website'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   );
-  $items[$pre . '/indices_management/indexing/indexing_database_tables'] = array(
-    'title' => t('Indexing Database Tables'),
-    'page callback' => 'indexing_database_tables_page',
+  $items[$pre . '/indices_management/indexing_database_table'] = array(
+    'title' => t('Indexing Database Table'),
+    'page callback' => 'indexing_database_table_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
-  $items[$pre . '/indices_management/delete_indexed_data'] = array(
-    'title' => t('Delete Indexed Data'),
-    'page callback' => 'tripal_elasticsearch_delete_indexed_data_page',
+  $items[$pre . '/indices_management/delete_indices'] = array(
+    'title' => t('Delete Indices'),
+    'page callback' => 'delete_indices_page',
     'access callback' => 'user_access',
     'access arguments' => array('administer users'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
     'file' => 'tripal_elasticsearch.admin.inc',
   );
+
+    /*
   $items[$pre . '/build_tripal_elasticsearch_block'] = array(
     'title' => t('Build tripal_elasticsearch block'),
     'page callback' => 'build_tripal_elasticelastic_block_page',
@@ -158,6 +127,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_VISIBLE_IN_BREADCRUMB,
     'file' => 'includes/tripal_elasticsearch_main_search_box_form.inc',
   );
+    */
 
   return $items;
 }
