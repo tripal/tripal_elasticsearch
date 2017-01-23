@@ -4,23 +4,9 @@
 /**
  * The fileds options are dependent on the table selected in previous dropdown.
  */
-function tripal_elasticsearch_indexing_database_tables_form($form, &$form_state){
+function tripal_elasticsearch_indexing_database_table_form($form, &$form_state){
   $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
   try{
-    // get a list of created indices
-    $indices = array_keys($client->indices()->getMapping());
-    foreach($indices as $key=>$index) {
-      $indices[$index] = $index;
-      unset($indices[$key]);
-    }
-
-    $form['indices'] = array(
-      '#type' => 'select',
-      '#description' => t('Different indices may consists of different character filters, token filters and analyzers,
-                         which together determine how your data is indexed and how your data is searchable.'),
-      '#title' => t('Indices'),
-      '#options' => $indices, 
-    );
 
     // form fields for select N number of cron queues
     $queue_number_array = range(0, 10);
@@ -109,7 +95,7 @@ function display_table_fields_ajax ($form, &$form_state) {
 /**
  * submit callback function
  */
-function tripal_elasticsearch_indexing_database_tables_form_submit($form, &$form_state){
+function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_state){
   $index = $form_state['values']['indices'];
   $queue_number = $form_state['values']['queue_number'];
   //variable_set('queue_number', $queue_number);

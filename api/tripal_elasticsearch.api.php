@@ -150,8 +150,6 @@ function get_column_list($table_name) {
  */
 function get_table_list() {
 
-  $sql_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'public' OR table_schema = 'chado') ORDER BY table_name;";
-
   // get table list from the public schema
   $sql_public_tables = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;";
   $public_tables_query = db_query($sql_public_tables);
