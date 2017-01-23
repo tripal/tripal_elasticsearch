@@ -44,8 +44,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $handle = fopen('php://temp', 'w+');
         fwrite($handle, 'data');
         $stream = new Stream($handle);
-        $this->assertEquals('data', (string) $stream);
-        $this->assertEquals('data', (string) $stream);
+        $this->assertEquals('data', (string)$stream);
+        $this->assertEquals('data', (string)$stream);
         $stream->close();
     }
 
@@ -144,7 +144,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($stream->tell());
         $this->assertTrue($stream->eof());
         $this->assertNull($stream->getSize());
-        $this->assertSame('', (string) $stream);
+        $this->assertSame('', (string)$stream);
         $this->assertSame('', $stream->getContents());
 
         $stream->attach($r);
@@ -189,7 +189,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $r = fopen(__FILE__, 'r');
         $s = Stream::factory($r);
         $this->assertInstanceOf('GuzzleHttp\Stream\Stream', $s);
-        $this->assertSame(file_get_contents(__FILE__), (string) $s);
+        $this->assertSame(file_get_contents(__FILE__), (string)$s);
     }
 
     public function testFactoryCreatesFromObjectWithToString()
@@ -197,7 +197,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $r = new HasToString();
         $s = Stream::factory($r);
         $this->assertInstanceOf('GuzzleHttp\Stream\Stream', $s);
-        $this->assertEquals('foo', (string) $s);
+        $this->assertEquals('foo', (string)$s);
     }
 
     public function testCreatePassesThrough()
@@ -246,7 +246,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase
 
 class HasToString
 {
-    public function __toString() {
+    public function __toString()
+    {
         return 'foo';
     }
 }

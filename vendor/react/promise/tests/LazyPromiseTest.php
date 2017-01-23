@@ -17,13 +17,13 @@ class LazyPromiseTest extends TestCase
         };
 
         return new CallbackPromiseAdapter([
-            'promise'  => function () use ($factory) {
+            'promise' => function () use ($factory) {
                 return new LazyPromise($factory);
             },
             'resolve' => [$d, 'resolve'],
-            'reject'  => [$d, 'reject'],
-            'notify'  => [$d, 'progress'],
-            'settle'  => [$d, 'resolve'],
+            'reject' => [$d, 'reject'],
+            'notify' => [$d, 'progress'],
+            'settle' => [$d, 'resolve'],
         ]);
     }
 

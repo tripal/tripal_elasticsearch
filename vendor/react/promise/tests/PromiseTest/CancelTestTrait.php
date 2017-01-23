@@ -123,7 +123,8 @@ trait CancelTestTrait
     /** @test */
     public function cancelShouldHaveNoEffectIfCancellerDoesNothing()
     {
-        $adapter = $this->getPromiseTestAdapter(function () {});
+        $adapter = $this->getPromiseTestAdapter(function () {
+        });
 
         $adapter->promise()
             ->then($this->expectCallableNever(), $this->expectCallableNever());
@@ -144,7 +145,8 @@ trait CancelTestTrait
 
         $promise = $adapter->promise()
             ->then(function () {
-                return new Promise\Promise(function () {});
+                return new Promise\Promise(function () {
+                });
             })
             ->then(function () {
                 $d = new Promise\Deferred();
@@ -152,7 +154,8 @@ trait CancelTestTrait
                 return $d->promise();
             })
             ->then(function () {
-                return new Promise\Promise(function () {});
+                return new Promise\Promise(function () {
+                });
             });
 
         $promise->cancel();

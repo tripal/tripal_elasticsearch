@@ -50,7 +50,8 @@ class FutureArrayTest extends \PHPUnit_Framework_TestCase
     public function testThrowsWhenAccessingInvalidProperty()
     {
         $deferred = new Deferred();
-        $f = new FutureArray($deferred->promise(), function () {});
+        $f = new FutureArray($deferred->promise(), function () {
+        });
         $f->foo;
     }
 }

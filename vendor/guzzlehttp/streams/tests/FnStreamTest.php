@@ -62,13 +62,13 @@ class FnStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($b->eof(), true);
         $this->assertEquals($a->eof(), true);
         $b->seek(0);
-        $this->assertEquals('foo', (string) $b);
+        $this->assertEquals('foo', (string)$b);
         $b->seek(0);
         $this->assertEquals('foo', $b->getContents());
         $this->assertEquals($a->getMetadata(), $b->getMetadata());
         $b->seek(0, SEEK_END);
         $b->write('bar');
-        $this->assertEquals('foobar', (string) $b);
+        $this->assertEquals('foobar', (string)$b);
         $this->assertInternalType('resource', $b->detach());
         $b->close();
     }

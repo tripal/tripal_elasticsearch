@@ -10,7 +10,7 @@ use Elasticsearch\Connections\ConnectionFactoryInterface;
 
 class SniffingConnectionPool extends AbstractConnectionPool implements ConnectionPoolInterface
 {
-    /** @var int  */
+    /** @var int */
     private $sniffingInterval = 300;
 
     /** @var  int */
@@ -128,16 +128,16 @@ class SniffingConnectionPool extends AbstractConnectionPool implements Connectio
 
     private function parseClusterState($transportSchema, $nodeInfo)
     {
-        $pattern       = '/\/([^:]*):([0-9]+)\]/';
+        $pattern = '/\/([^:]*):([0-9]+)\]/';
         $schemaAddress = $transportSchema . '_address';
-        $hosts         = array();
+        $hosts = array();
 
         foreach ($nodeInfo['nodes'] as $node) {
             if (isset($node[$schemaAddress]) === true) {
                 if (preg_match($pattern, $node[$schemaAddress], $match) === 1) {
                     $hosts[] = array(
                         'host' => $match[1],
-                        'port' => (int) $match[2],
+                        'port' => (int)$match[2],
                     );
                 }
             }

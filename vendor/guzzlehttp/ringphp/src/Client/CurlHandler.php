@@ -106,7 +106,7 @@ class CurlHandler
 
         // Add a new handle
         $handle = curl_init();
-        $id = (int) $handle;
+        $id = (int)$handle;
         $this->handles[$id] = $handle;
         $this->ownedHandles[$id] = true;
 
@@ -115,16 +115,16 @@ class CurlHandler
 
     private function releaseEasyHandle($handle)
     {
-        $id = (int) $handle;
+        $id = (int)$handle;
         if (count($this->ownedHandles) > $this->maxHandles) {
             curl_close($this->handles[$id]);
             unset($this->handles[$id], $this->ownedHandles[$id]);
         } else {
             // curl_reset doesn't clear these out for some reason
             static $unsetValues = [
-                CURLOPT_HEADERFUNCTION   => null,
-                CURLOPT_WRITEFUNCTION    => null,
-                CURLOPT_READFUNCTION     => null,
+                CURLOPT_HEADERFUNCTION => null,
+                CURLOPT_WRITEFUNCTION => null,
+                CURLOPT_READFUNCTION => null,
                 CURLOPT_PROGRESSFUNCTION => null,
             ];
             curl_setopt_array($handle, $unsetValues);

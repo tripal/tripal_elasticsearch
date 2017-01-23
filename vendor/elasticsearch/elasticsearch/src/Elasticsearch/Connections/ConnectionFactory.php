@@ -34,20 +34,21 @@ class ConnectionFactory implements ConnectionFactoryInterface
     /**
      * Constructor
      *
-     * @param callable            $handler
-     * @param array               $connectionParams
+     * @param callable $handler
+     * @param array $connectionParams
      * @param SerializerInterface $serializer
-     * @param LoggerInterface     $logger
-     * @param LoggerInterface     $tracer
+     * @param LoggerInterface $logger
+     * @param LoggerInterface $tracer
      */
     public function __construct(callable $handler, array $connectionParams, SerializerInterface $serializer, LoggerInterface $logger, LoggerInterface $tracer)
     {
-        $this->handler          = $handler;
+        $this->handler = $handler;
         $this->connectionParams = $connectionParams;
-        $this->logger           = $logger;
-        $this->tracer           = $tracer;
-        $this->serializer       = $serializer;
+        $this->logger = $logger;
+        $this->tracer = $tracer;
+        $this->serializer = $serializer;
     }
+
     /**
      * @param $hostDetails
      *

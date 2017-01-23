@@ -37,9 +37,9 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Create $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Create');
         $endpoint->setRepository($repository)
-                 ->setSnapshot($snapshot)
-                 ->setParams($params)
-                 ->setBody($body);
+            ->setSnapshot($snapshot)
+            ->setParams($params)
+            ->setBody($body);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -67,8 +67,8 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Repository\Create $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Repository\Create');
         $endpoint->setRepository($repository)
-                 ->setBody($body)
-                 ->setParams($params);
+            ->setBody($body)
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -94,8 +94,8 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Delete $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Delete');
         $endpoint->setRepository($repository)
-                 ->setSnapshot($snapshot)
-                 ->setParams($params);
+            ->setSnapshot($snapshot)
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -120,7 +120,7 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Repository\Delete $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Repository\Delete');
         $endpoint->setRepository($repository)
-                 ->setParams($params);
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -146,8 +146,8 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Get $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Get');
         $endpoint->setRepository($repository)
-                 ->setSnapshot($snapshot)
-                 ->setParams($params);
+            ->setSnapshot($snapshot)
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -173,7 +173,7 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Repository\Get $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Repository\Get');
         $endpoint->setRepository($repository)
-                 ->setParams($params);
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -203,9 +203,9 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Restore $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Restore');
         $endpoint->setRepository($repository)
-                 ->setSnapshot($snapshot)
-                 ->setParams($params)
-                 ->setBody($body);
+            ->setSnapshot($snapshot)
+            ->setParams($params)
+            ->setBody($body);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -231,8 +231,8 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\Status $endpoint */
         $endpoint = $endpointBuilder('Snapshot\Status');
         $endpoint->setRepository($repository)
-                 ->setSnapshot($snapshot)
-                 ->setParams($params);
+            ->setSnapshot($snapshot)
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -257,7 +257,7 @@ class SnapshotNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Snapshot\VerifyRepository $endpoint */
         $endpoint = $endpointBuilder('Snapshot\VerifyRepository');
         $endpoint->setRepository($repository)
-                 ->setParams($params);
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);

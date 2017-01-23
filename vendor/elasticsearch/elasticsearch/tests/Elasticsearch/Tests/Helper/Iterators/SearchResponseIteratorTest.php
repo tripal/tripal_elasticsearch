@@ -15,18 +15,20 @@ use Mockery as m;
 class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
 {
 
-    public function tearDown() {
+    public function tearDown()
+    {
         m::close();
     }
 
-    public function testWithNoResults() {
+    public function testWithNoResults()
+    {
 
         $search_params = array(
             'search_type' => 'scan',
-            'scroll'      => '5m',
-            'index'       => 'twitter',
-            'size'        => 1000,
-            'body'        => array(
+            'scroll' => '5m',
+            'index' => 'twitter',
+            'size' => 1000,
+            'body' => array(
                 'query' => array(
                     'match_all' => new \StdClass
                 )
@@ -47,15 +49,14 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->with(
                 array(
                     'scroll_id' => 'scroll_id_01',
-                    'scroll'    => '5m'
+                    'scroll' => '5m'
                 )
             )
             ->andReturn(
                 array(
                     '_scroll_id' => 'scroll_id_02',
                     'hits' => array(
-                        'hits' => array(
-                        )
+                        'hits' => array()
                     )
                 )
             );
@@ -65,7 +66,7 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->with(
                 array(
                     'scroll_id' => 'scroll_id_02',
-                    'scroll'    => '5m'
+                    'scroll' => '5m'
                 )
             );
 
@@ -77,7 +78,7 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
 
         $responses = new SearchResponseIterator($mock_client, $search_params);
 
-        foreach($responses as $i => $response) {
+        foreach ($responses as $i => $response) {
         }
 
         $this->assertEquals(0, $i);
@@ -87,10 +88,10 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
     {
         $search_params = array(
             'search_type' => 'scan',
-            'scroll'      => '5m',
-            'index'       => 'twitter',
-            'size'        => 1000,
-            'body'        => array(
+            'scroll' => '5m',
+            'index' => 'twitter',
+            'size' => 1000,
+            'body' => array(
                 'query' => array(
                     'match_all' => new \StdClass
                 )
@@ -110,7 +111,7 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->ordered()
             ->with(
                 array(
-                    'scroll_id'  => 'scroll_id_01',
+                    'scroll_id' => 'scroll_id_01',
                     'scroll' => '5m'
                 )
             )
@@ -130,7 +131,7 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->ordered()
             ->with(
                 array(
-                    'scroll_id'  => 'scroll_id_02',
+                    'scroll_id' => 'scroll_id_02',
                     'scroll' => '5m'
                 )
             )
@@ -150,15 +151,14 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->ordered()
             ->with(
                 array(
-                    'scroll_id'  => 'scroll_id_03',
+                    'scroll_id' => 'scroll_id_03',
                     'scroll' => '5m'
                 )
             )
             ->andReturn(
                 array(
                     '_scroll_id' => 'scroll_id_04',
-                    'hits' => array(
-                    )
+                    'hits' => array()
                 )
             );
 
@@ -166,7 +166,7 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
             ->never()
             ->with(
                 array(
-                    'scroll_id'  => 'scroll_id_04',
+                    'scroll_id' => 'scroll_id_04',
                     'scroll' => '5m'
                 )
             );
@@ -178,7 +178,7 @@ class SearchResponseIteratorTest extends \PHPUnit_Framework_TestCase
 
         $responses = new SearchResponseIterator($mock_client, $search_params);
 
-        foreach($responses as $i => $response) {
+        foreach ($responses as $i => $response) {
         }
 
         $this->assertEquals(2, $i);

@@ -34,12 +34,12 @@ class MockHandler
 
         if (is_array($response)) {
             $response = new CompletedFutureArray($response + [
-                'status'        => null,
-                'body'          => null,
-                'headers'       => [],
-                'reason'        => null,
-                'effective_url' => null,
-            ]);
+                    'status' => null,
+                    'body' => null,
+                    'headers' => [],
+                    'reason' => null,
+                    'effective_url' => null,
+                ]);
         } elseif (!$response instanceof FutureArrayInterface) {
             throw new \InvalidArgumentException(
                 'Response must be an array or FutureArrayInterface. Found '

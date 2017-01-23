@@ -15,7 +15,9 @@ class MiddlewareTest extends \PHPUnit_Framework_TestCase
             return $future;
         };
         $calledB = false;
-        $b = function (array $req) use (&$calledB) { $calledB = true; };
+        $b = function (array $req) use (&$calledB) {
+            $calledB = true;
+        };
         $s = Middleware::wrapFuture($a, $b);
         $s([]);
         $this->assertTrue($calledA);
@@ -26,7 +28,9 @@ class MiddlewareTest extends \PHPUnit_Framework_TestCase
     {
         $future = new CompletedFutureArray(['status' => 200]);
         $calledA = false;
-        $a = function (array $req) use (&$calledA) { $calledA = true; };
+        $a = function (array $req) use (&$calledA) {
+            $calledA = true;
+        };
         $calledB = false;
         $b = function (array $req) use (&$calledB, $future) {
             $calledB = true;
@@ -42,9 +46,13 @@ class MiddlewareTest extends \PHPUnit_Framework_TestCase
     public function testStreamingCallsDefaultHandler()
     {
         $calledA = false;
-        $a = function (array $req) use (&$calledA) { $calledA = true; };
+        $a = function (array $req) use (&$calledA) {
+            $calledA = true;
+        };
         $calledB = false;
-        $b = function (array $req) use (&$calledB) { $calledB = true; };
+        $b = function (array $req) use (&$calledB) {
+            $calledB = true;
+        };
         $s = Middleware::wrapStreaming($a, $b);
         $s([]);
         $this->assertTrue($calledA);
@@ -54,9 +62,13 @@ class MiddlewareTest extends \PHPUnit_Framework_TestCase
     public function testStreamingCallsStreamingHandler()
     {
         $calledA = false;
-        $a = function (array $req) use (&$calledA) { $calledA = true; };
+        $a = function (array $req) use (&$calledA) {
+            $calledA = true;
+        };
         $calledB = false;
-        $b = function (array $req) use (&$calledB) { $calledB = true; };
+        $b = function (array $req) use (&$calledB) {
+            $calledB = true;
+        };
         $s = Middleware::wrapStreaming($a, $b);
         $s(['client' => ['stream' => true]]);
         $this->assertFalse($calledA);

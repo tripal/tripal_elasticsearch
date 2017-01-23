@@ -10,7 +10,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
         $b = new NullStream();
         $this->assertEquals('', $b->read(10));
         $this->assertEquals(4, $b->write('test'));
-        $this->assertEquals('', (string) $b);
+        $this->assertEquals('', (string)$b);
         $this->assertNull($b->getMetadata('a'));
         $this->assertEquals([], $b->getMetadata());
         $this->assertEquals(0, $b->getSize());

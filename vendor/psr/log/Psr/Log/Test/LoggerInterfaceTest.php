@@ -44,8 +44,8 @@ abstract class LoggerInterfaceTest extends \PHPUnit_Framework_TestCase
         $logger->log($level, $message, array('user' => 'Bob'));
 
         $expected = array(
-            $level.' message of level '.$level.' with context: Bob',
-            $level.' message of level '.$level.' with context: Bob',
+            $level . ' message of level ' . $level . ' with context: Bob',
+            $level . ' message of level ' . $level . ' with context: Bob',
         );
         $this->assertEquals($expected, $this->getLogs());
     }

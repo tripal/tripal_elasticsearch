@@ -11,7 +11,7 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
         $a = new CurlMultiHandler();
         $response = $a([
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
+            'headers' => ['host' => [Server::$host]],
         ]);
         $this->assertInstanceOf('GuzzleHttp\Ring\Future\FutureArray', $response);
         $this->assertEquals(200, $response['status']);
@@ -31,7 +31,7 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
         $a = new CurlMultiHandler();
         $response = $a([
             'http_method' => 'GET',
-            'headers'     => ['host' => ['localhost:123']],
+            'headers' => ['host' => ['localhost:123']],
         ]);
         $this->assertInstanceOf('GuzzleHttp\Ring\Future\FutureArray', $response);
         $this->assertNull($response['status']);
@@ -57,7 +57,7 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
         $a = new CurlMultiHandler();
         $response = $a([
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
+            'headers' => ['host' => [Server::$host]],
         ]);
         $this->assertInstanceOf('GuzzleHttp\Ring\Future\FutureArray', $response);
         $a->__destruct();
@@ -80,8 +80,8 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $request = [
             'http_method' => 'PUT',
-            'headers'     => ['host' => [Server::$host]],
-            'future'      => 'lazy', // passing this to control the test
+            'headers' => ['host' => [Server::$host]],
+            'future' => 'lazy', // passing this to control the test
         ];
         $response = ['status' => 200];
         Server::flush();
@@ -106,8 +106,8 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
         for ($i = 0; $i < 10; $i++) {
             $response = $a([
                 'http_method' => 'GET',
-                'headers'     => ['host' => [Server::$host]],
-                'future'      => 'lazy',
+                'headers' => ['host' => [Server::$host]],
+                'future' => 'lazy',
             ]);
             $response->cancel();
             $responses[] = $response;
@@ -127,7 +127,7 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
         $a = new CurlMultiHandler();
         $response = $a([
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
+            'headers' => ['host' => [Server::$host]],
         ]);
         $response->wait();
         $response->cancel();
@@ -141,8 +141,8 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
         $expected = microtime(true) + (100 / 1000);
         $response = $a([
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
-            'client'      => ['delay' => 100],
+            'headers' => ['host' => [Server::$host]],
+            'client' => ['delay' => 100],
         ]);
         $response->wait();
         $this->assertGreaterThanOrEqual($expected, microtime(true));
@@ -152,8 +152,8 @@ class CurlMultiHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $request = [
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
-            'future'      => true,
+            'headers' => ['host' => [Server::$host]],
+            'future' => true,
         ];
         Server::flush();
         Server::enqueue([['status' => 202]]);

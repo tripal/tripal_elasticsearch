@@ -96,7 +96,7 @@ class Server
             // Ensure that headers are all arrays
             if (isset($res['headers'])) {
                 foreach ($res['headers'] as &$h) {
-                    $h = (array) $h;
+                    $h = (array)$h;
                 }
                 unset($h);
             }
@@ -151,7 +151,7 @@ class Server
     {
         $response = self::send('GET', '/guzzle-server/perf', null, [
             'connect_timeout' => 1,
-            'timeout'         => 1
+            'timeout' => 1
         ]);
 
         return !isset($response['error']);
@@ -162,16 +162,17 @@ class Server
         $path,
         $body = null,
         array $client = []
-    ) {
+    )
+    {
         $handler = new StreamHandler();
 
         $request = [
-            'http_method'  => $method,
-            'uri'          => $path,
+            'http_method' => $method,
+            'uri' => $path,
             'request_port' => 8125,
-            'headers'      => ['host' => ['127.0.0.1:8125']],
-            'body'         => $body,
-            'client'       => $client,
+            'headers' => ['host' => ['127.0.0.1:8125']],
+            'body' => $body,
+            'client' => $client,
         ];
 
         if ($body) {

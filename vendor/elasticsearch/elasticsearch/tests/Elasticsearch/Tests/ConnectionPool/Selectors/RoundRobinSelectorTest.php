@@ -64,7 +64,7 @@ class RoundRobinSelectorTest extends \PHPUnit_Framework_TestCase
         foreach (range(0, 4) as $index) {
             $retConnection = $roundRobin->select($mockConnections);
 
-            $nextIndex = ($index % (count($mockConnections)-1)) + 1;
+            $nextIndex = ($index % (count($mockConnections) - 1)) + 1;
             $this->assertEquals($mockConnections[$nextIndex], $retConnection);
         }
 
@@ -75,7 +75,7 @@ class RoundRobinSelectorTest extends \PHPUnit_Framework_TestCase
         foreach (range(5, 15) as $index) {
             $retConnection = $roundRobin->select($mockConnections);
 
-            $nextIndex = ($index % (count($mockConnections)-1)) + 1;
+            $nextIndex = ($index % (count($mockConnections) - 1)) + 1;
             $this->assertEquals($mockConnections[$nextIndex], $retConnection);
         }
     }

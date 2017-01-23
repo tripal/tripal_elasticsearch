@@ -235,7 +235,8 @@ trait RejectTestTrait
             $d = new Deferred();
             $d->resolve();
 
-            return \React\Promise\resolve($d->promise()->then(function () {}))->then(
+            return \React\Promise\resolve($d->promise()->then(function () {
+            }))->then(
                 function () use ($exception) {
                     throw $exception;
                 }
@@ -272,7 +273,8 @@ trait RejectTestTrait
             ->with($this->identicalTo($exception));
 
         $adapter->promise()
-            ->always(function () {})
+            ->always(function () {
+            })
             ->then(null, $mock);
 
         $adapter->reject($exception);

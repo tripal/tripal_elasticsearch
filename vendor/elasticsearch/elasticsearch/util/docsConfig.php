@@ -19,12 +19,12 @@ $iterator = Finder::create()
     ->name("Client.php")
     ->name("ClientBuilder.php")
     ->notName("AbstractNamespace.php")
-    ->in(__DIR__.'/../src/');
+    ->in(__DIR__ . '/../src/');
 
 return new Sami($iterator, array(
-    'theme'                => 'asciidoc',
-    'template_dirs'        => array(__DIR__.'/docstheme/'),
-    'title'                => 'Elasticsearch-php',
-    'build_dir'            => __DIR__.'/../docs/build',
-    'cache_dir'            => __DIR__.'/cache/',
+    'theme' => 'asciidoc',
+    'template_dirs' => array(__DIR__ . '/docstheme/'),
+    'title' => 'Elasticsearch-php',
+    'build_dir' => __DIR__ . '/../docs/build',
+    'cache_dir' => __DIR__ . '/cache/',
 ));

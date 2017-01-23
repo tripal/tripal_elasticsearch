@@ -26,20 +26,20 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
     public function testAddOneHostThenGetConnection()
     {
         $mockConnection = m::mock('\Elasticsearch\Connections\Connection')
-                          ->shouldReceive('ping')
-                          ->andReturn(true)
-                          ->getMock()
-                          ->shouldReceive('isAlive')
-                          ->andReturn(true)
-                          ->getMock()
-                          ->shouldReceive('markDead')->once()->getMock();
+            ->shouldReceive('ping')
+            ->andReturn(true)
+            ->getMock()
+            ->shouldReceive('isAlive')
+            ->andReturn(true)
+            ->getMock()
+            ->shouldReceive('markDead')->once()->getMock();
 
         $connections = array($mockConnection);
 
         $selector = m::mock('\Elasticsearch\ConnectionPool\Selectors\RoundRobinSelector')
-                    ->shouldReceive('select')
-                    ->andReturn($connections[0])
-                    ->getMock();
+            ->shouldReceive('select')
+            ->andReturn($connections[0])
+            ->getMock();
 
         $connectionFactory = m::mock('\Elasticsearch\Connections\ConnectionFactory');
 
@@ -57,13 +57,13 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
 
         foreach (range(1, 10) as $index) {
             $mockConnection = m::mock('\Elasticsearch\Connections\Connection')
-                              ->shouldReceive('ping')
-                              ->andReturn(true)
-                              ->getMock()
-                              ->shouldReceive('isAlive')
-                              ->andReturn(true)
-                              ->getMock()
-                              ->shouldReceive('markDead')->once()->getMock();
+                ->shouldReceive('ping')
+                ->andReturn(true)
+                ->getMock()
+                ->shouldReceive('isAlive')
+                ->andReturn(true)
+                ->getMock()
+                ->shouldReceive('markDead')->once()->getMock();
 
             $connections[] = $mockConnection;
         }
@@ -92,23 +92,23 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
 
         foreach (range(1, 10) as $index) {
             $mockConnection = m::mock('\Elasticsearch\Connections\Connection')
-                              ->shouldReceive('ping')
-                              ->andReturn(false)
-                              ->getMock()
-                              ->shouldReceive('isAlive')
-                              ->andReturn(false)
-                              ->getMock()
-                              ->shouldReceive('markDead')->once()->getMock()
-                              ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
-                              ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
+                ->shouldReceive('ping')
+                ->andReturn(false)
+                ->getMock()
+                ->shouldReceive('isAlive')
+                ->andReturn(false)
+                ->getMock()
+                ->shouldReceive('markDead')->once()->getMock()
+                ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
+                ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
 
             $connections[] = $mockConnection;
         }
 
         $selector = m::mock('\Elasticsearch\ConnectionPool\Selectors\RoundRobinSelector')
-                    ->shouldReceive('select')
-                    ->andReturnValues($connections)
-                    ->getMock();
+            ->shouldReceive('select')
+            ->andReturnValues($connections)
+            ->getMock();
 
         $connectionFactory = m::mock('\Elasticsearch\Connections\ConnectionFactory');
 
@@ -124,36 +124,36 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
 
         foreach (range(1, 9) as $index) {
             $mockConnection = m::mock('\Elasticsearch\Connections\Connection')
-                              ->shouldReceive('ping')
-                              ->andReturn(false)
-                              ->getMock()
-                              ->shouldReceive('isAlive')
-                              ->andReturn(false)
-                              ->getMock()
-                              ->shouldReceive('markDead')->once()->getMock()
-                              ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
-                              ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
+                ->shouldReceive('ping')
+                ->andReturn(false)
+                ->getMock()
+                ->shouldReceive('isAlive')
+                ->andReturn(false)
+                ->getMock()
+                ->shouldReceive('markDead')->once()->getMock()
+                ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
+                ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
 
             $connections[] = $mockConnection;
         }
 
         $goodConnection = m::mock('\Elasticsearch\Connections\Connection')
-                          ->shouldReceive('ping')->once()
-                          ->andReturn(true)
-                          ->getMock()
-                          ->shouldReceive('isAlive')->once()
-                          ->andReturn(false)
-                          ->getMock()
-                          ->shouldReceive('markDead')->once()->getMock()
-                          ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
-                          ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
+            ->shouldReceive('ping')->once()
+            ->andReturn(true)
+            ->getMock()
+            ->shouldReceive('isAlive')->once()
+            ->andReturn(false)
+            ->getMock()
+            ->shouldReceive('markDead')->once()->getMock()
+            ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
+            ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
 
         $connections[] = $goodConnection;
 
         $selector = m::mock('\Elasticsearch\ConnectionPool\Selectors\RoundRobinSelector')
-                    ->shouldReceive('select')
-                    ->andReturnValues($connections)
-                    ->getMock();
+            ->shouldReceive('select')
+            ->andReturnValues($connections)
+            ->getMock();
 
         $connectionFactory = m::mock('\Elasticsearch\Connections\ConnectionFactory');
 
@@ -170,36 +170,36 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
 
         foreach (range(1, 9) as $index) {
             $mockConnection = m::mock('\Elasticsearch\Connections\Connection')
-                              ->shouldReceive('ping')
-                              ->andReturn(false)
-                              ->getMock()
-                              ->shouldReceive('isAlive')
-                              ->andReturn(false)
-                              ->getMock()
-                              ->shouldReceive('markDead')->once()->getMock()
-                              ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
-                              ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
+                ->shouldReceive('ping')
+                ->andReturn(false)
+                ->getMock()
+                ->shouldReceive('isAlive')
+                ->andReturn(false)
+                ->getMock()
+                ->shouldReceive('markDead')->once()->getMock()
+                ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
+                ->shouldReceive('getLastPing')->andReturn(time())->once()->getMock();
 
             $connections[] = $mockConnection;
         }
 
         $goodConnection = m::mock('\Elasticsearch\Connections\Connection')
-                          ->shouldReceive('ping')->once()
-                          ->andReturn(true)
-                          ->getMock()
-                          ->shouldReceive('isAlive')->once()
-                          ->andReturn(false)
-                          ->getMock()
-                          ->shouldReceive('markDead')->once()->getMock()
-                          ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
-                          ->shouldReceive('getLastPing')->andReturn(time()-10000)->once()->getMock();
+            ->shouldReceive('ping')->once()
+            ->andReturn(true)
+            ->getMock()
+            ->shouldReceive('isAlive')->once()
+            ->andReturn(false)
+            ->getMock()
+            ->shouldReceive('markDead')->once()->getMock()
+            ->shouldReceive('getPingFailures')->andReturn(0)->once()->getMock()
+            ->shouldReceive('getLastPing')->andReturn(time() - 10000)->once()->getMock();
 
         $connections[] = $goodConnection;
 
         $selector = m::mock('\Elasticsearch\ConnectionPool\Selectors\RoundRobinSelector')
-                    ->shouldReceive('select')
-                    ->andReturnValues($connections)
-                    ->getMock();
+            ->shouldReceive('select')
+            ->andReturnValues($connections)
+            ->getMock();
 
         $connectionFactory = m::mock('\Elasticsearch\Connections\ConnectionFactory');
 
@@ -210,7 +210,8 @@ class StaticConnectionPoolTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($goodConnection, $ret);
     }
 
-    public function testCustomConnectionPoolIT() {
+    public function testCustomConnectionPoolIT()
+    {
         $clientBuilder = \Elasticsearch\ClientBuilder::create();
         $clientBuilder->setHosts(['localhost:1']);
         $client = $clientBuilder

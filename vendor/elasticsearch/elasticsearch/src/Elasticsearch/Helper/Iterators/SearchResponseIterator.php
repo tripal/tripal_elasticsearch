@@ -15,7 +15,8 @@ use Iterator;
  * @link     http://elasticsearch.org
  * @see      Iterator
  */
-class SearchResponseIterator implements Iterator {
+class SearchResponseIterator implements Iterator
+{
 
     /**
      * @var Client
@@ -51,7 +52,7 @@ class SearchResponseIterator implements Iterator {
      * Constructor
      *
      * @param Client $client
-     * @param array  $params  Associative array of parameters
+     * @param array $params Associative array of parameters
      * @see   Client::search()
      */
     public function __construct(Client $client, array $search_params)
@@ -67,7 +68,8 @@ class SearchResponseIterator implements Iterator {
     /**
      * Destructor
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->clearScroll();
     }
 
@@ -132,7 +134,7 @@ class SearchResponseIterator implements Iterator {
         $this->current_scrolled_response = $this->client->scroll(
             array(
                 'scroll_id' => $this->scroll_id,
-                'scroll'    => $this->scroll_ttl
+                'scroll' => $this->scroll_ttl
             )
         );
         $this->scroll_id = $this->current_scrolled_response['_scroll_id'];

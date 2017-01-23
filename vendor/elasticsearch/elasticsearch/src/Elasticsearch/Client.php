@@ -160,8 +160,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Get $endpoint */
         $endpoint = $endpointBuilder('Get');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type);
+            ->setIndex($index)
+            ->setType($type);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -205,9 +205,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\Get $endpoint */
         $endpoint = $endpointBuilder('Get');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type)
-                 ->returnOnlySource();
+            ->setIndex($index)
+            ->setType($type)
+            ->returnOnlySource();
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -247,8 +247,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Delete $endpoint */
         $endpoint = $endpointBuilder('Delete');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type);
+            ->setIndex($index)
+            ->setType($type);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -283,8 +283,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\DeleteByQuery $endpoint */
         $endpoint = $endpointBuilder('DeleteByQuery');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -337,8 +337,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Count $endpoint */
         $endpoint = $endpointBuilder('Count');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -383,9 +383,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\CountPercolate $endpoint */
         $endpoint = $endpointBuilder('CountPercolate');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setID($id)
-                 ->setBody($body);
+            ->setType($type)
+            ->setID($id)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -433,9 +433,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\Percolate $endpoint */
         $endpoint = $endpointBuilder('Percolate');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setID($id)
-                 ->setBody($body);
+            ->setType($type)
+            ->setID($id)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -469,8 +469,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\MPercolate $endpoint */
         $endpoint = $endpointBuilder('MPercolate');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -521,12 +521,12 @@ class Client
         /** @var \Elasticsearch\Endpoints\TermVectors $endpoint */
         $endpoint = $endpointBuilder('TermVectors');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setID($id)
-                 ->setBody($body);
+            ->setType($type)
+            ->setID($id)
+            ->setBody($body);
         $endpoint->setParams($params);
         if ($useDeprecated) {
-           $endpoint->useDeprecated();
+            $endpoint->useDeprecated();
         }
         $response = $endpoint->performRequest();
 
@@ -605,8 +605,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\MTermVectors $endpoint */
         $endpoint = $endpointBuilder('MTermVectors');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -646,8 +646,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Exists $endpoint */
         $endpoint = $endpointBuilder('Exists');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type);
+            ->setIndex($index)
+            ->setType($type);
         $endpoint->setParams($params);
 
         return BooleanRequestWrapper::performRequest($endpoint);
@@ -699,9 +699,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\Mlt $endpoint */
         $endpoint = $endpointBuilder('Mlt');
         $endpoint->setID($id)
-                ->setIndex($index)
-                ->setType($type)
-                ->setBody($body);
+            ->setIndex($index)
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -742,8 +742,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\MGet $endpoint */
         $endpoint = $endpointBuilder('MGet');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -776,8 +776,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\MSearch $endpoint */
         $endpoint = $endpointBuilder('MSearch');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -820,10 +820,10 @@ class Client
         /** @var \Elasticsearch\Endpoints\Index $endpoint */
         $endpoint = $endpointBuilder('Index');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body)
-                 ->createIfAbsent();
+            ->setIndex($index)
+            ->setType($type)
+            ->setBody($body)
+            ->createIfAbsent();
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -858,8 +858,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Bulk $endpoint */
         $endpoint = $endpointBuilder('Bulk');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -904,9 +904,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\Index $endpoint */
         $endpoint = $endpointBuilder('Index');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setIndex($index)
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -945,7 +945,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\Suggest $endpoint */
         $endpoint = $endpointBuilder('Suggest');
         $endpoint->setIndex($index)
-                 ->setBody($body);
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -999,9 +999,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\Explain $endpoint */
         $endpoint = $endpointBuilder('Explain');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setIndex($index)
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1085,8 +1085,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Search $endpoint */
         $endpoint = $endpointBuilder('Search');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1156,8 +1156,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\SearchExists $endpoint */
         $endpoint = $endpointBuilder('SearchExists');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1196,7 +1196,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\SearchShards $endpoint */
         $endpoint = $endpointBuilder('SearchShards');
         $endpoint->setIndex($index)
-                 ->setType($type);
+            ->setType($type);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1239,8 +1239,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\SearchTemplate $endpoint */
         $endpoint = $endpointBuilder('SearchTemplate');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1269,7 +1269,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\Scroll $endpoint */
         $endpoint = $endpointBuilder('Scroll');
         $endpoint->setScrollId($scrollID)
-                 ->setBody($body);
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1299,8 +1299,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Scroll $endpoint */
         $endpoint = $endpointBuilder('Scroll');
         $endpoint->setScrollId($scrollID)
-                 ->setBody($body)
-                 ->setClearScroll(true);
+            ->setBody($body)
+            ->setClearScroll(true);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1354,9 +1354,9 @@ class Client
         /** @var \Elasticsearch\Endpoints\Update $endpoint */
         $endpoint = $endpointBuilder('Update');
         $endpoint->setID($id)
-                 ->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setIndex($index)
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1384,7 +1384,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\Script\Get $endpoint */
         $endpoint = $endpointBuilder('Script\Get');
         $endpoint->setID($id)
-                 ->setLang($lang);
+            ->setLang($lang);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1412,7 +1412,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\Script\Delete $endpoint */
         $endpoint = $endpointBuilder('Script\Delete');
         $endpoint->setID($id)
-                 ->setLang($lang);
+            ->setLang($lang);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1443,8 +1443,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\Script\Put $endpoint */
         $endpoint = $endpointBuilder('Script\Put');
         $endpoint->setID($id)
-                 ->setLang($lang)
-                 ->setBody($body);
+            ->setLang($lang)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1523,7 +1523,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\Template\Put $endpoint */
         $endpoint = $endpointBuilder('Template\Put');
         $endpoint->setID($id)
-                 ->setBody($body);
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1561,7 +1561,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\FieldStats $endpoint */
         $endpoint = $endpointBuilder('FieldStats');
         $endpoint->setIndex($index)
-                 ->setBody($body);
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1681,8 +1681,8 @@ class Client
         /** @var \Elasticsearch\Endpoints\UpdateByQuery $endpoint */
         $endpoint = $endpointBuilder('UpdateByQuery');
         $endpoint->setIndex($index)
-                 ->setType($type)
-                 ->setBody($body);
+            ->setType($type)
+            ->setBody($body);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 
@@ -1708,7 +1708,7 @@ class Client
         /** @var \Elasticsearch\Endpoints\RenderSearchTemplate $endpoint */
         $endpoint = $endpointBuilder('RenderSearchTemplate');
         $endpoint->setBody($body)
-                 ->setID($id);
+            ->setID($id);
         $endpoint->setParams($params);
         $response = $endpoint->performRequest();
 

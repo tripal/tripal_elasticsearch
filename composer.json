@@ -1,5 +1,5 @@
 {
-    "require": {
-        "elasticsearch/elasticsearch": "~2.0@beta"
-    }
+  "require": {
+    "elasticsearch/elasticsearch": "~2.0@beta"
+  }
 }

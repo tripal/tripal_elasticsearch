@@ -189,7 +189,8 @@ trait ResolveTestTrait
             ->with($this->identicalTo($value));
 
         $adapter->promise()
-            ->always(function () {})
+            ->always(function () {
+            })
             ->then($mock);
 
         $adapter->resolve($value);

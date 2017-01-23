@@ -13,8 +13,8 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $response = $handler([
             'http_method' => 'GET',
-            'uri'         => '/',
-            'headers'     => [
+            'uri' => '/',
+            'headers' => [
                 'host' => [Server::$host],
                 'Foo' => ['Bar'],
             ],
@@ -39,8 +39,8 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $result = $handler([
             'http_method' => 'GET',
-            'headers'     => ['host' => ['localhost:123']],
-            'client'      => ['timeout' => 0.01],
+            'headers' => ['host' => ['localhost:123']],
+            'client' => ['timeout' => 0.01],
         ]);
         $this->assertInstanceOf(
             'GuzzleHttp\Ring\Future\CompletedFutureArray',
@@ -60,7 +60,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $result = $handler([
             'http_method' => 'GET',
-            'url'         => 'ftp://localhost:123',
+            'url' => 'ftp://localhost:123',
         ]);
         $this->assertArrayHasKey('error', $result);
         $this->assertContains(
@@ -74,15 +74,15 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $this->queueRes();
         $handler = new StreamHandler();
         $response = $handler([
-            'http_method'  => 'PUT',
-            'uri'          => '/foo',
+            'http_method' => 'PUT',
+            'uri' => '/foo',
             'query_string' => 'baz=bar',
-            'headers'      => [
+            'headers' => [
                 'host' => [Server::$host],
-                'Foo'  => ['Bar'],
+                'Foo' => ['Bar'],
             ],
-            'body'         => 'test',
-            'client'       => ['stream' => true],
+            'body' => 'test',
+            'client' => ['stream' => true],
         ]);
 
         $this->assertEquals(200, $response['status']);
@@ -108,8 +108,8 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $response = $handler([
             'http_method' => 'GET',
-            'uri'         => '/',
-            'headers'     => ['host' => [Server::$host]],
+            'uri' => '/',
+            'headers' => ['host' => [Server::$host]],
         ]);
         $body = $response['body'];
         $this->assertEquals('php://temp', stream_get_meta_data($body)['uri']);
@@ -173,9 +173,9 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $response = $handler([
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
-            'uri'         => '/',
-            'client'      => ['decode_content' => true],
+            'headers' => ['host' => [Server::$host]],
+            'uri' => '/',
+            'client' => ['decode_content' => true],
         ]);
         $this->assertEquals('test', Core::body($response));
     }
@@ -190,7 +190,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
                 'reason' => 'OK',
                 'headers' => [
                     'Content-Encoding' => ['gzip'],
-                    'Content-Length'   => [strlen($content)],
+                    'Content-Length' => [strlen($content)],
                 ],
                 'body' => $content,
             ],
@@ -199,9 +199,9 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $response = $handler([
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
-            'uri'         => '/',
-            'client'      => ['stream' => true, 'decode_content' => false],
+            'headers' => ['host' => [Server::$host]],
+            'uri' => '/',
+            'client' => ['stream' => true, 'decode_content' => false],
         ]);
         $this->assertSame($content, Core::body($response));
     }
@@ -212,9 +212,9 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $handler = new StreamHandler();
         $handler([
             'http_method' => 'GET',
-            'uri'         => '/',
-            'headers'     => ['host' => [Server::$host]],
-            'version'     => 1.0,
+            'uri' => '/',
+            'headers' => ['host' => [Server::$host]],
+            'version' => 1.0,
         ]);
 
         $this->assertEquals(1.0, Server::received()[0]['version']);
@@ -227,9 +227,9 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $opts['stream'] = true;
         return $handler([
             'http_method' => 'GET',
-            'uri'         => '/',
-            'headers'     => ['host' => [Server::$host]],
-            'client'      => $opts,
+            'uri' => '/',
+            'headers' => ['host' => [Server::$host]],
+            'client' => $opts,
         ]);
     }
 
@@ -252,7 +252,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $res = $this->getSendResult(['verify' => '/does/not/exist']);
         $this->assertContains(
             'SSL CA bundle not found: /does/not/exist',
-            (string) $res['error']
+            (string)$res['error']
         );
     }
 
@@ -267,7 +267,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $res = $this->getSendResult(['cert' => '/does/not/exist']);
         $this->assertContains(
             'SSL certificate not found: /does/not/exist',
-            (string) $res['error']
+            (string)$res['error']
         );
     }
 
@@ -298,7 +298,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $res = $this->getSendResult(['verify' => 10]);
         $this->assertContains(
             'Invalid verify request option',
-            (string) $res['error']
+            (string)$res['error']
         );
     }
 
@@ -329,7 +329,9 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $this->queueRes();
         $buffer = fopen('php://temp', 'r+');
         $this->getSendResult([
-            'progress' => function () use (&$called) { $called = true; },
+            'progress' => function () use (&$called) {
+                $called = true;
+            },
             'debug' => $buffer,
         ]);
         fseek($buffer, 0);
@@ -360,7 +362,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $this->queueRes();
         $buffer = fopen('php://memory', 'w+');
         $this->getSendResult([
-            'debug'    => $buffer,
+            'debug' => $buffer,
             'progress' => function () use (&$called) {
                 $called[] = func_get_args();
             },
@@ -410,7 +412,7 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
         $res = $this->getSendResult(['stream_context' => 'foo']);
         $this->assertContains(
             'stream_context must be an array',
-            (string) $res['error']
+            (string)$res['error']
         );
     }
 
@@ -462,11 +464,11 @@ class StreamHandlerTest extends \PHPUnit_Framework_TestCase
 
         $request = [
             'http_method' => 'PUT',
-            'headers'     => [
-                'Host'   => [Server::$host],
+            'headers' => [
+                'Host' => [Server::$host],
                 'Expect' => ['100-Continue'],
             ],
-            'body'        => 'test',
+            'body' => 'test',
         ];
 
         $handler = new StreamHandler();

@@ -1,5 +1,6 @@
 <?php
 namespace GuzzleHttp\Stream;
+
 use GuzzleHttp\Stream\Exception\CannotAttachException;
 
 /**
@@ -17,9 +18,13 @@ class NullStream implements StreamInterface
         return '';
     }
 
-    public function close() {}
+    public function close()
+    {
+    }
 
-    public function detach() {}
+    public function detach()
+    {
+    }
 
     public function attach($stream)
     {

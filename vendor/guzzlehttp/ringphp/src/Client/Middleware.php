@@ -17,14 +17,15 @@ class Middleware
      * are automatically converted to synchronous responses and block.
      *
      * @param callable $default Handler used for non-streaming responses
-     * @param callable $future  Handler used for future responses
+     * @param callable $future Handler used for future responses
      *
      * @return callable Returns the composed handler.
      */
     public static function wrapFuture(
         callable $default,
         callable $future
-    ) {
+    )
+    {
         return function (array $request) use ($default, $future) {
             return empty($request['client']['future'])
                 ? $default($request)
@@ -40,7 +41,7 @@ class Middleware
      * performance benefits of curl while still supporting true streaming
      * through the StreamHandler.
      *
-     * @param callable $default   Handler used for non-streaming responses
+     * @param callable $default Handler used for non-streaming responses
      * @param callable $streaming Handler used for streaming responses
      *
      * @return callable Returns the composed handler.
@@ -48,7 +49,8 @@ class Middleware
     public static function wrapStreaming(
         callable $default,
         callable $streaming
-    ) {
+    )
+    {
         return function (array $request) use ($default, $streaming) {
             return empty($request['client']['stream'])
                 ? $default($request)

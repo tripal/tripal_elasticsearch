@@ -36,6 +36,6 @@ class NoSeekStreamTest extends \PHPUnit_Framework_TestCase
         $s2 = Stream::factory('bar');
         $wrapped = new NoSeekStream($s1);
         $wrapped->attach($s2->detach());
-        $this->assertEquals('bar', (string) $wrapped);
+        $this->assertEquals('bar', (string)$wrapped);
     }
 }

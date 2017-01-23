@@ -22,7 +22,7 @@ class AsyncVsSyncIndexingEvent extends AthleticEvent
         $this->client = $client = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->build();
 
         $this->setupClient = $client = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->build();
-        $indexParams['index']  = 'benchmarking_index';
+        $indexParams['index'] = 'benchmarking_index';
         $indexParams['body']['test']['_all']['enabled'] = false;
         $indexParams['body']['test']['properties']['testField'] = array(
             'type' => 'string',
@@ -33,24 +33,24 @@ class AsyncVsSyncIndexingEvent extends AthleticEvent
         $this->setupClient->indices()->create($indexParams);
 
         $this->document = array();
-        $this->document['body']  = array('testField' => 'abc');
+        $this->document['body'] = array('testField' => 'abc');
         $this->document['index'] = 'benchmarking_index';
-        $this->document['type']  = 'test';
+        $this->document['type'] = 'test';
 
         $this->mediumDocument = array();
         $this->mediumDocument['body']['testField'] = str_repeat('a', 1000);
-        $this->mediumDocument['index']             = 'benchmarking_index';
-        $this->mediumDocument['type']              = 'test';
+        $this->mediumDocument['index'] = 'benchmarking_index';
+        $this->mediumDocument['type'] = 'test';
 
         $this->largeDocument = array();
         $this->largeDocument['body']['testField'] = str_repeat('a', 5000);
-        $this->largeDocument['index']             = 'benchmarking_index';
-        $this->largeDocument['type']              = 'test';
+        $this->largeDocument['index'] = 'benchmarking_index';
+        $this->largeDocument['type'] = 'test';
     }
 
     protected function classTearDown()
     {
-        $indexParams['index']  = 'benchmarking_index';
+        $indexParams['index'] = 'benchmarking_index';
         $this->setupClient->indices()->delete($indexParams);
     }
 

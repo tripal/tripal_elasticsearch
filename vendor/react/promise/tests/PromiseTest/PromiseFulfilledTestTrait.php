@@ -261,7 +261,8 @@ trait PromiseFulfilledTestTrait
 
         $adapter->resolve($value);
         $adapter->promise()
-            ->always(function () {})
+            ->always(function () {
+            })
             ->then($mock);
     }
 

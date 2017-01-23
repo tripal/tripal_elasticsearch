@@ -72,16 +72,16 @@ class Connection implements ConnectionInterface
      */
     protected $connectionParams;
 
-    /** @var bool  */
+    /** @var bool */
     protected $isAlive = false;
 
-    /** @var float  */
+    /** @var float */
     private $pingTimeout = 1;    //TODO expose this
 
-    /** @var int  */
+    /** @var int */
     private $lastPing = 0;
 
-    /** @var int  */
+    /** @var int */
     private $failedPings = 0;
 
     private $lastRequest = array();
@@ -93,7 +93,7 @@ class Connection implements ConnectionInterface
      * @param array $hostDetails
      * @param array $connectionParams Array of connection-specific parameters
      * @param \Elasticsearch\Serializers\SerializerInterface $serializer
-     * @param \Psr\Log\LoggerInterface $log              Logger object
+     * @param \Psr\Log\LoggerInterface $log Logger object
      * @param \Psr\Log\LoggerInterface $trace
      */
     public function __construct($handler, $hostDetails, $connectionParams,
@@ -109,20 +109,20 @@ class Connection implements ConnectionInterface
 
         if (isset($hostDetails['user']) && isset($hostDetails['pass'])) {
             $connectionParams['client']['curl'][CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
-            $connectionParams['client']['curl'][CURLOPT_USERPWD] = $hostDetails['user'].':'.$hostDetails['pass'];
+            $connectionParams['client']['curl'][CURLOPT_USERPWD] = $hostDetails['user'] . ':' . $hostDetails['pass'];
         }
 
-        $host = $hostDetails['host'].':'.$hostDetails['port'];
+        $host = $hostDetails['host'] . ':' . $hostDetails['port'];
         $path = null;
         if (isset($hostDetails['path']) === true) {
             $path = $hostDetails['path'];
         }
-        $this->host             = $host;
-        $this->path             = $path;
-        $this->log              = $log;
-        $this->trace            = $trace;
+        $this->host = $host;
+        $this->path = $path;
+        $this->log = $log;
+        $this->trace = $trace;
         $this->connectionParams = $connectionParams;
-        $this->serializer       = $serializer;
+        $this->serializer = $serializer;
 
         $this->handler = $this->wrapHandler($handler, $log, $trace);
     }
@@ -144,11 +144,11 @@ class Connection implements ConnectionInterface
 
         $request = [
             'http_method' => $method,
-            'scheme'      => $this->transportSchema,
-            'uri'         => $this->getURI($uri, $params),
-            'body'        => $body,
-            'headers'     => [
-                'host'  => [$this->host]
+            'scheme' => $this->transportSchema,
+            'uri' => $this->getURI($uri, $params),
+            'body' => $body,
+            'headers' => [
+                'host' => [$this->host]
             ]
 
         ];
@@ -181,7 +181,7 @@ class Connection implements ConnectionInterface
             $this->lastRequest['request'] = $request;
 
             // Send the request using the wrapped handler.
-            $response =  Core::proxy($handler($request), function ($response) use ($connection, $transport, $logger, $tracer, $request, $options) {
+            $response = Core::proxy($handler($request), function ($response) use ($connection, $transport, $logger, $tracer, $request, $options) {
 
                 $this->lastRequest['response'] = $response;
 
@@ -319,7 +319,7 @@ class Connection implements ConnectionInterface
      * @param string $method
      * @param string $fullURI
      * @param string $body
-     * @param array  $headers
+     * @param array $headers
      * @param string $statusCode
      * @param string $response
      * @param string $duration
@@ -332,11 +332,11 @@ class Connection implements ConnectionInterface
         $this->log->info(
             'Request Success:',
             array(
-                'method'    => $method,
-                'uri'       => $fullURI,
-                'headers'   => $headers,
+                'method' => $method,
+                'uri' => $fullURI,
+                'headers' => $headers,
                 'HTTP code' => $statusCode,
-                'duration'  => $duration,
+                'duration' => $duration,
             )
         );
         $this->log->debug('Response', array($response));
@@ -347,11 +347,11 @@ class Connection implements ConnectionInterface
         $this->trace->debug(
             'Response:',
             array(
-                'response'  => $response,
-                'method'    => $method,
-                'uri'       => $fullURI,
+                'response' => $response,
+                'method' => $method,
+                'uri' => $fullURI,
                 'HTTP code' => $statusCode,
-                'duration'  => $duration,
+                'duration' => $duration,
             )
         );
     }
@@ -376,12 +376,12 @@ class Connection implements ConnectionInterface
         $this->log->warning(
             'Request Failure:',
             array(
-                'method'    => $method,
-                'uri'       => $fullURI,
-                'headers'   => $headers,
+                'method' => $method,
+                'uri' => $fullURI,
+                'headers' => $headers,
                 'HTTP code' => $statusCode,
-                'duration'  => $duration,
-                'error'     => $exception->getMessage(),
+                'duration' => $duration,
+                'error' => $exception->getMessage(),
             )
         );
         $this->log->warning('Response', array($response));
@@ -392,11 +392,11 @@ class Connection implements ConnectionInterface
         $this->trace->debug(
             'Response:',
             array(
-                'response'  => $response,
-                'method'    => $method,
-                'uri'       => $fullURI,
+                'response' => $response,
+                'method' => $method,
+                'uri' => $fullURI,
                 'HTTP code' => $statusCode,
-                'duration'  => $duration,
+                'duration' => $duration,
             )
         );
     }
@@ -523,8 +523,8 @@ class Connection implements ConnectionInterface
      * Construct a string cURL command
      *
      * @param string $method HTTP method
-     * @param string $uri    Full URI of request
-     * @param string $body   Request body
+     * @param string $uri Full URI of request
+     * @param string $body Request body
      *
      * @return string
      */
@@ -573,8 +573,8 @@ class Connection implements ConnectionInterface
         } elseif ($statusCode === 409) {
             $exception = new Conflict409Exception($responseBody, $statusCode);
         } elseif ($statusCode === 400 && strpos($responseBody, 'script_lang not supported') !== false) {
-            $exception = new ScriptLangNotSupportedException($responseBody. $statusCode);
-        } elseif ($statusCode === 408 ) {
+            $exception = new ScriptLangNotSupportedException($responseBody . $statusCode);
+        } elseif ($statusCode === 408) {
             $exception = new RequestTimeout408Exception($responseBody, $statusCode);
         }
 
@@ -606,7 +606,7 @@ class Connection implements ConnectionInterface
         /** @var \Exception $exception */
         $exception = $this->tryDeserialize500Error($response);
 
-        $exceptionText = "[$statusCode Server Exception] ".$exception->getMessage();
+        $exceptionText = "[$statusCode Server Exception] " . $exception->getMessage();
         $this->log->error($exceptionText);
         $this->log->error($exception->getTraceAsString());
 
@@ -636,15 +636,18 @@ class Connection implements ConnectionInterface
         throw $exception;
     }
 
-    private function tryDeserialize400Error($response) {
+    private function tryDeserialize400Error($response)
+    {
         return $this->tryDeserializeError($response, 'Elasticsearch\Common\Exceptions\BadRequest400Exception');
     }
 
-    private function tryDeserialize500Error($response) {
+    private function tryDeserialize500Error($response)
+    {
         return $this->tryDeserializeError($response, 'Elasticsearch\Common\Exceptions\ServerErrorResponseException');
     }
 
-    private function tryDeserializeError($response, $errorClass) {
+    private function tryDeserializeError($response, $errorClass)
+    {
         $error = $this->serializer->deserialize($response['body'], $response['transfer_stats']);
         if (is_array($error) === true) {
             // 2.0 structured exceptions

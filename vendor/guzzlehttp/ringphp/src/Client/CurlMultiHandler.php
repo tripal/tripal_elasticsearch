@@ -81,15 +81,15 @@ class CurlMultiHandler
         $factory = $this->factory;
         $result = $factory($request);
         $entry = [
-            'request'  => $request,
+            'request' => $request,
             'response' => [],
-            'handle'   => $result[0],
-            'headers'  => &$result[1],
-            'body'     => $result[2],
+            'handle' => $result[0],
+            'headers' => &$result[1],
+            'body' => $result[2],
             'deferred' => new Deferred(),
         ];
 
-        $id = (int) $result[0];
+        $id = (int)$result[0];
 
         $future = new FutureArray(
             $entry['deferred']->promise(),
@@ -145,7 +145,7 @@ class CurlMultiHandler
 
     private function addRequest(array &$entry)
     {
-        $id = (int) $entry['handle'];
+        $id = (int)$entry['handle'];
         $this->handles[$id] = $entry;
 
         // If the request is a delay, then add the reques to the curl multi
@@ -218,7 +218,7 @@ class CurlMultiHandler
     private function processMessages()
     {
         while ($done = curl_multi_info_read($this->_mh)) {
-            $id = (int) $done['handle'];
+            $id = (int)$done['handle'];
 
             if (!isset($this->handles[$id])) {
                 // Probably was cancelled.

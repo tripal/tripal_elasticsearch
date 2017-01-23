@@ -12,9 +12,9 @@ $counter = 0;
 
 function getApiPath()
 {
-    $path = dirname(__FILE__).'/elasticsearch/rest-api-spec/api';
+    $path = dirname(__FILE__) . '/elasticsearch/rest-api-spec/api';
     if (file_exists($path) !== true) {
-        $path = dirname(__FILE__).'/elasticsearch/rest-api-spec/src/main/resources/rest-api-spec/api';
+        $path = dirname(__FILE__) . '/elasticsearch/rest-api-spec/src/main/resources/rest-api-spec/api';
     }
     return $path;
 }
@@ -60,10 +60,10 @@ function processURLPaths($data)
 
         if ($duplicate !== true) {
             $final[] = array(
-                'path'   => $path,
+                'path' => $path,
                 'parsedPath' => $parsedPath,
                 'params' => $params,
-                'count'  => $count
+                'count' => $count
             );
         }
     }
@@ -77,12 +77,12 @@ function processURLPaths($data)
     */
 
     usort($final, function ($a, $b) {
-            if ($a['count'] == $b['count']) {
-                return 0;
-            }
+        if ($a['count'] == $b['count']) {
+            return 0;
+        }
 
-            return ($a['count'] > $b['count']) ? -1 : 1;
-        });
+        return ($a['count'] > $b['count']) ? -1 : 1;
+    });
 
     return $final;
 }
@@ -142,7 +142,7 @@ function generateTemplate($path, $template)
         return;
     }
 
-    $path = getApiPath().DIRECTORY_SEPARATOR.$path;
+    $path = getApiPath() . DIRECTORY_SEPARATOR . $path;
     $json = file_get_contents($path);
     $data = json_decode($json, true);
 
@@ -166,44 +166,44 @@ function generateTemplate($path, $template)
         'update_by_query',
     );
 
-    if (strpos($namespace[count($namespace)-1], '_')) {
-        $temp = explode('_', $namespace[count($namespace)-1]);
+    if (strpos($namespace[count($namespace) - 1], '_')) {
+        $temp = explode('_', $namespace[count($namespace) - 1]);
 
-        if (array_search($temp[0], $underscoreNamespace) !== false && array_search($namespace[count($namespace)-1], $exceptions) === false) {
-            $namespace[count($namespace)-1] = $temp[1];
+        if (array_search($temp[0], $underscoreNamespace) !== false && array_search($namespace[count($namespace) - 1], $exceptions) === false) {
+            $namespace[count($namespace) - 1] = $temp[1];
             $namespace[] = $temp[0];
         } else {
-            $namespace[count($namespace)-1] = str_replace('_', '', $namespace[count($namespace)-1]);
+            $namespace[count($namespace) - 1] = str_replace('_', '', $namespace[count($namespace) - 1]);
         }
     }
 
     $data['url']['processed'] = processURLPaths($data);
-    $data['url']['default'] = getDefaultPath($data['url']['processed'][count($data['url']['processed'])-1]);
+    $data['url']['default'] = getDefaultPath($data['url']['processed'][count($data['url']['processed']) - 1]);
 
     $renderVars = array(
-        'json'      => $json,
-        'data'      => $data,
+        'json' => $json,
+        'data' => $data,
         'namespace' => $namespace,
-        'className' => ucfirst($namespace[count($namespace)-1]),
+        'className' => ucfirst($namespace[count($namespace) - 1]),
     );
 
     $ret = $template->render($renderVars);
 
-    $dir = __DIR__.'/output/'.implode('/', array_map('ucfirst', array_splice($namespace, 0, count($namespace)-1)));
+    $dir = __DIR__ . '/output/' . implode('/', array_map('ucfirst', array_splice($namespace, 0, count($namespace) - 1)));
 
     if (substr($dir, -1) !== '/') {
         $dir .= '/';
     }
     if (!file_exists($dir)) {
-        echo 'making dir: '.$dir."\n\n";
+        echo 'making dir: ' . $dir . "\n\n";
         $oldumask = umask(0);
         mkdir($dir, 0777, true);
         umask($oldumask);
     }
 
-    echo $dir."\n\n";
-    $path = $dir.$renderVars['className'].'.php';
-    echo $path."\n\n";
+    echo $dir . "\n\n";
+    $path = $dir . $renderVars['className'] . '.php';
+    echo $path . "\n\n";
 
     file_put_contents($path, $ret);
 }

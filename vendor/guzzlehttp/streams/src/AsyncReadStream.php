@@ -58,9 +58,9 @@ class AsyncReadStream implements StreamInterface
      * - size: (int) The expected size in bytes of the data that will be read
      *   (if known up-front).
      *
-     * @param StreamInterface $buffer   Buffer that contains the data that has
+     * @param StreamInterface $buffer Buffer that contains the data that has
      *                                  been read by the event loop.
-     * @param array           $config   Associative array of options.
+     * @param array $config Associative array of options.
      *
      * @throws \InvalidArgumentException if the buffer is not readable and
      *                                   writable.
@@ -68,7 +68,8 @@ class AsyncReadStream implements StreamInterface
     public function __construct(
         StreamInterface $buffer,
         array $config = []
-    ) {
+    )
+    {
         if (!$buffer->isReadable() || !$buffer->isWritable()) {
             throw new \InvalidArgumentException(
                 'Buffer must be readable and writable'

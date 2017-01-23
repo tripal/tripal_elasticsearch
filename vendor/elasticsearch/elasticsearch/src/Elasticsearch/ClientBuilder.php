@@ -30,7 +30,7 @@ use Monolog\Processor\IntrospectionProcessor;
  * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
  * @link     http://elasticsearch.org
-  */
+ */
 class ClientBuilder
 {
     /** @var Transport */
@@ -76,10 +76,10 @@ class ClientBuilder
     /** @var bool */
     private $sniffOnStart = false;
 
-    /** @var null|array  */
+    /** @var null|array */
     private $sslCert = null;
 
-    /** @var null|array  */
+    /** @var null|array */
     private $sslKey = null;
 
     /** @var null|bool|string */
@@ -109,7 +109,8 @@ class ClientBuilder
      * @throws Common\Exceptions\RuntimeException
      * @return \Elasticsearch\Client
      */
-    public static function fromConfig($config, $quiet = false) {
+    public static function fromConfig($config, $quiet = false)
+    {
         $builder = new self;
         foreach ($config as $key => $value) {
             $method = "set$key";
@@ -136,7 +137,7 @@ class ClientBuilder
     {
         $future = null;
         if (extension_loaded('curl')) {
-            $config = array_merge([ 'mh' => curl_multi_init() ], $multiParams);
+            $config = array_merge(['mh' => curl_multi_init()], $multiParams);
             if (function_exists('curl_reset')) {
                 $default = new CurlHandler($singleParams);
                 $future = new CurlMultiHandler($config);
@@ -158,7 +159,7 @@ class ClientBuilder
     public static function multiHandler($params = [])
     {
         if (function_exists('curl_multi_init')) {
-            return new CurlMultiHandler(array_merge([ 'mh' => curl_multi_init() ], $params));
+            return new CurlMultiHandler(array_merge(['mh' => curl_multi_init()], $params));
         } else {
             throw new \RuntimeException('CurlMulti handler requires cURL.');
         }
@@ -183,8 +184,8 @@ class ClientBuilder
      */
     public static function defaultLogger($path, $level = Logger::WARNING)
     {
-        $log       = new Logger('log');
-        $handler   = new StreamHandler($path, $level);
+        $log = new Logger('log');
+        $handler = new StreamHandler($path, $level);
         $log->pushHandler($handler);
 
         return $log;
@@ -546,8 +547,8 @@ class ClientBuilder
             } else if (is_array($host)) {
                 $host = $this->normalizeExtendedHost($host);
             } else {
-                $this->logger->error("Could not parse host: ".print_r($host, true));
-                throw new RuntimeException("Could not parse host: ".print_r($host, true));
+                $this->logger->error("Could not parse host: " . print_r($host, true));
+                throw new RuntimeException("Could not parse host: " . print_r($host, true));
             }
             $connections[] = $this->connectionFactory->create($host);
         }
@@ -559,10 +560,11 @@ class ClientBuilder
      * @param $host
      * @return array
      */
-    private function normalizeExtendedHost($host) {
+    private function normalizeExtendedHost($host)
+    {
         if (isset($host['host']) === false) {
-            $this->logger->error("Required 'host' was not defined in extended format: ".print_r($host, true));
-            throw new RuntimeException("Required 'host' was not defined in extended format: ".print_r($host, true));
+            $this->logger->error("Required 'host' was not defined in extended format: " . print_r($host, true));
+            throw new RuntimeException("Required 'host' was not defined in extended format: " . print_r($host, true));
         }
 
         if (isset($host['scheme']) === false) {

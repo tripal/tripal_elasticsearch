@@ -20,8 +20,8 @@ class Deferred implements PromisorInterface
         if (null === $this->promise) {
             $this->promise = new Promise(function ($resolve, $reject, $notify) {
                 $this->resolveCallback = $resolve;
-                $this->rejectCallback  = $reject;
-                $this->notifyCallback  = $notify;
+                $this->rejectCallback = $reject;
+                $this->notifyCallback = $notify;
             }, $this->canceller);
         }
 

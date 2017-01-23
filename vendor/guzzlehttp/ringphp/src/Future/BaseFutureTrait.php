@@ -29,11 +29,11 @@ trait BaseFutureTrait
 
     /**
      * @param PromiseInterface $promise Promise to shadow with the future.
-     * @param callable         $wait    Function that blocks until the deferred
+     * @param callable $wait Function that blocks until the deferred
      *                                  computation has been resolved. This
      *                                  function MUST resolve the deferred value
      *                                  associated with the supplied promise.
-     * @param callable         $cancel  If possible and reasonable, provide a
+     * @param callable $cancel If possible and reasonable, provide a
      *                                  function that can be used to cancel the
      *                                  future from completing.
      */
@@ -41,7 +41,8 @@ trait BaseFutureTrait
         PromiseInterface $promise,
         callable $wait = null,
         callable $cancel = null
-    ) {
+    )
+    {
         $this->wrappedPromise = $promise;
         $this->waitfn = $wait;
         $this->cancelfn = $cancel;
@@ -75,7 +76,8 @@ trait BaseFutureTrait
         callable $onFulfilled = null,
         callable $onRejected = null,
         callable $onProgress = null
-    ) {
+    )
+    {
         return $this->wrappedPromise->then($onFulfilled, $onRejected, $onProgress);
     }
 

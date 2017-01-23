@@ -12,7 +12,7 @@ class StaticConnectionPool extends AbstractConnectionPool implements ConnectionP
     /**
      * @var int
      */
-    private $pingTimeout    = 60;
+    private $pingTimeout = 60;
 
     /**
      * @var int

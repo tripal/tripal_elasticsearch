@@ -16,8 +16,8 @@ class CurlFactory
      * Creates a cURL handle, header resource, and body resource based on a
      * transaction.
      *
-     * @param array         $request Request hash
-     * @param null|resource $handle  Optionally provide a curl handle to modify
+     * @param array $request Request hash
+     * @param null|resource $handle Optionally provide a curl handle to modify
      *
      * @return array Returns an array of the curl handle, headers array, and
      *               response body handle.
@@ -57,11 +57,11 @@ class CurlFactory
     /**
      * Creates a response hash from a cURL result.
      *
-     * @param callable $handler  Handler that was used.
-     * @param array    $request  Request that sent.
-     * @param array    $response Response hash to update.
-     * @param array    $headers  Headers received during transfer.
-     * @param resource $body     Body fopen response.
+     * @param callable $handler Handler that was used.
+     * @param array $request Request that sent.
+     * @param array $response Response hash to update.
+     * @param array $headers Headers received during transfer.
+     * @param resource $body Body fopen response.
      *
      * @return array
      */
@@ -71,7 +71,8 @@ class CurlFactory
         array $response,
         array $headers,
         $body
-    ) {
+    )
+    {
         if (isset($response['transfer_stats']['url'])) {
             $response['effective_url'] = $response['transfer_stats']['url'];
         }
@@ -81,7 +82,7 @@ class CurlFactory
             $headerList = Core::headersFromLines($headers);
             $response['headers'] = $headerList;
             $response['version'] = isset($startLine[0]) ? substr($startLine[0], 5) : null;
-            $response['status'] = isset($startLine[1]) ? (int) $startLine[1] : null;
+            $response['status'] = isset($startLine[1]) ? (int)$startLine[1] : null;
             $response['reason'] = isset($startLine[2]) ? $startLine[2] : null;
             $response['body'] = $body;
             Core::rewindBody($response);
@@ -96,13 +97,14 @@ class CurlFactory
         callable $handler,
         array $request,
         array $response
-    ) {
+    )
+    {
         static $connectionErrors = [
-            CURLE_OPERATION_TIMEOUTED  => true,
+            CURLE_OPERATION_TIMEOUTED => true,
             CURLE_COULDNT_RESOLVE_HOST => true,
-            CURLE_COULDNT_CONNECT      => true,
-            CURLE_SSL_CONNECT_ERROR    => true,
-            CURLE_GOT_NOTHING          => true,
+            CURLE_COULDNT_CONNECT => true,
+            CURLE_SSL_CONNECT_ERROR => true,
+            CURLE_GOT_NOTHING => true,
         ];
 
         // Retry when nothing is present or when curl failed to rewind.
@@ -122,16 +124,16 @@ class CurlFactory
                     : 'See http://curl.haxx.se/libcurl/c/libcurl-errors.html');
 
         $error = isset($response['curl']['errno'])
-            && isset($connectionErrors[$response['curl']['errno']])
+        && isset($connectionErrors[$response['curl']['errno']])
             ? new ConnectException($message)
             : new RingException($message);
 
         return $response + [
-            'status'  => null,
-            'reason'  => null,
-            'body'    => null,
+            'status' => null,
+            'reason' => null,
+            'body' => null,
             'headers' => [],
-            'error'   => $error,
+            'error' => $error,
         ];
     }
 
@@ -160,11 +162,11 @@ class CurlFactory
         $startingResponse = false;
 
         $options = [
-            '_headers'             => $request['headers'],
-            CURLOPT_CUSTOMREQUEST  => $request['http_method'],
-            CURLOPT_URL            => $url,
+            '_headers' => $request['headers'],
+            CURLOPT_CUSTOMREQUEST => $request['http_method'],
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => false,
-            CURLOPT_HEADER         => false,
+            CURLOPT_HEADER => false,
             CURLOPT_CONNECTTIMEOUT => 150,
             CURLOPT_HEADERFUNCTION => function ($ch, $h) use (&$headers, &$startingResponse) {
                 $value = trim($h);
@@ -226,7 +228,7 @@ class CurlFactory
     private function applyBody(array $request, array &$options)
     {
         $contentLength = Core::firstHeader($request, 'Content-Length');
-        $size = $contentLength !== null ? (int) $contentLength : null;
+        $size = $contentLength !== null ? (int)$contentLength : null;
 
         // Send the body as a string if the size is less than 1MB OR if the
         // [client][curl][body_as_string] request value is set.
@@ -265,7 +267,7 @@ class CurlFactory
 
         if ($body instanceof StreamInterface) {
             $options[CURLOPT_READFUNCTION] = function ($ch, $fd, $length) use ($body) {
-                return (string) $body->read($length);
+                return (string)$body->read($length);
             };
             if (!isset($options[CURLOPT_INFILESIZE])) {
                 if ($size = $body->getSize()) {
@@ -281,7 +283,7 @@ class CurlFactory
                     $buf .= $body->current();
                     $body->next();
                 }
-                $result = (string) substr($buf, 0, $length);
+                $result = (string)substr($buf, 0, $length);
                 $buf = substr($buf, $length);
                 return $result;
             };
@@ -310,7 +312,7 @@ class CurlFactory
      *
      * This method is only called when a  request has a 'curl' config setting.
      *
-     * @param array $config  Configuration array of custom curl option
+     * @param array $config Configuration array of custom curl option
      * @param array $options Array of existing curl options
      *
      * @return array Returns a new array of curl options
@@ -330,8 +332,8 @@ class CurlFactory
     /**
      * Remove a header from the options array.
      *
-     * @param string $name    Case-insensitive header to remove
-     * @param array  $options Array of options to modify
+     * @param string $name Case-insensitive header to remove
+     * @param array $options Array of options to modify
      */
     private function removeHeader($name, array &$options)
     {
@@ -353,160 +355,160 @@ class CurlFactory
     {
         foreach ($request['client'] as $key => $value) {
             switch ($key) {
-            // Violating PSR-4 to provide more room.
-            case 'verify':
+                // Violating PSR-4 to provide more room.
+                case 'verify':
 
-                if ($value === false) {
-                    unset($options[CURLOPT_CAINFO]);
-                    $options[CURLOPT_SSL_VERIFYHOST] = 0;
-                    $options[CURLOPT_SSL_VERIFYPEER] = false;
-                    continue;
-                }
+                    if ($value === false) {
+                        unset($options[CURLOPT_CAINFO]);
+                        $options[CURLOPT_SSL_VERIFYHOST] = 0;
+                        $options[CURLOPT_SSL_VERIFYPEER] = false;
+                        continue;
+                    }
 
-                $options[CURLOPT_SSL_VERIFYHOST] = 2;
-                $options[CURLOPT_SSL_VERIFYPEER] = true;
+                    $options[CURLOPT_SSL_VERIFYHOST] = 2;
+                    $options[CURLOPT_SSL_VERIFYPEER] = true;
 
-                if (is_string($value)) {
-                    $options[CURLOPT_CAINFO] = $value;
+                    if (is_string($value)) {
+                        $options[CURLOPT_CAINFO] = $value;
+                        if (!file_exists($value)) {
+                            throw new \InvalidArgumentException(
+                                "SSL CA bundle not found: $value"
+                            );
+                        }
+                    }
+                    break;
+
+                case 'decode_content':
+
+                    if ($value === false) {
+                        continue;
+                    }
+
+                    $accept = Core::firstHeader($request, 'Accept-Encoding');
+                    if ($accept) {
+                        $options[CURLOPT_ENCODING] = $accept;
+                    } else {
+                        $options[CURLOPT_ENCODING] = '';
+                        // Don't let curl send the header over the wire
+                        $options[CURLOPT_HTTPHEADER][] = 'Accept-Encoding:';
+                    }
+                    break;
+
+                case 'save_to':
+
+                    if (is_string($value)) {
+                        if (!is_dir(dirname($value))) {
+                            throw new \RuntimeException(sprintf(
+                                'Directory %s does not exist for save_to value of %s',
+                                dirname($value),
+                                $value
+                            ));
+                        }
+                        $value = new LazyOpenStream($value, 'w+');
+                    }
+
+                    if ($value instanceof StreamInterface) {
+                        $options[CURLOPT_WRITEFUNCTION] =
+                            function ($ch, $write) use ($value) {
+                                return $value->write($write);
+                            };
+                    } elseif (is_resource($value)) {
+                        $options[CURLOPT_FILE] = $value;
+                    } else {
+                        throw new \InvalidArgumentException('save_to must be a '
+                            . 'GuzzleHttp\Stream\StreamInterface or resource');
+                    }
+                    break;
+
+                case 'timeout':
+
+                    if (defined('CURLOPT_TIMEOUT_MS')) {
+                        $options[CURLOPT_TIMEOUT_MS] = $value * 1000;
+                    } else {
+                        $options[CURLOPT_TIMEOUT] = $value;
+                    }
+                    break;
+
+                case 'connect_timeout':
+
+                    if (defined('CURLOPT_CONNECTTIMEOUT_MS')) {
+                        $options[CURLOPT_CONNECTTIMEOUT_MS] = $value * 1000;
+                    } else {
+                        $options[CURLOPT_CONNECTTIMEOUT] = $value;
+                    }
+                    break;
+
+                case 'proxy':
+
+                    if (!is_array($value)) {
+                        $options[CURLOPT_PROXY] = $value;
+                    } elseif (isset($request['scheme'])) {
+                        $scheme = $request['scheme'];
+                        if (isset($value[$scheme])) {
+                            $options[CURLOPT_PROXY] = $value[$scheme];
+                        }
+                    }
+                    break;
+
+                case 'cert':
+
+                    if (is_array($value)) {
+                        $options[CURLOPT_SSLCERTPASSWD] = $value[1];
+                        $value = $value[0];
+                    }
+
                     if (!file_exists($value)) {
                         throw new \InvalidArgumentException(
-                            "SSL CA bundle not found: $value"
+                            "SSL certificate not found: {$value}"
                         );
                     }
-                }
-                break;
 
-            case 'decode_content':
+                    $options[CURLOPT_SSLCERT] = $value;
+                    break;
 
-                if ($value === false) {
-                    continue;
-                }
+                case 'ssl_key':
 
-                $accept = Core::firstHeader($request, 'Accept-Encoding');
-                if ($accept) {
-                    $options[CURLOPT_ENCODING] = $accept;
-                } else {
-                    $options[CURLOPT_ENCODING] = '';
-                    // Don't let curl send the header over the wire
-                    $options[CURLOPT_HTTPHEADER][] = 'Accept-Encoding:';
-                }
-                break;
-
-            case 'save_to':
-
-                if (is_string($value)) {
-                    if (!is_dir(dirname($value))) {
-                        throw new \RuntimeException(sprintf(
-                            'Directory %s does not exist for save_to value of %s',
-                            dirname($value),
-                            $value
-                        ));
+                    if (is_array($value)) {
+                        $options[CURLOPT_SSLKEYPASSWD] = $value[1];
+                        $value = $value[0];
                     }
-                    $value = new LazyOpenStream($value, 'w+');
-                }
 
-                if ($value instanceof StreamInterface) {
-                    $options[CURLOPT_WRITEFUNCTION] =
-                        function ($ch, $write) use ($value) {
-                            return $value->write($write);
+                    if (!file_exists($value)) {
+                        throw new \InvalidArgumentException(
+                            "SSL private key not found: {$value}"
+                        );
+                    }
+
+                    $options[CURLOPT_SSLKEY] = $value;
+                    break;
+
+                case 'progress':
+
+                    if (!is_callable($value)) {
+                        throw new \InvalidArgumentException(
+                            'progress client option must be callable'
+                        );
+                    }
+
+                    $options[CURLOPT_NOPROGRESS] = false;
+                    $options[CURLOPT_PROGRESSFUNCTION] =
+                        function () use ($value) {
+                            $args = func_get_args();
+                            // PHP 5.5 pushed the handle onto the start of the args
+                            if (is_resource($args[0])) {
+                                array_shift($args);
+                            }
+                            call_user_func_array($value, $args);
                         };
-                } elseif (is_resource($value)) {
-                    $options[CURLOPT_FILE] = $value;
-                } else {
-                    throw new \InvalidArgumentException('save_to must be a '
-                        . 'GuzzleHttp\Stream\StreamInterface or resource');
-                }
-                break;
+                    break;
 
-            case 'timeout':
+                case 'debug':
 
-                if (defined('CURLOPT_TIMEOUT_MS')) {
-                    $options[CURLOPT_TIMEOUT_MS] = $value * 1000;
-                } else {
-                    $options[CURLOPT_TIMEOUT] = $value;
-                }
-                break;
-
-            case 'connect_timeout':
-
-                if (defined('CURLOPT_CONNECTTIMEOUT_MS')) {
-                    $options[CURLOPT_CONNECTTIMEOUT_MS] = $value * 1000;
-                } else {
-                    $options[CURLOPT_CONNECTTIMEOUT] = $value;
-                }
-                break;
-
-            case 'proxy':
-
-                if (!is_array($value)) {
-                    $options[CURLOPT_PROXY] = $value;
-                } elseif (isset($request['scheme'])) {
-                    $scheme = $request['scheme'];
-                    if (isset($value[$scheme])) {
-                        $options[CURLOPT_PROXY] = $value[$scheme];
+                    if ($value) {
+                        $options[CURLOPT_STDERR] = Core::getDebugResource($value);
+                        $options[CURLOPT_VERBOSE] = true;
                     }
-                }
-                break;
-
-            case 'cert':
-
-                if (is_array($value)) {
-                    $options[CURLOPT_SSLCERTPASSWD] = $value[1];
-                    $value = $value[0];
-                }
-
-                if (!file_exists($value)) {
-                    throw new \InvalidArgumentException(
-                        "SSL certificate not found: {$value}"
-                    );
-                }
-
-                $options[CURLOPT_SSLCERT] = $value;
-                break;
-
-            case 'ssl_key':
-
-                if (is_array($value)) {
-                    $options[CURLOPT_SSLKEYPASSWD] = $value[1];
-                    $value = $value[0];
-                }
-
-                if (!file_exists($value)) {
-                    throw new \InvalidArgumentException(
-                        "SSL private key not found: {$value}"
-                    );
-                }
-
-                $options[CURLOPT_SSLKEY] = $value;
-                break;
-
-            case 'progress':
-
-                if (!is_callable($value)) {
-                    throw new \InvalidArgumentException(
-                        'progress client option must be callable'
-                    );
-                }
-
-                $options[CURLOPT_NOPROGRESS] = false;
-                $options[CURLOPT_PROGRESSFUNCTION] =
-                    function () use ($value) {
-                        $args = func_get_args();
-                        // PHP 5.5 pushed the handle onto the start of the args
-                        if (is_resource($args[0])) {
-                            array_shift($args);
-                        }
-                        call_user_func_array($value, $args);
-                    };
-                break;
-
-            case 'debug':
-
-                if ($value) {
-                    $options[CURLOPT_STDERR] = Core::getDebugResource($value);
-                    $options[CURLOPT_VERBOSE] = true;
-                }
-                break;
+                    break;
             }
         }
     }
@@ -524,7 +526,8 @@ class CurlFactory
         callable $handler,
         array $request,
         array $response
-    ) {
+    )
+    {
         // If there is no body, then there is some other kind of issue. This
         // is weird and should probably never happen.
         if (!isset($request['body'])) {

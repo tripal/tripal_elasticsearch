@@ -8,9 +8,9 @@ class FunctionCheckTypehintTest extends TestCase
     public function shouldAcceptClosureCallbackWithTypehint()
     {
         $this->assertTrue(_checkTypehint(function (\InvalidArgumentException $e) {
-                }, new \InvalidArgumentException()));
+        }, new \InvalidArgumentException()));
         $this->assertfalse(_checkTypehint(function (\InvalidArgumentException $e) {
-                }, new \Exception()));
+        }, new \Exception()));
     }
 
     /** @test */

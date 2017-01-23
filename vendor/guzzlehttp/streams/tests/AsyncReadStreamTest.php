@@ -16,7 +16,9 @@ class AsyncReadStreamTest extends \PHPUnit_Framework_TestCase
     {
         new AsyncReadStream(FnStream::decorate(
             Stream::factory(),
-            ['isReadable' => function () { return false; }]
+            ['isReadable' => function () {
+                return false;
+            }]
         ));
     }
 
@@ -28,14 +30,17 @@ class AsyncReadStreamTest extends \PHPUnit_Framework_TestCase
     {
         new AsyncReadStream(FnStream::decorate(
             Stream::factory(),
-            ['isWritable' => function () { return false; }]
+            ['isWritable' => function () {
+                return false;
+            }]
         ));
     }
 
     public function testValidatesHwmMetadata()
     {
         $a = new AsyncReadStream(Stream::factory(), [
-            'drain' => function() {}
+            'drain' => function () {
+            }
         ]);
         $this->assertNull($this->readAttribute($a, 'drain'));
     }
@@ -62,9 +67,11 @@ class AsyncReadStreamTest extends \PHPUnit_Framework_TestCase
     {
         $buffer = new BufferStream();
         $a = new AsyncReadStream($buffer, [
-            'size'  => 10,
-            'drain' => function () {},
-            'pump'  => function () {},
+            'size' => 10,
+            'drain' => function () {
+            },
+            'pump' => function () {
+            },
         ]);
         $this->assertSame($buffer, $this->readAttribute($a, 'stream'));
         $this->assertTrue(is_callable($this->readAttribute($a, 'drain')));
@@ -168,7 +175,7 @@ class AsyncReadStreamTest extends \PHPUnit_Framework_TestCase
         $b = new BufferStream();
         list($buffer, $async) = AsyncReadStream::create([
             'buffer' => $b,
-            'write'  => function (BufferStream $buf, $data) use (&$c, $b) {
+            'write' => function (BufferStream $buf, $data) use (&$c, $b) {
                 $this->assertSame($buf, $b);
                 $this->assertEquals('foo', $data);
                 $c++;
@@ -181,6 +188,6 @@ class AsyncReadStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $c);
         $this->assertEquals(3, $buffer->write('foo'));
         $this->assertEquals(2, $c);
-        $this->assertEquals('foofoo', (string) $buffer);
+        $this->assertEquals('foofoo', (string)$buffer);
     }
 }

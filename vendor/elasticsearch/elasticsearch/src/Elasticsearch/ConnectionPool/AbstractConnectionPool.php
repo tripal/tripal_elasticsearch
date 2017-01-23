@@ -43,16 +43,16 @@ abstract class AbstractConnectionPool implements ConnectionPoolInterface
     /** @var array */
     protected $connectionPoolParams;
 
-    /** @var \Elasticsearch\Connections\ConnectionFactory  */
+    /** @var \Elasticsearch\Connections\ConnectionFactory */
     protected $connectionFactory;
 
     /**
      * Constructor
      *
-     * @param ConnectionInterface[]          $connections          The Connections to choose from
-     * @param SelectorInterface              $selector             A Selector instance to perform the selection logic for the available connections
-     * @param ConnectionFactoryInterface     $factory              ConnectionFactory instance
-     * @param array                          $connectionPoolParams
+     * @param ConnectionInterface[] $connections The Connections to choose from
+     * @param SelectorInterface $selector A Selector instance to perform the selection logic for the available connections
+     * @param ConnectionFactoryInterface $factory ConnectionFactory instance
+     * @param array $connectionPoolParams
      */
     public function __construct($connections, SelectorInterface $selector, ConnectionFactoryInterface $factory, $connectionPoolParams)
     {
@@ -64,15 +64,16 @@ abstract class AbstractConnectionPool implements ConnectionPoolInterface
         }
 
         if (isset($connectionPoolParams['randomizeHosts']) === true
-            && $connectionPoolParams['randomizeHosts'] === true) {
+            && $connectionPoolParams['randomizeHosts'] === true
+        ) {
             shuffle($connections);
         }
 
-        $this->connections          = $connections;
-        $this->seedConnections      = $connections;
-        $this->selector             = $selector;
+        $this->connections = $connections;
+        $this->seedConnections = $connections;
+        $this->selector = $selector;
         $this->connectionPoolParams = $connectionPoolParams;
-        $this->connectionFactory    = $factory;
+        $this->connectionFactory = $factory;
     }
 
     /**

@@ -16,7 +16,7 @@ class Utils
      * error handler that checks for errors and throws an exception instead.
      *
      * @param string $filename File to open
-     * @param string $mode     Mode used to open the file
+     * @param string $mode Mode used to open the file
      *
      * @return resource
      * @throws \RuntimeException if the file cannot be opened
@@ -49,7 +49,7 @@ class Utils
      * bytes have been read.
      *
      * @param StreamInterface $stream Stream to read
-     * @param int             $maxLen Maximum number of bytes to read. Pass -1
+     * @param int $maxLen Maximum number of bytes to read. Pass -1
      *                                to read the entire stream.
      * @return string
      */
@@ -86,15 +86,16 @@ class Utils
      * of bytes have been read.
      *
      * @param StreamInterface $source Stream to read from
-     * @param StreamInterface $dest   Stream to write to
-     * @param int             $maxLen Maximum number of bytes to read. Pass -1
+     * @param StreamInterface $dest Stream to write to
+     * @param int $maxLen Maximum number of bytes to read. Pass -1
      *                                to read the entire stream.
      */
     public static function copyToStream(
         StreamInterface $source,
         StreamInterface $dest,
         $maxLen = -1
-    ) {
+    )
+    {
         if ($maxLen === -1) {
             while (!$source->eof()) {
                 if (!$dest->write($source->read(1048576))) {
@@ -121,9 +122,9 @@ class Utils
     /**
      * Calculate a hash of a Stream
      *
-     * @param StreamInterface $stream    Stream to calculate the hash for
-     * @param string          $algo      Hash algorithm (e.g. md5, crc32, etc)
-     * @param bool            $rawOutput Whether or not to use raw output
+     * @param StreamInterface $stream Stream to calculate the hash for
+     * @param string $algo Hash algorithm (e.g. md5, crc32, etc)
+     * @param bool $rawOutput Whether or not to use raw output
      *
      * @return string Returns the hash of the stream
      * @throws SeekException
@@ -132,7 +133,8 @@ class Utils
         StreamInterface $stream,
         $algo,
         $rawOutput = false
-    ) {
+    )
+    {
         $pos = $stream->tell();
 
         if ($pos > 0 && !$stream->seek(0)) {
@@ -144,7 +146,7 @@ class Utils
             hash_update($ctx, $stream->read(1048576));
         }
 
-        $out = hash_final($ctx, (bool) $rawOutput);
+        $out = hash_final($ctx, (bool)$rawOutput);
         $stream->seek($pos);
 
         return $out;
@@ -153,8 +155,8 @@ class Utils
     /**
      * Read a line from the stream up to the maximum allowed buffer length
      *
-     * @param StreamInterface $stream    Stream to read from
-     * @param int             $maxLength Maximum buffer length
+     * @param StreamInterface $stream Stream to read from
+     * @param int $maxLength Maximum buffer length
      *
      * @return string|bool
      */
@@ -181,7 +183,7 @@ class Utils
      * Alias of GuzzleHttp\Stream\Stream::factory.
      *
      * @param mixed $resource Resource to create
-     * @param array $options  Associative array of stream options defined in
+     * @param array $options Associative array of stream options defined in
      *                        {@see \GuzzleHttp\Stream\Stream::__construct}
      *
      * @return StreamInterface

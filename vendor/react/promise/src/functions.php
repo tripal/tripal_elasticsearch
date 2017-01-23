@@ -100,9 +100,9 @@ function some($promisesOrValues, $howMany)
                 }
 
                 $toResolve = $howMany;
-                $toReject  = ($len - $toResolve) + 1;
-                $values    = [];
-                $reasons   = [];
+                $toReject = ($len - $toResolve) + 1;
+                $values = [];
+                $reasons = [];
 
                 foreach ($array as $i => $promiseOrValue) {
                     $fulfiller = function ($val) use ($i, &$values, &$toResolve, $toReject, $resolve) {
@@ -152,7 +152,7 @@ function map($promisesOrValues, callable $mapFunc)
                 }
 
                 $toResolve = count($array);
-                $values    = [];
+                $values = [];
 
                 foreach ($array as $i => $promiseOrValue) {
                     $cancellationQueue->enqueue($promiseOrValue);

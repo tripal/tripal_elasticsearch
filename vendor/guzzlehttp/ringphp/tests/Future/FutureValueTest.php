@@ -35,8 +35,11 @@ class FutureValueTest extends \PHPUnit_Framework_TestCase
     {
         $f = new FutureValue(
             (new Deferred())->promise(),
-            function () {},
-            function () { return true; }
+            function () {
+            },
+            function () {
+                return true;
+            }
         );
         $f->cancel();
         $f->wait();
@@ -51,7 +54,7 @@ class FutureValueTest extends \PHPUnit_Framework_TestCase
         $deferred = new Deferred();
         $f = new FutureValue(
             $deferred->promise(),
-            function () use(&$called) {
+            function () use (&$called) {
                 $called = true;
             }
         );
@@ -69,7 +72,7 @@ class FutureValueTest extends \PHPUnit_Framework_TestCase
         $deferred = new Deferred();
         $f = new FutureValue(
             $deferred->promise(),
-            function () use(&$called) {
+            function () use (&$called) {
                 $called = true;
             }
         );
@@ -88,7 +91,8 @@ class FutureValueTest extends \PHPUnit_Framework_TestCase
         try {
             $f->wait();
             $this->fail('did not throw');
-        } catch (CancelledFutureAccessException $e) {}
+        } catch (CancelledFutureAccessException $e) {
+        }
     }
 
     /**

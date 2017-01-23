@@ -52,9 +52,9 @@ class NodesNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Nodes\Stats $endpoint */
         $endpoint = $endpointBuilder('Nodes\Stats');
         $endpoint->setNodeID($nodeID)
-                 ->setMetric($metric)
-                 ->setIndexMetric($index_metric)
-                 ->setParams($params);
+            ->setMetric($metric)
+            ->setIndexMetric($index_metric)
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);

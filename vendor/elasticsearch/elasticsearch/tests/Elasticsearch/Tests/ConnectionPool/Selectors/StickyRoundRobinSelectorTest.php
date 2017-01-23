@@ -28,7 +28,7 @@ class StickyRoundRobinSelectorTest extends \PHPUnit_Framework_TestCase
 
         $mockConnections = array();
         $mockConnections[] = m::mock('\Elasticsearch\Connections\GuzzleConnection')
-                             ->shouldReceive('isAlive')->times(16)->andReturn(true)->getMock();
+            ->shouldReceive('isAlive')->times(16)->andReturn(true)->getMock();
 
         foreach (range(0, 9) as $index) {
             $mockConnections[] = m::mock('\Elasticsearch\Connections\GuzzleConnection');
@@ -47,10 +47,10 @@ class StickyRoundRobinSelectorTest extends \PHPUnit_Framework_TestCase
 
         $mockConnections = array();
         $mockConnections[] = m::mock('\Elasticsearch\Connections\GuzzleConnection')
-                             ->shouldReceive('isAlive')->once()->andReturn(false)->getMock();
+            ->shouldReceive('isAlive')->once()->andReturn(false)->getMock();
 
         $mockConnections[] = m::mock('\Elasticsearch\Connections\GuzzleConnection')
-                             ->shouldReceive('isAlive')->times(15)->andReturn(true)->getMock();
+            ->shouldReceive('isAlive')->times(15)->andReturn(true)->getMock();
 
         foreach (range(0, 8) as $index) {
             $mockConnections[] = m::mock('\Elasticsearch\Connections\GuzzleConnection');

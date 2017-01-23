@@ -18,7 +18,7 @@ class DroppingStreamTest extends \PHPUnit_Framework_TestCase
         $drop->write('12345678910');
         $this->assertEquals(5, $stream->getSize());
         $this->assertEquals(5, $drop->getSize());
-        $this->assertEquals('12345', (string) $drop);
+        $this->assertEquals('12345', (string)$drop);
         $this->assertEquals(0, $drop->getSize());
         $drop->write('hello');
         $this->assertFalse($drop->write('test'));

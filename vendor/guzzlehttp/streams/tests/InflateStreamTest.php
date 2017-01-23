@@ -11,6 +11,6 @@ class InflateStreamtest extends \PHPUnit_Framework_TestCase
         $content = gzencode('test');
         $a = Stream::factory($content);
         $b = new InflateStream($a);
-        $this->assertEquals('test', (string) $b);
+        $this->assertEquals('test', (string)$b);
     }
 }

@@ -35,7 +35,7 @@ class Transport
     /** @var  Connection */
     public $lastConnection;
 
-    /** @var int  */
+    /** @var int */
     public $retries;
 
     /**
@@ -45,13 +45,13 @@ class Transport
      * @param $retries
      * @param bool $sniffOnStart
      * @param ConnectionPool\AbstractConnectionPool $connectionPool
-     * @param \Psr\Log\LoggerInterface $log    Monolog logger object
+     * @param \Psr\Log\LoggerInterface $log Monolog logger object
      */
     public function __construct($retries, $sniffOnStart = false, AbstractConnectionPool $connectionPool, LoggerInterface $log)
     {
-        $this->log            = $log;
+        $this->log = $log;
         $this->connectionPool = $connectionPool;
-        $this->retries        = $retries;
+        $this->retries = $retries;
 
         if ($sniffOnStart === true) {
             $this->log->notice('Sniff on Start.');
@@ -74,10 +74,10 @@ class Transport
     /**
      * Perform a request to the Cluster
      *
-     * @param string $method     HTTP method to use
-     * @param string $uri        HTTP URI to send request to
-     * @param null $params     Optional query parameters
-     * @param null $body       Optional query body
+     * @param string $method HTTP method to use
+     * @param string $uri HTTP URI to send request to
+     * @param null $params Optional query parameters
+     * @param null $body Optional query body
      * @param array $options
      *
      * @throws Common\Exceptions\NoNodesAvailableException|\Exception
@@ -86,14 +86,14 @@ class Transport
     public function performRequest($method, $uri, $params = null, $body = null, $options = [])
     {
         try {
-            $connection  = $this->getConnection();
+            $connection = $this->getConnection();
         } catch (Exceptions\NoNodesAvailableException $exception) {
             $this->log->critical('No alive nodes found in cluster');
             throw $exception;
         }
 
-        $response             = array();
-        $caughtException      = null;
+        $response = array();
+        $caughtException = null;
         $this->lastConnection = $connection;
 
         $future = $connection->performRequest(
@@ -106,7 +106,7 @@ class Transport
         );
 
         $future->promise()->then(
-            //onSuccess
+        //onSuccess
             function ($response) {
                 $this->retryAttempts = 0;
                 // Note, this could be a 4xx or 5xx error

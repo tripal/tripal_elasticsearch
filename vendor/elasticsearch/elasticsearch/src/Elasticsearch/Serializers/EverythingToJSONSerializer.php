@@ -34,7 +34,7 @@ class EverythingToJSONSerializer implements SerializerInterface
      * Deserialize JSON into an assoc array
      *
      * @param string $data JSON encoded string
-     * @param array  $headers Response headers
+     * @param array $headers Response headers
      *
      * @return array
      */

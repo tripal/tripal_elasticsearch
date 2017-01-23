@@ -71,7 +71,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
         $response = json_decode($response, true);
         YamlRunnerTest::$esVersion = $response['version']['number'];
-        echo "ES Version: ".YamlRunnerTest::$esVersion."\n";
+        echo "ES Version: " . YamlRunnerTest::$esVersion . "\n";
     }
 
     public function setUp()
@@ -79,7 +79,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         $this->yaml = new Parser();
         $uri = parse_url($host = YamlRunnerTest::getHostEnvVar());
 
-        $params['hosts'] = array($uri['host'].':'.$uri['port']);
+        $params['hosts'] = array($uri['host'] . ':' . $uri['port']);
         //$params['connectionParams']['timeout'] = 10000;
         //$params['logging'] = true;
         //$params['logLevel'] = \Psr\Log\LogLevel::DEBUG;
@@ -91,7 +91,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
     {
         echo "\n>>>CLEARING<<<\n";
         $host = YamlRunnerTest::getHostEnvVar();
-        $ch = curl_init($host."/*");
+        $ch = curl_init($host . "/*");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
@@ -99,7 +99,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         $response = curl_exec($ch);
         curl_close($ch);
 
-        $ch = curl_init($host."/_template/*");
+        $ch = curl_init($host . "/_template/*");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
@@ -119,19 +119,19 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
     private function assertTruthy($value, $settings)
     {
-        echo "\n         |assertTruthy($settings): ".json_encode($value)."\n";
+        echo "\n         |assertTruthy($settings): " . json_encode($value) . "\n";
         ob_flush();
         if (isset($value) === false || $value === 0 || $value === false || $value === null || $value === '') {
-            $this->fail("Value is not truthy: ".print_r($value, true));
+            $this->fail("Value is not truthy: " . print_r($value, true));
         }
     }
 
     private function assertFalsey($value, $settings)
     {
-        echo "\n         |assertFalsey($settings): ".json_encode($value)."\n";
+        echo "\n         |assertFalsey($settings): " . json_encode($value) . "\n";
         ob_flush();
         if (!(isset($value) === false || $value === 0 || $value === false || $value === null || $value === '')) {
-            $this->fail("Value is not falsey: ".print_r($value, true));
+            $this->fail("Value is not falsey: " . print_r($value, true));
         }
     }
 
@@ -140,7 +140,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         $pattern = trim($pattern);
 
         // PHP doesn't like unescaped forward slashes
-        $pattern = substr($pattern, 1, strlen($pattern)-2);
+        $pattern = substr($pattern, 1, strlen($pattern) - 2);
         $pattern = str_replace('/', '\/', $pattern);
         $pattern = "/$pattern/mx";
         echo "\n         |> actual: $actual\n";
@@ -178,9 +178,9 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
     public static function provider()
     {
         // Dirty workaround for the path change in Core
-        $path = dirname(__FILE__).'/../../../util/elasticsearch/rest-api-spec/test/';
+        $path = dirname(__FILE__) . '/../../../util/elasticsearch/rest-api-spec/test/';
         if (file_exists($path) !== true) {
-            $path = dirname(__FILE__).'/../../../util/elasticsearch/rest-api-spec/src/main/resources/rest-api-spec/test';
+            $path = dirname(__FILE__) . '/../../../util/elasticsearch/rest-api-spec/src/main/resources/rest-api-spec/test';
         }
 
         $files = array();
@@ -192,7 +192,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         foreach ($objects as $object) {
             /** @var FilesystemIterator $object */
             if ($object->isFile() === true && $object->getFilename() !== 'README.asciidoc' && $object->getFilename() !== 'TODO.txt') {
-                $path = $object->getPathInfo()->getRealPath()."/".$object->getBasename();
+                $path = $object->getPathInfo()->getRealPath() . "/" . $object->getBasename();
                 $files[] = array($path);
             }
         }
@@ -266,7 +266,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
             foreach ($yamlDocs as $doc) {
                 $ts = date('c');
-                echo "   ".key($doc['values'])." [$ts] - Future: false\n";
+                echo "   " . key($doc['values']) . " [$ts] - Future: false\n";
                 ob_flush();
 
                 $this->clearCluster();
@@ -335,7 +335,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
             foreach ($yamlDocs as $doc) {
                 $ts = date('c');
-                echo "   ".key($doc['values'])." [$ts] - Future: true\n";
+                echo "   " . key($doc['values']) . " [$ts] - Future: true\n";
 
                 if ($containsExist !== false) {
                     $this->markTestSkipped('Test contains `exist`, not easily tested in async. Skipping.');
@@ -431,10 +431,10 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
 
                     try {
-                        echo "         |".json_encode($hash)."\n";
+                        echo "         |" . json_encode($hash) . "\n";
                         ob_flush();
                         $response = $this->callMethod($method, $hash, $future);
-                        echo "         |".json_encode($response)."\n";
+                        echo "         |" . json_encode($response) . "\n";
                         ob_flush();
 
                         //$this->waitForYellow();
@@ -456,7 +456,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
                     } elseif (key($settings) === '$body') {
                         $actual = $response;
                     } else {
-                        $actual   = $this->getNestedVar($response, key($settings));
+                        $actual = $this->getNestedVar($response, key($settings));
                     }
 
                     $expected = YamlRunnerTest::replaceWithStash($expected, $stash);
@@ -464,7 +464,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
                     if ($actual != $expected) {
                         //Holy janky batman
                         if (is_array($actual) && count($actual) == 0) {
-                            $actual = (object) $actual;
+                            $actual = (object)$actual;
                         } else {
                             $actual = json_decode(json_encode($actual));
                         }
@@ -550,8 +550,9 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
                             $version[1] = PHP_INT_MAX;
                         }
                         if (version_compare(YamlRunnerTest::$esVersion, $version[0]) >= 0
-                            && version_compare($version[1], YamlRunnerTest::$esVersion) >= 0) {
-                            echo "Skipping: ".$settings['reason']."\n";
+                            && version_compare($version[1], YamlRunnerTest::$esVersion) >= 0
+                        ) {
+                            echo "Skipping: " . $settings['reason'] . "\n";
 
                             if ($key == 'setup') {
                                 throw new SetupSkipException();
@@ -575,7 +576,8 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    private function handleCaughtException(\Exception $exception, $expectedError) {
+    private function handleCaughtException(\Exception $exception, $expectedError)
+    {
         $reflect = new ReflectionClass($exception);
         $caught = $reflect->getShortName();
         $passed = false;
@@ -621,7 +623,8 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    private static function checkExceptionRegex($expectedError, \Exception $exception) {
+    private static function checkExceptionRegex($expectedError, \Exception $exception)
+    {
         return isset($expectedError) === true && preg_match("/$expectedError/", $exception->getMessage()) === 1;
     }
 
@@ -715,7 +718,7 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
     {
         $isMatch = preg_match($this->getTimestampRegex(), $document, $matches);
         if ($isMatch) {
-            $newTime = new \DateTime($matches[0].'GMT');
+            $newTime = new \DateTime($matches[0] . 'GMT');
             $document = preg_replace($this->getTimestampRegex(), $newTime->format('U') * 1000, $document);
         }
 

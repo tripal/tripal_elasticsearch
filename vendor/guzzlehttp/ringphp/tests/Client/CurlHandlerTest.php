@@ -50,9 +50,9 @@ class CurlHandlerTest extends \PHPUnit_Framework_TestCase
     {
         Server::flush();
         $response = [
-            'status'  => 200,
+            'status' => 200,
             'headers' => ['Content-Length' => [4]],
-            'body'    => 'test',
+            'body' => 'test',
         ];
 
         Server::enqueue([$response, $response, $response, $response]);
@@ -62,16 +62,16 @@ class CurlHandlerTest extends \PHPUnit_Framework_TestCase
             if (++$calls < 4) {
                 $a([
                     'http_method' => 'GET',
-                    'headers'     => ['host' => [Server::$host]],
-                    'client'      => ['progress' => $fn],
+                    'headers' => ['host' => [Server::$host]],
+                    'client' => ['progress' => $fn],
                 ]);
             }
         };
 
         $request = [
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
-            'client'      => [
+            'headers' => ['host' => [Server::$host]],
+            'client' => [
                 'progress' => $fn,
             ],
         ];
@@ -88,7 +88,7 @@ class CurlHandlerTest extends \PHPUnit_Framework_TestCase
         $a = new CurlHandler();
         $request = [
             'http_method' => 'GET',
-            'headers'     => ['host' => [Server::$host]],
+            'headers' => ['host' => [Server::$host]],
         ];
         $a($request);
         $a($request);

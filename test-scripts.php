@@ -1,10 +1,10 @@
 <?php
 
-require_once drupal_get_path('module', 'tripal_elasticsearch').'/vendor/autoload.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/vendor/autoload.php';
 
-  $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
-  $mappings = $client->indices()->getMapping();
-  var_dump($mappings);
+$client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+$mappings = $client->indices()->getMapping();
+var_dump($mappings);
 /*
   $sql = "SELECT nid FROM node WHERE status=1 ORDER BY nid LIMIT 1;";
   $result = db_query($sql)->fetchAll();

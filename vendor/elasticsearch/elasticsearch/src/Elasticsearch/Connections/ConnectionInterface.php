@@ -24,8 +24,8 @@ interface ConnectionInterface
      * @param array $hostDetails
      * @param array $connectionParams connection-specific parameters
      * @param \Elasticsearch\Serializers\SerializerInterface $serializer
-     * @param \Psr\Log\LoggerInterface $log          Logger object
-     * @param \Psr\Log\LoggerInterface $trace        Logger object
+     * @param \Psr\Log\LoggerInterface $log Logger object
+     * @param \Psr\Log\LoggerInterface $trace Logger object
      */
     public function __construct($handler, $hostDetails, $connectionParams,
                                 SerializerInterface $serializer, LoggerInterface $log, LoggerInterface $trace);

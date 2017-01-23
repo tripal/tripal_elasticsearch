@@ -8,4 +8,8 @@ interface FutureArrayInterface extends
     FutureInterface,
     \ArrayAccess,
     \Countable,
-    \IteratorAggregate {};
+    \IteratorAggregate
+{
+}
+
+;

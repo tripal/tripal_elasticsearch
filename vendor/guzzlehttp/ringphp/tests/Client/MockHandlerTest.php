@@ -61,7 +61,8 @@ class MockHandlerTest extends \PHPUnit_Framework_TestCase
         $deferred = new Deferred();
         $future = new FutureArray(
             $deferred->promise(),
-            function () {},
+            function () {
+            },
             function () use (&$c) {
                 $c = true;
                 return true;

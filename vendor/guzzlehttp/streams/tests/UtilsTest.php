@@ -35,40 +35,46 @@ class UtilsTest extends \PHPUnit_Framework_TestCase
         $s1 = Stream::factory('foobaz');
         $s2 = Stream::factory('');
         Utils::copyToStream($s1, $s2);
-        $this->assertEquals('foobaz', (string) $s2);
+        $this->assertEquals('foobaz', (string)$s2);
         $s2 = Stream::factory('');
         $s1->seek(0);
         Utils::copyToStream($s1, $s2, 3);
-        $this->assertEquals('foo', (string) $s2);
+        $this->assertEquals('foo', (string)$s2);
         Utils::copyToStream($s1, $s2, 3);
-        $this->assertEquals('foobaz', (string) $s2);
+        $this->assertEquals('foobaz', (string)$s2);
     }
 
     public function testStopsCopyToStreamWhenWriteFails()
     {
         $s1 = Stream::factory('foobaz');
         $s2 = Stream::factory('');
-        $s2 = FnStream::decorate($s2, ['write' => function () { return 0; }]);
+        $s2 = FnStream::decorate($s2, ['write' => function () {
+            return 0;
+        }]);
         Utils::copyToStream($s1, $s2);
-        $this->assertEquals('', (string) $s2);
+        $this->assertEquals('', (string)$s2);
     }
 
     public function testStopsCopyToSteamWhenWriteFailsWithMaxLen()
     {
         $s1 = Stream::factory('foobaz');
         $s2 = Stream::factory('');
-        $s2 = FnStream::decorate($s2, ['write' => function () { return 0; }]);
+        $s2 = FnStream::decorate($s2, ['write' => function () {
+            return 0;
+        }]);
         Utils::copyToStream($s1, $s2, 10);
-        $this->assertEquals('', (string) $s2);
+        $this->assertEquals('', (string)$s2);
     }
 
     public function testStopsCopyToSteamWhenReadFailsWithMaxLen()
     {
         $s1 = Stream::factory('foobaz');
-        $s1 = FnStream::decorate($s1, ['read' => function () { return ''; }]);
+        $s1 = FnStream::decorate($s1, ['read' => function () {
+            return '';
+        }]);
         $s2 = Stream::factory('');
         Utils::copyToStream($s1, $s2, 10);
-        $this->assertEquals('', (string) $s2);
+        $this->assertEquals('', (string)$s2);
     }
 
     public function testReadsLines()
@@ -150,6 +156,6 @@ class UtilsTest extends \PHPUnit_Framework_TestCase
 
     public function testProxiesToFactory()
     {
-        $this->assertEquals('foo', (string) Utils::create('foo'));
+        $this->assertEquals('foo', (string)Utils::create('foo'));
     }
 }

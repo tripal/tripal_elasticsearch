@@ -10,7 +10,7 @@ class GetTableList
 {
     protected $public_schema = 'public';
 
-    protected $chado_schema  = 'chado';
+    protected $chado_schema = 'chado';
 
     public function get_chado_tables()
     {
@@ -66,8 +66,7 @@ class GetTableList
                 $field = $record->column_name;
                 $table_columns[$field] = $field;
             }
-        }
-        else {
+        } else {
             $query = db_query(
                 $sql_public_table,
                 array(':selected_table' => $table_name)

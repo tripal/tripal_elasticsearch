@@ -25,8 +25,8 @@ interface SerializerInterface
     /**
      * Deserialize json encoded string into an associative array
      *
-     * @param string $data    JSON encoded string
-     * @param array  $headers Response Headers
+     * @param string $data JSON encoded string
+     * @param array $headers Response Headers
      *
      * @return array
      */

@@ -34,8 +34,8 @@ class Core
      * This method searches through the "headers" key of a message for a header
      * using a case-insensitive search.
      *
-     * @param array  $message Request or response hash.
-     * @param string $header  Header to retrieve
+     * @param array $message Request or response hash.
+     * @param string $header Header to retrieve
      *
      * @return array
      */
@@ -61,8 +61,8 @@ class Core
      * using a case-insensitive search. The lines of the header are imploded
      * using commas into a single string return value.
      *
-     * @param array  $message Request or response hash.
-     * @param string $header  Header to retrieve
+     * @param array $message Request or response hash.
+     * @param string $header Header to retrieve
      *
      * @return string|null Returns the header string if found, or null if not.
      */
@@ -77,8 +77,8 @@ class Core
      * a header line contains multiple values separated by a comma, then this
      * function will return the first value in the list.
      *
-     * @param array  $message Request or response hash.
-     * @param string $header  Header to retrieve
+     * @param array $message Request or response hash.
+     * @param string $header Header to retrieve
      *
      * @return string|null Returns the value as a string if found.
      */
@@ -100,8 +100,8 @@ class Core
     /**
      * Returns true if a message has the provided case-insensitive header.
      *
-     * @param array  $message Request or response hash.
-     * @param string $header  Header to check
+     * @param array $message Request or response hash.
+     * @param string $header Header to check
      *
      * @return bool
      */
@@ -142,8 +142,8 @@ class Core
     /**
      * Removes a header from a message using a case-insensitive comparison.
      *
-     * @param array  $message Message that contains 'headers'
-     * @param string $header  Header to remove
+     * @param array $message Message that contains 'headers'
+     * @param string $header Header to remove
      *
      * @return array
      */
@@ -163,9 +163,9 @@ class Core
     /**
      * Replaces any existing case insensitive headers with the given value.
      *
-     * @param array  $message Message that contains 'headers'
-     * @param string $header  Header to set.
-     * @param array  $value   Value to set.
+     * @param array $message Message that contains 'headers'
+     * @param string $header Header to set.
+     * @param array $value Value to set.
      *
      * @return array
      */
@@ -230,7 +230,7 @@ class Core
         }
 
         if ($message['body'] instanceof StreamInterface) {
-            return (string) $message['body'];
+            return (string)$message['body'];
         }
 
         switch (gettype($message['body'])) {
@@ -242,7 +242,7 @@ class Core
                 if ($message['body'] instanceof \Iterator) {
                     return implode('', iterator_to_array($message['body']));
                 } elseif (method_exists($message['body'], '__toString')) {
-                    return (string) $message['body'];
+                    return (string)$message['body'];
                 }
             default:
                 throw new \InvalidArgumentException('Invalid request body: '
@@ -277,8 +277,8 @@ class Core
         }
 
         return is_string($message['body'])
-            || (is_object($message['body'])
-                && method_exists($message['body'], '__toString'));
+        || (is_object($message['body'])
+            && method_exists($message['body'], '__toString'));
     }
 
     /**
@@ -324,10 +324,10 @@ class Core
      * Returns a proxied future that modifies the dereferenced value of another
      * future using a promise.
      *
-     * @param FutureArrayInterface $future      Future to wrap with a new future
-     * @param callable    $onFulfilled Invoked when the future fulfilled
-     * @param callable    $onRejected  Invoked when the future rejected
-     * @param callable    $onProgress  Invoked when the future progresses
+     * @param FutureArrayInterface $future Future to wrap with a new future
+     * @param callable $onFulfilled Invoked when the future fulfilled
+     * @param callable $onRejected Invoked when the future rejected
+     * @param callable $onProgress Invoked when the future progresses
      *
      * @return FutureArray
      */
@@ -336,7 +336,8 @@ class Core
         callable $onFulfilled = null,
         callable $onRejected = null,
         callable $onProgress = null
-    ) {
+    )
+    {
         return new FutureArray(
             $future->then($onFulfilled, $onRejected, $onProgress),
             [$future, 'wait'],

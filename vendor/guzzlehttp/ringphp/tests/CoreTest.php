@@ -114,9 +114,9 @@ class CoreTest extends \PHPUnit_Framework_TestCase
     public function testCreatesUrl()
     {
         $req = [
-            'scheme'  => 'http',
+            'scheme' => 'http',
             'headers' => ['host' => ['foo.com']],
-            'uri'     => '/',
+            'uri' => '/',
         ];
 
         $this->assertEquals('http://foo.com/', Core::url($req));
@@ -134,9 +134,9 @@ class CoreTest extends \PHPUnit_Framework_TestCase
     public function testCreatesUrlWithQueryString()
     {
         $req = [
-            'scheme'       => 'http',
-            'headers'      => ['host' => ['foo.com']],
-            'uri'          => '/',
+            'scheme' => 'http',
+            'headers' => ['host' => ['foo.com']],
+            'uri' => '/',
             'query_string' => 'foo=baz',
         ];
 

@@ -44,11 +44,11 @@ class StreamHandler
         $this->lastHeaders = null;
         $parts = explode(' ', array_shift($hdrs), 3);
         $response = [
-            'version'        => substr($parts[0], 5),
-            'status'         => $parts[1],
-            'reason'         => isset($parts[2]) ? $parts[2] : null,
-            'headers'        => Core::headersFromLines($hdrs),
-            'effective_url'  => $url,
+            'version' => substr($parts[0], 5),
+            'status' => $parts[1],
+            'reason' => isset($parts[2]) ? $parts[2] : null,
+            'headers' => Core::headersFromLines($hdrs),
+            'effective_url' => $url,
         ];
 
         $stream = $this->checkDecode($request, $response, $stream);
@@ -84,7 +84,7 @@ class StreamHandler
     /**
      * Drains the stream into the "save_to" client option.
      *
-     * @param resource                        $stream
+     * @param resource $stream
      * @param string|resource|StreamInterface $dest
      *
      * @return Stream
@@ -118,7 +118,7 @@ class StreamHandler
     /**
      * Creates an error response for the given stream.
      *
-     * @param string        $url
+     * @param string $url
      * @param RingException $e
      *
      * @return array
@@ -136,11 +136,11 @@ class StreamHandler
         }
 
         return new CompletedFutureArray([
-            'status'        => null,
-            'body'          => null,
-            'headers'       => [],
+            'status' => null,
+            'body' => null,
+            'headers' => [],
             'effective_url' => $url,
-            'error'         => $e
+            'error' => $e
         ]);
     }
 
@@ -158,8 +158,8 @@ class StreamHandler
         set_error_handler(function ($_, $msg, $file, $line) use (&$errors) {
             $errors[] = [
                 'message' => $msg,
-                'file'    => $file,
-                'line'    => $line
+                'file' => $file,
+                'line' => $line
             ];
             return true;
         });
@@ -224,18 +224,18 @@ class StreamHandler
     {
         $headers = "";
         foreach ($request['headers'] as $name => $value) {
-            foreach ((array) $value as $val) {
+            foreach ((array)$value as $val) {
                 $headers .= "$name: $val\r\n";
             }
         }
 
         $context = [
             'http' => [
-                'method'           => $request['http_method'],
-                'header'           => $headers,
+                'method' => $request['http_method'],
+                'header' => $headers,
                 'protocol_version' => isset($request['version']) ? $request['version'] : 1.1,
-                'ignore_errors'    => true,
-                'follow_location'  => 0,
+                'ignore_errors' => true,
+                'follow_location' => 0,
             ],
         ];
 
@@ -330,16 +330,16 @@ class StreamHandler
         }
 
         static $map = [
-            STREAM_NOTIFY_CONNECT       => 'CONNECT',
+            STREAM_NOTIFY_CONNECT => 'CONNECT',
             STREAM_NOTIFY_AUTH_REQUIRED => 'AUTH_REQUIRED',
-            STREAM_NOTIFY_AUTH_RESULT   => 'AUTH_RESULT',
-            STREAM_NOTIFY_MIME_TYPE_IS  => 'MIME_TYPE_IS',
-            STREAM_NOTIFY_FILE_SIZE_IS  => 'FILE_SIZE_IS',
-            STREAM_NOTIFY_REDIRECTED    => 'REDIRECTED',
-            STREAM_NOTIFY_PROGRESS      => 'PROGRESS',
-            STREAM_NOTIFY_FAILURE       => 'FAILURE',
-            STREAM_NOTIFY_COMPLETED     => 'COMPLETED',
-            STREAM_NOTIFY_RESOLVE       => 'RESOLVE',
+            STREAM_NOTIFY_AUTH_RESULT => 'AUTH_RESULT',
+            STREAM_NOTIFY_MIME_TYPE_IS => 'MIME_TYPE_IS',
+            STREAM_NOTIFY_FILE_SIZE_IS => 'FILE_SIZE_IS',
+            STREAM_NOTIFY_REDIRECTED => 'REDIRECTED',
+            STREAM_NOTIFY_PROGRESS => 'PROGRESS',
+            STREAM_NOTIFY_FAILURE => 'FAILURE',
+            STREAM_NOTIFY_COMPLETED => 'COMPLETED',
+            STREAM_NOTIFY_RESOLVE => 'RESOLVE',
         ];
 
         static $args = ['severity', 'message', 'message_code',
@@ -396,7 +396,8 @@ class StreamHandler
         array $request,
         array $options,
         $context
-    ) {
+    )
+    {
         return $this->createResource(
             function () use ($url, $context) {
                 if (false === strpos($url, 'http')) {

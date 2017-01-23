@@ -41,7 +41,7 @@ class SmartSerializer implements SerializerInterface
      * otherwise returns string
      *
      * @param string $data JSON encoded string
-     * @param array  $headers Response Headers
+     * @param array $headers Response Headers
      *
      * @throws JsonErrorException
      * @return array

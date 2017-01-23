@@ -13,8 +13,8 @@ class PromiseTest extends TestCase
         $resolveCallback = $rejectCallback = $progressCallback = null;
 
         $promise = new Promise(function ($resolve, $reject, $progress) use (&$resolveCallback, &$rejectCallback, &$progressCallback) {
-            $resolveCallback  = $resolve;
-            $rejectCallback   = $reject;
+            $resolveCallback = $resolve;
+            $rejectCallback = $reject;
             $progressCallback = $progress;
         }, $canceller);
 
@@ -23,9 +23,9 @@ class PromiseTest extends TestCase
                 return $promise;
             },
             'resolve' => $resolveCallback,
-            'reject'  => $rejectCallback,
-            'notify'  => $progressCallback,
-            'settle'  => $resolveCallback,
+            'reject' => $rejectCallback,
+            'notify' => $progressCallback,
+            'settle' => $resolveCallback,
         ]);
     }
 

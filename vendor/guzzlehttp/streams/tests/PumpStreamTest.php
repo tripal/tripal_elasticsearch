@@ -9,9 +9,10 @@ class PumpStreamTest extends \PHPUnit_Framework_TestCase
 {
     public function testHasMetadataAndSize()
     {
-        $p = new PumpStream(function () {}, [
+        $p = new PumpStream(function () {
+        }, [
             'metadata' => ['foo' => 'bar'],
-            'size'     => 100
+            'size' => 100
         ]);
 
         $this->assertEquals('bar', $p->getMetadata('foo'));
@@ -46,21 +47,24 @@ class PumpStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testInifiniteStreamWrappedInLimitStream()
     {
-        $p = Stream::factory(function () { return 'a'; });
+        $p = Stream::factory(function () {
+            return 'a';
+        });
         $s = new LimitStream($p, 5);
-        $this->assertEquals('aaaaa', (string) $s);
+        $this->assertEquals('aaaaa', (string)$s);
     }
 
     public function testDescribesCapabilities()
     {
-        $p = Stream::factory(function () {});
+        $p = Stream::factory(function () {
+        });
         $this->assertTrue($p->isReadable());
         $this->assertFalse($p->isSeekable());
         $this->assertFalse($p->isWritable());
         $this->assertNull($p->getSize());
         $this->assertFalse($p->write('aa'));
         $this->assertEquals('', $p->getContents());
-        $this->assertEquals('', (string) $p);
+        $this->assertEquals('', (string)$p);
         $p->close();
         $this->assertEquals('', $p->read(10));
         $this->assertTrue($p->eof());
@@ -71,7 +75,8 @@ class PumpStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotAttach()
     {
-        $p = Stream::factory(function () {});
+        $p = Stream::factory(function () {
+        });
         $p->attach('a');
     }
 }

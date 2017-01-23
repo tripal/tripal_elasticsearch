@@ -15,8 +15,8 @@ class CompletedFutureValue implements FutureInterface
     private $cachedPromise;
 
     /**
-     * @param mixed      $result Resolved result
-     * @param \Exception $e      Error. Pass a GuzzleHttp\Ring\Exception\CancelledFutureAccessException
+     * @param mixed $result Resolved result
+     * @param \Exception $e Error. Pass a GuzzleHttp\Ring\Exception\CancelledFutureAccessException
      *                           to mark the future as cancelled.
      */
     public function __construct($result, \Exception $e = null)
@@ -34,7 +34,9 @@ class CompletedFutureValue implements FutureInterface
         return $this->result;
     }
 
-    public function cancel() {}
+    public function cancel()
+    {
+    }
 
     public function promise()
     {
@@ -51,7 +53,8 @@ class CompletedFutureValue implements FutureInterface
         callable $onFulfilled = null,
         callable $onRejected = null,
         callable $onProgress = null
-    ) {
+    )
+    {
         return $this->promise()->then($onFulfilled, $onRejected, $onProgress);
     }
 }

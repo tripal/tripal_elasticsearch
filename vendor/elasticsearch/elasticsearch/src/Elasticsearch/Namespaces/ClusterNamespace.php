@@ -107,8 +107,8 @@ class ClusterNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Cluster\State $endpoint */
         $endpoint = $endpointBuilder('Cluster\State');
         $endpoint->setParams($params)
-                 ->setIndex($index)
-                 ->setMetric($metric);
+            ->setIndex($index)
+            ->setMetric($metric);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);
@@ -137,7 +137,7 @@ class ClusterNamespace extends AbstractNamespace
         /** @var \Elasticsearch\Endpoints\Cluster\Stats $endpoint */
         $endpoint = $endpointBuilder('Cluster\Stats');
         $endpoint->setNodeID($nodeID)
-                 ->setParams($params);
+            ->setParams($params);
         $response = $endpoint->performRequest();
 
         return $endpoint->resultOrFuture($response);

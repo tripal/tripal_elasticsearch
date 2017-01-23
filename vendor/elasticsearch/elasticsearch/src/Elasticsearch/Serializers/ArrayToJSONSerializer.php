@@ -38,7 +38,7 @@ class ArrayToJSONSerializer implements SerializerInterface
      * Deserialize JSON into an assoc array
      *
      * @param string $data JSON encoded string
-     * @param array  $headers Response Headers
+     * @param array $headers Response Headers
      *
      * @return array
      */

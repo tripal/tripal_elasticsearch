@@ -12,7 +12,7 @@ class StaticNoPingConnectionPool extends AbstractConnectionPool implements Conne
     /**
      * @var int
      */
-    private $pingTimeout    = 60;
+    private $pingTimeout = 60;
 
     /**
      * @var int
