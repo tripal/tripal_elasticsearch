@@ -3,7 +3,6 @@
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
 
 
-
 /**
  * The fileds options are dependent on the table selected in previous dropdown.
  */
@@ -115,8 +114,8 @@ function display_table_fields_ajax($form, &$form_state)
  */
 function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_state)
 {
-    // can only access all input values through $_POST. How to fix this??
     /**
+     * can only access all input values through $_POST. How to fix this??
      * we need the following data for indexing job
      *      table name
      *      selected table fields
@@ -125,30 +124,15 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
      */
     $table_name = $_POST['database_table'];
     $table_fields = array_values($_POST['display_table_fields']);
-    foreach($table_fields as $field) {
+    $field_mapping_types = [];
+    foreach ($table_fields as $field) {
         $field_mapping_types[$field] = $_POST[$field];
     }
     $index_name = $table_name;
 
-    dpm($table_name);
-    dpm($table_fields);
-    dpm($field_mapping_types);
-    dpm($index_name);
-
-    /*
-    $index = $form_state['values']['indices'];
-    $queue_number = $form_state['values']['queue_number'];
-    //variable_set('queue_number', $queue_number);
-    $table = $form_state['values']['database_table'];
-    $table_fields = $form_state['values']['display_table_fields'];
-    foreach ($table_fields as $key => $value) {
-        if (!is_string($value)) {
-            unset($table_fields[$key]);
-        }
-    }
 
     // get row count of selected table
-    $sql = "SELECT COUNT(*) FROM " . $table . ";";
+    $sql = "SELECT COUNT(*) FROM " . $table_name . ";";
     $record = db_query($sql)->fetchAssoc();
     $row_count = $record['count'];
 
@@ -164,14 +148,21 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
         $comma_separated_fields = implode(',', array_keys($table_fields));
         // use the first field to sort the table
         $order_by_field = array_shift($table_fields);
-        $sql = "SELECT " . $comma_separated_fields . " FROM " . $table . " ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
+        $sql = "SELECT " . $comma_separated_fields . " FROM " . $table_name . " ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
 
-        $item->index = $index;
-        $item->table = $table;
+        /**
+         *  Bind the following data to the queue items
+         *      index name
+         *      table name
+         *      sql query
+         *      field mapping types
+         */
+        $item->index = $index_name;
+        $item->table = $table_name;
         $item->sql = $sql;
+        $item->field_mapping_types = $field_mapping_types;
         $queue->createItem($item);
     }
-    */
 
 }
 
