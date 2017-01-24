@@ -1,5 +1,8 @@
 <?php
 
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
+
+
 
 /**
  * The fileds options are dependent on the table selected in previous dropdown.
@@ -8,6 +11,19 @@ function tripal_elasticsearch_indexing_database_table_form($form, &$form_state)
 {
     $client = Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
     try {
+
+        $FormElementsForIndex = new FormElementsForIndex();
+
+        $form['index'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Index Settings'),
+            '#description' => t('You can use the default settings for your index'),
+            '#collapsible' => True,
+            '#collapsed' => True,
+        );
+        $form['index']['character_filters'] = $FormElementsForIndex->CharacterFiltersElements();
+        $form['index']['tokenizer'] = $FormElementsForIndex->TokenizerElements();
+        $form['index']['token_filters'] = $FormElementsForIndex->TokenFiltersElements();
 
         // form fields for select N number of cron queues
         $queue_number_array = range(0, 10);
@@ -48,8 +64,10 @@ function tripal_elasticsearch_indexing_database_table_form($form, &$form_state)
                 'mapping_type' => array(
                     'data' => array(
                         '#type' => 'select',
+                        '#title' => 'Mapping Type',
+                        '#title_display' => 'invisible',
                         '#name' => $field,
-                        '#options' => get_elastic_mapping_types()
+                        '#options' => get_elastic_mapping_types(),
                     )
                 ),
             );
@@ -97,6 +115,27 @@ function display_table_fields_ajax($form, &$form_state)
  */
 function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_state)
 {
+    // can only access all input values through $_POST. How to fix this??
+    /**
+     * we need the following data for indexing job
+     *      table name
+     *      selected table fields
+     *      corresponding mapping types to each selected table fields
+     *      index name
+     */
+    $table_name = $_POST['database_table'];
+    $table_fields = array_values($_POST['display_table_fields']);
+    foreach($table_fields as $field) {
+        $field_mapping_types[$field] = $_POST[$field];
+    }
+    $index_name = $table_name;
+
+    dpm($table_name);
+    dpm($table_fields);
+    dpm($field_mapping_types);
+    dpm($index_name);
+
+    /*
     $index = $form_state['values']['indices'];
     $queue_number = $form_state['values']['queue_number'];
     //variable_set('queue_number', $queue_number);
@@ -132,6 +171,7 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
         $item->sql = $sql;
         $queue->createItem($item);
     }
+    */
 
 }
 
