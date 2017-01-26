@@ -39,6 +39,7 @@ class FormElementsForIndex
 
     public function CharacterFiltersElements()
     {
+
         $form['CharacterFiltersElements'] = array(
             '#type' => 'checkboxes',
             '#title' => t('Character Filters'),
@@ -51,7 +52,7 @@ class FormElementsForIndex
     public function TokenizerElements()
     {
         $form['TokenizerElements'] = array(
-            '#type' => 'radios',
+            '#type' => 'select',
             '#title' => t('Tokenizer'),
             '#options' => $this->TokenizerOptions,
         );
