@@ -27,7 +27,7 @@ class BuildElasticIndex
 
     protected $field_mapping_types;
 
-    public function __construct(ElasticConnection $client, $index = 'table_name', $shards, $replicas, array $character_filters = [], $tokenizer, array $token_filters = [], array $field_mapping_types = [])
+    public function __construct($client, $index = 'table_name', $shards, $replicas, $character_filters = [], $tokenizer, $token_filters = [], $field_mapping_types = [])
     {
         $this->client = $client;
 

@@ -2,8 +2,10 @@
 
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/vendor/autoload.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/tripal_elasticsearch.api.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/CronQueueWorker.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search/tripal_elasticsearch_main_search_box_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search/tripal_elasticsearch_blocks_form.inc';
+
 
 
 set_time_limit(0);
@@ -395,76 +397,9 @@ function tripal_elasticsearch_cron_queue_info()
  */
 function elastic_indexing_queue_item($item)
 {
-    $client = Elasticsearch\ClientBuilder::create()->setHosts(
-        variable_get('elasticsearch_hosts', array('localhost:9200'))
-    )->build();
-    $index = $item->index;
-    $table = $item->table;
-    $sql = $item->sql;
-    $result = db_query($sql)->fetchAll();
-
-    if ($table == "index_website") {
-        $website_base_url = $item->website_base_url;
-        foreach ($result as $record) {
-            $body['node_id'] = $record->nid;
-            $body['node_title'] = $record->title;
-
-            //========== This chunk of code limits the indexing speed ==============
-            $page_html = file_get_contents(
-                $website_base_url . '/node/' . $body['node_id']
-            );
-            // remove raw sequences
-            $pattern_1 = preg_quote(
-                    '<pre class="tripal_feature-sequence">'
-                ) . "(.|\n)*" . preg_quote('</pre>');
-            $page_html = preg_replace("!" . $pattern_1 . "!U", ' ', $page_html);
-            // remove query sequences
-            $pattern_2 = preg_quote('<pre>Query') . "(.|\n)*" . preg_quote('</pre>');
-            $page_html = preg_replace("!" . $pattern_2 . "!U", ' ', $page_html);
-            // add one space to html tags to avoid words catenation after stripping html tags
-            $page_html = str_replace('<', ' <', $page_html);
-            // remove generated jQuery script
-            $page_html = preg_replace(
-                '/<script\b[^>]*>(.*?)<\/script>/is',
-                "",
-                $page_html
-            );
-            // make page title searchable
-            $page_content = $record->title . ' ' . strip_tags($page_html);
-            // merge multiple spaces into one
-            $body['node_content'] = preg_replace('!\s+!', ' ', $page_content);
-            //=======================================================================
-
-            // indexing one by one
-            $params = [
-                'index' => $index,
-                'type' => $table,
-                'id' => $record->nid,
-                'body' => $body,
-            ];
-            $responses = $client->index($params);
-            watchdog(
-                'Tripal elasticsearch: indexing website',
-                'Indexed node ' . $record->nid . ' - ' . format_date(time())
-            );
-        }
-    } else {
-        foreach ($result as $record) {
-            $doc = objectToArray($record);
-            // indexing one by one
-            $params = [
-                'index' => $index,
-                'type' => $table,
-                'body' => $doc,
-            ];
-            $responses = $client->index($params);
-            watchdog(
-                'Tripal elasticsearch: indexing table',
-                'Indexed 1 record from ' . $table . ' - ' . format_date(time())
-            );
-        }
-    }
-
+    $client = ElasticConnection::make();
+    $cron_queue_worker = CronQueueWorker($client, $item);
+    $cron_queue_worker->indexing();
 }
 
 

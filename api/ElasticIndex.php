@@ -11,7 +11,7 @@ class ElasticIndex
 
     protected $client;
 
-    public function __construct(ElasticConnection $client)
+    public function __construct($client)
     {
 
         $this->client = $client;
@@ -41,7 +41,7 @@ class ElasticIndex
     }
 
 
-    public function BuildIndex(BuildElasticIndex $param)
+    public function BuildIndex($param)
     {
         return $this->client->index($param);
     }

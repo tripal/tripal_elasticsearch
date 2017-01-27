@@ -14,6 +14,8 @@ class ElasticConnection
             $message = $e->getMessage();
             drupal_set_message($message, 'warning');
 
+            return false;
+
         }
     }
 }

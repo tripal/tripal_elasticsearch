@@ -3,7 +3,7 @@
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticConnection.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticIndex.php';
-
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/BuildElasticIndex.php';
 
 
 /**
@@ -125,6 +125,13 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
      *      corresponding mapping types to each selected table fields
      *      index name
      */
+
+
+    $character_filters = $form_state['values']['CharacterFiltersElements'];
+    $tokenizer = $form_state['values']['TokenizerElements'];
+    $token_filters = $form_state['values']['TokenFiltersElements'];
+
+    $queue_number = $_POST['queue_number'];
     $table_name = $_POST['database_table'];
     $table_fields = array_values($_POST['display_table_fields']);
     $field_mapping_types = [];
@@ -133,9 +140,15 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
     }
     $index_name = $table_name;
 
-
+    dpm($field_mapping_types);
     $connection = ElasticConnection::make();
-    $client = ElasticIndex($connection);
+    $build_elastic_index = new BuildElasticIndex($connection, $table_name, 5, 1, $character_filters = $character_filters, $tokenizer = $tokenizer, $token_filters = $token_filters, $field_mapping_types = $field_mapping_types);
+    dpm((array) $build_elastic_index);
+
+    //$build_elastic_index->create_index();
+
+
+    //(new ElasticIndex($connection))->BuildIndex();
 
 
     /**
@@ -174,10 +187,13 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
          */
         $item->index = $index_name;
         $item->table = $table_name;
+        $item->is_website = False;
         $item->sql = $sql;
         $item->field_mapping_types = $field_mapping_types;
         $queue->createItem($item);
     }
+
+    drupal_set_message('Successfully submitted!');
 
 }
 

@@ -15,7 +15,7 @@ class CronQueueWorker
         $this->queue_item = $queue_item;
     }
 
-    public function index_database_table()
+    private function index_database_table()
     {
         $result = db_query($this->queue_item->sql)->fetchAll();
 
@@ -55,7 +55,7 @@ class CronQueueWorker
     }
 
 
-    public function index_website()
+    private function index_website()
     {
         $result = db_query($this->queue_item->sql)->fetchAll();
 
@@ -77,6 +77,17 @@ class CronQueueWorker
             watchdog("Tripal Elasticsearch: indexed 1 page" . ' - ' . format_date(time()));
         }
 
+    }
+
+    public function indexing()
+    {
+        if ($this->queue_item->is_website)
+        {
+            $this->index_website();
+        } else
+        {
+            $this->index_database_table();
+        }
     }
 
 }
