@@ -1,6 +1,9 @@
 <?php
 
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticConnection.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticIndex.php';
+
 
 
 /**
@@ -131,6 +134,18 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
     $index_name = $table_name;
 
 
+    $connection = ElasticConnection::make();
+    $client = ElasticIndex($connection);
+
+
+    /**
+     * bind the following data to an item object and add the items to a queue
+     *      index name
+     *      table name
+     *      selected table fields
+     *      index mapping types
+     *      sql query that will extract values from the database table for the selected table fields.
+     */
     // get row count of selected table
     $sql = "SELECT COUNT(*) FROM " . $table_name . ";";
     $record = db_query($sql)->fetchAssoc();
@@ -151,7 +166,7 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
         $sql = "SELECT " . $comma_separated_fields . " FROM " . $table_name . " ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
 
         /**
-         *  Bind the following data to the queue items
+         *  Bind the following values to the queue items
          *      index name
          *      table name
          *      sql query
