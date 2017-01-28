@@ -1,10 +1,24 @@
 <?php
 
 
+function sort_2d_array_by_value(&$arr, $field, $order){
+usort(
+    $arr,
+    function ($a, $b) use ($field, $order) {
+      if ($order === 'asc') {
+        return $a[$field] > $b[$field];
+      }
+      else {
+        return $b[$field] > $a[$field];
+      }
+    }
+  );
+return $arr;
+}
 
 /**
  * Define a function to sort two dimensional array by values
- */
+ *
 function sort_2d_array_by_value($arr, $field, $sort){
   $sorted_a = array();
   foreach($arr as $k=>$v){
@@ -24,7 +38,7 @@ function sort_2d_array_by_value($arr, $field, $sort){
   }
 
   return $sorted_a;
-}
+}*/
 //================End of sort_2d_array_by_value() =====================
 
 
@@ -331,7 +345,9 @@ function _run_elastic_search($table, $field_keyword_pairs, $from=0, $size=1000){
     $search_hits= array();
     foreach($search_results['hits']['hits'] as $key=>$value){
         foreach($field_keyword_pairs as $field=>$keyword){
-          $search_hits[$key][$field] = $value['_source'][$field];
+	  //if(array_key_exists($key, $search_hits)) {
+              $search_hits[$key][$field] = $value['_source'][$field];
+	  //}
         }
     }
   

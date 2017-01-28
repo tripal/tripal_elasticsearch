@@ -104,6 +104,8 @@ function tripal_elasticsearch_blocks_form_submit_search($form, &$form_state){
       $_SESSION['elastic_form_input'][$table][$field] = '';
     }
   }
+
+  $form_state['rebuild'] = True;
 }
 
 
