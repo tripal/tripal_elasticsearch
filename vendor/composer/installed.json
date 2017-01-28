@@ -1,29 +1,24 @@
 [
     {
         "name": "react/promise",
-        "version": "v2.4.1",
-        "version_normalized": "2.4.1.0",
+        "version": "v2.5.0",
+        "version_normalized": "2.5.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/reactphp/promise.git",
-            "reference": "8025426794f1944de806618671d4fa476dc7626f"
+            "reference": "2760f3898b7e931aa71153852dcd48a75c9b95db"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/reactphp/promise/zipball/8025426794f1944de806618671d4fa476dc7626f",
-            "reference": "8025426794f1944de806618671d4fa476dc7626f",
+            "url": "https://api.github.com/repos/reactphp/promise/zipball/2760f3898b7e931aa71153852dcd48a75c9b95db",
+            "reference": "2760f3898b7e931aa71153852dcd48a75c9b95db",
             "shasum": ""
         },
         "require": {
             "php": ">=5.4.0"
         },
-        "time": "2016-05-03 17:50:52",
+        "time": "2016-12-22T14:09:01+00:00",
         "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.0-dev"
-            }
-        },
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
@@ -43,7 +38,11 @@
                 "email": "jsorgalla@gmail.com"
             }
         ],
-        "description": "A lightweight implementation of CommonJS Promises/A for PHP"
+        "description": "A lightweight implementation of CommonJS Promises/A for PHP",
+        "keywords": [
+            "promise",
+            "promises"
+        ]
     },
     {
         "name": "guzzlehttp/streams",
@@ -66,7 +65,7 @@
         "require-dev": {
             "phpunit/phpunit": "~4.0"
         },
-        "time": "2014-10-12 19:18:40",
+        "time": "2014-10-12T19:18:40+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -124,7 +123,7 @@
         "suggest": {
             "ext-curl": "Guzzle will use specific adapters if cURL is present"
         },
-        "time": "2015-05-20 03:37:09",
+        "time": "2015-05-20T03:37:09+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -168,7 +167,7 @@
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2016-10-10 12:19:37",
+        "time": "2016-10-10T12:19:37+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -232,7 +231,7 @@
             "ext-curl": "*",
             "monolog/monolog": "Allows for client-level logging and tracing"
         },
-        "time": "2016-10-26 14:35:32",
+        "time": "2016-10-26T14:35:32+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
