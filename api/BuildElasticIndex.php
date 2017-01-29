@@ -27,7 +27,7 @@ class BuildElasticIndex
 
     protected $field_mapping_types;
 
-    public function __construct($client, $index = 'table_name', $shards, $replicas, $character_filters = [], $tokenizer, $token_filters = [], $field_mapping_types = [])
+    public function __construct($client, $index = 'table_name', $shards, $replicas, $character_filters = [], $tokenizer = 'standard', $token_filters = [], $field_mapping_types = [])
     {
         $this->client = $client;
 
@@ -45,11 +45,11 @@ class BuildElasticIndex
 
         $this->token_filters = $token_filters;
 
-        $this->field_mapping_types;
+        $this->field_mapping_types = $field_mapping_types;
     }
 
 
-    private function get_analyzer()
+    protected function get_analyzer()
     {
         $analysis = [
             'analyzer' => [
@@ -68,7 +68,7 @@ class BuildElasticIndex
     }
 
 
-    private function get_settings()
+    protected function get_settings()
     {
         return $settings = [
             'number_of_shards' => $this->number_of_shards,
@@ -77,15 +77,14 @@ class BuildElasticIndex
         ];
     }
 
-    private function get_mappings()
+    protected function get_mappings()
     {
         $properties = [];
-        foreach ($this->field_mapping_types as $field=>$mapping_type) {
-            $properties[] = [
-                $field => [
-                    'type' => $mapping_type,
-                    'analyzer' => $this->analyzer
-                ]
+        foreach ($this->field_mapping_types as $field=>$mapping_type)
+        {
+            $properties[$field] = [
+                'type' => $mapping_type,
+                'analyzer' => $this->analyzer_name
             ];
         }
 
@@ -99,7 +98,7 @@ class BuildElasticIndex
     }
 
 
-    private function get_index_params()
+    public function get_index_params()
     {
         $params = [
             'index' => $this->index,
@@ -117,6 +116,14 @@ class BuildElasticIndex
     {
         $params = $this->get_index_params();
 
-        return $this->client->indices()->create($params);
+        try
+        {
+            $this->client->indices()->create($params);
+        }
+        catch (Exception $e)
+        {
+            drupal_set_message($e->getMessage(), 'error');
+        }
+
     }
 }

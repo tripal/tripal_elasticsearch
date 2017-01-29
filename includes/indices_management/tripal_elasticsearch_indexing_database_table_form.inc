@@ -127,9 +127,9 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
      */
 
 
-    $character_filters = $form_state['values']['CharacterFiltersElements'];
+    $character_filters = array_filter(array_values($form_state['values']['CharacterFiltersElements']), "is_string");
     $tokenizer = $form_state['values']['TokenizerElements'];
-    $token_filters = $form_state['values']['TokenFiltersElements'];
+    $token_filters = array_filter(array_values($form_state['values']['TokenFiltersElements']), "is_string");
 
     $queue_number = $_POST['queue_number'];
     $table_name = $_POST['database_table'];
@@ -143,7 +143,9 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
     dpm($field_mapping_types);
     $connection = ElasticConnection::make();
     $build_elastic_index = new BuildElasticIndex($connection, $table_name, 5, 1, $character_filters = $character_filters, $tokenizer = $tokenizer, $token_filters = $token_filters, $field_mapping_types = $field_mapping_types);
-    dpm((array) $build_elastic_index);
+    dpm($build_elastic_index->get_index_params());
+    $build_elastic_index->create_index();
+
 
     //$build_elastic_index->create_index();
 
