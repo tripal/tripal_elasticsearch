@@ -132,7 +132,7 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
     $table_name = $_POST['database_table'];
 
     // get index name
-    $index_name = $table_name;
+    $index_name = preg_replace('/\./', '_', $table_name);
     // build character filters array
     $character_filters = array_filter(array_values($form_state['values']['CharacterFiltersElements']), "is_string");
     //$ElasticCharacterFilters = new ElasticCharacterFilters();
