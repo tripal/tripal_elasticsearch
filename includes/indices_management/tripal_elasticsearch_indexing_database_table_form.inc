@@ -4,6 +4,8 @@ require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormEleme
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticConnection.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/BuildElasticIndex.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticCharacterFilters.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticTokenFilters.php';
 
 
 /**
@@ -126,24 +128,48 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
      *      index name
      */
 
-
-    $character_filters = array_filter(array_values($form_state['values']['CharacterFiltersElements']), "is_string");
-    $tokenizer = $form_state['values']['TokenizerElements'];
-    $token_filters = array_filter(array_values($form_state['values']['TokenFiltersElements']), "is_string");
-
     $queue_number = $_POST['queue_number'];
     $table_name = $_POST['database_table'];
+
+    // get index name
+    $index_name = $table_name;
+    // build character filters array
+    $character_filters = array_filter(array_values($form_state['values']['CharacterFiltersElements']), "is_string");
+    //$ElasticCharacterFilters = new ElasticCharacterFilters();
+    foreach ($character_filters as $character_filter)
+    {
+        $character_filters_arr["my_" . $character_filter] = call_user_func("ElasticCharacterFilters::$character_filter");
+    }
+    // build token filters array
+    $token_filters = array_filter(array_values($form_state['values']['TokenFiltersElements']), "is_string");
+    //$ElasticTokenFilters = new ElasticTokenFilters();
+    foreach ($token_filters as $token_filter)
+    {
+        $token_filters_arr["my_" . $token_filter] = call_user_func("ElasticTokenFilters::$token_filter");
+    }
+    // get tokenizer
+    $tokenizer = $form_state['values']['TokenizerElements'];
+
+    // get field_mapping_types
     $table_fields = array_values($_POST['display_table_fields']);
     $field_mapping_types = [];
     foreach ($table_fields as $field) {
         $field_mapping_types[$field] = $_POST[$field];
     }
-    $index_name = $table_name;
+    // create a connection port
+    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
 
-    dpm($field_mapping_types);
-    $connection = ElasticConnection::make();
-    $build_elastic_index = new BuildElasticIndex($connection, $table_name, 5, 1, $character_filters = $character_filters, $tokenizer = $tokenizer, $token_filters = $token_filters, $field_mapping_types = $field_mapping_types);
-    dpm($build_elastic_index->get_index_params());
+    // build index
+    $build_elastic_index = new BuildElasticIndex($client = $connection,
+                                                 $index = $index_name,
+                                                 $number_of_shards = 5,
+                                                 $nuber_of_replicas = 0,
+                                                 $character_filters = $character_filters_arr,
+                                                 $token_filters = $token_filters_arr,
+                                                 $tokenizer = $tokenizer,
+                                                 $field_mapping_types = $field_mapping_types);
+
+
     $build_elastic_index->create_index();
 
 
@@ -197,6 +223,7 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
 
     drupal_set_message('Successfully submitted!');
 
+    $form_state['rebuild'] = true;
 }
 
 

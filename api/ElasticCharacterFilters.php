@@ -8,7 +8,7 @@
  */
 class ElasticCharacterFilters
 {
-    public function html_strip (array $escaped_tags = [])
+    public static function html_strip(array $escaped_tags = [])
     {
         return [
             "type" => "html_strip",
@@ -16,7 +16,7 @@ class ElasticCharacterFilters
         ];
     }
 
-    public function  mapping (array $mappings = [])
+    public static function mapping(array $mappings = [])
     {
         return [
             "type" => "mappings",
@@ -24,29 +24,13 @@ class ElasticCharacterFilters
         ];
     }
 
-    public function pattern_replace ($pattern, $replacement)
+    public static function pattern_replace($pattern, $replacement)
     {
         return [
             "type" => "pattern_replacement",
             "pattern" => $pattern,
             "replacement" => $replacement
         ];
-    }
-
-    public function merge_character_filters(array $character_filter_list)
-    {
-        $merged_character_filter = [];
-
-        foreach ($character_filter_list as $character_filter)
-        {
-            $merged_character_filter[$character_filter] = [
-                "my_" . $character_filter => [
-                    $this->$character_filter
-                ]
-            ];
-        }
-
-        return $merged_character_filter;
     }
 
 }

@@ -2,12 +2,19 @@
 
 class ElasticConnection
 {
-    public static function make()
+    protected $elasticsearch_hosts;
+
+    public function __construct (array $elasticsearch_hosts = ["localhost:9200"])
+    {
+        $this->elasticsearch_hosts = $elasticsearch_hosts;
+    }
+
+    public function make()
     {
 
         try {
 
-            return Elasticsearch\ClientBuilder::create()->setHosts(variable_get('elasticsearch_hosts', array('localhost:9200')))->build();
+            return Elasticsearch\ClientBuilder::create()->setHosts($this->elasticsearch_hosts)->build();
 
         } catch (\Exception $e) {
 

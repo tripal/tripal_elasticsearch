@@ -27,7 +27,14 @@ class BuildElasticIndex
 
     protected $field_mapping_types;
 
-    public function __construct($client, $index = 'table_name', $shards, $replicas, $character_filters = [], $tokenizer = 'standard', $token_filters = [], $field_mapping_types = [])
+    public function __construct($client,
+                                $index = 'table_name',
+                                $shards = 5,
+                                $replicas = 0,
+                                $character_filters = [],
+                                $token_filters = [],
+                                $tokenizer = 'standard',
+                                $field_mapping_types = [])
     {
         $this->client = $client;
 
@@ -55,7 +62,9 @@ class BuildElasticIndex
             'analyzer' => [
                 $this->analyzer_name => [
                     'type' => 'custom',
-                    'tokenizer' => $this->tokenizer
+                    'tokenizer' => $this->tokenizer,
+                    "char_filter" => array_keys($this->character_filters),
+                    "filter" => array_keys($this->token_filters)
                 ]
             ],
 
@@ -84,7 +93,7 @@ class BuildElasticIndex
         {
             $properties[$field] = [
                 'type' => $mapping_type,
-                'analyzer' => $this->analyzer_name
+                //'analyzer' => $this->analyzer_name
             ];
         }
 
@@ -118,11 +127,12 @@ class BuildElasticIndex
 
         try
         {
+            dpm($params);
             $this->client->indices()->create($params);
         }
         catch (Exception $e)
         {
-            drupal_set_message($e->getMessage(), 'error');
+            drupal_set_message($e->getMessage(), 'warning');
         }
 
     }
