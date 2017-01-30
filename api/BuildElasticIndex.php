@@ -127,11 +127,12 @@ class BuildElasticIndex
 
         try
         {
-            dpm($params);
             $this->client->indices()->create($params);
+            drupal_set_message("The index $this->index has been successfully created.");
         }
         catch (Exception $e)
         {
+
             drupal_set_message($e->getMessage(), 'warning');
         }
 

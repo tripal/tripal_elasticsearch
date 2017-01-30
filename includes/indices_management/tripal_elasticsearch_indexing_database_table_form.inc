@@ -169,14 +169,9 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
                                                  $tokenizer = $tokenizer,
                                                  $field_mapping_types = $field_mapping_types);
 
-
     $build_elastic_index->create_index();
 
 
-    //$build_elastic_index->create_index();
-
-
-    //(new ElasticIndex($connection))->BuildIndex();
 
 
     /**
@@ -220,8 +215,6 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
         $item->field_mapping_types = $field_mapping_types;
         $queue->createItem($item);
     }
-
-    drupal_set_message('Successfully submitted!');
 
     $form_state['rebuild'] = true;
 }
