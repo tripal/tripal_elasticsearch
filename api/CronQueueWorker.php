@@ -30,7 +30,7 @@ class CronQueueWorker
             $this->client->index($params);
             dpm($this->queue_item->table);
 
-            watchdog("Tripal Elasticsearch", "indexed 1 record from " . $this->queue_item->table . ' - ' . format_date(time()));
+            watchdog("Tripal Elasticsearch", "Indexed 1 record from " . $this->queue_item->table . ' - ' . format_date(time()));
         }
 
     }
@@ -65,18 +65,21 @@ class CronQueueWorker
         {
             $nid = $this->queue_item->nid;
             $title = $this->queue_item->title;
+            $type = $this->queue_item->type;
+            $base_url = $this->queue_item->website_base_url;
             $params = [
                 'index' => $this->queue_item->index,
                 'type' => 'website',
                 'body' => [
                     'nid' => $nid,
                     'title' => $title,
+                    'type' => $type,
                     'content' => $this->get_node_content($nid, $title, $base_url)
                 ]
             ];
 
             $this->client->index($params);
-            watchdog("Tripal Elasticsearch: indexed 1 page" . ' - ' . format_date(time()));
+            watchdog("Tripal Elasticsearch", "Indexed 1 page" . ' - ' . format_date(time()));
         }
 
     }
