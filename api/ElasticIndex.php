@@ -40,9 +40,48 @@ class ElasticIndex
         return $output;
     }
 
+    public function GetIndices ()
+    {
+        $mappings = $this->client->indices()->getMapping();
+        $indices = [];
+        foreach (array_keys($mappings) as $index) {
+            $indices[$index] = $index;
+        }
+
+        return $indices;
+    }
+
 
     public function BuildIndex($param)
     {
         return $this->client->index($param);
+    }
+
+    /*
+     * @indices an array of index names
+     * Delete a list of indices
+     */
+    public function DeleteIndices (array $indices = [])
+    {
+        if (empty($indices))
+        {
+            drupal_set_message("No index were selected.", "warning");
+
+            return null;
+        }
+
+        foreach ($indices as $index)
+        {
+            try
+            {
+                $this->client->indices()->delete(["index" => $index]);
+                drupal_set_message("$index has been successfully deleted");
+            }
+            catch (Exception $exception)
+            {
+                drupal_set_message($exception->getMessage(), "error");
+            }
+
+        }
     }
 }

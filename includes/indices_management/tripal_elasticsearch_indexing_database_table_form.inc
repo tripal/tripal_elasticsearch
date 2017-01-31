@@ -190,15 +190,16 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
     // get the total number of offsets (offset interval is 1000)
     $k = 1000;
     $total_offsets = intval($row_count / $k);
+    // separate table fields with comma
+    $comma_separated_fields = implode(',', $table_fields);
+    $order_by_field = $table_fields[0];
     foreach (range(0, $total_offsets) as $offset) {
         $queue_id = 'elastic_queue_' . ($offset % $queue_number);
         $queue = DrupalQueue::get($queue_id);
         $OFFSET = $k * $offset;
         $item = new stdClass();
 
-        $comma_separated_fields = implode(',', array_keys($table_fields));
         // use the first field to sort the table
-        $order_by_field = array_shift($table_fields);
         $sql = "SELECT " . $comma_separated_fields . " FROM " . $table_name . " ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET;";
 
         /**
@@ -220,25 +221,3 @@ function tripal_elasticsearch_indexing_database_table_form_submit($form, &$form_
 }
 
 
-/**
- * form select element for elastic mapping types
- */
-function get_elastic_mapping_types()
-{
-    $mapping_types = array(
-        'text' => 'text',
-        'keyword' => 'keyword',
-        'date' => 'date',
-        'long' => 'long',
-        'double' => 'double',
-        'boolean' => 'boolean',
-        'ip' => 'ip',
-        'object' => 'object',
-        'nested' => 'nested',
-        'geo_point' => 'geo_point',
-        'geo_shape' => 'geo_shape',
-        'completion' => 'completion',
-    );
-    //return theme('select', array('element' => $element));
-    return $mapping_types;
-}

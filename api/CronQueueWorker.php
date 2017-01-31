@@ -8,7 +8,7 @@ class CronQueueWorker
 
     protected $queue_item;
 
-    public function __construct(ElasticConnection $client, $queue_item)
+    public function __construct($client, $queue_item)
     {
         $this->client = $client;
 
@@ -28,7 +28,9 @@ class CronQueueWorker
             ];
 
             $this->client->index($params);
-            watchdog("Tripal Elasticsearch: indexed 1 record from $this->queue_item->table" . ' - ' . format_date(time()));
+            dpm($this->queue_item->table);
+
+            watchdog("Tripal Elasticsearch", "indexed 1 record from " . $this->queue_item->table . ' - ' . format_date(time()));
         }
 
     }

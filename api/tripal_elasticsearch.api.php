@@ -628,3 +628,27 @@ function get_cluster_health()
 
     return $output;
 }
+
+
+/**
+ * form select element for elastic mapping types
+ */
+function get_elastic_mapping_types()
+{
+    $mapping_types = array(
+        'string' => 'string',
+        'keyword' => 'keyword',
+        'date' => 'date',
+        'long' => 'long',
+        'double' => 'double',
+        'boolean' => 'boolean',
+        'ip' => 'ip',
+        'object' => 'object',
+        'nested' => 'nested',
+        'geo_point' => 'geo_point',
+        'geo_shape' => 'geo_shape',
+        'completion' => 'completion',
+    );
+    //return theme('select', array('element' => $element));
+    return $mapping_types;
+}
