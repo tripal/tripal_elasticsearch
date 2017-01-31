@@ -1,12 +1,15 @@
 <?php
 
+/*
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticConnection.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/BuildElasticIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticCharacterFilters.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticTokenFilters.php';
+*/
 
+require drupal_get_path('module', 'tripal_elasticsearch') . '/api/bootstrap.php';
 
 /**
  * The fileds options are dependent on the table selected in previous dropdown.

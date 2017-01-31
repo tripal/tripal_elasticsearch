@@ -9,7 +9,7 @@
         attach: function (context, settings) {
             $(document).on('click', '#indices-delete-confirmation', function(e) {
 
-                if (confirm("Are you sure?")) {
+                if (confirm("Are you sure? This step can not be undo.")) {
                 }
                 else {
                     e.preventDefault();
