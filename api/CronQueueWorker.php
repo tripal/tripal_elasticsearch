@@ -63,9 +63,9 @@ class CronQueueWorker
 
         foreach ($result as $record)
         {
-            $nid = $this->queue_item->nid;
-            $title = $this->queue_item->title;
-            $type = $this->queue_item->type;
+            $nid = $record->nid;
+            $title = $record->title;
+            $type = $record->type;
             $base_url = $this->queue_item->website_base_url;
             $params = [
                 'index' => $this->queue_item->index,
@@ -74,7 +74,7 @@ class CronQueueWorker
                     'nid' => $nid,
                     'title' => $title,
                     'type' => $type,
-                    'content' => $this->get_node_content($nid, $title, $base_url)
+                    'body' => $this->get_node_content($nid, $title, $base_url)
                 ]
             ];
 
