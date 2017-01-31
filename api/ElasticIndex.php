@@ -51,6 +51,12 @@ class ElasticIndex
         return $indices;
     }
 
+    public function GetMappings ($index_name)
+    {
+        $mappings = $this->client->indices()->getMapping(['index' => $index_name]);
+        $fields = array_keys($mappings[$index_name]['mappings']['_default_']['properties']);
+        return $fields;
+    }
 
     public function BuildIndex($param)
     {

@@ -82,60 +82,52 @@ function tripal_elasticsearch_menu()
         'file' => 'tripal_elasticsearch.admin.inc',
     );
 
-    /*
-  $items[$pre . '/build_tripal_elasticsearch_block'] = array(
-    'title' => t('Build tripal_elasticsearch block'),
-    'page callback' => 'build_tripal_elasticelastic_block_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/build_tripal_elasticsearch_block_form.inc',
-    'weight' => 4,
-  );
 
-  $items[$pre . '/delete_tripal_elasticsearch_blocks'] = array(
-    'title' => t('Delete tripal_elasticsearch blocks'),
-    'page callback' => 'delete_tripal_elasticsearch_blocks_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/delete_tripal_elasticsearch_blocks_form.inc',
-    'weight' => 5,
-  );
-  $items[$pre . '/tripal_elasticsearch_add_links'] = array(
-    'title' => t('Add page links'),
-    'page callback' => 'tripal_elasticsearch_add_links_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/tripal_elasticsearch_add_links_form.inc',
-    'weight' => 6,
-  );
-  $items[$pre . '/tripal_elasticsearch_alter_form'] = array(
-    'title' => t('Alter form fields'),
-    'page callback' => 'tripal_elasticsearch_alter_form_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/tripal_elasticsearch_alter_form.inc',
-    'weight' => 7,
-  );
 
-  $items['elastic_search'] = array(
-    'title' => 'Advanced search',
-    'page callback' => 'tripal_elasticsearch_page',
-    'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/tripal_elasticsearch_blocks_form.inc',
-  );
-  $items['search-website'] = array(
-    'title' => '',
-    'page callback' => 'tripal_elasticsearch_main_search_page',
-    'access callback' => TRUE,
-    'type' => MENU_VISIBLE_IN_BREADCRUMB,
-    'file' => 'includes/tripal_elasticsearch_main_search_box_form.inc',
-  );
-    */
+
+
+    $items[$pre . '/search'] = array(
+        'title' => t('Build search forms'),
+        'page callback' => 'build_search_forms_page',
+        'access callback' => 'user_access',
+        'access arguments' => array('administer users'),
+        'type' => MENU_NORMAL_ITEM,
+        'weight' => 2,
+        'file' => 'tripal_elasticsearch.admin.inc',
+    );
+    $items[$pre . '/search/build_search_forms'] = array(
+        'title' => t('Build search forms'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 1,
+    );
+    $items[$pre . '/search/link_results_to_pages'] = array(
+        'title' => t('Link results to pages'),
+        'page callback' => 'link_results_to_pages_page',
+        'access callback' => 'user_access',
+        'access arguments' => array('administer users'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 3,
+        'file' => 'tripal_elasticsearch.admin.inc',
+    );
+    $items[$pre . '/search/alter_search_forms'] = array(
+        'title' => t('Delete search forms'),
+        'page callback' => 'alter_search_forms_page',
+        'access callback' => 'user_access',
+        'access arguments' => array('administer users'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+        'file' => 'tripal_elasticsearch.admin.inc',
+    );
+
+    $items[$pre . '/search/delete_search_forms'] = array(
+        'title' => t('Delete search forms'),
+        'page callback' => 'delete_search_forms_page',
+        'access callback' => 'user_access',
+        'access arguments' => array('administer users'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 4,
+        'file' => 'tripal_elasticsearch.admin.inc',
+    );
 
     return $items;
 }

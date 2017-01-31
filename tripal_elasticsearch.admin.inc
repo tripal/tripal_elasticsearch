@@ -1,13 +1,13 @@
 <?php
 
-
+/*
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/elasticsearch_cluster_connection/connect_to_elasticsearch_cluster_form.inc';
-
-
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management/tripal_elasticsearch_indexing_website_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management/tripal_elasticsearch_indexing_database_table_form.inc';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management/tripal_elasticsearch_delete_indices_form.inc';
+*/
 
+require drupal_get_path('module', 'tripal_elasticsearch') . '/api/bootstrap.php';
 
 /**
  * @file
@@ -90,5 +90,72 @@ function delete_indices_page()
 
 
 
+/*
+ * build_search_forms_page callback
+ */
+function build_search_forms_page ()
+{
+    // create a connection port
+    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+    return drupal_get_form ('build_search_forms_form');
 
+    /*
+    if ($connection) {
+        return drupal_get_form ('build_search_forms_form');
+    } else {
+        drupal_set_message ('Elasticsearch cluster is disconnected.', 'warning');
+        return '';
+    }
+    */
+
+}
  
+
+/*
+ * link_results_to_pages_page callback
+ */
+function link_results_to_pages_page ()
+{
+    // create a connection port
+    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+    if ($connection) {
+        return drupal_get_form ('link_results_to_pages_form');
+    } else {
+        drupal_set_message ('Elasticsearch cluster is disconnected.', 'warning');
+        return '';
+    }
+
+}
+
+/*
+ * alter_search_forms_page callback
+ */
+function alter_search_forms_page ()
+{
+    // create a connection port
+    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+    if ($connection) {
+        return drupal_get_form ('alter_search_forms_form');
+    } else {
+        drupal_set_message ('Elasticsearch cluster is disconnected.', 'warning');
+        return '';
+    }
+
+
+}
+
+/*
+ * delete_search_forms_page callback
+ */
+function delete_search_forms_page ()
+{
+    // create a connection port
+    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+    if ($connection) {
+        return drupal_get_form ('delete_search_forms_form');
+    } else {
+        drupal_set_message ('Elasticsearch cluster is disconnected.', 'warning');
+        return '';
+    }
+
+}
