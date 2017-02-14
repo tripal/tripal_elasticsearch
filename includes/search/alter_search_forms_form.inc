@@ -1,7 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mingchen
- * Date: 1/31/17
- * Time: 2:59 PM
- */
+
+function alter_search_forms_form ($form, &$form_state) {
+    $form = [
+
+    ];
+
+    return $form;
+}

@@ -91,6 +91,6 @@ function tripal_elasticsearch_schema()
 
   return $schema;
 }
-
+  
 
 

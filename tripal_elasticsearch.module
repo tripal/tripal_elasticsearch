@@ -92,7 +92,6 @@ function tripal_elasticsearch_menu()
         'access callback' => 'user_access',
         'access arguments' => array('administer users'),
         'type' => MENU_NORMAL_ITEM,
-        'weight' => 2,
         'file' => 'tripal_elasticsearch.admin.inc',
     );
     $items[$pre . '/search/build_search_forms'] = array(
@@ -110,7 +109,7 @@ function tripal_elasticsearch_menu()
         'file' => 'tripal_elasticsearch.admin.inc',
     );
     $items[$pre . '/search/alter_search_forms'] = array(
-        'title' => t('Delete search forms'),
+        'title' => t('Alter search forms'),
         'page callback' => 'alter_search_forms_page',
         'access callback' => 'user_access',
         'access arguments' => array('administer users'),

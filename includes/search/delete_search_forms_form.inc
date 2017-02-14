@@ -1,7 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mingchen
- * Date: 1/31/17
- * Time: 3:00 PM
- */
+
+
+function delete_search_forms_form ($form, &$form_state) {
+    $form = [
+
+    ];
+
+    return $form;
+}
