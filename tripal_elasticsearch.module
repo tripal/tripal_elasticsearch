@@ -208,13 +208,13 @@ function tripal_elasticsearch_block_info()
         'cache' => DRUPAL_NO_CACHE,
     );
 
-    $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
+    $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch_search_forms');
     foreach ($result as $record) {
         // For some reason, block name cannot be longer than 32 chars
         $block_name_form = 'Search: ' . $record->table_name;
         $blocks[$block_name_form] = array(
             'info' => t(
-                'tripal_elasticsearch block for search form: ' . $record->table_name
+                'tripal_elasticsearch search form: ' . $record->table_name
             ),
             'status' => TRUE,
             'region' => 'content',
@@ -225,7 +225,7 @@ function tripal_elasticsearch_block_info()
         $block_name_hits = 'Hits: ' . $record->table_name;
         $blocks[$block_name_hits] = array(
             'info' => t(
-                'tripal_elasticsearch block for search results: ' . $record->table_name
+                'tripal_elasticsearch search results: ' . $record->table_name
             ),
             'status' => TRUE,
             'region' => 'content',
@@ -246,7 +246,7 @@ function tripal_elasticsearch_block_view($delta = '')
 {
 
     $block = array();
-    $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch');
+    $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch_search_forms');
     $table_names = array();
     foreach ($result as $record) {
         $table_names[] = $record->table_name;
@@ -260,58 +260,11 @@ function tripal_elasticsearch_block_view($delta = '')
         $form = 'Search: ' . $table;
         $hits = 'Hits: ' . $table;
 
-        // Get search hits
-        $form_input = isset($_SESSION['elastic_form_input']) ? $_SESSION['elastic_form_input'] : NULL;
-        if (!empty($form_input)) {
-            $index_table = _get_field_keyword_pairs($form_input)['table'];
-            $field_keyword_pairs = _get_field_keyword_pairs(
-                $form_input
-            )['field_keyword_pairs'];
-            $search_from = _get_field_keyword_pairs($form_input)['search_from'];
-            $search_from = intval($search_from);
-
-            //$search_from = !empty($search_from)?$search_from:0;
-            // Only display the results block for the corresponding form block
-            if ($table == $index_table and is_elastic_index($index_table)) {
-                $search_hits = _run_elastic_search(
-                    $table,
-                    $field_keyword_pairs,
-                    $from = $search_from
-                )['search_hits'];
-                $search_hits_count = _run_elastic_search(
-                    $table,
-                    $field_keyword_pairs
-                )['search_hits_count'];
-                $search_hits_count_html = '<h6><span style="color:red"><em>' . $search_hits_count . '</em></span> records were found. ';
-                $start = strval($search_from) + 1;
-                if ($start + 999 > $search_hits_count) {
-                    $end = $search_hits_count;
-                } else {
-                    $end = $start + 999;
-                }
-                /*
-                $search_hits_count_html .= 'Records from '.
-                                           '<span style="color:red"><em>'.$start.'</em></span>'.
-                                           ' to '.
-                                           '<span style="color:red"><em>'.$end.'</em></span>'.
-                                           ' are displayed.</h6>';
-                */
-                $search_hits_count_html .= '<span style="color:red"><em>' . $end . '</em></span>' . ' are displayed. You can click the download button to download all ' . $search_hits_count . ' results. </h6>';
-                if (!empty($search_hits)) {
-                    $search_hits_table = get_search_hits_table($search_hits, $table);
-                    $search_hits_table = $search_hits_count_html . $search_hits_table;
-                } else {
-                    $search_hits_table = '<font color="red">No records were found';
-                }
-            } else {
-                $search_hits_table = '';
-            }
-        }// ======= End of getting search hits=================
         switch ($delta) {
             case $form:
                 $block['subject'] = $form;
                 $block['content'] = drupal_get_form(
-                    'tripal_elasticsearch_blocks_form',
+                    'view_search_forms_form',
                     $table
                 );
                 break;
@@ -327,34 +280,7 @@ function tripal_elasticsearch_block_view($delta = '')
                 $block['content'] = drupal_get_form('main_search_box_form');
                 break;
             case 'main_search_results':
-                $main_search_keyword = isset($_SESSION['main_search_keyword']) ? $_SESSION['main_search_keyword'] : '';
 
-                $table = 'index_website';
-                $field_keyword_pairs = array('node_content' => $main_search_keyword);
-                if (!empty($main_search_keyword)) {
-                    $main_search_hits = _run_elastic_main_search(
-                        $table,
-                        $field_keyword_pairs
-                    )['main_search_hits'];
-                    if (!empty($main_search_hits)) {
-                        $main_search_hits_count = _run_elastic_main_search(
-                            $table,
-                            $field_keyword_pairs
-                        )['search_hits_count'];
-                        if ($main_search_hits_count == 'Error') {
-                            $main_search_hits_table = "<h2>The search is not available now. Please try again later.</h2>";
-                        } else {
-                            $main_search_hits_table = get_main_search_hits_table(
-                                $main_search_hits,
-                                $main_search_hits_count
-                            );
-                        }
-                    } else {
-                        $main_search_hits_table = '<h2><font color="red">No records were found.</font></h2>';
-                    }
-                } else {
-                    $main_search_hits_table = '';
-                }
                 $block['subject'] = '';
                 $block['content'] = $main_search_hits_table;
         }
