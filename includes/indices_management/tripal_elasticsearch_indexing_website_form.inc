@@ -86,10 +86,11 @@ function tripal_elasticsearch_indexing_website_form_submit($form, &$form_state)
 
     $queue_number = $form_state['values']['queue_number'];
     $website_base_url = $form_state['values']['website_base_url'];
+    variable_set('website_base_url', $website_base_url);
     $table_name = "node"; //$_POST['database_table'];
 
     // get index name
-    $index_name = "website"; //preg_replace('/\./', '_', $table_name);
+    $index_name = "website";
     // build character filters array
     $character_filters = array_filter(array_values($form_state['values']['CharacterFiltersElements']), "is_string");
     //$ElasticCharacterFilters = new ElasticCharacterFilters();

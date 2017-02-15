@@ -58,6 +58,18 @@ class ElasticIndex
         return $fields;
     }
 
+    public function GetFieldMappingTypes ($index_name)
+    {
+        $mappings = $this->client->indices()->getMapping(['index' => $index_name]);
+        $properties= $mappings[$index_name]['mappings']['_default_']['properties'];
+        $field_mapping_types = [];
+        foreach (array_keys($properties) as $field) {
+            $field_mapping_types[$field] = $properties[$field]['type'];
+        }
+
+        return $field_mapping_types;
+    }
+
     public function BuildIndex($param)
     {
         return $this->client->index($param);

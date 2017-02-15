@@ -49,6 +49,10 @@ function tripal_elasticsearch_menu()
         'file' => 'tripal_elasticsearch.admin.inc',
         'weight' => 1,
     );
+
+    //========= indices management ========
+    //
+    //=====================================
     $items[$pre . '/indices_management'] = array(
         'title' => t('Indexing Website'),
         'page callback' => 'indexing_website_page',
@@ -83,6 +87,9 @@ function tripal_elasticsearch_menu()
     );
 
 
+    // ============= elastic search ===========
+    //
+    // ========================================
     $items[$pre . '/search'] = array(
         'title' => t('Build search forms'),
         'page callback' => 'build_search_forms_page',
@@ -96,6 +103,16 @@ function tripal_elasticsearch_menu()
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'weight' => 1,
     );
+    $items[$pre . '/search/delete_search_forms'] = array(
+        'title' => t('Delete search forms'),
+        'page callback' => 'delete_search_forms_page',
+        'access callback' => 'user_access',
+        'access arguments' => array('administer users'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+        'file' => 'tripal_elasticsearch.admin.inc',
+    );
+    /*
     $items[$pre . '/search/link_results_to_pages'] = array(
         'title' => t('Link results to pages'),
         'page callback' => 'link_results_to_pages_page',
@@ -111,19 +128,12 @@ function tripal_elasticsearch_menu()
         'access callback' => 'user_access',
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
-        'weight' => 2,
-        'file' => 'tripal_elasticsearch.admin.inc',
-    );
-
-    $items[$pre . '/search/delete_search_forms'] = array(
-        'title' => t('Delete search forms'),
-        'page callback' => 'delete_search_forms_page',
-        'access callback' => 'user_access',
-        'access arguments' => array('administer users'),
-        'type' => MENU_LOCAL_TASK,
         'weight' => 4,
         'file' => 'tripal_elasticsearch.admin.inc',
     );
+    */
+
+
 
     return $items;
 }
@@ -302,7 +312,7 @@ function tripal_elasticsearch_block_view($delta = '')
             break;
         case '_sitewide_search_box':
             $block['subject'] = '';
-            $block['content'] = drupal_get_form('main_search_box_form');
+            $block['content'] = drupal_get_form('sitewide_search_box_form');
             break;
         case '_sitewide_search_results':
             $block['subject'] = '';
@@ -361,10 +371,19 @@ function tripal_elasticsearch_node_update($node)
     $n = rand(0, $queue_N - 1);
     $queue = DrupalQueue::get('elastic_queue_' . $n);
     $nid = $node->nid;
-    $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
+    $sql = "SELECT title,nid,type FROM node WHERE nid=$nid ;";
+
+    $connection = (new ElasticConnection(['localhost:9201']))->make();
+    $elastic_index = new ElasticIndex($connection);
+    $field_mapping_types = $elastic_index->GetFieldMappingTypes('website');
+
     $item = new stdClass();
+    $item->index = 'website';
+    $item->table = 'node';
+    $item->is_website = True;
     $item->sql = $sql;
-    $item->selected_table = 'index_website';
+    $item->website_base_url = variable_get('website_base_url', 'http://localhost:80');
+    $item->field_mapping_types = $field_mapping_types;
     $queue->createItem($item);
 }
 
@@ -374,15 +393,26 @@ function tripal_elasticsearch_node_update($node)
  */
 function tripal_elasticsearch_node_insert($node)
 {
+
+
     $queue_N = 10;
     // randomly assign the inserted node to a queue
     $n = rand(0, $queue_N - 1);
     $queue = DrupalQueue::get('elastic_queue_' . $n);
     $nid = $node->nid;
-    $sql = "SELECT title, nid FROM node WHERE nid=$nid ;";
+    $sql = "SELECT title,nid,type FROM node WHERE nid=$nid ;";
+
+    $connection = (new ElasticConnection(['localhost:9201']))->make();
+    $elastic_index = new ElasticIndex($connection);
+    $field_mapping_types = $elastic_index->GetFieldMappingTypes('website');
+
     $item = new stdClass();
+    $item->index = 'website';
+    $item->table = 'node';
+    $item->is_website = True;
     $item->sql = $sql;
-    $item->selected_table = 'index_website';
+    $item->website_base_url = variable_get('website_base_url', 'http://localhost:80');
+    $item->field_mapping_types = $field_mapping_types;
     $queue->createItem($item);
 }
 
@@ -393,6 +423,7 @@ function tripal_elasticsearch_node_insert($node)
  */
 function tripal_elasticsearch_node_delete($node)
 {
+    /*
     $nid = $node->nid;
     $params = array();
     $params = [
@@ -416,6 +447,7 @@ function tripal_elasticsearch_node_delete($node)
         'id' => $nid,
     ];
     $client->delete($params);
+    */
 }
 
 // Hide the drupal built-in search box
