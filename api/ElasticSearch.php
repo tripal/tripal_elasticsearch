@@ -54,6 +54,12 @@ class ElasticSearch
     }
 
     public function search ($params) {
-        return $this->client->search($params);
+        $hits = $this->client->search($params);
+        $search_res = [];
+        foreach ($hits['hits']['hits'] as $hit) {
+            $search_res[] = $hit['_source'];
+        }
+
+        return $search_res;
     }
 }

@@ -6,18 +6,6 @@
  * Time: 10:49 AM
  */
 
-/*
-$table_name = 'chado.cvterm';
-$res = db_select('tripal_elasticsearch_search_forms', 'e')
-    ->fields('e')
-    ->condition('table_name', $table_name)
-    ->execute();
-
-foreach ($res as $record) {
-    var_dump($record);
-}
-*/
-
 
 function view_search_forms_form ($form, &$form_state, $table_name) {
     //$table_name = 'chado.cvterm';
@@ -26,9 +14,15 @@ function view_search_forms_form ($form, &$form_state, $table_name) {
         ->condition('table_name', $table_name)
         ->execute();
 
+    $form['_table_name'] = [
+        '#type' => 'hidden',
+        '#value' => $table_name,
+    ];
+
     $form[$table_name] = [
         '#type' => 'fieldset',
         '#title' => $table_name,
+        '#tree' => true,
     ];
 
     $form_state['storage']['fields'] = [];
@@ -66,20 +60,16 @@ function view_search_forms_form ($form, &$form_state, $table_name) {
         '#value' => t('Search')
     ];
 
-    //$form['#method'] = 'get';
-    //$form['#submit'] = ['view_search_forms_form_submit'];
+    $form['#method'] = 'get';
 
-    /*
-     * preserve some data for submit callback function.
-     */
-    $form_state['storage']['table_name'] = $table_name;
+    $form_state['rebuild'] = true;
 
     return $form;
 }
 
 
-
 function view_search_forms_form_submit ($form, &$form_state) {
+
     $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
     $elastic_search = new ElasticSearch($connection);
 
@@ -96,7 +86,33 @@ function view_search_forms_form_submit ($form, &$form_state) {
 
     dpm($search_res);
 
+
+
+    // display search results in a table
+
+    $per_page = 10;
+    foreach ($form_state['storage']['fields'] as $field) {
+        $header[] = [
+            'data' => $field,
+            'field' => $field,
+        ];
+    }
+    $rows = $search_res;
+    $current_page = pager_default_initialize(count($rows), $per_page);
+    $chunks = array_chunk($rows, $per_page, TRUE);
+    $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page]));
+    $output .= theme('pager', array('quantity', count($rows)));
+
+    $form['search_results'] = [
+        '#markup' => $output,
+    ];
+
+
+
     $form_state['rebuild'] = true;
 }
+
+
+
 
 

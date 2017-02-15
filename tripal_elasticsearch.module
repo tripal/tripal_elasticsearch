@@ -273,7 +273,42 @@ function tripal_elasticsearch_block_view($delta = '')
                 break;
             case $hits:
                 $block['subject'] = $hits;
-                $block['content'] = !empty($search_hits_table) ? $search_hits_table : '';
+                //$block['content'] = !empty($search_hits_table) ? $search_hits_table : '';
+                if (isset($_GET['_table_name']) && !empty($_GET['_table_name'])) {
+                    // get elastic query data
+                    $table_name = $_GET['_table_name'];
+                    $index = preg_replace('/^chado./', 'chado_', $table_name);
+                    $type = $table_name;
+                    $field_content_pairs = $_GET[$index];
+
+                    // run elastic search
+                    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+                    $elastic_search = new ElasticSearch($connection);
+                    $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
+                    $params = $elastic_search->build_search_params($index = $index, $type = $type, $query = $query);
+                    $search_res = $elastic_search->search($params);
+
+                    // theme table elastic search results
+                    //display search results in a table
+                    $per_page = 10;
+                    foreach (array_keys($_GET[$index]) as $field) {
+                        $header[] = [
+                            'data' => $field,
+                            'field' => $field,
+                        ];
+                    }
+                    $rows = $search_res;
+                    $current_page = pager_default_initialize(count($rows), $per_page);
+                    $chunks = array_chunk($rows, $per_page, TRUE);
+                    $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page]));
+                    $output .= theme('pager', array('quantity', count($rows)));
+
+                    $block['content'] = $output;
+                } else {
+                    $block['content'] = '';
+                }
+
+                //$block['content'] = $_GET[$index]['name'];
                 break;
         }
     } else { // display the main search box block
@@ -401,3 +436,5 @@ function tripal_elasticsearch_block_view_search_form_alter(&$data, $block)
 {
     $data = NULL;
 }
+
+
