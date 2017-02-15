@@ -83,9 +83,6 @@ function tripal_elasticsearch_menu()
     );
 
 
-
-
-
     $items[$pre . '/search'] = array(
         'title' => t('Build search forms'),
         'page callback' => 'build_search_forms_page',
@@ -191,16 +188,16 @@ function tripal_elasticsearch_block_info()
 {
     $blocks = array();
     // Block for main search box.
-    $blocks['main_search_box'] = array(
-        'info' => t('tripal_elasticsearch main search box'),
+    $blocks['_sitewide_search_box'] = array(
+        'info' => t('tripal_elasticsearch sitewide search box'),
         'status' => TRUE,
-        'region' => 'header',
+        'region' => 'help',
         'cache' => DRUPAL_NO_CACHE,
         'weight' => -99,
     );
     // Block for main search results
-    $blocks['main_search_results'] = array(
-        'info' => t('tripal_elasticsearch main search results'),
+    $blocks['_sitewide_search_results'] = array(
+        'info' => t('tripal_elasticsearch sitewide search results'),
         'status' => TRUE,
         'region' => 'content',
         'visibility' => BLOCK_VISIBILITY_LISTED,
@@ -214,7 +211,9 @@ function tripal_elasticsearch_block_info()
     $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch_search_forms');
     foreach ($result as $record) {
         // For some reason, block name cannot be longer than 32 chars
-        $block_name_form = 'Search: ' . $record->table_name;
+        // prefix table name with "sf_" and use it for search form block names
+        // sf stands for search form
+        $block_name_form = '_sf_' . $record->table_name;
         $blocks[$block_name_form] = array(
             'info' => t(
                 'tripal_elasticsearch search form: ' . $record->table_name
@@ -225,7 +224,9 @@ function tripal_elasticsearch_block_info()
             'pages' => "elastic_search\nelastic_search/*",
             'cache' => DRUPAL_NO_CACHE,
         );
-        $block_name_hits = 'Hits: ' . $record->table_name;
+        // prefix table name with "sr_" and use it for search result block names
+        // sr stands for search result
+        $block_name_hits = '_sr_' . $record->table_name;
         $blocks[$block_name_hits] = array(
             'info' => t(
                 'tripal_elasticsearch search results: ' . $record->table_name
@@ -249,85 +250,71 @@ function tripal_elasticsearch_block_view($delta = '')
 {
 
     $block = array();
-    $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch_search_forms');
-    $table_names = array();
-    foreach ($result as $record) {
-        $table_names[] = $record->table_name;
+
+    // identify search form and search result blocks
+    $block_type = '';
+    $table_name = '';
+    if (preg_match('/^(_sf_)/', $delta)) {
+        $block_type = 'search_form_block';
+        $table_name = preg_replace('/^(_sf_)/', '', $delta);
     }
-    // strip off 'ES_form' or 'ES_hits' to get table name
-    //$table = substr($delta, 14);
-    $table = str_replace('Search: ', '', $delta);
-    $table = str_replace('Hits: ', '', $table);
+    if (preg_match('/^(_sr_)/', $delta)) {
+        $block_type = 'search_result_block';
+        $table_name = preg_replace('/^(_sf_)/', '', $delta);
+    }
+    if ($delta == "_sitewide_search_box") {
+        $block_type = '_sitewide_search_box';
+    }
+    if ($delta == "_sitewide_search_results") {
+        $block_type = '_sitewide_search_results';
+    }
 
-    if (in_array($table, $table_names)) {
-        $form = 'Search: ' . $table;
-        $hits = 'Hits: ' . $table;
+    switch ($block_type) {
+        case 'search_form_block':
+            $block['subject'] = $delta;
+            $block['content'] = drupal_get_form(
+                'view_search_forms_form',
+                $table_name
+            );
+            break;
+        case 'search_result_block':
+            $block['subject'] = $delta;
+            //$block['content'] = !empty($search_hits_table) ? $search_hits_table : '';
+            if (isset($_GET['_table_name']) && !empty($_GET['_table_name'])) {
+                // get elastic query data
+                $table_name = $_GET['_table_name'];
+                $index = preg_replace('/^(chado.)/', 'chado_', $table_name);
+                $type = $table_name;
+                $field_content_pairs = $_GET[$index];
 
-        switch ($delta) {
-            case $form:
-                $block['subject'] = $form;
-                $block['content'] = drupal_get_form(
-                    'view_search_forms_form',
-                    $table
-                );
-                break;
-            case $hits:
-                $block['subject'] = $hits;
-                //$block['content'] = !empty($search_hits_table) ? $search_hits_table : '';
-                if (isset($_GET['_table_name']) && !empty($_GET['_table_name'])) {
-                    // get elastic query data
-                    $table_name = $_GET['_table_name'];
-                    $index = preg_replace('/^chado./', 'chado_', $table_name);
-                    $type = $table_name;
-                    $field_content_pairs = $_GET[$index];
+                // run elastic search
+                $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+                $elastic_search = new ElasticSearch($connection);
+                $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
+                $params = $elastic_search->build_search_params($index = $index, $type = $type, $query = $query);
+                $search_res = $elastic_search->search($params);
 
-                    // run elastic search
-                    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
-                    $elastic_search = new ElasticSearch($connection);
-                    $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
-                    $params = $elastic_search->build_search_params($index = $index, $type = $type, $query = $query);
-                    $search_res = $elastic_search->search($params);
-
-                    // theme table elastic search results
-                    //display search results in a table
-                    $per_page = 10;
-                    foreach (array_keys($_GET[$index]) as $field) {
-                        $header[] = [
-                            'data' => $field,
-                            'field' => $field,
-                        ];
-                    }
-                    $rows = $search_res;
-                    $current_page = pager_default_initialize(count($rows), $per_page);
-                    $chunks = array_chunk($rows, $per_page, TRUE);
-                    $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page]));
-                    $output .= theme('pager', array('quantity', count($rows)));
-
-                    $block['content'] = $output;
-                } else {
-                    $block['content'] = '';
-                }
-
-                //$block['content'] = $_GET[$index]['name'];
-                break;
-        }
-    } else { // display the main search box block
-        switch ($delta) {
-            case 'main_search_box':
-                $block['subject'] = '';
-                $block['content'] = drupal_get_form('main_search_box_form');
-                break;
-            case 'main_search_results':
-
-                $block['subject'] = '';
-                $block['content'] = $main_search_hits_table;
-        }
+                $block['content'] = theme('database_table_search_results', ['database_table_search_results' => $search_res, 'field_content_pairs' => $field_content_pairs]);
+            } else {
+                $block['content'] = '';
+            }
+            //$block['content'] = $_GET[$index]['name'];
+            break;
+        case '_sitewide_search_box':
+            $block['subject'] = '';
+            $block['content'] = drupal_get_form('main_search_box_form');
+            break;
+        case '_sitewide_search_results':
+            $block['subject'] = '';
+            $block['content'] = 'This is some search results';
     }
 
 
+    /*
     drupal_add_js(
         drupal_get_path('module', 'tripal_elasticsearch') . '/js/hit_description.js'
     );
+    */
 
     return $block;
 }
@@ -438,3 +425,18 @@ function tripal_elasticsearch_block_view_search_form_alter(&$data, $block)
 }
 
 
+/*
+ * implement hook_theme.
+ */
+function tripal_elasticsearch_theme($existing, $type, $theme, $path)
+{
+    $theme_hooks['database_table_search_results'] = [
+        'variables' => [
+            'table_search_results' => null,
+            'field_content_pairs' => null,
+        ],
+        'file' => 'tripal_elasticsearch.theme.inc',
+    ];
+
+    return $theme_hooks;
+}
