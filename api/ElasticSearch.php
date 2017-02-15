@@ -40,7 +40,7 @@ class ElasticSearch
         return $query;
     }
 
-    public function build_search_params ($index, $type, $query, $from=0, $size=1000) {
+    public function build_table_search_params ($index, $type, $query, $from=0, $size=1000) {
         $params = [];
         $params['index'] = $index;
         $params['type'] = $type;
@@ -53,7 +53,50 @@ class ElasticSearch
         return $params;
     }
 
-    public function search ($params) {
+    public function build_website_search_params ($index='website', $type='website', $search_content='', $from=0, $size=1000) {
+        $query = [
+            "query_string" => [
+                "default_field" => "body",
+                "query" => $search_content,
+                "default_operator" => "OR"
+            ]
+        ];
+
+        $highlight = [
+            "pre_tags" => ["<em><b>"],
+            "post_tags" => ["</b></em>"],
+            "fields" => [
+                "body" =>  [
+                    "fragment_size" => 150
+                ]
+            ]
+        ];
+
+        $params = [];
+        $params['index'] = $index;
+        $params['type'] = $type;
+        $params['body'] = [
+            'query' => $query,
+            'highlight' => $highlight
+        ];
+        $params['from'] = $from;
+        $params['size'] = $size;
+
+        return $params;
+
+    }
+
+    public function table_search ($params) {
+        $hits = $this->client->search($params);
+        $search_res = [];
+        foreach ($hits['hits']['hits'] as $hit) {
+            $search_res[] = $hit['_source'];
+        }
+
+        return $search_res;
+    }
+
+    public function website_search ($params) {
         $hits = $this->client->search($params);
         $search_res = [];
         foreach ($hits['hits']['hits'] as $hit) {

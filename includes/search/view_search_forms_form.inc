@@ -68,6 +68,7 @@ function view_search_forms_form ($form, &$form_state, $table_name) {
 }
 
 
+/*
 function view_search_forms_form_submit ($form, &$form_state) {
 
     $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
@@ -81,7 +82,7 @@ function view_search_forms_form_submit ($form, &$form_state) {
         $field_content_pairs[$field] = $form_state['values'][$field];
     }
     $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
-    $params = $elastic_search->build_search_params($index = $index, $type = $type, $query = $query);
+    $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query);
     $search_res = $elastic_search->search($params);
 
     dpm($search_res);
@@ -111,7 +112,7 @@ function view_search_forms_form_submit ($form, &$form_state) {
 
     $form_state['rebuild'] = true;
 }
-
+*/
 
 
 

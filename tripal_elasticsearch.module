@@ -301,8 +301,8 @@ function tripal_elasticsearch_block_view($delta = '')
                 $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
                 $elastic_search = new ElasticSearch($connection);
                 $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
-                $params = $elastic_search->build_search_params($index = $index, $type = $type, $query = $query);
-                $search_res = $elastic_search->search($params);
+                $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query);
+                $search_res = $elastic_search->table_search($params);
 
                 $block['content'] = theme('database_table_search_results', ['database_table_search_results' => $search_res, 'field_content_pairs' => $field_content_pairs]);
             } else {
@@ -316,7 +316,25 @@ function tripal_elasticsearch_block_view($delta = '')
             break;
         case '_sitewide_search_results':
             $block['subject'] = '';
-            $block['content'] = 'This is some search results';
+
+            if (isset($_GET['sitewide_search_box']) && !empty($_GET['sitewide_search_box'])) {
+                $search_content = $_GET['sitewide_search_box'];
+                // run elastic search
+                $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+                $elastic_search = new ElasticSearch($connection);
+                $params = $elastic_search->build_website_search_params($index='website', $type='website', $search_content=$search_content, $from=0, $size=1000);
+                $search_res = $elastic_search->website_search($params);
+
+                dpm($search_res);
+
+                $block['content'] = 'elasticsearch';
+            } else {
+                $block['content'] = 'This is some search results';
+            }
+
+
+
+
     }
 
 
