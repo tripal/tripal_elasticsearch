@@ -208,6 +208,9 @@ function tripal_elasticsearch_block_info()
         'cache' => DRUPAL_NO_CACHE,
     );
 
+    /*
+     * build blocks for each table in the tripal_elasticsearch_search_forms database table
+     */
     $result = db_query('SELECT DISTINCT(table_name) FROM tripal_elasticsearch_search_forms');
     foreach ($result as $record) {
         // For some reason, block name cannot be longer than 32 chars

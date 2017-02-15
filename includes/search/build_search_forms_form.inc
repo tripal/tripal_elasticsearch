@@ -54,8 +54,8 @@ function build_search_forms_form ($form, &$form_state) {
                 '#type' => 'select',
                 '#title' => t('Form Field Input Type'),
                 '#options' => [
-                    '#textfield' => 'Input Box',
-                    '#select' => 'Drop Down'
+                    'textfield' => 'Input Box',
+                    'select' => 'Drop Down'
                 ],
             ];
             $form['form_fields'][$field]['field_weight'] = [

@@ -7,6 +7,7 @@ require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/CronQueue
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticCharacterFilters.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticConnection.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticIndex.php';
+require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticSearch.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticTokenFilters.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/GetTableList.php';
