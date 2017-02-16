@@ -90,6 +90,7 @@ function theme_website_search_results ($variables) {
     $output .= theme('table', array('header' => [], 'rows' => $chunks[$current_page]));
     $output .= theme('pager', array('quantity', count($rows)));
 
+
     return $output;
 }
 
@@ -109,7 +110,7 @@ function theme_website_search_categories ($variables) {
     $categories = [];
     foreach ($node_type_by_count as $type=>$count) {
         $text = "$type ($count)";
-        $categories[] = l($text, 'website-search/' . $type . '?sitewide_search_box=' . $search_content);
+        $categories[] = l($text, 'website-search/' . $type . '?website_search_box=' . $search_content);
     }
     $output = theme('item_list', array('items' => $categories));
 

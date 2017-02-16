@@ -96,7 +96,7 @@ function delete_indices_page()
 function build_search_forms_page ()
 {
     // create a connection port
-    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+    // $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
     return drupal_get_form ('build_search_forms_form');
 
     /*
@@ -116,14 +116,11 @@ function build_search_forms_page ()
  */
 function link_results_to_pages_page ()
 {
-    // create a connection port
-    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
-    if ($connection) {
-        return drupal_get_form ('link_results_to_pages_form');
-    } else {
-        drupal_set_message ('Elasticsearch cluster is disconnected.', 'warning');
-        return '';
-    }
+    $example_form = drupal_get_form('link_results_to_pages_example_form');
+    $form = drupal_get_form('link_results_to_pages_form');
+    $output = drupal_render($example_form).drupal_render($form);
+
+    return $output;
 
 }
 

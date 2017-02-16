@@ -68,52 +68,6 @@ function view_search_forms_form ($form, &$form_state, $table_name) {
 }
 
 
-/*
-function view_search_forms_form_submit ($form, &$form_state) {
-
-    $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
-    $elastic_search = new ElasticSearch($connection);
-
-    $table_name = $form_state['storage']['table_name'];
-    $index = preg_replace('/^chado./', 'chado_', $table_name);
-    $type = $table_name;
-
-    foreach ($form_state['storage']['fields'] as $field) {
-        $field_content_pairs[$field] = $form_state['values'][$field];
-    }
-    $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
-    $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query);
-    $search_res = $elastic_search->search($params);
-
-    dpm($search_res);
-
-
-
-    // display search results in a table
-
-    $per_page = 10;
-    foreach ($form_state['storage']['fields'] as $field) {
-        $header[] = [
-            'data' => $field,
-            'field' => $field,
-        ];
-    }
-    $rows = $search_res;
-    $current_page = pager_default_initialize(count($rows), $per_page);
-    $chunks = array_chunk($rows, $per_page, TRUE);
-    $output = theme('table', array('header' => $header, 'rows' => $chunks[$current_page]));
-    $output .= theme('pager', array('quantity', count($rows)));
-
-    $form['search_results'] = [
-        '#markup' => $output,
-    ];
-
-
-
-    $form_state['rebuild'] = true;
-}
-*/
-
 
 
 

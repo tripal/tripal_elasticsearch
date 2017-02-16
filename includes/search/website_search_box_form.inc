@@ -1,7 +1,7 @@
 <?php
 
-function sitewide_search_box_form ($form, &$form_state) {
-    $form['sitewide_search_box'] = [
+function website_search_box_form ($form, &$form_state) {
+    $form['website_search_box'] = [
         '#type' => 'textfield',
     ];
 

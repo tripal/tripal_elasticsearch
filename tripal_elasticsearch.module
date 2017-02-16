@@ -2,10 +2,6 @@
 
 require drupal_get_path('module', 'tripal_elasticsearch') . '/api/bootstrap.php';
 
-
-set_time_limit(0);
-
-
 /**
  * Implementation of hook_menu().
  */
@@ -102,7 +98,6 @@ function tripal_elasticsearch_menu()
         'weight' => 2,
         'file' => 'tripal_elasticsearch.admin.inc',
     );
-    /*
     $items[$pre . '/search/link_results_to_pages'] = array(
         'title' => t('Link results to pages'),
         'page callback' => 'link_results_to_pages_page',
@@ -112,21 +107,10 @@ function tripal_elasticsearch_menu()
         'weight' => 3,
         'file' => 'tripal_elasticsearch.admin.inc',
     );
-    $items[$pre . '/search/alter_search_forms'] = array(
-        'title' => t('Alter search forms'),
-        'page callback' => 'alter_search_forms_page',
-        'access callback' => 'user_access',
-        'access arguments' => array('administer users'),
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 4,
-        'file' => 'tripal_elasticsearch.admin.inc',
-    );
-    */
 
-    $items['website-search/%'] = [
-        'title' => t('Website Search'),
-        'page callback' => 'website_search_results_page',
-        'page arguments' => array(1),
+    $items['table_search'] = [
+        'title' => t(''),
+        'page callback' => 'database_table_search_results_page',
         'access callback' => true,
     ];
 
@@ -134,9 +118,11 @@ function tripal_elasticsearch_menu()
 }
 
 
-function website_search_results_page($node_type)
+/*
+ * create an empty page for displaying website search results
+ */
+function database_table_search_results_page()
 {
-
     return '';
 }
 
@@ -147,21 +133,20 @@ function tripal_elasticsearch_block_info()
 {
     $blocks = array();
     // Block for main search box.
-    $blocks['_sitewide_search_box'] = array(
-        'info' => t('tripal_elasticsearch sitewide search box'),
+    $blocks['_website_search_box'] = array(
+        'info' => t('tripal_elasticsearch website search box'),
         'status' => TRUE,
         'region' => 'help',
         'cache' => DRUPAL_NO_CACHE,
         'weight' => -99,
     );
     // Block for main search results
-    $blocks['_sitewide_search_results'] = array(
-        'info' => t('tripal_elasticsearch sitewide search results'),
+    $blocks['_website_search_results'] = array(
+        'info' => t('tripal_elasticsearch website search results'),
         'status' => TRUE,
         'region' => 'content',
-        'visibility' => BLOCK_VISIBILITY_LISTED,
-        'pages' => "website-search\nwebsite-search/*",
         'cache' => DRUPAL_NO_CACHE,
+        'weight' => -999,
     );
 
     //=================TODO======================
@@ -169,8 +154,8 @@ function tripal_elasticsearch_block_info()
     //===========================================
     /*
     // block for website search categories
-    $blocks['_sitewide_search_categories'] = [
-        'info' => t('tripal_elasticsearch sitewide search categories'),
+    $blocks['_website_search_categories'] = [
+        'info' => t('tripal_elasticsearch website search categories'),
         'status' => true,
         'region' => 'content',
         'visibility' => BLOCK_VISIBILITY_LISTED,
@@ -196,7 +181,7 @@ function tripal_elasticsearch_block_info()
             'status' => TRUE,
             'region' => 'content',
             'visibility' => BLOCK_VISIBILITY_LISTED,
-            'pages' => "elastic_search\nelastic_search/*",
+            'pages' => "table_search\ntable_search/*",
             'cache' => DRUPAL_NO_CACHE,
         );
         // prefix table name with "sr_" and use it for search result block names
@@ -209,7 +194,7 @@ function tripal_elasticsearch_block_info()
             'status' => TRUE,
             'region' => 'content',
             'visibility' => BLOCK_VISIBILITY_LISTED,
-            'pages' => "elastic_search\nelastic_search/*",
+            'pages' => "table_search\ntable_search/*",
             'cache' => DRUPAL_NO_CACHE,
         );
     }
@@ -237,14 +222,14 @@ function tripal_elasticsearch_block_view($delta = '')
         $block_type = 'search_result_block';
         $table_name = preg_replace('/^(_sf_)/', '', $delta);
     }
-    if ($delta == "_sitewide_search_box") {
-        $block_type = '_sitewide_search_box';
+    if ($delta == "_website_search_box") {
+        $block_type = '_website_search_box';
     }
-    if ($delta == "_sitewide_search_results") {
-        $block_type = '_sitewide_search_results';
+    if ($delta == "_website_search_results") {
+        $block_type = '_website_search_results';
     }
-    if ($delta == "_sitewide_search_categories") {
-        $block_type = '_sitewide_search_categories';
+    if ($delta == "_website_search_categories") {
+        $block_type = '_website_search_categories';
     }
 
     switch ($block_type) {
@@ -261,36 +246,21 @@ function tripal_elasticsearch_block_view($delta = '')
             if (isset($_GET['_table_name']) && !empty($_GET['_table_name'])) {
                 $block['content'] = theme('database_table_search_results', ['table_name' => $_GET['_table_name']]);
             } else {
-                $block['content'] = 'No records were found';
+                $block['content'] = '';
             }
             break;
-        case '_sitewide_search_box':
+        case '_website_search_box':
             $block['subject'] = '';
-            $block['content'] = drupal_get_form('sitewide_search_box_form');
+            $block['content'] = drupal_get_form('website_search_box_form');
             break;
-        case '_sitewide_search_results':
+        case '_website_search_results':
             $block['subject'] = '';
 
-            if (isset($_GET['sitewide_search_box']) && !empty($_GET['sitewide_search_box'])) {
-                $search_content = $_GET['sitewide_search_box'];
-
-                /*
-                // run elastic search
-                $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
-                $elastic_search = new ElasticSearch($connection);
-                $params = $elastic_search->build_website_search_params($index = 'website', $type = 'website', $search_content = $search_content, $from = 0, $size = 1000);
-                $search_res = $elastic_search->website_search($params);
-                $elastic_search->search_count($params);
-
-                if (!empty($search_res)) {
-                    $block['content'] = theme('website_search_results', ['website_search_results' => $search_res]);
-                } else {
-                    $block['content'] = 'No records were found.';
-                }
-                */
+            if (isset($_GET['website_search_box']) && !empty($_GET['website_search_box'])) {
+                $search_content = $_GET['website_search_box'];
                 $block['content'] = theme('website_search_results', ['search_content' => $search_content]);
             } else {
-                $block['content'] = 'No records were found.';
+                $block['content'] = '';
             }
             break;
 
@@ -298,11 +268,11 @@ function tripal_elasticsearch_block_view($delta = '')
         //
         //===========================================
         /*
-        case '_sitewide_search_categories':
+        case '_website_search_categories':
             $block['subject'] = t('Search result categories');
 
-            if (isset($_GET['sitewide_search_box']) && !empty($_GET['sitewide_search_box'])) {
-                $search_content = $_GET['sitewide_search_box'];
+            if (isset($_GET['website_search_box']) && !empty($_GET['website_search_box'])) {
+                $search_content = $_GET['website_search_box'];
                 // run elastic search
                 $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
                 $elastic_search = new ElasticSearch($connection);
