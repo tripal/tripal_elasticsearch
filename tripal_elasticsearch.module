@@ -1,15 +1,5 @@
 <?php
 
-/*
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/vendor/autoload.php';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/tripal_elasticsearch.api.php';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/CronQueueWorker.php';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticConnection.php';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/CronQueueWorker.php';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search/tripal_elasticsearch_main_search_box_form.inc';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search/tripal_elasticsearch_blocks_form.inc';
-*/
-
 require drupal_get_path('module', 'tripal_elasticsearch') . '/api/bootstrap.php';
 
 
@@ -133,62 +123,20 @@ function tripal_elasticsearch_menu()
     );
     */
 
-
+    $items['website-search/%'] = [
+        'title' => t('Website Search'),
+        'page callback' => 'website_search_results_page',
+        'page arguments' => array(1),
+        'access callback' => true,
+    ];
 
     return $items;
 }
 
 
-function build_tripal_elasticelastic_block_page()
-{
-    $client = Elasticsearch\ClientBuilder::create()->setHosts(
-        variable_get('elasticsearch_hosts', array('localhost:9200'))
-    )->build();
-    try {
-        $client_health = $client->cat()->health();
-        return drupal_get_form('build_tripal_elasticsearch_block_form');
-    } catch (\Exception $e) {
-        $message = $e->getMessage();
-        $output = "<h2><font color='red'>$message. Please check if your elasticsearch cluster is running normally.</font></h2>";
-        return $output;
-    }
-}
+function website_search_results_page ($node_type) {
 
-function delete_tripal_elasticsearch_blocks_page()
-{
-    return drupal_get_form('delete_tripal_elasticsearch_blocks_form');
-}
-
-function tripal_elasticsearch_add_links_page()
-{
-    $example_form = drupal_get_form(
-        'tripal_elasticsearch_add_links_example_form'
-    );
-    $form = drupal_get_form('tripal_elasticsearch_add_links_form');
-    $output = drupal_render($example_form) . drupal_render($form);
-    return $output;
-}
-
-function tripal_elasticsearch_alter_form_page()
-{
-    return drupal_get_form('tripal_elasticsearch_alter_form');
-}
-
-/*
- * Create an empty page for hosting tripal_elasticsearch blocks
- * These blocks are configurable and can be placed anywhere else.
- */
-function tripal_elasticsearch_page()
-{
-    return '';
-}
-
-/*
- * Create an empty page for site wide searching results.
- */
-function tripal_elasticsearch_main_search_page()
-{
-    return '';
+    return 'This is the page for node type ' . $node_type;
 }
 
 /**
@@ -211,9 +159,18 @@ function tripal_elasticsearch_block_info()
         'status' => TRUE,
         'region' => 'content',
         'visibility' => BLOCK_VISIBILITY_LISTED,
-        'pages' => "search-website",
+        'pages' => "website-search\nwebsite-search/*",
         'cache' => DRUPAL_NO_CACHE,
     );
+    // block for website search categories
+    $blocks['_sitewide_search_categories'] = [
+        'info' => t('tripal_elasticsearch sitewide search categories'),
+        'status' => true,
+        'region' => 'content',
+        'visibility' => BLOCK_VISIBILITY_LISTED,
+        'pages' => "website-search\nwebsite-search/*",
+        'cache' => DRUPAL_NO_CACHE,
+    ];
 
     /*
      * build blocks for each table in the tripal_elasticsearch_search_forms database table
@@ -278,6 +235,9 @@ function tripal_elasticsearch_block_view($delta = '')
     if ($delta == "_sitewide_search_results") {
         $block_type = '_sitewide_search_results';
     }
+    if ($delta == "_sitewide_search_categories") {
+        $block_type = '_sitewide_search_categories';
+    }
 
     switch ($block_type) {
         case 'search_form_block':
@@ -325,14 +285,29 @@ function tripal_elasticsearch_block_view($delta = '')
                 $params = $elastic_search->build_website_search_params($index='website', $type='website', $search_content=$search_content, $from=0, $size=1000);
                 $search_res = $elastic_search->website_search($params);
 
-                dpm($search_res);
 
-                $block['content'] = 'elasticsearch';
+                $block['content'] = theme('website_search_results', ['website_search_results' => $search_res]);
             } else {
-                $block['content'] = 'This is some search results';
+                $block['content'] = 'This is website search results';
             }
+            break;
+        case '_sitewide_search_categories':
+            $block['subject'] = t('Search result categories');
+
+            if (isset($_GET['sitewide_search_box']) && !empty($_GET['sitewide_search_box'])) {
+                $search_content = $_GET['sitewide_search_box'];
+                // run elastic search
+                $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
+                $elastic_search = new ElasticSearch($connection);
+                $params = $elastic_search->build_website_search_params($index='website', $type='website', $search_content=$search_content, $from=0, $size=1000);
+                $search_res = $elastic_search->website_search($params);
 
 
+
+                $block['content'] = theme('website_search_categories', ['website_search_results' => $search_res, 'search_content' => $search_content]);
+            } else {
+                $block['content'] = 'categories';
+            }
 
 
     }
@@ -487,6 +462,20 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path)
         ],
         'file' => 'tripal_elasticsearch.theme.inc',
     ];
+    $theme_hooks['website_search_results'] = [
+        'variables' => [
+            'website_search_results' => null,
+        ],
+        'file' => 'tripal_elasticsearch.theme.inc',
+    ];
+    $theme_hooks['website_search_categories'] = [
+        'variables' => [
+            'website_search_results' => null,
+            'search_content' => null,
+        ],
+        'file' => 'tripal_elasticsearch.theme.inc',
+    ];
 
     return $theme_hooks;
 }
+
