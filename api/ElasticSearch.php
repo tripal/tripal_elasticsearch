@@ -41,16 +41,18 @@ class ElasticSearch
         return $query;
     }
 
-    public function build_table_search_params ($index, $type, $query, $from=0, $size=1000) {
+    public function build_table_search_params ($index, $type, $query, $from=0, $size=1000, $sort_field, $sort_direction = 'asc' ) {
         $params = [];
         $params['index'] = $index;
         $params['type'] = $type;
         $params['body'] = [
-            'query' => $query
+            'query' => $query,
+            'sort' => [
+                $sort_field . ".raw" => $sort_direction,
+            ]
         ];
         $params['from'] = $from;
         $params['size'] = $size;
-
         return $params;
     }
 
@@ -83,6 +85,7 @@ class ElasticSearch
         $params['from'] = $from;
         $params['size'] = $size;
 
+
         return $params;
 
     }
@@ -97,6 +100,16 @@ class ElasticSearch
         return $search_res;
     }
 
+    public function search_count ($params) {
+        unset($params['from']);
+        unset($params['size']);
+        unset($params['scroll']);
+        $count = $this->client->count($params);
+        $count = $count['count'];
+
+        return $count;
+    }
+
     public function website_search ($params) {
         $hits = $this->client->search($params);
         $search_res = [];
@@ -108,5 +121,6 @@ class ElasticSearch
 
         return $search_res;
     }
+
 
 }

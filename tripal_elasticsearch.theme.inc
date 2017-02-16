@@ -14,12 +14,13 @@ function theme_database_table_search_results ($variables) {
     $field_content_pairs = $variables['field_content_pairs'];
 
     $per_page = 10;
-    foreach ($field_content_pairs as $field) {
-        $header[] = [
+    foreach (array_keys($search_res[0]) as $field) {
+        $header[$field] = [
             'data' => $field,
             'field' => $field,
         ];
     }
+
     $rows = $search_res;
     $current_page = pager_default_initialize(count($rows), $per_page);
     $chunks = array_chunk($rows, $per_page, TRUE);

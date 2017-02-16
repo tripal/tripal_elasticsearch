@@ -134,7 +134,8 @@ function tripal_elasticsearch_menu()
 }
 
 
-function website_search_results_page ($node_type) {
+function website_search_results_page($node_type)
+{
 
     return '';
 }
@@ -260,7 +261,7 @@ function tripal_elasticsearch_block_view($delta = '')
             if (isset($_GET['_table_name']) && !empty($_GET['_table_name'])) {
                 // get elastic query data
                 $table_name = $_GET['_table_name'];
-                $index = preg_replace('/^(chado.)/', 'chado_', $table_name);
+                $index = preg_replace('/^chado./', 'chado_', $table_name);
                 $type = $table_name;
                 $field_content_pairs = $_GET[$index];
 
@@ -268,8 +269,10 @@ function tripal_elasticsearch_block_view($delta = '')
                 $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
                 $elastic_search = new ElasticSearch($connection);
                 $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
-                $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query);
+                $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query, $from = 0, $size = 10000, $field_content_pairs = $field_content_pairs);
                 $search_res = $elastic_search->table_search($params);
+
+                //dpm($elastic_search->search_count($params));
 
                 if (!empty($search_res)) {
                     $block['content'] = theme('database_table_search_results', ['database_table_search_results' => $search_res, 'field_content_pairs' => $field_content_pairs]);
@@ -293,9 +296,9 @@ function tripal_elasticsearch_block_view($delta = '')
                 // run elastic search
                 $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
                 $elastic_search = new ElasticSearch($connection);
-                $params = $elastic_search->build_website_search_params($index='website', $type='website', $search_content=$search_content, $from=0, $size=1000);
+                $params = $elastic_search->build_website_search_params($index = 'website', $type = 'website', $search_content = $search_content, $from = 0, $size = 1000);
                 $search_res = $elastic_search->website_search($params);
-
+                $elastic_search->search_count($params);
                 if (!empty($search_res)) {
                     $block['content'] = theme('website_search_results', ['website_search_results' => $search_res]);
                 } else {
@@ -461,12 +464,6 @@ function tripal_elasticsearch_node_delete($node)
     ];
     $client->delete($params);
     */
-}
-
-// Hide the drupal built-in search box
-function tripal_elasticsearch_block_view_search_form_alter(&$data, $block)
-{
-    $data = NULL;
 }
 
 

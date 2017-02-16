@@ -94,6 +94,12 @@ class BuildElasticIndex
             $properties[$field] = [
                 'type' => $mapping_type,
                 //'analyzer' => $this->analyzer_name
+                'fields' => [
+                    'raw' => [
+                        'type' => $mapping_type,
+                        'index' => 'not_analyzed',
+                    ]
+                ]
             ];
         }
 
