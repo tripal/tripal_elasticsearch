@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * Created by PhpStorm.
  * User: mingchen
@@ -24,7 +25,7 @@ class ElasticSearch
                 $queries[] = [
                     $query_method => [
                         "default_field" => $field,
-                        "query" => $content,
+                        "query" => _remove_special_chars($content),
                         "default_operator" => "OR"
                     ]
                 ];

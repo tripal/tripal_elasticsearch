@@ -136,7 +136,7 @@ function tripal_elasticsearch_menu()
 
 function website_search_results_page ($node_type) {
 
-    return 'This is the page for node type ' . $node_type;
+    return '';
 }
 
 /**
@@ -162,6 +162,11 @@ function tripal_elasticsearch_block_info()
         'pages' => "website-search\nwebsite-search/*",
         'cache' => DRUPAL_NO_CACHE,
     );
+
+    //=================TODO======================
+    //
+    //===========================================
+    /*
     // block for website search categories
     $blocks['_sitewide_search_categories'] = [
         'info' => t('tripal_elasticsearch sitewide search categories'),
@@ -171,6 +176,8 @@ function tripal_elasticsearch_block_info()
         'pages' => "website-search\nwebsite-search/*",
         'cache' => DRUPAL_NO_CACHE,
     ];
+    */
+    //=========== ENDofTODO =====================
 
     /*
      * build blocks for each table in the tripal_elasticsearch_search_forms database table
@@ -264,9 +271,13 @@ function tripal_elasticsearch_block_view($delta = '')
                 $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query);
                 $search_res = $elastic_search->table_search($params);
 
-                $block['content'] = theme('database_table_search_results', ['database_table_search_results' => $search_res, 'field_content_pairs' => $field_content_pairs]);
+                if (!empty($search_res)) {
+                    $block['content'] = theme('database_table_search_results', ['database_table_search_results' => $search_res, 'field_content_pairs' => $field_content_pairs]);
+                } else {
+                    $block['content'] = 'No records were found.';
+                }
             } else {
-                $block['content'] = '';
+                $block['content'] = 'No records were found';
             }
             //$block['content'] = $_GET[$index]['name'];
             break;
@@ -285,12 +296,20 @@ function tripal_elasticsearch_block_view($delta = '')
                 $params = $elastic_search->build_website_search_params($index='website', $type='website', $search_content=$search_content, $from=0, $size=1000);
                 $search_res = $elastic_search->website_search($params);
 
-
-                $block['content'] = theme('website_search_results', ['website_search_results' => $search_res]);
+                if (!empty($search_res)) {
+                    $block['content'] = theme('website_search_results', ['website_search_results' => $search_res]);
+                } else {
+                    $block['content'] = 'No records were found.';
+                }
             } else {
-                $block['content'] = 'This is website search results';
+                $block['content'] = 'No records were found.';
             }
             break;
+
+        //=================TODO======================
+        //
+        //===========================================
+        /*
         case '_sitewide_search_categories':
             $block['subject'] = t('Search result categories');
 
@@ -308,6 +327,7 @@ function tripal_elasticsearch_block_view($delta = '')
             } else {
                 $block['content'] = 'categories';
             }
+        */
 
 
     }

@@ -11,7 +11,7 @@ require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticSe
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/ElasticTokenFilters.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/FormElementsForIndex.php';
 require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/GetTableList.php';
-require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/tripal_elasticsearch.api.php';
+//require_once drupal_get_path('module', 'tripal_elasticsearch') . '/api/tripal_elasticsearch.api.php';
 
 
 
