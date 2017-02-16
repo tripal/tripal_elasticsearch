@@ -259,30 +259,10 @@ function tripal_elasticsearch_block_view($delta = '')
             $block['subject'] = $delta;
             //$block['content'] = !empty($search_hits_table) ? $search_hits_table : '';
             if (isset($_GET['_table_name']) && !empty($_GET['_table_name'])) {
-                // get elastic query data
-                $table_name = $_GET['_table_name'];
-                $index = preg_replace('/^chado./', 'chado_', $table_name);
-                $type = $table_name;
-                $field_content_pairs = $_GET[$index];
-
-                // run elastic search
-                $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
-                $elastic_search = new ElasticSearch($connection);
-                $query = $elastic_search->build_search_query_from_field_content_pairs($field_content_pairs);
-                $params = $elastic_search->build_table_search_params($index = $index, $type = $type, $query = $query, $from = 0, $size = 10000, $field_content_pairs = $field_content_pairs);
-                $search_res = $elastic_search->table_search($params);
-
-                //dpm($elastic_search->search_count($params));
-
-                if (!empty($search_res)) {
-                    $block['content'] = theme('database_table_search_results', ['database_table_search_results' => $search_res, 'field_content_pairs' => $field_content_pairs]);
-                } else {
-                    $block['content'] = 'No records were found.';
-                }
+                $block['content'] = theme('database_table_search_results', ['table_name' => $_GET['_table_name']]);
             } else {
                 $block['content'] = 'No records were found';
             }
-            //$block['content'] = $_GET[$index]['name'];
             break;
         case '_sitewide_search_box':
             $block['subject'] = '';
@@ -293,17 +273,22 @@ function tripal_elasticsearch_block_view($delta = '')
 
             if (isset($_GET['sitewide_search_box']) && !empty($_GET['sitewide_search_box'])) {
                 $search_content = $_GET['sitewide_search_box'];
+
+                /*
                 // run elastic search
                 $connection = (new ElasticConnection(["127.0.0.1:9201"]))->make();
                 $elastic_search = new ElasticSearch($connection);
                 $params = $elastic_search->build_website_search_params($index = 'website', $type = 'website', $search_content = $search_content, $from = 0, $size = 1000);
                 $search_res = $elastic_search->website_search($params);
                 $elastic_search->search_count($params);
+
                 if (!empty($search_res)) {
                     $block['content'] = theme('website_search_results', ['website_search_results' => $search_res]);
                 } else {
                     $block['content'] = 'No records were found.';
                 }
+                */
+                $block['content'] = theme('website_search_results', ['search_content' => $search_content]);
             } else {
                 $block['content'] = 'No records were found.';
             }
@@ -474,14 +459,13 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path)
 {
     $theme_hooks['database_table_search_results'] = [
         'variables' => [
-            'table_search_results' => null,
-            'field_content_pairs' => null,
+            'table_name' => null,
         ],
         'file' => 'tripal_elasticsearch.theme.inc',
     ];
     $theme_hooks['website_search_results'] = [
         'variables' => [
-            'website_search_results' => null,
+            'search_content' => null,
         ],
         'file' => 'tripal_elasticsearch.theme.inc',
     ];

@@ -45,6 +45,8 @@ class ElasticSearch
         $params = [];
         $params['index'] = $index;
         $params['type'] = $type;
+        // sort the table by the first field by default
+        //$sort_field = array_keys($field_content_pairs)[0];
         $params['body'] = [
             'query' => $query,
             'sort' => [
