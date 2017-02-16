@@ -41,9 +41,9 @@ function theme_website_search_results ($variables) {
         //dpm($record);
         $nid = $record['nid'];
         $title = '<h1>' . l($record['title'], 'node/' . $nid) . '</h1>';
-        $body = '<p>' . $record['body'] . '</p>';
+        $highlight = '<p>' . $record['highlight'] . '</p>';
         $rows[] = [
-            'row' => $title . $body,
+            'row' => $title . $highlight,
         ];
     }
 

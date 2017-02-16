@@ -100,9 +100,12 @@ class ElasticSearch
         $hits = $this->client->search($params);
         $search_res = [];
         foreach ($hits['hits']['hits'] as $hit) {
+            $highlight = implode('......', $hit['highlight']['body']);
+            $hit['_source']['highlight'] = $highlight;
             $search_res[] = $hit['_source'];
         }
 
         return $search_res;
     }
+
 }
