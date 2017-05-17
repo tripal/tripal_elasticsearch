@@ -1,0 +1,95 @@
+<?php
+/**
+ * @file
+ * A module that implements elasticsearch API.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function tripal_elasticsearch_init() {
+	global $user;
+
+	$library = libraries_detect('elasticsearch-php');
+	if (user_access('administer tripal elasticsearch', $user)) {
+		if (!$library) {
+			drupal_set_message(t('The Elastichsearch-PHP library is not installed. 
+				Please install this library first.'), 'warning');
+		}
+
+		// Try to load the library and check if that worked.
+		$library = libraries_load('elasticsearch-php');
+		if (empty($library['loaded'])) {
+			drupal_set_message(t('The Elasticsearch-PHP library loading failed!'), 'warning');
+		}
+	}
+
+}
+
+libraries_load('elasticsearch-php');
+$client = Elasticsearch\ClientBuilder::create()->setHosts(array('localhost:9201'))->build();
+dpm($client);
+
+/**
+ * Implements hook_menu().
+ */
+function tripal_elasticsearch_menu() {
+	$admin_url_base = 'admin/tripal/extension/tripal_elasticsearch';
+	$items[$admin_url_base] = array(
+		'title' => 'Tripal Elasticsearch',
+		'description' => t('Administration pages for Tripal Elasticsearch'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('elasticsearch_connection_form'),
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'file' => '/includes/elasticsearch_connection.form.inc',
+		'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+	);
+	$items[$admin_url_base.'/elasticsearch_connection'] = array(
+		'title' => 'Elasticsearch Connection',
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 0,
+	);
+	$items[$admin_url_base.'/indices_management'] = array(
+		'title' => 'Indices Management',
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 1,
+	);
+	$items[$admin_url_base.'/search_form_management'] = array(
+		'title' => 'Search Form Management',
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 3,
+	);
+	return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function tripal_elasticsearch_permission() {
+	return array(
+		'administer tripal elasticsearch' => array(
+			'title' => t('Administer Tripal Elasticsearch module'),
+			'description' => t('Perform administration tasks for Tripal Elasticsearch'),
+		),
+	);
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function tripal_elasticsearch_libraries_info() {
+	// Register the Elasticsearch-PHP library.
+	$libraries['elasticsearch-php'] = array(
+		'name' => 'Elasticsearch-PHP',
+		'vendor url' => 'https://www.elastic.co/guide/en/elasticsearch/client/php-api/current',
+		'download url' => 'https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_quickstart.html',
+		'version' => '5.0~',
+		'files' => array(
+			'php' => array('vendor/autoload.php'),
+		),
+	);
+	return $libraries;
+}
