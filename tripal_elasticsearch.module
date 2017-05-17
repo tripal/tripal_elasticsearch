@@ -24,11 +24,11 @@ function tripal_elasticsearch_init() {
 		}
 	}
 
+	// set elasticsearch host variable if it doesn't exist.
+	variable_get('elasticsearch_host', 'http://localhost:9200');
 }
 
-libraries_load('elasticsearch-php');
-$client = Elasticsearch\ClientBuilder::create()->setHosts(array('localhost:9201'))->build();
-dpm($client);
+
 
 /**
  * Implements hook_menu().
