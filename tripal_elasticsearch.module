@@ -62,6 +62,30 @@ function tripal_elasticsearch_menu() {
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 1,
 	);
+	$items[$admin_url_base.'/indices_management/indexing'] = array(
+		'title' => 'Indexing',
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 0,
+	);
+	$items[$admin_url_base.'/indices_management/delete_indices'] = array(
+		'title' => 'Delete Indices',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('tripal_elasticsearch_delete_indices_form'),
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'file' => 'includes/indices_management.form.inc',
+		'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 1,
+	);
+	$items[$admin_url_base.'/indices_management/confirm_delete'] = array(
+		'title' => 'Confirm delete',
+		'description' => t('Are you sure you want to delete these indices? This process cannot be undone!'),
+		'page callback' => 'delete_indices_confirmation_page',
+		'access callback' => user_access('administer tripal elasticsearch'),
+		'type' => MENU_CALLBACK,
+	);
+
 	$items[$admin_url_base.'/search_form_management'] = array(
 		'title' => 'Search Form Management',
 		'access callback' => user_access('administer tripal elasticsearch'),
@@ -121,4 +145,8 @@ function tripal_elasticsearch_cron_queue_info() {
  */
 function tripal_elasticsearch_cron_queue_worker_callback($item) {
 
+}
+
+function test_page() {
+	return 'text';
 }

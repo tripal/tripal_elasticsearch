@@ -7,9 +7,10 @@
  */
 
 /**
- * render array for index_website_form
+ * render array for tripal_elasticsearch_index_website_form
  */
 function tripal_elasticsearch_indexing_form($form, &$form_state) {
+	// Cron queue numbers
 	$form['queue_number'] = array(
 		'#type' => 'select',
 		'#title' => t('Number of cron queues'),
@@ -18,6 +19,15 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
                          for multi-threads process.'),
 		'#options' => drupal_map_assoc(range(1,10)),
 	);
+
+	// Index website or a database table
+	$form['website_or_table'] = array(
+		'#type' => 'select',
+		'#title' => t('Index website or database table'),
+		'#options' => drupal_map_assoc(array('website', 'database table')),
+		'#default_value' => 'website',
+	);
+
 	$form['index_name'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Enter a unique Elasticsearch index name'),
@@ -25,12 +35,39 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 												and start with letters.'),
 		'#size' => 25,
 	);
-	$form['website_or_table'] = array(
-		'#type' => 'select',
-		'#title' => t('Index website or database table'),
-		'#options' => drupal_map_assoc(array('website', 'database table')),
-		'#default_value' => 'website',
+
+	// Elasticsearch index settings
+	$form['index_settings'] = array(
+		'#type' => 'fieldset',
+		'#tree' => true,
+		'#title' => t('Elasticsearch index settings'),
+		'#description' => t('These settings determin how your data will be indexed and searchable.'),
+		'#collapsible' => true,
+		'#collapsed' => true,
+		'#states' => array(
+			'invisible' => array(
+				':input[name="website_or_table"]' => array('value' => 'website'),
+			),
+		),
 	);
+	$form['index_settings']['character_filters'] = array(
+		'#type' => 'checkboxes',
+		'#title' => t('Character filters'),
+		'#options' => get_character_filter_options(),
+	);
+	$form['index_settings']['tokenizer'] = array(
+		'#type' => 'select',
+		'#title' => t('Tokenizer'),
+		'#options' => get_tokenizer_options(),
+	);
+	$form['index_settings']['token_filters'] = array(
+		'#type' => 'checkboxes',
+		'#title' => t('Token filters'),
+		'#options' => get_token_filter_options(),
+	);
+
+
+	// Table fields and mapping types
 	$form['index_table'] = array(
 		'#type' => 'select',
 		'#title' => t('Select a table and fields to index'),
@@ -118,29 +155,79 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
 	return $form['table_fields'];
 }
 
+
+/**
+ * tripal_elasticsearch_indexing_form validation
+ */
+function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
+	// Index name validation.
+
+	// At least one table field need to be selected.
+}
+
 /**
  * tripal_elasticsearch_indexing_form submission.
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
-	// get indexing data
+
 	$queue_number = $form_state['values']['queue_number'];
-	$index_name = $form_state['values']['index_name'];
+
+
+
+	/**
+	 * Build Elasticsearch index settings, which needs the following parameters
+	 * 		$index_name
+	 * 		$shards
+	 * 		$replicas
+	 * 		$character_filters
+	 * 		$tokenizer
+	 * 		$token_filters
+	 * 		$field_mapping_types
+	 */
+
 	$website_or_table = $form_state['values']['website_or_table'];
 
+
+
 	if ($website_or_table == 'website') {
-		// indexing website
-		$index_type = 'website';
+		// indexing website: has default index settings.
+		$index_name = $form_state['values']['index_name'];
 		$index_table = 'node';
+		$index_type = 'website';
+		$character_filters = drupal_map_assoc(array('html_string'));
+		$tokenizer = 'standard';
+		$token_filters = drupal_map_assoc(array(
+			'standard',
+			'lowercase',
+		));
+		$field_mapping_types = array(
+			'nid' => 'integer',
+			'type' => 'string',
+			'title' => 'string',
+			'content' => 'string',
+		);
 	} else {
-		// indexing a table
+		// indexing a table: has customized index settings
+		$index_name = $form_state['values']['index_name'];
 		$index_table = $form_state['values']['index_table'];
 		$index_type = $index_table;
-		// Add schema prefix 'chado' if $index_table is a chado table.
-
+//		$character_filters = array_filter($form_state['values']['index_settings']['character_filters']);
+		$character_filters = drupal_map_assoc(array('html_string'));
+		$tokenizer = $form_state['values']['index_settings']['tokenizer'];
+		$token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
+		$field_mapping_types = $form_state['values']['table_fields'];
 		$field_mapping_types = array_filter($form_state['values']['table_fields']);
-		dpm($field_mapping_types);
 	}
 
+	build_elasticsearch_index(
+		$index_name = $index_name,
+		$shards = 5,
+		$replicas = 0,
+		$character_filters = $character_filters,
+		$tokenizer = $tokenizer,
+		$token_filters = $token_filters,
+		$field_mapping_types = $field_mapping_types
+	);
 
 	/**
 	 * Bind the following data to a cron queue item.
@@ -154,8 +241,60 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 
 	// Get row count of selected table.
 	$row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
-	dpm($row_count);
+	// Get total number of offsets (offset interval is 1000)
+	$k = 1000;
+	$total_offsets = intval($row_count / $k);
+	// Separate table fields with comma
+	$comma_separated_fields = implode(',', array_keys($field_mapping_types));
+	$order_by_field = array_keys($field_mapping_types)[0];
+	foreach (range(0, $total_offsets) as $offset) {
+		$id = $offset + 1;
+		$cron_queue_id = 'elasticsearch_queue_'.$id;
+		$cron_queue = DrupalQueue::get($cron_queue_id);
+		$OFFSET = $k * $offset;
+		$item = new stdClass();
 
-	dpm($form_state['values']);
+		// Use the first field to sort the table
+		$sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
+
+		$item->index_name = $index_name;
+		$item->index_type = $index_type;
+		$item->website_or_table = $website_or_table;
+		$item->field_mapping_types = $field_mapping_types;
+		$item->sql = $sql;
+		dpm($item);
+//		$cron_queue->createItem($item);
+	}
+
+
+
 	$form_state['rebuild'] = TRUE;
+}
+
+
+
+
+/**
+ * Render array for tripal_elasticsearch_delete_indices_form.
+ */
+function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
+	libraries_load('elasticsearch-php');
+	$elasticsearch_host = variable_get('elasticsearch_host');
+	$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+	$existing_indices = array_keys($client->indices()->getMapping());
+
+	$form['indices'] = array(
+		'#type' => 'checkboxes',
+		'#title' => t('Existing indices'),
+		'#description' => t('Delete indexed data from Eleasticsearch. Please make sure you know 
+												what the data is. This process can not be undone.'),
+		'#options' => drupal_map_assoc($existing_indices),
+	);
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Delete'),
+	);
+
+	return $form;
 }
