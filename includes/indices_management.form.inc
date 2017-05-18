@@ -50,11 +50,11 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 			),
 		),
 	);
-	$form['index_settings']['character_filters'] = array(
-		'#type' => 'checkboxes',
-		'#title' => t('Character filters'),
-		'#options' => get_character_filter_options(),
-	);
+//	$form['index_settings']['character_filters'] = array(
+//		'#type' => 'checkboxes',
+//		'#title' => t('Character filters'),
+//		'#options' => get_character_filter_options(),
+//	);
 	$form['index_settings']['tokenizer'] = array(
 		'#type' => 'select',
 		'#title' => t('Tokenizer'),
@@ -172,8 +172,6 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 
 	$queue_number = $form_state['values']['queue_number'];
 
-
-
 	/**
 	 * Build Elasticsearch index settings, which needs the following parameters
 	 * 		$index_name
@@ -247,6 +245,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 	// Separate table fields with comma
 	$comma_separated_fields = implode(',', array_keys($field_mapping_types));
 	$order_by_field = array_keys($field_mapping_types)[0];
+	$item = array();
 	foreach (range(0, $total_offsets) as $offset) {
 		$id = $offset + 1;
 		$cron_queue_id = 'elasticsearch_queue_'.$id;
@@ -255,15 +254,19 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 		$item = new stdClass();
 
 		// Use the first field to sort the table
-		$sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
+		if ($website_or_table == 'website') {
+			$sql = "SELECT nid,title,type FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
+		} else {
+			$sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
+		}
 
 		$item->index_name = $index_name;
 		$item->index_type = $index_type;
 		$item->website_or_table = $website_or_table;
 		$item->field_mapping_types = $field_mapping_types;
 		$item->sql = $sql;
-		dpm($item);
-//		$cron_queue->createItem($item);
+
+		$cron_queue->createItem($item);
 	}
 
 
@@ -278,10 +281,18 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
  * Render array for tripal_elasticsearch_delete_indices_form.
  */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
-	libraries_load('elasticsearch-php');
-	$elasticsearch_host = variable_get('elasticsearch_host');
-	$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
-	$existing_indices = array_keys($client->indices()->getMapping());
+	$existing_indices = array();
+	try{
+		libraries_load('elasticsearch-php');
+		$elasticsearch_host = variable_get('elasticsearch_host');
+		$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+		$existing_indices = array_keys($client->indices()->getMapping());
+	} catch (\Exception $e) {
+		$message = $e->getMessage();
+		drupal_set_message($message, 'warning');
+		drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+	}
+
 
 	$form['indices'] = array(
 		'#type' => 'checkboxes',
@@ -296,5 +307,28 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
 		'#value' => t('Delete'),
 	);
 
+	drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/indices_delete_confirm.js');
+
 	return $form;
+}
+
+
+/**
+ * Submit function for the tripal_elasticsearch_delete_indices_form
+ */
+function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
+	$delete_indices = array_filter($form_state['values']['indices']);
+	if (!empty($delete_indices)) {
+		foreach ($delete_indices as $index) {
+			try{
+				libraries_load('elasticsearch-php');
+				$elasticsearch_host = variable_get('elasticsearch_host');
+				$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+				$response = $client->indices()->delete(array('index' => $index));
+			} catch (\Exception $e) {
+				$message = $e->getMessage();
+				drupal_set_message($message, 'warning');
+			}
+		}
+	}
 }

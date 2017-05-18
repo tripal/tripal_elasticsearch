@@ -78,13 +78,6 @@ function tripal_elasticsearch_menu() {
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 1,
 	);
-	$items[$admin_url_base.'/indices_management/confirm_delete'] = array(
-		'title' => 'Confirm delete',
-		'description' => t('Are you sure you want to delete these indices? This process cannot be undone!'),
-		'page callback' => 'delete_indices_confirmation_page',
-		'access callback' => user_access('administer tripal elasticsearch'),
-		'type' => MENU_CALLBACK,
-	);
 
 	$items[$admin_url_base.'/search_form_management'] = array(
 		'title' => 'Search Form Management',
@@ -144,9 +137,30 @@ function tripal_elasticsearch_cron_queue_info() {
  * Define tripal_elasticsearch_cron_queue_worker_callback function
  */
 function tripal_elasticsearch_cron_queue_worker_callback($item) {
+	$index_name = $item->index_name;
+	$index_type = $item->index_type;
+	$website_or_table = $item->website_or_table;
+	$field_mapping_types = $item->field_mapping_types;
+	$sql = $item->sql;
 
+
+	if ($item->website_or_database == 'website') {
+		// Index website.
+		$result = db_query($sql)->fetchAll();
+		foreach ($result as $record) {
+			$nid = $record->nid;
+			$title = $record->title;
+			$node_type = $record->type;
+
+			$params = array(
+				'index' => $index_name,
+				'type' => $index_type,
+				'id' => $nid,
+			);
+		}
+
+	} else {
+		// Index table.
+	}
 }
 
-function test_page() {
-	return 'text';
-}
