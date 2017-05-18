@@ -38,6 +38,26 @@ function get_token_filter_options() {
 }
 
 /**
+ * Return an array of Elasticsearch field mapping types.
+ */
+function get_field_mapping_types() {
+	return drupal_map_assoc(array(
+		'string',
+		'keyword',
+		'date',
+		'long',
+		'double',
+		'boolean',
+		'ip',
+		'object',
+		'nested',
+		'geo_point',
+		'geo_shape',
+		'completion',
+	));
+}
+
+/**
  * Function to build elasticsearch index.
  */
 function build_elasticsearch_index($index_name,

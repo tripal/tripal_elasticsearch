@@ -33,12 +33,11 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 	);
 	$form['index_table'] = array(
 		'#type' => 'select',
-		'#title' => t('Select a table to index'),
-		'#options' => drupal_map_assoc( get_table_list() ),
-		'#default_value' => 'node',
+		'#title' => t('Select a table and fields to index'),
+		'#options' => array('' => 'Select a table') + drupal_map_assoc( get_table_list() ),
 		'#states' => array(
-			'visible' => array(
-				':input[name="website_or_table"]' => array('value' => 'database table'),
+			'invisible' => array(
+				':input[name="website_or_table"]' => array('value' => 'website'),
 			),
 		),
 		'#ajax' => array(
@@ -47,19 +46,62 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 		),
 	);
 
-	$table_name = isset($form_state['values']['index_table']) ? $form_state['values']['index_table'] : 'node';
+	$table_name = isset($form_state['values']['index_table']) ? $form_state['values']['index_table'] : '';
 	$form['table_fields'] = array(
-		'#type' => 'checkboxes',
+		'#type' => 'fieldset',
 		'#title' => t('Select fields to index'),
+		'#tree' => true,
 		'#options' => drupal_map_assoc( get_column_list($table_name) ),
 		'#states' => array(
-			'visible' => array(
-				':input[name="website_or_table"]' => array('value' => 'database table'),
+			'invisible' => array(
+				':input[name="index_table"]' => array('value' => ''),
 			),
 		),
 		'#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
 		'#suffix' => '</div>',
 	);
+
+	foreach (get_column_list($table_name) as $field) {
+		$form['table_fields'][$field] = array(
+			'#type' => 'select',
+			'#title' => t('Field name: '.$field),
+			'#description' => t('Please select a mapping type each field. If no 
+													mapping type is selected for a field, that field will
+													no be indexed. This can be used to selectively index
+													table fields.'),
+			'#options' => array('' => 'Select mapping type') + get_field_mapping_types(),
+		);
+	}
+
+//	$header = array(
+//		'field' => 'Field',
+//		'mapping_type' => 'Mapping Type',
+//	);
+//	$options = array();
+//	foreach (get_column_list($table_name) as $field) {
+//		$options[$field] = array(
+//			'field' => $field,
+//			'mapping_type' => theme('select', array(
+//				'element' => array(
+//					'#options' => get_field_mapping_types(),
+//				),
+//			)),
+//		);
+//	}
+
+//	$form['table_fields'] = array(
+//		'#type' => 'tableselect',
+//		'#header' => $header,
+//		'#options' => $options,
+//		'#empty' => t('No content available.'),
+//		'#states' => array(
+//			'invisible' => array(
+//				':input[name="website_or_table"]' => array('value' => 'website'),
+//			),
+//		),
+//		'#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
+//		'#suffix' => '</div>',
+//	);
 
 	$form['submit'] = array(
 		'#type' => 'submit',
@@ -81,4 +123,5 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 	dpm($form_state['values']);
+	$form_state['rebuild'] = TRUE;
 }
