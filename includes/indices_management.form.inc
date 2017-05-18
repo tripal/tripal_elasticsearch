@@ -22,7 +22,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 		'#type' => 'textfield',
 		'#title' => t('Enter a unique Elasticsearch index name'),
 		'#description' => t('Elasticsearch index name can only contain lowercase letters and underscores, 
-												and start with letters'),
+												and start with letters.'),
 		'#size' => 25,
 	);
 	$form['website_or_table'] = array(
@@ -122,6 +122,40 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  * tripal_elasticsearch_indexing_form submission.
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
+	// get indexing data
+	$queue_number = $form_state['values']['queue_number'];
+	$index_name = $form_state['values']['index_name'];
+	$website_or_table = $form_state['values']['website_or_table'];
+
+	if ($website_or_table == 'website') {
+		// indexing website
+		$index_type = 'website';
+		$index_table = 'node';
+	} else {
+		// indexing a table
+		$index_table = $form_state['values']['index_table'];
+		$index_type = $index_table;
+		// Add schema prefix 'chado' if $index_table is a chado table.
+
+		$field_mapping_types = array_filter($form_state['values']['table_fields']);
+		dpm($field_mapping_types);
+	}
+
+
+	/**
+	 * Bind the following data to a cron queue item.
+	 * 		index_name
+	 * 		index_type
+	 * 		index_table
+	 * 		selected_table_fields
+	 * 		field_mapping_types
+	 * 		sql query that will extract values from the database table for the selected table fields.
+	 */
+
+	// Get row count of selected table.
+	$row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
+	dpm($row_count);
+
 	dpm($form_state['values']);
 	$form_state['rebuild'] = TRUE;
 }

@@ -140,27 +140,42 @@ function get_chado_table_list() {
  * This function takes a table name and return all the column names
  */
 function get_column_list($table_name) {
-	$sql_column_list = "SELECT column_name FROM information_schema.columns WHERE (table_schema = 'public'OR table_schema = 'chado') AND table_name = :selected_table;";
-	$result_column = db_query($sql_column_list, array(':selected_table' => $table_name));
-	$input_column = $result_column->fetchAll();
+
+	// Detect which schema the table belongs to. If it has prefix 'chado.', it is
+	// the chado schema, otherwise it is from the public schema.
+	if (preg_match('/^chado\./', $table_name)) {
+		$table_name = preg_replace('/^chado\./', '', $table_name);
+		$sql_column_list = "SELECT column_name FROM information_schema.columns WHERE table_schema = 'chado' AND table_name = :table_name";
+	} else {
+		$sql_column_list = "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = :table_name";
+	}
+	$column_list_results = db_query($sql_column_list, array(':table_name' => $table_name))->fetchAll();
+
 	$column_list = array();
-	foreach($input_column as $value) {
+	foreach($column_list_results as $value) {
 		$column_list[] = $value->column_name;
 	}
 	return $column_list;
 }
+
 /**
  * This function return an array containing a list of table names from the public and chado schema.
  */
 function get_table_list() {
-	$sql_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'public' OR table_schema = 'chado') ORDER BY table_name;";
-	$result_table = db_query($sql_table_list);
-	$input_table = $result_table->fetchAll();
-	$table_list = array();
-	foreach ($input_table as $value) {
-		$table_list[] = $value->table_name;
+	$sql_public_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'public') ORDER BY table_name";
+	$sql_chado_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'chado') ORDER BY table_name";
+	$public_table_results = db_query($sql_public_table_list)->fetchAll();
+	$chado_table_results = db_query($sql_chado_table_list)->fetchAll();
+
+	$public_tables = array();
+	$chado_tables = array();
+	foreach ($public_table_results as $value) {
+		$public_tables[] = $value->table_name;
 	}
-	return $table_list;
+	foreach ($chado_table_results as $value) {
+		$chado_tables[] = 'chado.'.$value->table_name;
+	}
+	return $public_tables + $chado_tables;
 }
 
 

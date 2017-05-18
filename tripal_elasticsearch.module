@@ -99,3 +99,26 @@ function tripal_elasticsearch_libraries_info() {
 	);
 	return $libraries;
 }
+
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function tripal_elasticsearch_cron_queue_info() {
+	// Define N = 10 cron queues
+	$queue_number = 10;
+	for ($n = 1; $n < $queue_number; $n++) {
+		$queues['elasticsearch_queue_'.$n] = array(
+			'worker callback' => 'tripal_elasticsearch_cron_queue_worker_callback',
+			'time' => 60 * 2,
+		);
+	}
+	return $queues;
+}
+
+/**
+ * Define tripal_elasticsearch_cron_queue_worker_callback function
+ */
+function tripal_elasticsearch_cron_queue_worker_callback($item) {
+
+}
