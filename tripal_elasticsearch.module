@@ -4,6 +4,8 @@
  * A module that implements elasticsearch API.
  */
 
+require drupal_get_path('module', 'tripal_elasticsearch').'/tripal_elasticsearch.api.inc';
+
 /**
  * Implements hook_init().
  */
@@ -41,7 +43,7 @@ function tripal_elasticsearch_menu() {
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('elasticsearch_connection_form'),
 		'access callback' => user_access('administer tripal elasticsearch'),
-		'file' => '/includes/elasticsearch_connection.form.inc',
+		'file' => 'includes/elasticsearch_connection.form.inc',
 		'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
 	);
 	$items[$admin_url_base.'/elasticsearch_connection'] = array(
@@ -52,7 +54,11 @@ function tripal_elasticsearch_menu() {
 	);
 	$items[$admin_url_base.'/indices_management'] = array(
 		'title' => 'Indices Management',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('tripal_elasticsearch_indexing_form'),
 		'access callback' => user_access('administer tripal elasticsearch'),
+		'file' => 'includes/indices_management.form.inc',
+		'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 1,
 	);

@@ -67,5 +67,4 @@ function elasticsearch_connection_form_submit($form, &$form_state) {
 	// update the elasticsearch_host variable after form submission.
 	variable_set('elasticsearch_host', $elasticsearch_host);
 
-//	dpm($client);
 }
