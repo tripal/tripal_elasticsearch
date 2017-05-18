@@ -137,6 +137,7 @@ function tripal_elasticsearch_cron_queue_info() {
  * Define tripal_elasticsearch_cron_queue_worker_callback function
  */
 function tripal_elasticsearch_cron_queue_worker_callback($item) {
+
 	$index_name = $item->index_name;
 	$index_type = $item->index_type;
 	$website_or_table = $item->website_or_table;
@@ -144,21 +145,41 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
 	$sql = $item->sql;
 
 
-	if ($item->website_or_database == 'website') {
+	if ($item->website_or_table == 'website') {
 		// Index website.
 		$result = db_query($sql)->fetchAll();
 		foreach ($result as $record) {
 			$nid = $record->nid;
-			$title = $record->title;
+			$node_title = $record->title;
 			$node_type = $record->type;
 
 			$params = array(
 				'index' => $index_name,
 				'type' => $index_type,
 				'id' => $nid,
+				'body' => array(
+					'nid' => $nid,
+					'title' => $node_title,
+					'type' => $node_type,
+					'content' => get_node_content_by_nid(
+						$nid = $nid,
+						$base_url = "http://127.0.0.1:8080",
+						$node_title = $node_title
+					)
+				),
 			);
 		}
 
+		try{
+			libraries_load('elasticsearch-php');
+			$elasticsearch_host = variable_get('elasticsearch_host');
+			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+			$response = $client->index($params);
+		} catch (\Exception $e) {
+			$message = $e->getMessage();
+			watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+		}
+		watchdog('tripal_elasticsearch', 'Pages indexed by Tripal Elasticsearch.');
 	} else {
 		// Index table.
 	}
