@@ -315,6 +315,9 @@ function tripal_elasticsearch_search_results_page_callback($arg1) {
 		$output .= '<p>'.$item['highlight'].'</p>';
 	}
 
+	if (count($results) == 0) {
+		return "Your search -<b>".$keyword."</b>- didn't match any content.";
+	}
 	return get_website_search_result_table($results);
 }
 
@@ -357,6 +360,9 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
 		$output .= '<p>'.$item['highlight'].'</p>';
 	}
 
+	if (count($results) == 0) {
+		return "Your search -<b>".$keyword."</b>- didn't match any content.";
+	}
 	return get_website_search_result_table($results);
 }
 
