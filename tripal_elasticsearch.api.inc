@@ -211,3 +211,132 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
 	// merge multiple spaces into one
 	return preg_replace('!\s+!', ' ', $page_content);
 }
+
+
+/**
+ * Build search query from field content pairs.
+ */
+function build_search_query_from_field_content_pairs (array $field_content_pairs, $query_method = 'query_string') {
+	$queries = [];
+	foreach ($field_content_pairs as $field => $content) {
+		if (!empty($content)) {
+			$queries[] = [
+				$query_method => [
+					"default_field" => $field,
+					"query" => _remove_special_chars($content),
+					"default_operator" => "OR"
+				]
+			];
+		}
+	}
+	$query = [
+		"bool" => [
+			"must" => $queries
+		]
+	];
+	return $query;
+}
+
+
+/**
+ * Function to build website search params.
+ */
+function build_website_search_params ($index='website', $type='website', $search_content='', $from=0, $size=1000) {
+	$query = [
+		"query_string" => [
+			"default_field" => "content",
+			"query" => $search_content,
+			"default_operator" => "OR"
+		]
+	];
+	$highlight = [
+		"pre_tags" => ["<em><b>"],
+		"post_tags" => ["</b></em>"],
+		"fields" => [
+			"content" =>  [
+				"fragment_size" => 150
+			]
+		]
+	];
+	$params = [];
+	$params['index'] = $index;
+	$params['type'] = $type;
+	$params['body'] = [
+		'query' => $query,
+		'highlight' => $highlight
+	];
+	$params['from'] = $from;
+	$params['size'] = $size;
+	return $params;
+}
+
+
+/**
+ * Function to build table search params.
+ */
+function build_table_search_params ($index, $type, $query, $from=0, $size=1000, $sort_field, $sort_direction = 'asc' ) {
+	$params = [];
+	$params['index'] = $index;
+	$params['type'] = $type;
+	// sort the table by the first field by default
+	//$sort_field = array_keys($field_content_pairs)[0];
+	$params['body'] = [
+		'query' => $query,
+		'sort' => [
+			$sort_field . ".raw" => $sort_direction,
+		]
+	];
+	$params['from'] = $from;
+	$params['size'] = $size;
+	return $params;
+}
+
+
+/**
+ * Function to return search results count.
+ */
+function search_count ($params) {
+	unset($params['from']);
+	unset($params['size']);
+	unset($params['scroll']);
+	$count = $this->client->count($params);
+	$count = $count['count'];
+	return $count;
+}
+
+
+/**
+ * Function to Elasticsearch website.
+ */
+function tripal_elasticsearch_search_website ($params) {
+	// Build Elasticsearch client
+	libraries_load('elasticsearch-php');
+	$elasticsearch_host = variable_get('elasticsearch_host');
+	$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+
+	$hits = $client->search($params);
+	$search_res = [];
+	foreach ($hits['hits']['hits'] as $hit) {
+		$highlight = implode('......', $hit['highlight']['content']);
+		$hit['_source']['highlight'] = $highlight;
+		$search_res[] = $hit['_source'];
+	}
+	return $search_res;
+}
+
+/**
+ * Function to Elasticsearch table.
+ */
+function tripal_elasticsearch_search_table ($params) {
+	// Build Elasticsearch client
+	libraries_load('elasticsearch-php');
+	$elasticsearch_host = variable_get('elasticsearch_host');
+	$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+
+	$hits = $client->search($params);
+	$search_res = [];
+	foreach ($hits['hits']['hits'] as $hit) {
+		$search_res[] = $hit['_source'];
+	}
+	return $search_res;
+}

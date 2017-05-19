@@ -33,6 +33,12 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 		'#title' => t('Enter a unique Elasticsearch index name'),
 		'#description' => t('Elasticsearch index name can only contain lowercase letters and underscores, 
 												and start with letters.'),
+		// This field is only visible to table indexing.
+		'#states' => array(
+			'invisible' => array(
+				':input[name="website_or_table"]' => array('value' => 'website'),
+			),
+		),
 		'#size' => 25,
 	);
 
@@ -189,7 +195,8 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 
 	if ($website_or_table == 'website') {
 		// indexing website: has default index settings.
-		$index_name = $form_state['values']['index_name'];
+		// $index_name = $form_state['values']['index_name'];
+		$index_name = 'website';
 		$index_table = 'node';
 		$index_type = 'website';
 		$character_filters = drupal_map_assoc(array('html_string'));

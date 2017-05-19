@@ -266,5 +266,25 @@ function tripal_elasticsearch_search_results_page_callback($arg1) {
 		'#markup' => '<p>'.t('The search keyword is @arg1', array('@arg1' => $arg1)).'</p>',
 	);
 
+	// Build search params.
+	$params = build_website_search_params(
+		$index = 'website',
+		$type = 'website',
+		$search_content = $search_content = _remove_special_chars($arg1),
+		$from = 0,
+		$size = 1000
+	);
+
+	// Run Elasticsearch.
+	try{
+		$search_result = tripal_elasticsearch_search_website($params);
+		dpm($search_result);
+	} catch (\Exception $e) {
+		$message = $e->getMessage();
+		drupal_set_message(t($message), 'warning');
+	}
+
+
+
 	return $build;
 }
