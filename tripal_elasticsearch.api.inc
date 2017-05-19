@@ -195,7 +195,7 @@ function _remove_special_chars($keyword){
  * Get node content by node id.
  */
 function get_node_content_by_nid($nid, $base_url, $node_title) {
-	$page_html = file_get_contents("$base_url/node/$nid");
+	$page_html = file_get_contents($base_url."/node/".$nid);
 	// remove raw sequences
 	$pattern_1 = preg_quote('<pre class="tripal_feature-sequence">'). "(.|\n)*".preg_quote('</pre>');
 	$page_html = preg_replace("!".$pattern_1."!U", ' ', $page_html);

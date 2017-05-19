@@ -148,6 +148,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
 	if ($item->website_or_table == 'website') {
 		// Index website.
 		$result = db_query($sql)->fetchAll();
+		$params = array();
 		foreach ($result as $record) {
 			$nid = $record->nid;
 			$node_title = $record->title;
@@ -163,25 +164,45 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
 					'type' => $node_type,
 					'content' => get_node_content_by_nid(
 						$nid = $nid,
-						$base_url = "http://127.0.0.1:8080",
+						$base_url = "http://127.0.0.1:80",
 						$node_title = $node_title
 					)
 				),
 			);
-		}
 
-		try{
-			libraries_load('elasticsearch-php');
-			$elasticsearch_host = variable_get('elasticsearch_host');
-			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
-			$response = $client->index($params);
-		} catch (\Exception $e) {
-			$message = $e->getMessage();
-			watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+			try{
+				libraries_load('elasticsearch-php');
+				$elasticsearch_host = variable_get('elasticsearch_host');
+				$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+				$response = $client->index($params);
+				watchdog('tripal_elasticsearch', 'A page has been indexed by Tripal Elasticsearch.');
+			} catch (\Exception $e) {
+				$message = $e->getMessage();
+				watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+			}
 		}
-		watchdog('tripal_elasticsearch', 'Pages indexed by Tripal Elasticsearch.');
 	} else {
 		// Index table.
+		$result = db_query($sql)->fetchAll();
+		$params = array();
+		foreach ($result as $record) {
+			$params = array(
+				'index' => $index_name,
+				'type' => $index_type,
+				'body' => $record,
+			);
+
+			try{
+				libraries_load('elasticsearch-php');
+				$elasticsearch_host = variable_get('elasticsearch_host');
+				$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+				$response = $client->index($params);
+				watchdog('tripal_elasticsearch', 'A table row has been indexed by Tripal Elasticsearch.');
+			} catch (\Exception $e) {
+				$message = $e->getMessage();
+				watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+			}
+		}
 	}
 }
 

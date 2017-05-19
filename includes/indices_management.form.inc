@@ -247,7 +247,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 	$order_by_field = array_keys($field_mapping_types)[0];
 	$item = array();
 	foreach (range(0, $total_offsets) as $offset) {
-		$id = $offset + 1;
+		$id = $offset % $queue_number + 1;
 		$cron_queue_id = 'elasticsearch_queue_'.$id;
 		$cron_queue = DrupalQueue::get($cron_queue_id);
 		$OFFSET = $k * $offset;
