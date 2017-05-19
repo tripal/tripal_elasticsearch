@@ -58,7 +58,7 @@ function website_search_box_form_submit($form, &$form_state) {
 	$search_website_count_by_category = $total_count + $search_website_count_by_category;
 
 	// Save the count data and keyword to a variable.
-	variable_set('websearch_count_by_node_type', array(
+	variable_set('website_search_by_node_type', array(
 		'keyword' => $keyword,
 		'count' => $search_website_count_by_category
 	));

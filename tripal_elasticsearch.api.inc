@@ -354,3 +354,27 @@ function tripal_elasticsearch_search_table ($params) {
 	}
 	return $search_res;
 }
+
+
+/**
+ * Function to theme search results count by node type.
+ * This function returns an html list.
+ */
+function get_website_search_results_category_list() {
+	$website_search_by_node_type = variable_get('website_search_by_node_type', array());
+
+	$all_categories_text = 'All categories ('. $website_search_by_node_type['count']['all categories'] . ')';
+	$all_categories_link = 'tripal_elasticsearch/search_website/'. $website_search_by_node_type['keyword'];
+	$output = l($all_categories_text, $all_categories_link);
+	unset($website_search_by_node_type['count']['all categories']);
+
+	$items = array();
+	foreach ($website_search_by_node_type['count'] as $category=>$count) {
+		$text = $category . ' (' . $count . ')';
+		$url = 'tripal_elasticsearch/search_website/'.$category.'/'.$website_search_by_node_type['keyword'];
+		$items[] = l($text, $url);
+	}
+
+	$output .= theme('item_list', array('items' => $items));
+	return $output;
+}

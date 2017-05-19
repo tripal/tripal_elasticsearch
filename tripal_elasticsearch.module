@@ -226,6 +226,16 @@ function tripal_elasticsearch_block_info() {
 		'cache' => DRUPAL_NO_CACHE,
 	);
 
+	// Define block for website search results by category.
+	$blocks['website_search_category'] = array(
+		'info' => t('Tripal Elasticsearch website search category'),
+		'cache' => DRUPAL_NO_CACHE,
+		'status' => 1,
+		'region' => 'sidebar_first',
+		'visibility' => 'BLOCK_VISIBILITY_LISTED',
+		'page' => 'tripal_elasticsearch/search_website/*',
+	);
+
 	return $blocks;
 }
 
@@ -238,6 +248,10 @@ function tripal_elasticsearch_block_view($delta = '') {
 		case 'elasticsearch_website_search_box':
 			$block['subject'] = '';
 			$block['content'] = drupal_get_form('website_search_box_form');
+			break;
+		case 'website_search_category':
+			$block['subject'] = '';
+			$block['content'] = get_website_search_results_category_list();
 			break;
 	}
 
@@ -268,8 +282,7 @@ function tripal_elasticsearch_search_results_page_callback($arg1) {
 
 	// Build search params.
 	$params = build_website_search_params(
-		$search_content = _remove_special_chars($arg1),
-		$node_type = 'article'
+		$search_content = _remove_special_chars($arg1)
 	);
 
 	// Run Elasticsearch.
