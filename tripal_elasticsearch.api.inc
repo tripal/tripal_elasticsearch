@@ -309,14 +309,14 @@ function build_table_search_params ($index, $type, $query, $from=0, $size=1000, 
 /**
  * Function to return search results count.
  */
-function search_count ($params) {
-	unset($params['from']);
-	unset($params['size']);
-	unset($params['scroll']);
-	$count = $this->client->count($params);
-	$count = $count['count'];
-	return $count;
-}
+//function search_count ($params) {
+//	unset($params['from']);
+//	unset($params['size']);
+//	unset($params['scroll']);
+//	$count = client->count($params);
+//	$count = $count['count'];
+//	return $count;
+//}
 
 
 /**

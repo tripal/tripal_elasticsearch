@@ -268,7 +268,8 @@ function tripal_elasticsearch_search_results_page_callback($arg1) {
 
 	// Build search params.
 	$params = build_website_search_params(
-		$search_content = _remove_special_chars($arg1)
+		$search_content = _remove_special_chars($arg1),
+		$node_type = 'article'
 	);
 
 	// Run Elasticsearch.
