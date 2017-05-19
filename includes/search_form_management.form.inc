@@ -25,7 +25,7 @@ function website_search_box_form_submit($form, &$form_state) {
 		$elasticsearch_host = variable_get('elasticsearch_host');
 		$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
 	} catch (\Exception $e) {
-		drupal_set_message(t($e->getMessage()), 'warning');
+
 	}
 
 	$keyword = $form_state['values']['search_box'];
@@ -48,8 +48,7 @@ function website_search_box_form_submit($form, &$form_state) {
 				$search_website_count_by_category[$node_type] = $count;
 			}
 		} catch (\Exception $e) {
-			$message = $e->getMessage();
-			drupal_set_message($message, 'warning');
+
 		}
 	}
 
@@ -64,5 +63,11 @@ function website_search_box_form_submit($form, &$form_state) {
 	));
 
 	$url = "tripal_elasticsearch/search_website/$keyword";
-	drupal_goto($url);
+	// only redirect to the search results page when $keyword is not empty.
+	if (empty($keyword)) {
+		drupal_goto(current_path());
+	} else {
+		drupal_goto($url);
+	}
 }
+

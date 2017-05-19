@@ -28,10 +28,24 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 		'#default_value' => 'website',
 	);
 
+	// Need base url for website indexing.
+	$form['website_base_url'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Enter your website base url'),
+		'#description' => t('Enter the base url of your website. Examples: "http://www.example.com",  
+                           "http://www.example.com:8080". Do not add forward slash (/) at the end.'),
+		'#states' => array(
+			'visible' => array(
+				':input[name="website_or_table"]' => array('value' => 'website'),
+			),
+		),
+
+	);
+
 	$form['index_name'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Enter a unique Elasticsearch index name'),
-		'#description' => t('Elasticsearch index name can only contain lowercase letters and underscores, 
+		'#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores, 
 												and start with letters.'),
 		// This field is only visible to table indexing.
 		'#states' => array(
@@ -166,9 +180,35 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  * tripal_elasticsearch_indexing_form validation
  */
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
-	// Index name validation.
+	// validate base url if it is website indexing
+	if ($form_state['values']['website_or_table'] == 'website') {
+		$website_base_url = $form_state['values']['website_base_url'];
+		// Define a variable to store website base url.
+		variable_set('website_base_url', $website_base_url);
+		try {
+			@ $content = file_get_contents($website_base_url . '/node');
+			if ($content === false) {
+				$error_message = t('The website base url is invalid. Please check your website base url.');
+				form_set_error('website_base_url', $error_message);
+			}
+		} catch (Exception $e) {
+			form_set_error('website_base_url', $e->getMessage());
+		}
 
-	// At least one table field need to be selected.
+	} else {
+		// Index name validation.
+		$index_name = $form_state['values']['index_name'];
+		if (!preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name )) {
+			form_set_error('index_name', t('index name can only contain lowercase letters, 
+								numbers and underscores, and start with letters.'));
+		}
+
+		// At least one table field need to be selected.
+		$table_fields = array_filter($form_state['values']['table_fields']);
+		if (empty($table_fields)) {
+			form_set_error('table_fields', t('Please specify mapping type for at least one field.'));
+		}
+	}
 }
 
 /**

@@ -172,7 +172,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
 					'type' => $node_type,
 					'content' => get_node_content_by_nid(
 						$nid = $nid,
-						$base_url = "http://127.0.0.1:80",
+						$base_url = variable_get('website_base_url'),
 						$node_title = $node_title
 					)
 				),
@@ -293,27 +293,27 @@ function tripal_elasticsearch_search_results_page_callback($arg1) {
 	// Run Elasticsearch.
 	try{
 		$search_result = tripal_elasticsearch_search_website($params);
+
+		// grab page title and highlight content from search results.
+		$results = array();
+		foreach ($search_result as $item) {
+			$results[] = array(
+				'nid' => $item['nid'],
+				'title' => $item['title'],
+				'highlight' => $item['highlight'],
+			);
+		}
+
+		$output = '';
+		foreach ($results as $item) {
+			$output .= '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
+			$output .= '<p>'.$item['highlight'].'</p>';
+		}
+
 	} catch (\Exception $e) {
-		$message = $e->getMessage();
-		drupal_set_message(t($message), 'warning');
+		return 'Searching is not available. Please try later.';
 	}
 
-	// grab page title and highlight content from search results.
-	$results = array();
-	foreach ($search_result as $item) {
-		$results[] = array(
-			'nid' => $item['nid'],
-			'title' => $item['title'],
-			'highlight' => $item['highlight'],
-		);
-	}
-
-
-	$output = '';
-	foreach ($results as $item) {
-		$output .= '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
-		$output .= '<p>'.$item['highlight'].'</p>';
-	}
 
 	if (count($results) == 0) {
 		return "Your search -<b>".$keyword."</b>- didn't match any content.";
@@ -339,25 +339,24 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
 	// Run Elasticsearch.
 	try{
 		$search_result = tripal_elasticsearch_search_website($params);
+
+		// grab page title and highlight content from search results.
+		$results = array();
+		foreach ($search_result as $item) {
+			$results[] = array(
+				'nid' => $item['nid'],
+				'title' => $item['title'],
+				'highlight' => $item['highlight'],
+			);
+		}
+
+		$output = '';
+		foreach ($results as $item) {
+			$output .= '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
+			$output .= '<p>'.$item['highlight'].'</p>';
+		}
 	} catch (\Exception $e) {
-		$message = $e->getMessage();
-		drupal_set_message(t($message), 'warning');
-	}
-
-	// grab page title and highlight content from search results.
-	$results = array();
-	foreach ($search_result as $item) {
-		$results[] = array(
-			'nid' => $item['nid'],
-			'title' => $item['title'],
-			'highlight' => $item['highlight'],
-		);
-	}
-
-	$output = '';
-	foreach ($results as $item) {
-		$output .= '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
-		$output .= '<p>'.$item['highlight'].'</p>';
+		return 'Searching is not available. Please try later.';
 	}
 
 	if (count($results) == 0) {
