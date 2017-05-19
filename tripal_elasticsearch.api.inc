@@ -378,3 +378,30 @@ function get_website_search_results_category_list() {
 	$output .= theme('item_list', array('items' => $items));
 	return $output;
 }
+
+
+
+/**
+ * Get website search result table.
+ * $search_results: an associative array with three keys: nid, title, and highlight.
+ */
+function get_website_search_result_table ($search_results) {
+	$output = '';
+	$rows = array();
+	foreach ($search_results as $item) {
+		$row = '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
+		$row .= '<p>'.$item['highlight'].'</p>';
+		$rows[] = array($row);
+	}
+//	dpm($rows);
+	$per_page = 10;
+	$current_page = pager_default_initialize(count($rows), $per_page);
+
+	// split list into page sized chunks
+	$chunks = array_chunk($rows, $per_page, TRUE);
+
+	$output .= theme('table', array('header'=>array(), 'rows'=>$chunks[$current_page]));
+	$output .= theme('pager', array('quantity', count($rows)));
+
+	return $output;
+}

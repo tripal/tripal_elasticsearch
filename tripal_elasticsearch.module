@@ -262,12 +262,20 @@ function tripal_elasticsearch_block_view($delta = '') {
  * Implements hook_menu_alter().
  */
 function tripal_elasticsearch_menu_alter(&$items) {
+	// Page to display website search results for all node types.
 	$items['tripal_elasticsearch/search_website'] = array(
 		'title' => t('Search results'),
 		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
-		'access callback' => true,
+		'access callback' => TRUE,
 	);
 
+	// Page to display website search result for a specific node type.
+	$items['tripal_elasticsearch/search_website/%/%'] = array(
+		'title' => t('Search results'),
+		'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
+		'page arguments' => array(2, 3),
+		'access arguments' => array(TRUE),
+	);
 	return $items;
 }
 
@@ -275,25 +283,95 @@ function tripal_elasticsearch_menu_alter(&$items) {
  * tripal_elasticsearch_search_results_page_callback
  */
 function tripal_elasticsearch_search_results_page_callback($arg1) {
-	$build['arguments'] = array(
-		'#type' => 'markup',
-		'#markup' => '<p>'.t('The search keyword is @arg1', array('@arg1' => $arg1)).'</p>',
-	);
+	$keyword = $arg1;
 
 	// Build search params.
 	$params = build_website_search_params(
-		$search_content = _remove_special_chars($arg1)
+		$search_content = _remove_special_chars($keyword)
 	);
 
 	// Run Elasticsearch.
 	try{
 		$search_result = tripal_elasticsearch_search_website($params);
-		dpm($search_result);
 	} catch (\Exception $e) {
 		$message = $e->getMessage();
 		drupal_set_message(t($message), 'warning');
 	}
 
+	// grab page title and highlight content from search results.
+	$results = array();
+	foreach ($search_result as $item) {
+		$results[] = array(
+			'nid' => $item['nid'],
+			'title' => $item['title'],
+			'highlight' => $item['highlight'],
+		);
+	}
 
-	return $build;
+
+	$output = '';
+	foreach ($results as $item) {
+		$output .= '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
+		$output .= '<p>'.$item['highlight'].'</p>';
+	}
+
+	return get_website_search_result_table($results);
 }
+
+
+
+/**
+ * tripal_elasticsearch_search_results_category_page_callback
+ */
+function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2) {
+	$node_type = $arg1;
+	$keyword = $arg2;
+
+	// Build search params.
+	$params = build_website_search_params(
+		$search_content = _remove_special_chars($keyword),
+		$node_type = $node_type
+	);
+
+	// Run Elasticsearch.
+	try{
+		$search_result = tripal_elasticsearch_search_website($params);
+	} catch (\Exception $e) {
+		$message = $e->getMessage();
+		drupal_set_message(t($message), 'warning');
+	}
+
+	// grab page title and highlight content from search results.
+	$results = array();
+	foreach ($search_result as $item) {
+		$results[] = array(
+			'nid' => $item['nid'],
+			'title' => $item['title'],
+			'highlight' => $item['highlight'],
+		);
+	}
+
+	$output = '';
+	foreach ($results as $item) {
+		$output .= '<h3>'.l($item['title'], 'node/'.$item['nid']).'</h3>';
+		$output .= '<p>'.$item['highlight'].'</p>';
+	}
+
+	return get_website_search_result_table($results);
+}
+
+
+/**
+ * Implements hook_theme().
+ * Register templates to display search results.
+ */
+function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
+//	$theme_hooks['website_search_results'] = array(
+//		'variables' => array('website_search_results' => NULL),
+//		'template' => 'website-search-results',
+//		'path' => drupal_get_path('module', 'tripal_elasticsearch').'/templates',
+//	);
+//
+//	return $theme_hooks;
+}
+
