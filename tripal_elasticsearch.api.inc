@@ -241,14 +241,28 @@ function build_search_query_from_field_content_pairs (array $field_content_pairs
 /**
  * Function to build website search params.
  */
-function build_website_search_params ($index='website', $type='website', $search_content='', $from=0, $size=1000) {
-	$query = [
+function build_website_search_params ($search_content='', $node_type = '', $index='website', $type='website', $from=0, $size=1000) {
+	$queries = [];
+	$queries[] = [
 		"query_string" => [
 			"default_field" => "content",
 			"query" => $search_content,
 			"default_operator" => "OR"
 		]
 	];
+	if (!empty($node_type)) {
+		$queries[] = [
+			"match" => [
+				"type" => $node_type,
+			]
+		];
+	}
+	$query = [
+		"bool" => [
+			"must" => $queries
+		]
+	];
+
 	$highlight = [
 		"pre_tags" => ["<em><b>"],
 		"post_tags" => ["</b></em>"],
