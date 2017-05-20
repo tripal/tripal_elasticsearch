@@ -232,8 +232,8 @@ function tripal_elasticsearch_block_info() {
 		'cache' => DRUPAL_NO_CACHE,
 		'status' => 1,
 		'region' => 'sidebar_first',
-		'visibility' => 'BLOCK_VISIBILITY_LISTED',
-		'page' => 'tripal_elasticsearch/search_website/*',
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+		'page' => "tripal_elasticsearch/search_website\ntripal_elasticsearch/search_website/*",
 	);
 
 	return $blocks;
@@ -367,16 +367,72 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
 
 
 /**
- * Implements hook_theme().
- * Register templates to display search results.
+ * Implements hook_node_update().
  */
-function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
-//	$theme_hooks['website_search_results'] = array(
-//		'variables' => array('website_search_results' => NULL),
-//		'template' => 'website-search-results',
-//		'path' => drupal_get_path('module', 'tripal_elasticsearch').'/templates',
-//	);
-//
-//	return $theme_hooks;
+function tripal_elasticsearch_node_update ($node) {
+	$item = new stdClass();
+
+	$item->index_name = 'website';
+	$item->index_type = 'website';
+	$item->website_or_table = 'website';
+	$item->field_mapping_types = array(
+		'nid' => 'integer',
+		'type' => 'string',
+		'title' => 'string',
+		'content' => 'string',
+	);
+	$nid = $node->nid;
+	$item->sql = "SELECT $nid,title,type FROM {node}";
+
+	// randomly assign the updated node to a cron queue
+	$id = rand(1, 10);
+	$cron_queue = DrupalQueue::get('elasticsearch_queue_'.$id);
+	$cron_queue->createItem($item);
 }
 
+
+/**
+ * Implements hook_node_insert()
+ */
+function tripal_elasticsearch_node_inset ($node) {
+	$item = new stdClass();
+
+	$item->index_name = 'website';
+	$item->index_type = 'website';
+	$item->website_or_table = 'website';
+	$item->field_mapping_types = array(
+		'nid' => 'integer',
+		'type' => 'string',
+		'title' => 'string',
+		'content' => 'string',
+	);
+	$nid = $node->nid;
+	$item->sql = "SELECT $nid,title,type FROM {node}";
+
+	// randomly assign the updated node to a cron queue
+	$id = rand(1, 10);
+	$cron_queue = DrupalQueue::get('elasticsearch_queue_'.$id);
+	$cron_queue->createItem($item);
+}
+
+
+/**
+ * Implements hook_node_delete().
+ */
+function tripal_elasticsearch_node_delete($node) {
+	$params = array(
+		'index' => 'website',
+		'type' => 'website',
+		'id' => $node->nid,
+	);
+
+	try{
+		libraries_load('elasticsearch-php');
+		$elasticsearch_host = variable_get('elasticsearch_host');
+		$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+		$response = $client->delete($params);
+	} catch (\Exception $e) {
+		$message = $e->getMessage().' Failed to delete indexed node '.$node->nid;
+		watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+	}
+}

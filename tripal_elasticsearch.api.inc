@@ -112,8 +112,6 @@ function build_elasticsearch_index($index_name,
 		),
 	);
 
-	dpm($params);
-
 	libraries_load('elasticsearch-php');
 	$elasticsearch_host = variable_get('elasticsearch_host');
 	$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
