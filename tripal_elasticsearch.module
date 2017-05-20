@@ -259,6 +259,18 @@ function tripal_elasticsearch_block_info() {
 		'page' => "tripal_elasticsearch/search_website\ntripal_elasticsearch/search_website/*",
 	);
 
+	// Define blocks for table search forms.
+	$sql = "SELECT index_name FROM {tripal_elasticsearch}";
+	$index_names = db_query($sql)->fetchCol('index_name');
+	if (!empty($index_names)) {
+		foreach ($index_names as $index_name) {
+			$blocks['tes_'.$index_name] = array(
+				'info' => t('Search block for index: '.$index_name),
+				'cache' => DRUPAL_NO_CACHE,
+			);
+		}
+	}
+
 	return $blocks;
 }
 
@@ -267,15 +279,29 @@ function tripal_elasticsearch_block_info() {
  */
 function tripal_elasticsearch_block_view($delta = '') {
 	$block = array();
-	switch ($delta){
-		case 'elasticsearch_website_search_box':
-			$block['subject'] = '';
-			$block['content'] = drupal_get_form('website_search_box_form');
-			break;
-		case 'website_search_category':
-			$block['subject'] = '';
-			$block['content'] = get_website_search_results_category_list();
-			break;
+	// Get index name from table search block name.
+	if (preg_match('/^(tes_)/', $delta)) {
+		$index_name = preg_replace('/^(tes_)/', '', $delta);
+		// use index name obtained from block name and query the database.
+		$sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+		$result = db_query($sql, array(':index_name'=>$index_name))->fetchCol('index_name');
+		// if query result is not empty, display the block.
+		if (!empty($result)) {
+			$block['subject'] = t('Search block form for index: <b>'.$index_name.'</b>');
+			$search_form = _build_table_search_form($index_name);
+			$block['content'] = drupal_render($search_form);
+		}
+	} else {
+		switch ($delta){
+			case 'elasticsearch_website_search_box':
+				$block['subject'] = '';
+				$block['content'] = drupal_get_form('website_search_box_form');
+				break;
+			case 'website_search_category':
+				$block['subject'] = '';
+				$block['content'] = get_website_search_results_category_list();
+				break;
+		}
 	}
 
 	return $block;

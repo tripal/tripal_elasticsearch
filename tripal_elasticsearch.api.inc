@@ -403,3 +403,30 @@ function get_website_search_result_table ($search_results) {
 
 	return $output;
 }
+
+
+/**
+ * Build search block form
+ * This function extract form element information from database table
+ * 'tripal_elasticsearch' and build a search form.
+ */
+function _build_table_search_form ($index_name) {
+	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
+	$form = array();
+	foreach ($result as $record) {
+		$form[$record->index_field] = array(
+			'#type' => $record->form_field_type,
+			'#title' => t($record->form_field_title),
+			'#weight' => $record->form_field_weight,
+		);
+	}
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Search'),
+		'#weight' => 99,
+	);
+
+	return $form;
+}

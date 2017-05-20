@@ -77,6 +77,12 @@ function website_search_box_form_submit($form, &$form_state) {
  * Render array to build a form for creating table search interface.
  */
 function table_search_interface_building_form($form, &$form_state) {
+	$form['help'] = array(
+		'#type' => 'markup',
+		'#markup' => t('This administrative page is used to build search blocks for 
+				indexed data.'),
+	);
+
 	try{
 		libraries_load('elasticsearch-php');
 		$elasticsearch_host = variable_get('elasticsearch_host');
@@ -111,7 +117,13 @@ function table_search_interface_building_form($form, &$form_state) {
 	$index_name = isset($form_state['values']['index_name']) ? $form_state['values']['index_name'] : '';
 	if (!empty($index_name)) {
 		$index_profile = $existing_indices[$index_name];
+		$table_name = array_keys($existing_indices[$index_name]['mappings'])[1];
 		$index_fields = array_keys($index_profile['mappings']['_default_']['properties']);
+
+		$form['table_name'] = array(
+			'#type' => 'value',
+			'#value' => $table_name,
+		);
 	} else {
 		$index_fields = array();
 	}
@@ -162,3 +174,44 @@ function table_search_interface_building_form_validate($form, $form_state) {
 		form_set_error('index_fields', t('Please select at least one index field.'));
 	}
 }
+
+/**
+ * table_search_interface_building_form submit.
+ */
+function table_search_interface_building_form_submit($form, &$form_state) {
+	$index_name = $form_state['values']['index_name'];
+	$index_fields = array_filter($form_state['values']['index_fields']);
+	$table_name = $form_state['values']['table_name'];
+	// Delete record if it already exists in database table 'tripal_elasticsearch'.
+	$sql = "SELECT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+	$result = db_query($sql, array(':index_name'=>$index_name))->fetchCol('index_name');
+	if (!empty($result)) {
+		try {
+			db_delete('tripal_elasticsearch')
+				->condition('index_name', $index_name)
+				->execute();
+			drupal_set_message('You have successfully updated search block for index -<b>'.$index_name.'</b>-.');
+		} catch (\Exception $e) {
+			drupal_set_message(t($e->getMessage()), 'warning');
+		}
+
+	}
+
+	$record = array();
+	foreach ($index_fields as $key=>$field) {
+		$record['index_name'] = $index_name;
+		$record['table_name'] = $table_name;
+		$record['index_field'] = $field;
+		$record['form_field_title'] = $field;
+		$record['form_field_type'] = 'textfield';
+		$record['form_field_options'] = '';
+		$record['form_field_weight'] = 0;
+		try{
+			drupal_write_record('tripal_elasticsearch', $record);
+		} catch (\Exception $e) {
+			drupal_set_message(t($e->getMessage()), 'warning');
+		}
+	}
+}
+
+
