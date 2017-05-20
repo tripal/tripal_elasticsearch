@@ -230,6 +230,11 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		);
 	}
 
+	$form['index_name'] = array(
+		'#type' => 'hidden',
+		'#value' => $index_name,
+	);
+
 	$form['actions'] = array(
 		'#type' => 'actions',
 		'#weight' => 99,
@@ -242,5 +247,15 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		'#type' => 'submit',
 		'#value' => t('Download Table'),
 	);
+
+	$form['#method'] = 'get';
 	return $form;
+}
+
+
+/**
+ * form submit for tripal_elasticsearch_build_search_block_form.
+ */
+function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state) {
+	$form_state['rebuild'] = TRUE;
 }

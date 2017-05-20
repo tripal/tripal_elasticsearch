@@ -286,7 +286,7 @@ function build_website_search_params ($search_content='', $node_type = '', $inde
 /**
  * Function to build table search params.
  */
-function build_table_search_params ($index, $type, $query, $from=0, $size=1000, $sort_field, $sort_direction = 'asc' ) {
+function build_table_search_params ($index, $type, $query, $from=0, $size=10000, $sort_direction = 'asc' ) {
 	$params = [];
 	$params['index'] = $index;
 	$params['type'] = $type;
@@ -294,9 +294,9 @@ function build_table_search_params ($index, $type, $query, $from=0, $size=1000, 
 	//$sort_field = array_keys($field_content_pairs)[0];
 	$params['body'] = [
 		'query' => $query,
-		'sort' => [
-			$sort_field . ".raw" => $sort_direction,
-		]
+//		'sort' => [
+//			$sort_field . ".raw" => $sort_direction,
+//		]
 	];
 	$params['from'] = $from;
 	$params['size'] = $size;
@@ -318,7 +318,7 @@ function build_table_search_params ($index, $type, $query, $from=0, $size=1000, 
 
 
 /**
- * Function to Elasticsearch website.
+ * Function for Elasticsearch website.
  */
 function tripal_elasticsearch_search_website ($params) {
 	// Build Elasticsearch client
@@ -336,8 +336,9 @@ function tripal_elasticsearch_search_website ($params) {
 	return $search_res;
 }
 
+
 /**
- * Function to Elasticsearch table.
+ * Function to for Elasticsearch table.
  */
 function tripal_elasticsearch_search_table ($params) {
 	// Build Elasticsearch client
@@ -391,7 +392,7 @@ function get_website_search_result_table ($search_results) {
 		$row .= '<p>'.$item['highlight'].'</p>';
 		$rows[] = array($row);
 	}
-//	dpm($rows);
+
 	$per_page = 10;
 	$current_page = pager_default_initialize(count($rows), $per_page);
 
@@ -406,27 +407,21 @@ function get_website_search_result_table ($search_results) {
 
 
 /**
- * Build search block form
- * This function extract form element information from database table
- * 'tripal_elasticsearch' and build a search form.
+ * Get table search result table.
  */
-function _build_table_search_form ($index_name) {
-	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
-	$form = array();
-	foreach ($result as $record) {
-		$form[$record->index_field] = array(
-			'#type' => $record->form_field_type,
-			'#title' => t($record->form_field_title),
-			'#weight' => $record->form_field_weight,
-		);
-	}
+function get_table_search_result_table ($search_results) {
+	$output = '';
+	$header = array_keys($search_results[0]);
+	$rows = $search_results;
 
-	$form['submit'] = array(
-		'#type' => 'submit',
-		'#value' => t('Search'),
-		'#weight' => 99,
-	);
+	$per_page = 10;
+	$current_page = pager_default_initialize(count($rows), $per_page);
 
-	return $form;
+	// split list into page sized chunks
+	$chunks = array_chunk($rows, $per_page, TRUE);
+
+	$output .= theme('table', array('header'=>$header, 'rows'=>$chunks[$current_page]));
+	$output .= theme('pager', array('quantity', count($rows)));
+
+	return $output;
 }

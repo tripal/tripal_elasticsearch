@@ -422,6 +422,40 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
 
 
 /**
+ * tripal_elasticsearch_table_search_page_callback
+ */
+function tripal_elasticsearch_table_search_page_callback() {
+	$index_name = $_GET['index_name'];
+	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
+	$index_fields = array();
+	foreach ($result as $record) {
+		if (!empty($_GET[$record->index_field])) {
+			$index_fields[$record->index_field] = $_GET[$record->index_field];
+		}
+	}
+	$index_type = $record->table_name;
+
+	// Build search query for table search.
+	$query = build_search_query_from_field_content_pairs($index_fields);
+	// Build table search params.
+	$params = build_table_search_params($index = $index_name, $type = $index_type, $query);
+	// Run Elasticsearch
+	try {
+		$search_results = tripal_elasticsearch_search_table($params);
+	} catch (\Exception $e) {
+
+	}
+
+	if (count($search_results) == 0) {
+		return 'Your search did not match any record.';
+	}
+
+	return get_table_search_result_table($search_results);
+}
+
+
+/**
  * Implements hook_node_update().
  */
 function tripal_elasticsearch_node_update ($node) {
@@ -445,13 +479,6 @@ function tripal_elasticsearch_node_update ($node) {
 	$cron_queue->createItem($item);
 }
 
-
-/**
- * tripal_elasticsearch_table_search_page_callback
- */
-function tripal_elasticsearch_table_search_page_callback() {
-	return 'search table';
-}
 
 /**
  * Implements hook_node_insert()
