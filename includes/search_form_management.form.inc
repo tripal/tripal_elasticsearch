@@ -71,3 +71,78 @@ function website_search_box_form_submit($form, &$form_state) {
 	}
 }
 
+
+
+/**
+ * Render array to build a form for creating table search interface.
+ */
+function table_search_interface_building_form($form, &$form_state) {
+	try{
+		libraries_load('elasticsearch-php');
+		$elasticsearch_host = variable_get('elasticsearch_host');
+		$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+		$existing_indices = $client->indices()->getMapping();
+		if (count($existing_indices) == 0) {
+			$form['markup'] = array(
+				'#type' => 'markup',
+				'#markup' => '<h3>No index data exists.</h3>'
+			);
+			return $form;
+		}
+	} catch (\Exception $e) {
+		$form['markup'] = array(
+			'#type' => 'markup',
+			'#markup' => '<h3>'.$e->getMessage().'</h3>',
+		);
+		return $form;
+	}
+
+	$index_name_options = array(''=>'Select an index') + drupal_map_assoc(array_keys($existing_indices));
+	$form['index_name'] = array(
+		'#type' => 'select',
+		'#title' => t('Select an index to build search interface'),
+		'#options' => $index_name_options,
+		'#ajax' => array(
+			'callback' => 'tripal_elasticsearch_index_fields_ajax_callback',
+			'wrapper' => 'tripal_elasticsearch_index_fields_ajax_wrapper',
+		),
+	);
+
+	$index_name = isset($form_state['values']['index_name']) ? $form_state['values']['index_name'] : '';
+	if (!empty($index_name)) {
+		$index_profile = $existing_indices[$index_name];
+		$index_fields = array_keys($index_profile['mappings']['_default_']['properties']);
+	} else {
+		$index_fields = array();
+	}
+
+	$form['index_fields'] = array(
+		'#type' => 'checkboxes',
+		'#title' => t('Select index fields'),
+		'#description' => t('Only selected fields will show up on the table search interface.'),
+		'#options' => drupal_map_assoc($index_fields),
+		'#prefix' => '<div id="tripal_elasticsearch_index_fields_ajax_wrapper">',
+		'#suffix' => '</div>',
+		'#states' => array(
+			'invisible' => array(
+				':input[name="index_name"]' => array('value' => ''),
+			),
+		),
+	);
+
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
+	);
+
+	return $form;
+}
+
+
+/**
+ * index fields ajax callback.
+ */
+function tripal_elasticsearch_index_fields_ajax_callback($form, &$form_state) {
+	return $form['index_fields'];
+}
