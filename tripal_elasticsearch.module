@@ -288,8 +288,7 @@ function tripal_elasticsearch_block_view($delta = '') {
 		// if query result is not empty, display the block.
 		if (!empty($result)) {
 			$block['subject'] = t('Search block form for index: <b>'.$index_name.'</b>');
-			$search_form = _build_table_search_form($index_name);
-			$block['content'] = drupal_render($search_form);
+			$block['content'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
 		}
 	} else {
 		switch ($delta){
@@ -323,6 +322,13 @@ function tripal_elasticsearch_menu_alter(&$items) {
 		'title' => t('Search results'),
 		'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
 		'page arguments' => array(2, 3),
+		'access arguments' => array(TRUE),
+	);
+
+	// Page to display table search result.
+	$items['tripal_elasticsearch/search_table'] = array(
+		'title' => '',
+		'page callback' => 'tripal_elasticsearch_table_search_page_callback',
 		'access arguments' => array(TRUE),
 	);
 	return $items;
@@ -439,6 +445,13 @@ function tripal_elasticsearch_node_update ($node) {
 	$cron_queue->createItem($item);
 }
 
+
+/**
+ * tripal_elasticsearch_table_search_page_callback
+ */
+function tripal_elasticsearch_table_search_page_callback() {
+	return 'search table';
+}
 
 /**
  * Implements hook_node_insert()

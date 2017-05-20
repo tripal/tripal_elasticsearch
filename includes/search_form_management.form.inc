@@ -215,3 +215,32 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 }
 
 
+/**
+ * Form builder function for table search.
+ */
+function tripal_elasticsearch_build_search_block_form($form, &$form_state, $index_name) {
+	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
+	$form = array();
+	foreach ($result as $record) {
+		$form[$record->index_field] = array(
+			'#type' => $record->form_field_type,
+			'#title' => t($record->form_field_title),
+			'#weight' => $record->form_field_weight,
+		);
+	}
+
+	$form['actions'] = array(
+		'#type' => 'actions',
+		'#weight' => 99,
+	);
+	$form['actions']['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
+	);
+	$form['actions']['download_table'] = array(
+		'#type' => 'submit',
+		'#value' => t('Download Table'),
+	);
+	return $form;
+}
