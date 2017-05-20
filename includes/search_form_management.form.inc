@@ -134,6 +134,11 @@ function table_search_interface_building_form($form, &$form_state) {
 	$form['submit'] = array(
 		'#type' => 'submit',
 		'#value' => t('Submit'),
+		'#states' => array(
+			'invisible' => array(
+				':input[name="index_name"]' => array('value' => ''),
+			),
+		),
 	);
 
 	return $form;
@@ -145,4 +150,15 @@ function table_search_interface_building_form($form, &$form_state) {
  */
 function tripal_elasticsearch_index_fields_ajax_callback($form, &$form_state) {
 	return $form['index_fields'];
+}
+
+
+/**
+ * table_search_interface_building_form validation.
+ */
+function table_search_interface_building_form_validate($form, $form_state) {
+	$index_fields = array_filter($form_state['values']['index_fields']);
+	if (empty($index_fields)) {
+		form_set_error('index_fields', t('Please select at least one index field.'));
+	}
 }
