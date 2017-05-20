@@ -382,7 +382,7 @@ function tripal_elasticsearch_node_update ($node) {
 		'content' => 'string',
 	);
 	$nid = $node->nid;
-	$item->sql = "SELECT $nid,title,type FROM {node}";
+	$item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
 
 	// randomly assign the updated node to a cron queue
 	$id = rand(1, 10);
@@ -407,7 +407,7 @@ function tripal_elasticsearch_node_inset ($node) {
 		'content' => 'string',
 	);
 	$nid = $node->nid;
-	$item->sql = "SELECT $nid,title,type FROM {node}";
+	$item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
 
 	// randomly assign the updated node to a cron queue
 	$id = rand(1, 10);
@@ -431,6 +431,8 @@ function tripal_elasticsearch_node_delete($node) {
 		$elasticsearch_host = variable_get('elasticsearch_host');
 		$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
 		$response = $client->delete($params);
+		$message = 'Removed document '.$node->nid.'from index "website"';
+		watchdog('tripal_elasticsearch', $message);
 	} catch (\Exception $e) {
 		$message = $e->getMessage().' Failed to delete indexed node '.$node->nid;
 		watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
