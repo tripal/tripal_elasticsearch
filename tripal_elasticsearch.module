@@ -97,8 +97,12 @@ function tripal_elasticsearch_menu() {
 		'weight' => 0,
 	);
 	$items[$admin_url_base.'/search_form_management/alter_search_form'] = array(
-		'title' => 'Alter Search Form',
+		'title' => 'Alter Search Block',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('table_search_block_altering_form'),
 		'access callback' => user_access('administer tripal elasticsearch'),
+		'file' => 'includes/search_form_management.form.inc',
+		'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 1,
 	);

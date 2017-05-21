@@ -104,6 +104,10 @@ function table_search_interface_building_form($form, &$form_state) {
 	}
 
 	$index_name_options = array(''=>'Select an index') + drupal_map_assoc(array_keys($existing_indices));
+	// 'website' is reserved for website indexing and search, no need to build search
+	// block for this index.
+	if (isset($index_name_options['website']))
+		unset($index_name_options['website']);
 	$form['index_name'] = array(
 		'#type' => 'select',
 		'#title' => t('Select an index to build search interface'),
@@ -204,6 +208,7 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 		$record['index_field'] = $field;
 		$record['form_field_title'] = $field;
 		$record['form_field_type'] = 'textfield';
+		$record['form_field_description'] = '';
 		$record['form_field_options'] = '';
 		$record['form_field_weight'] = 0;
 		try{
@@ -322,4 +327,30 @@ function search_content_ajax_callback($form, &$form_state) {
 	$commands[] = ajax_command_replace('#count_ajax_wrapper', drupal_render($form['count']));
 	$commands[] = ajax_command_replace("#select_window_ajax_wrapper", drupal_render($form['select_window']));
 	return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+
+/**
+ * Form builder for table_search_block_altering_form.
+ */
+function table_search_block_altering_form($form, &$form_state) {
+	// Get all index_name from database table tripal_elasticsearch.
+	$sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch}";
+	$search_blocks = db_query($sql)->fetchCol('index_name');
+
+	if (empty($search_blocks)) {
+		$form['no_search_block'] = array(
+			'#type' => 'markup',
+			'#markup' => t('No search block is available. Please build search block first.')
+		);
+		return $form;
+	}
+
+	$form['search_block'] = array(
+		'#type' => 'select',
+		'#title' => t('Search blocks'),
+		'#options' => array('' => 'Select a search block') + drupal_map_assoc($search_blocks),
+	);
+
+	return $form;
 }

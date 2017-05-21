@@ -202,6 +202,12 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
 			form_set_error('index_name', t('index name can only contain lowercase letters, 
 								numbers and underscores, and start with letters.'));
 		}
+		// 'website' is reserved for website indexing and search, use a different name
+		// as index name for table search.
+		if ($index_name == 'website') {
+			form_set_error('index_name', t('"website" is reserved for website index. Please
+					use a different name.'));
+		}
 
 		// At least one table field need to be selected.
 		$table_fields = array_filter($form_state['values']['table_fields']);

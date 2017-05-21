@@ -33,10 +33,9 @@ function tripal_elasticsearch_schema(){
 				'type' => 'varchar',
 				'length' => '255',
 			),
-//			'form_field_default_value' => array(
-//				'type' => 'varchar',
-//				'length' => '255',
-//			),
+		'form_field_description' => array(
+			'type' => 'text',
+		),
 			'form_field_options' => array(
 				'type' => 'text',
 			),
