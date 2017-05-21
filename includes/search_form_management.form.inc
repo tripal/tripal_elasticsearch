@@ -350,7 +350,82 @@ function table_search_block_altering_form($form, &$form_state) {
 		'#type' => 'select',
 		'#title' => t('Search blocks'),
 		'#options' => array('' => 'Select a search block') + drupal_map_assoc($search_blocks),
+		'#ajax' => array(
+			'callback' => 'search_block_name_ajax_callback',
+			'wrapper' => 'search_block_alter_ajax_wrapper',
+		)
 	);
 
+	$form['field_wrapper'] = array(
+		'#type' => 'fieldset',
+		'#prefix' => '<div id="search_block_alter_ajax_wrapper">',
+		'#suffix' => '</div>',
+		'#states' => array(
+			'invisible' => array(
+				':input[name="search_block"]' => array('value' => '')
+			),
+		),
+		'#tree' => TRUE,
+	);
+
+	$search_block = isset($form_state['values']['search_block']) ? $form_state['values']['search_block']:'';
+	if (!empty($search_block)) {
+		$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+		$result = db_query($sql, array(':index_name' => $search_block));
+		foreach ($result as $record) {
+			$field = $record->index_field;
+			$form['field_wrapper'][$field] = array(
+				'#type' => 'fieldset',
+				'#title' => t('Alter field: <b>'.$field.'</b>'),
+				'#collapsible' => TRUE,
+				'#collapsed' => TRUE,
+			);
+			$form['field_wrapper'][$field]['title'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Field title'),
+			);
+			$form['field_wrapper'][$field]['description'] = array(
+				'#type' => 'textarea',
+				'#title' => t('Field description'),
+			);
+			$form['field_wrapper'][$field]['type'] = array(
+				'#type' => 'select',
+				'#title' => t('Field type'),
+				'#options' => drupal_map_assoc(array(
+					'textfield',
+					'select',
+				)),
+			);
+			$form['field_wrapper'][$field]['select_options'] = array(
+				'#type' => 'textarea',
+				'#title' => t('Options for select field'),
+				// display options field only when the type field value is 'select'.
+				'#states' => array(
+					'visible' => array(
+						":input[name=\"field_wrapper[$field][type]\"]" => array('value' => 'select')
+					),
+				),
+			);
+			$form['field_wrapper'][$field]['weight'] = array(
+				'#type' => 'select',
+				'#title' => t('Field weight'),
+				'#options' => drupal_map_assoc(range(0,20)),
+			);
+
+		}
+	}
+
 	return $form;
+}
+
+
+/**
+ * ajax callback search_block_name_ajax_callback
+ */
+function search_block_name_ajax_callback($form, &$form_state) {
+	return $form['field_wrapper'];
+
+//	$commands = array();
+//	$commands[] = ajax_command_replace('#search_block_alter_ajax_wrapper', $form['field_wrapper']);
+//	return array('#type' => 'ajax', '#commands' => $commands);
 }

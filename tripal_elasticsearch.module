@@ -442,6 +442,10 @@ function tripal_elasticsearch_table_search_page_callback() {
 	$from = 1000 * ($select_window - 1);
 	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
 	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
+	// return an empty page if no search block is available in database.
+	if (empty($result)) {
+		return '';
+	}
 	$index_fields = array();
 	foreach ($result as $record) {
 		if (!empty($_GET[$record->index_field])) {
