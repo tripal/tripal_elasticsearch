@@ -286,7 +286,7 @@ function build_website_search_params ($search_content='', $node_type = '', $inde
 /**
  * Function to build table search params.
  */
-function build_table_search_params ($index, $type, $query, $from=0, $size=10000, $sort_direction = 'asc' ) {
+function build_table_search_params ($index, $type, $query, $from=0, $size=1000, $sort_direction = 'asc' ) {
 	$params = [];
 	$params['index'] = $index;
 	$params['type'] = $type;
@@ -303,18 +303,6 @@ function build_table_search_params ($index, $type, $query, $from=0, $size=10000,
 	return $params;
 }
 
-
-/**
- * Function to return search results count.
- */
-//function search_count ($params) {
-//	unset($params['from']);
-//	unset($params['size']);
-//	unset($params['scroll']);
-//	$count = client->count($params);
-//	$count = $count['count'];
-//	return $count;
-//}
 
 
 /**

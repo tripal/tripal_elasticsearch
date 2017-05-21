@@ -294,7 +294,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 	);
 	$form['actions']['submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Submit'),
+		'#value' => t('Show Search Results'),
 	);
 	$form['actions']['download_table'] = array(
 		'#type' => 'submit',
