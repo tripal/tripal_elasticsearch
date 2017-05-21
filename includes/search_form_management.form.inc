@@ -13,6 +13,7 @@ function website_search_box_form($form, &$form_state) {
 		'#value' => t('Search'),
 	);
 
+//	$form['#method'] = 'get';
 	return $form;
 }
 

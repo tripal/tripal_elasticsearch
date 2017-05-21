@@ -337,7 +337,12 @@ function tripal_elasticsearch_menu_alter(&$items) {
 /**
  * tripal_elasticsearch_search_results_page_callback
  */
-function tripal_elasticsearch_search_results_page_callback($arg1) {
+function tripal_elasticsearch_search_results_page_callback($arg1='') {
+	// $arg1 is empty by default. $arg1 has be to set, otherwise it will
+	// have a argument missing error when visit page 'tripal_elasticsearch/search_website'.
+	if (empty($arg1)) {
+		return 'Please enter some content into the search box and click the search button.';
+	}
 	$keyword = $arg1;
 
 	// Build search params.
@@ -425,6 +430,9 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
  * tripal_elasticsearch_table_search_page_callback
  */
 function tripal_elasticsearch_table_search_page_callback() {
+	if (!isset($_GET['index_name'])) {
+		return '';
+	}
 	$index_name = $_GET['index_name'];
 	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
 	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
