@@ -467,7 +467,7 @@ function tripal_elasticsearch_table_search_page_callback() {
 	}
 
 	if (count($search_results) == 0) {
-		return 'Your search did not match any record.';
+		return '<font color="blue">Your search did not match any record.</font>';
 	}
 
 	return get_table_search_result_table($search_results);

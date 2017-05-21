@@ -228,16 +228,37 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
 	$index_fields = array();
 	foreach ($result as $record) {
-		$form[$record->index_field] = array(
-			'#type' => $record->form_field_type,
-			'#title' => t($record->form_field_title),
-			'#weight' => $record->form_field_weight,
-			'#ajax' => array(
-				'callback' => 'search_content_ajax_callback',
-				'wrapper' => 'search_content_ajax_wrapper',
-				'keypress' => FALSE,
-			),
-		);
+		switch ($record->form_field_type) {
+			case 'textfield':
+				$form[$record->index_field] = array(
+					'#type' => 'textfield',
+					//'#title' => t($record->form_field_title),
+					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
+					'#size' => 25,
+					'#weight' => $record->form_field_weight,
+					'#ajax' => array(
+						'callback' => 'search_content_ajax_callback',
+						'wrapper' => 'search_content_ajax_wrapper',
+						'keypress' => FALSE,
+					),
+				);
+				break;
+			case 'select':
+				$form[$record->index_field] = array(
+					'#type' => 'select',
+					//'#title' => t($record->form_field_title),
+					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
+					'#options' => drupal_map_assoc(range(0,10)),
+					'#weight' => $record->form_field_weight,
+					'#ajax' => array(
+						'callback' => 'search_content_ajax_callback',
+						'wrapper' => 'search_content_ajax_wrapper',
+						'keypress' => FALSE,
+					),
+				);
+				break;
+		}
+
 
 		if (isset($form_state['values'][$record->index_field])) {
 			$index_fields[$record->index_field] = $form_state['values'][$record->index_field];
@@ -271,6 +292,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		'#markup' => t($count),
 		'#prefix' => '<div id="count_ajax_wrapper">',
 		'#suffix' => '</div>',
+		'#weight' => 99,
 	);
 
 
@@ -286,6 +308,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		'#field_suffix' => 'th 1000 results',
 		'#prefix' => '<div id="select_window_ajax_wrapper">',
 		'#suffix' => '</div>',
+		'#weight' => 100,
 	);
 
 	$form['index_name'] = array(
@@ -358,6 +381,7 @@ function table_search_block_altering_form($form, &$form_state) {
 
 	$form['field_wrapper'] = array(
 		'#type' => 'fieldset',
+		'#title' => t('Available fields'),
 		'#prefix' => '<div id="search_block_alter_ajax_wrapper">',
 		'#suffix' => '</div>',
 		'#states' => array(
@@ -382,11 +406,13 @@ function table_search_block_altering_form($form, &$form_state) {
 			);
 			$form['field_wrapper'][$field]['title'] = array(
 				'#type' => 'textfield',
+				'#title' => t('Available fields'),
 				'#title' => t('Field title'),
 			);
 			$form['field_wrapper'][$field]['description'] = array(
 				'#type' => 'textarea',
 				'#title' => t('Field description'),
+				'#description' => t('Enter some text to show users some searching examples.'),
 			);
 			$form['field_wrapper'][$field]['type'] = array(
 				'#type' => 'select',
@@ -395,8 +421,9 @@ function table_search_block_altering_form($form, &$form_state) {
 					'textfield',
 					'select',
 				)),
+				'#default_value' => 'textfield',
 			);
-			$form['field_wrapper'][$field]['select_options'] = array(
+			$form['field_wrapper'][$field]['options'] = array(
 				'#type' => 'textarea',
 				'#title' => t('Options for select field'),
 				// display options field only when the type field value is 'select'.
@@ -415,6 +442,15 @@ function table_search_block_altering_form($form, &$form_state) {
 		}
 	}
 
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
+		'#states' => array(
+			'invisible' => array(
+				':input[name="search_block"]' => array('value' => '')
+			),
+		),
+	);
 	return $form;
 }
 
@@ -428,4 +464,36 @@ function search_block_name_ajax_callback($form, &$form_state) {
 //	$commands = array();
 //	$commands[] = ajax_command_replace('#search_block_alter_ajax_wrapper', $form['field_wrapper']);
 //	return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * Form submit for table_search_block_altering_form.
+ */
+function table_search_block_altering_form_submit($form, &$form_state) {
+	$index_name = $form_state['values']['search_block'];
+	$sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch}";
+	$table_name = db_query($sql)->fetchCol('table_name')[0];
+
+	// Delete old records.
+	db_delete("tripal_elasticsearch")
+		->condition('index_name', $index_name)
+		->execute();
+
+	$index_fields = array_keys($form_state['values']['field_wrapper']);
+
+	$record = array();
+	foreach ($index_fields as $field) {
+		$record['index_name'] = $index_name;
+		$record['table_name'] = $table_name;
+		$record['index_field'] = $field;
+		$record['form_field_title'] = $form_state['values']['field_wrapper'][$field]['title'];
+		$record['form_field_type'] = $form_state['values']['field_wrapper'][$field]['type'];
+		$record['form_field_description'] = $form_state['values']['field_wrapper'][$field]['description'];
+		$record['form_field_options'] = $form_state['values']['field_wrapper'][$field]['options'];
+		$record['form_field_weight'] = $form_state['values']['field_wrapper'][$field]['weight'];
+		drupal_write_record('tripal_elasticsearch', $record);
+	}
+
+	drupal_set_message('Search block settings for <b>'.$index_name.'</b> has been successfully updated.');
+	$form_state['rebuild'] = TRUE;
 }
