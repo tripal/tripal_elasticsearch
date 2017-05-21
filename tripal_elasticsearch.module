@@ -449,6 +449,7 @@ function tripal_elasticsearch_table_search_page_callback() {
 	// Build table search params.
 	$params = build_table_search_params($index = $index_name, $type = $index_type, $query);
 	// Run Elasticsearch
+	$search_results = array();
 	try {
 		$search_results = tripal_elasticsearch_search_table($params);
 	} catch (\Exception $e) {

@@ -13,7 +13,6 @@ function website_search_box_form($form, &$form_state) {
 		'#value' => t('Search'),
 	);
 
-//	$form['#method'] = 'get';
 	return $form;
 }
 
@@ -222,14 +221,67 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 function tripal_elasticsearch_build_search_block_form($form, &$form_state, $index_name) {
 	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
 	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
-	$form = array();
+	$index_fields = array();
 	foreach ($result as $record) {
 		$form[$record->index_field] = array(
 			'#type' => $record->form_field_type,
 			'#title' => t($record->form_field_title),
 			'#weight' => $record->form_field_weight,
+			'#ajax' => array(
+				'callback' => 'search_content_ajax_callback',
+				'wrapper' => 'search_content_ajax_wrapper',
+				'keypress' => FALSE,
+			),
 		);
+
+		if (isset($form_state['values'][$record->index_field])) {
+			$index_fields[$record->index_field] = $form_state['values'][$record->index_field];
+		}
 	}
+
+	$index_type = $record->table_name;
+	$count = '';
+	$window_range = range(1,1);
+	if (count($index_fields) > 0) {
+		// Build search query for table search.
+		$query = build_search_query_from_field_content_pairs($index_fields);
+		// Build table search params.
+		$params = build_table_search_params($index = $index_name, $type = $index_type, $query);
+		unset($params['size']);
+		unset($params['from']);
+		try{
+			libraries_load('elasticsearch-php');
+			$elasticsearch_host = variable_get('elasticsearch_host');
+			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+			$count = $client->count($params)['count'];
+			$window_range = range(1, ceil($count/1000));
+			$count = '<font color="red"><b>'.$count.'</b> results match your search.</font>';
+		} catch (\Exception $e) {
+			drupal_set_message($e->getMessage(), 'warning');
+		}
+	}
+
+	$form['count'] = array(
+		'#type' => 'markup',
+		'#markup' => t($count),
+		'#prefix' => '<div id="count_ajax_wrapper">',
+		'#suffix' => '</div>',
+	);
+
+
+	$form['select_window'] = array(
+		'#title' => t('Please select a window number to display results.'),
+		'#description' => t('To improve search performance, 
+				a window with 1000 results is used to display search results. For example, 
+				the 1th window will display the first 1000 search records. The 4th window
+				will display search records from 4001 to 5000.'),
+		'#type' => 'select',
+		'#options' => drupal_map_assoc($window_range),
+		'#field_prefix' => 'show',
+		'#field_suffix' => 'th 1000 results',
+		'#prefix' => '<div id="select_window_ajax_wrapper">',
+		'#suffix' => '</div>',
+	);
 
 	$form['index_name'] = array(
 		'#type' => 'hidden',
@@ -249,6 +301,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		'#value' => t('Download Table'),
 	);
 
+
 	$form['#method'] = 'get';
 	return $form;
 }
@@ -259,4 +312,14 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
  */
 function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state) {
 	$form_state['rebuild'] = TRUE;
+}
+
+/**
+ * ajax search_content_ajax_callback
+ */
+function search_content_ajax_callback($form, &$form_state) {
+	$commands = array();
+	$commands[] = ajax_command_replace('#count_ajax_wrapper', drupal_render($form['count']));
+	$commands[] = ajax_command_replace("#select_window_ajax_wrapper", drupal_render($form['select_window']));
+	return array('#type' => 'ajax', '#commands' => $commands);
 }
