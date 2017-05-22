@@ -655,3 +655,28 @@ function link_results_to_pages_form($form, &$form_state) {
 function link_results_to_pages_ajax_callback($form, &$form_state) {
 	return $form['field_wrapper'];
 }
+
+
+/**
+ * Form submit for link_results_to_pages_form.
+ */
+function link_results_to_pages_form_submit($form, &$form_state) {
+	$index_name = $form_state['values']['search_block'];
+	$sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch}";
+	$table_name = db_query($sql)->fetchCol('table_name')[0];
+	$record = array();
+	// Delete old links first.
+	db_delete('tripal_elasticsearch_links')
+		->condition('index_name', $index_name)
+		->execute();
+	foreach ($form_state['values']['field_wrapper'] as $field => $url) {
+		$record['index_name'] = $index_name;
+		$record['table_name'] = $table_name;
+		$record['index_field'] = $field;
+		$record['field_url'] = $url;
+		drupal_write_record('tripal_elasticsearch_links', $record);
+	}
+
+	drupal_set_message(t('Links have been successfully updated.'));
+	$form_state['rebuild'] = TRUE;
+}

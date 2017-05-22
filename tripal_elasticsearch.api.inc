@@ -397,10 +397,50 @@ function get_website_search_result_table ($search_results) {
 /**
  * Get table search result table.
  */
-function get_table_search_result_table ($search_results) {
+function get_table_search_result_table ($search_results, $index_name) {
+	// Get field url
+	$sql = "SELECT * FROM {tripal_elasticsearch_links}";
+	$result = db_query($sql);
+	$field_url_pairs = array();
+	foreach ($result as $record) {
+		$field = $record->index_field;
+		$url = $record->field_url;
+		$field_url_pairs[$field] = $url;
+//		$field_url_pairs[$field] = preg_replace('/\[(.+)\]/U', '\$${1}', $url);
+	}
+
+
+	//add links to search results.
+	if (!empty( array_filter($field_url_pairs) )) {
+		$processed_search_results = array();
+		foreach ($search_results as $row) {
+			foreach ($field_url_pairs as $field => $url) {
+				if ($url == '')
+					break;
+				// replace field variables in url with field values.
+				preg_match_all('/\[.+?\]/', $url, $matches);
+				$field_variables = $matches[0];
+				array_walk($field_variables, function(&$value) {
+					$value = preg_replace('/\[(.+)\]/U', '${1}', $value);
+				});
+				$replacement = array();
+				foreach ($field_variables as $field_variable) {
+					$replacement[] = $row[$field_variable];
+				}
+				$url = str_replace($matches[0], $replacement, $url);
+
+				// theme search results.
+				$field_search_result = $row[$field];
+				$row[$field] = l($field_search_result, $url);
+			}
+			$processed_search_results[] = $row;
+		}
+	}
+
+	// theme search results as a table.
 	$output = '';
 	$header = array_keys($search_results[0]);
-	$rows = $search_results;
+	$rows = $processed_search_results;
 
 	$per_page = 10;
 	$current_page = pager_default_initialize(count($rows), $per_page);

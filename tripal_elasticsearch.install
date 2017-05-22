@@ -46,18 +46,22 @@ function tripal_elasticsearch_schema(){
 		),
 	);
 
-	$schema['tripal_elasticsearch_add_links'] = array(
+	$schema['tripal_elasticsearch_links'] = array(
 		'description' => t('A table for storing data for adding page links to search results'),
 		'fields' => array(
+			'index_name' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
 			'table_name' => array(
 				'type' => 'varchar',
 				'length' => '255',
 			),
-			'table_field' => array(
+			'index_field' => array(
 				'type' => 'varchar',
 				'length' => '255',
 			),
-			'page_link' => array(
+			'field_url' => array(
 				'type' => 'varchar',
 				'length' => '255',
 			),
