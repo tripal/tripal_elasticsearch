@@ -438,6 +438,7 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
  * tripal_elasticsearch_table_search_page_callback
  */
 function tripal_elasticsearch_table_search_page_callback() {
+	dpm($_GET);
 	if (!isset($_GET['index_name'])) {
 		return '';
 	}
@@ -473,6 +474,41 @@ function tripal_elasticsearch_table_search_page_callback() {
 	if (count($search_results) == 0) {
 		return '<font color="blue">Your search did not match any record.</font>';
 	}
+
+	// Download search results.
+	if ( $_GET['op'] == 'Download Table') {
+		// Build search query for table search.
+		$query = build_search_query_from_field_content_pairs($index_fields);
+		// Build table search params.
+		$params = build_table_search_params($index = $index_name, $type = $index_type, $query);
+		unset($params['size']);
+		unset($params['from']);
+		try{
+			libraries_load('elasticsearch-php');
+			$elasticsearch_host = variable_get('elasticsearch_host');
+			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
+			$count = $client->count($params)['count'];
+			$window_range = range(1, ceil($count/1000));
+			$count = '<font color="red"><b>'.$count.'</b> results match your search.</font>';
+		} catch (\Exception $e) {
+			drupal_set_message($e->getMessage(), 'warning');
+		}
+		// loop through window and write returned search results into a file.
+		$temp_file = drupal_tempnam('temporary://', 'search_results').'.csv';
+		$params['size'] = 1000;
+		foreach ($window_range as $window) {
+			$params['from'] = 1000 * ($window - 1);
+			$result = tripal_elasticsearch_search_table($params);
+			foreach ($result as $row) {
+				$line = implode(',', $row)."\n";
+				file_put_contents($temp_file, $line, FILE_APPEND);
+			}
+		}
+
+		drupal_add_http_header('Content-Type', 'text/csv; utf-8');
+		file_transfer($temp_file);
+	}
+
 
 	return get_table_search_result_table($search_results, $index_name);
 }
