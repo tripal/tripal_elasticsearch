@@ -232,7 +232,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 			case 'textfield':
 				$form[$record->index_field] = array(
 					'#type' => 'textfield',
-					//'#title' => t($record->form_field_title),
+					'#description' => $record->form_field_description,
 					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
 					'#size' => 25,
 					'#weight' => $record->form_field_weight,
@@ -244,11 +244,20 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				);
 				break;
 			case 'select':
+				$select_options_text = $record->form_field_options;
+				$select_options_pairs = preg_split("/[\s,]+/", $select_options_text, -1, PREG_SPLIT_NO_EMPTY);
+				$select_options_keys = array_map(function($string) {
+					return explode('|', $string)[0];
+				}, $select_options_pairs);
+				$select_options_values = array_map(function($string) {
+					return explode('|', $string)[1];
+				}, $select_options_pairs);
+				$select_options = array('' => 'Select') + array_combine($select_options_keys, $select_options_values);
 				$form[$record->index_field] = array(
 					'#type' => 'select',
-					//'#title' => t($record->form_field_title),
+					'#description' => $record->form_field_description,
 					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
-					'#options' => drupal_map_assoc(range(0,10)),
+					'#options' => $select_options,
 					'#weight' => $record->form_field_weight,
 					'#ajax' => array(
 						'callback' => 'search_content_ajax_callback',
@@ -416,13 +425,14 @@ function table_search_block_altering_form($form, &$form_state) {
 			$form['field_wrapper'][$field]['description'] = array(
 				'#type' => 'textarea',
 				'#title' => t('Field description'),
-				'#description' => t('Enter some text to show users some searching examples.'),
+				'#description' => t('Enter some text to show users some searching examples,
+						or give some searching instructions.'),
 			);
 
 			// Get unique values for this field in the database table.
-			$sql = "SELECT DISTINCT $field FROM {$table_name} LIMIT 21";
+			$sql = "SELECT DISTINCT $field FROM {$table_name} LIMIT 51";
 			$field_values = db_query($sql)->fetchCol();
-			$type_options = (count($field_values) > 20)? array('textfield' => 'textfield') : array (
+			$type_options = (count($field_values) > 50)? array('textfield' => 'textfield') : array (
 				'textfield' => 'textfield',
 				'select' => 'select',
 			);
@@ -431,7 +441,7 @@ function table_search_block_altering_form($form, &$form_state) {
 				'#title' => t('Field type'),
 				'#description' => t('The field type in the search form. <font color="red"><b>textfield
 					</b></font> indicates an input box. <font color="red"><b>select</b></font> indicates
-					a dropdown menu box. If this field has more than 20 unique values in the database table,
+					a dropdown menu box. If this field has more than 50 unique values in the database table,
 					only the <font color="red"><b>textfield</b></font> will be available.'),
 				'#options' => $type_options,
 				'#default_value' => 'textfield',
