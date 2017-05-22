@@ -395,7 +395,11 @@ function table_search_block_altering_form($form, &$form_state) {
 	$search_block = isset($form_state['values']['search_block']) ? $form_state['values']['search_block']:'';
 	if (!empty($search_block)) {
 		$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-		$result = db_query($sql, array(':index_name' => $search_block));
+		$index_name = $search_block;
+		// Get table name and then query the table in database for unique values for specific fields.
+		$table_name = db_query("SELECT DISTINCT table_name FROM {tripal_elasticsearch} LIMIT 1")
+			->fetchCol('table_name')[0];
+		$result = db_query($sql, array(':index_name' => $index_name));
 		foreach ($result as $record) {
 			$field = $record->index_field;
 			$form['field_wrapper'][$field] = array(
@@ -414,22 +418,43 @@ function table_search_block_altering_form($form, &$form_state) {
 				'#title' => t('Field description'),
 				'#description' => t('Enter some text to show users some searching examples.'),
 			);
+
+			// Get unique values for this field in the database table.
+			$sql = "SELECT DISTINCT $field FROM {$table_name} LIMIT 21";
+			$field_values = db_query($sql)->fetchCol();
+			$type_options = (count($field_values) > 20)? array('textfield' => 'textfield') : array (
+				'textfield' => 'textfield',
+				'select' => 'select',
+			);
 			$form['field_wrapper'][$field]['type'] = array(
 				'#type' => 'select',
 				'#title' => t('Field type'),
-				'#options' => drupal_map_assoc(array(
-					'textfield',
-					'select',
-				)),
+				'#description' => t('The field type in the search form. <font color="red"><b>textfield
+					</b></font> indicates an input box. <font color="red"><b>select</b></font> indicates
+					a dropdown menu box. If this field has more than 20 unique values in the database table,
+					only the <font color="red"><b>textfield</b></font> will be available.'),
+				'#options' => $type_options,
 				'#default_value' => 'textfield',
 			);
+
+			array_walk($field_values, function(&$value, &$key) {
+				$value = $value.'|'.$value;
+			});
+			$options_text = implode(', ', $field_values);
 			$form['field_wrapper'][$field]['options'] = array(
 				'#type' => 'textarea',
 				'#title' => t('Options for select field'),
+				'#description' => t('This is used to convert an input box to a dropdown menu box
+							in your search form. Enter key-value pairs into this box in the format of
+							<font color="red"><b>key|value</b></font>. The keys should be the true values
+							in your database table, and the values can be anything that you want to show
+							to your users. <font color="red"><b>key|value pairs</b></font> can be separated 
+							by comma, space, tab or newline.'),
+				'#default_value' => $options_text,
 				// display options field only when the type field value is 'select'.
 				'#states' => array(
-					'visible' => array(
-						":input[name=\"field_wrapper[$field][type]\"]" => array('value' => 'select')
+					'invisible' => array(
+						":input[name=\"field_wrapper[$field][type]\"]" => array('value' => 'textfield')
 					),
 				),
 			);
