@@ -337,6 +337,9 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				':input[name="select_window"]' => array('value' => '0'),
 			),
 		),
+		'#ajax' => array(
+			'callback' => 'save_to_file_ajax_callback',
+		),
 		'#weight' => 99,
 	);
 
@@ -381,10 +384,17 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
 }
 
 /**
- * Ajax callback for select window.
+ * Ajax callback for select_window.
  */
 function select_window_ajax_callback($form, &$form_state) {
 	return $form['select_window'];
+}
+
+/**
+ * Ajax callback for save_to_file.
+ */
+function save_to_file_ajax_callback($form, &$form_state) {
+	return $form['save_to_file'];
 }
 
 /**

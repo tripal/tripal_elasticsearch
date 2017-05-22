@@ -438,7 +438,6 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
  * tripal_elasticsearch_table_search_page_callback
  */
 function tripal_elasticsearch_table_search_page_callback() {
-	dpm($_GET);
 	if (!isset($_GET['index_name'])) {
 		return '';
 	}
@@ -476,7 +475,8 @@ function tripal_elasticsearch_table_search_page_callback() {
 	}
 
 	// Download search results.
-	if ( $_GET['op'] == 'Download Table') {
+	$save_to_file = isset($_GET['save_to_file']) ? $_GET['save_to_file']:'';
+	if ( $save_to_file == 'yes') {
 		// Build search query for table search.
 		$query = build_search_query_from_field_content_pairs($index_fields);
 		// Build table search params.
@@ -494,7 +494,9 @@ function tripal_elasticsearch_table_search_page_callback() {
 			drupal_set_message($e->getMessage(), 'warning');
 		}
 		// loop through window and write returned search results into a file.
-		$temp_file = drupal_tempnam('temporary://', 'search_results').'.csv';
+		$directory = 'public://table_search_results';
+		file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
+		$temp_file = drupal_tempnam($directory, 'search_results_').'.csv';
 		$params['size'] = 1000;
 		foreach ($window_range as $window) {
 			$params['from'] = 1000 * ($window - 1);
@@ -505,8 +507,11 @@ function tripal_elasticsearch_table_search_page_callback() {
 			}
 		}
 
-		drupal_add_http_header('Content-Type', 'text/csv; utf-8');
-		file_transfer($temp_file);
+//		drupal_add_http_header('Content-Type', 'text/csv; utf-8');
+//		file_transfer($temp_file);
+		$output = l(t('Download search results'), file_create_url($temp_file));
+		$output .= get_table_search_result_table($search_results, $index_name);
+		return $output;
 	}
 
 
