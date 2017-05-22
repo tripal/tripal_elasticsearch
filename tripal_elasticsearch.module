@@ -108,7 +108,11 @@ function tripal_elasticsearch_menu() {
 	);
 	$items[$admin_url_base.'/search_form_management/link_results_to_pages'] = array(
 		'title' => 'Link Results to Pages',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('link_results_to_pages_form'),
 		'access callback' => user_access('administer tripal elasticsearch'),
+		'file' => 'includes/search_form_management.form.inc',
+		'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 2,
 	);

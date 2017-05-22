@@ -532,3 +532,126 @@ function table_search_block_altering_form_submit($form, &$form_state) {
 	drupal_set_message('Search block settings for <b>'.$index_name.'</b> has been successfully updated.');
 	$form_state['rebuild'] = TRUE;
 }
+
+
+/**
+ * Form builder for table_search_block_altering_form.
+ */
+function link_results_to_pages_form($form, &$form_state) {
+	// Give an example to help users.
+	$form['help'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Example and Instruction'),
+		'#collapsible' => TRUE,
+		'#collapsed' => TRUE,
+	);
+	$help_markup = '<p>This is administrative page allows you to add an url to the table
+									search results. Below is an example to show you how to associate
+									urls with table fields.</p>';
+	$help_markup .= '<p>You can add either a <font color="red"><b>consistent</b></font> url 
+									(see the organism_id field below) or a <font color="red"><b>variable</b></font> 
+									url (see the abbreviation field below). Variable urls are built with search results 
+									from specified fields. <font color="red"><b>Field names</b></font> within the 
+									<font color="red"><b>[ ]</b></font> in the url will be replaced with corresponding 
+									field search results.</p>';
+	$form['help']['help'] = array(
+		'#type' => 'markup',
+		'#markup' => t($help_markup),
+	);
+	$form['help']['example_form'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Available fields'),
+	);
+	$form['help']['example_form']['organism_id'] = array(
+		'#type' => 'textfield',
+		'#field_suffix' => 'organism_id',
+		'#attributes' => array(
+			'placeholder' => 'https://www.ncbi.nlm.nih.gov',
+		),
+	);
+	$form['help']['example_form']['organism_abbreviation'] = array(
+		'#type' => 'textfield',
+		'#field_suffix' => 'abbreviation',
+		'#attributes' => array(
+			'placeholder' => 'organism/[genus]/[species]',
+		),
+	);
+	$form['help']['example_form']['organism_genus'] = array(
+		'#type' => 'textfield',
+		'#field_suffix' => 'genus',
+	);
+	$form['help']['example_form']['organism_species'] = array(
+		'#type' => 'textfield',
+		'#field_suffix' => 'species',
+	);
+
+
+	// Get all index_name from database table tripal_elasticsearch.
+	$sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch}";
+	$search_blocks = db_query($sql)->fetchCol('index_name');
+
+	if (empty($search_blocks)) {
+		$form['no_search_block'] = [
+			'#type' => 'markup',
+			'#markup' => t('No search block is available. Please build search block first.')
+		];
+		return $form;
+	}
+
+	$form['search_block'] = [
+		'#type' => 'select',
+		'#title' => t('Search blocks'),
+		'#options' => ['' => 'Select a search block'] + drupal_map_assoc($search_blocks),
+		'#ajax' => [
+			'callback' => 'link_results_to_pages_ajax_callback',
+			'wrapper' => 'link_results_to_pages_ajax_wrapper',
+		]
+	];
+
+	$form['field_wrapper'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Available fields'),
+		'#tree' => TRUE,
+		'#states' => array(
+			'invisible' => array(
+				':input[name="search_block"]' => array('value' => ''),
+			),
+		),
+		'#prefix' => '<div id="link_results_to_pages_ajax_wrapper">',
+		'#suffix' => '</div>',
+	);
+
+	$search_block = isset($form_state['values']['search_block']) ? $form_state['values']['search_block']:'';
+	if (!empty($search_block)) {
+		$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+		$index_name = $search_block;
+		$result = db_query($sql, array(':index_name' => $index_name));
+		foreach ($result as $record) {
+			$field = $record->index_field;
+			$form['field_wrapper'][$field] = array(
+				'#type' => 'textfield',
+				'#field_suffix' => $field,
+			);
+		}
+	}
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
+		'#states' => array(
+			'invisible' => array(
+				':input[name="search_block"]' => array('value' => ''),
+			),
+		),
+	);
+
+	return $form;
+}
+
+
+/**
+ * Ajax callback for link_results_to_pages_form.
+ */
+function link_results_to_pages_ajax_callback($form, &$form_state) {
+	return $form['field_wrapper'];
+}
