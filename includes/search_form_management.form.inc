@@ -233,7 +233,8 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				$form[$record->index_field] = array(
 					'#type' => 'textfield',
 					'#description' => $record->form_field_description,
-					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
+//					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
+					'#title' => t($record->form_field_title),
 					'#size' => 25,
 					'#weight' => $record->form_field_weight,
 					'#ajax' => array(
@@ -260,7 +261,8 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				$form[$record->index_field] = array(
 					'#type' => 'select',
 					'#description' => $record->form_field_description,
-					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
+//					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
+					'#title' => t($record->form_field_title),
 					'#options' => $select_options,
 					'#weight' => $record->form_field_weight,
 					'#ajax' => array(
