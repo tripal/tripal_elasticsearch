@@ -442,14 +442,13 @@ function get_table_search_result_table ($search_results, $index_name) {
 	$header = array_keys($search_results[0]);
 	$rows = $processed_search_results;
 
-	$per_page = 10;
-	$current_page = pager_default_initialize(count($rows), $per_page);
-
-	// split list into page sized chunks
-	$chunks = array_chunk($rows, $per_page, TRUE);
-
-	$output .= theme('table', array('header'=>$header, 'rows'=>$chunks[$current_page]));
-	$output .= theme('pager', array('quantity', count($rows)));
+//	$per_page = 10;
+//	$current_page = pager_default_initialize(count($rows), $per_page);
+//	// split list into page sized chunks
+//	$chunks = array_chunk($rows, $per_page, TRUE);
+//	$output .= theme('table', array('header'=>$header, 'rows'=>$chunks[$current_page]));
+//	$output .= theme('pager', array('quantity', count($rows)));
+	$output .= theme('table', array('header'=>$header, 'rows'=>$rows));
 
 	return $output;
 }

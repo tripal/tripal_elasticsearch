@@ -440,6 +440,12 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
  * tripal_elasticsearch_table_search_page_callback
  */
 function tripal_elasticsearch_table_search_page_callback() {
+	// add js and css files
+	drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch').'/css/jquery.dataTables.min.css');
+	drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/jquery.dataTables.min.js');
+	drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/table_search_results_datatable.js');
+
+
 	if (!isset($_GET['index_name'])) {
 		return '';
 	}
@@ -511,13 +517,18 @@ function tripal_elasticsearch_table_search_page_callback() {
 
 //		drupal_add_http_header('Content-Type', 'text/csv; utf-8');
 //		file_transfer($temp_file);
-		$output = l(t('Download search results'), file_create_url($temp_file));
+		$output = '<div id="table_search_results_datatable">';
+		$output .= l(t('Download search results'), file_create_url($temp_file));
 		$output .= get_table_search_result_table($search_results, $index_name);
+		$output .= '</div>';
 		return $output;
 	}
 
+	$output = '<div id="table_search_results_datatable">';
+	$output .= get_table_search_result_table($search_results, $index_name);
+	$output .= '</div>';
 
-	return get_table_search_result_table($search_results, $index_name);
+	return $output;
 }
 
 
