@@ -103,7 +103,7 @@ function table_search_interface_building_form($form, &$form_state) {
 		return $form;
 	}
 
-	$index_name_options = array(''=>'Select an index') + drupal_map_assoc(array_keys($existing_indices));
+	$index_name_options = array_merge(array(''=>'Select an index'), drupal_map_assoc(array_keys($existing_indices)));
 	// 'website' is reserved for website indexing and search, no need to build search
 	// block for this index.
 	if (isset($index_name_options['website']))
@@ -252,7 +252,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				$select_options_values = array_map(function($string) {
 					return explode('|', $string)[1];
 				}, $select_options_pairs);
-				$select_options = array('' => 'Select') + array_combine($select_options_keys, $select_options_values);
+				$select_options = array_merge(array('' => 'Select'), array_combine($select_options_keys, $select_options_values));
 				$form[$record->index_field] = array(
 					'#type' => 'select',
 					'#description' => $record->form_field_description,
@@ -289,7 +289,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 			$elasticsearch_host = variable_get('elasticsearch_host');
 			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
 			$count = $client->count($params)['count'];
-			$window_range = array('' => 0) + range(1, ceil($count/1000));
+			$window_range = array_merge(array('' => 0), range(1, ceil($count/1000)));
 			$count = '<font color="red"><b>'.$count.'</b> results match your search.</font>';
 		} catch (\Exception $e) {
 			drupal_set_message($e->getMessage(), 'warning');
@@ -427,7 +427,7 @@ function table_search_block_altering_form($form, &$form_state) {
 	$form['search_block'] = array(
 		'#type' => 'select',
 		'#title' => t('Search blocks'),
-		'#options' => array('' => 'Select a search block') + drupal_map_assoc($search_blocks),
+		'#options' => array_merge(array('' => 'Select a search block') , drupal_map_assoc($search_blocks)),
 		'#ajax' => array(
 			'callback' => 'search_block_name_ajax_callback',
 			'wrapper' => 'search_block_alter_ajax_wrapper',
@@ -647,7 +647,7 @@ function link_results_to_pages_form($form, &$form_state) {
 	$form['search_block'] = [
 		'#type' => 'select',
 		'#title' => t('Search blocks'),
-		'#options' => ['' => 'Select a search block'] + drupal_map_assoc($search_blocks),
+		'#options' => array_merge(array('' => 'Select a search block'), drupal_map_assoc($search_blocks)),
 		'#ajax' => [
 			'callback' => 'link_results_to_pages_ajax_callback',
 			'wrapper' => 'link_results_to_pages_ajax_wrapper',

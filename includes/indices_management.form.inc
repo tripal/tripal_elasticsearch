@@ -91,7 +91,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 	$form['index_table'] = array(
 		'#type' => 'select',
 		'#title' => t('Select a table and fields to index'),
-		'#options' => array('' => 'Select a table') + drupal_map_assoc( get_table_list() ),
+		'#options' => array_merge(array('' => 'Select a table'), drupal_map_assoc(get_table_list())),
 		'#states' => array(
 			'invisible' => array(
 				':input[name="website_or_table"]' => array('value' => 'website'),
@@ -126,7 +126,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 													mapping type is selected for a field, that field will
 													no be indexed. This can be used to selectively index
 													table fields.'),
-			'#options' => array('' => 'Select mapping type') + get_field_mapping_types(),
+			'#options' => array_merge(array('' => 'Select mapping type'), get_field_mapping_types()),
 		);
 	}
 
