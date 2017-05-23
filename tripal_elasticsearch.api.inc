@@ -409,6 +409,7 @@ function get_table_search_result_table ($search_results, $index_name) {
 //		$field_url_pairs[$field] = preg_replace('/\[(.+)\]/U', '\$${1}', $url);
 	}
 
+	$rows = $search_results;
 
 	//add links to search results.
 	if (!empty( array_filter($field_url_pairs) )) {
@@ -435,12 +436,13 @@ function get_table_search_result_table ($search_results, $index_name) {
 			}
 			$processed_search_results[] = $row;
 		}
+		$rows = $processed_search_results;
 	}
 
 	// theme search results as a table.
 	$output = '';
 	$header = array_keys($search_results[0]);
-	$rows = $processed_search_results;
+//	$rows = $processed_search_results;
 
 //	$per_page = 10;
 //	$current_page = pager_default_initialize(count($rows), $per_page);
