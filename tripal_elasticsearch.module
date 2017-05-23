@@ -312,12 +312,13 @@ function tripal_elasticsearch_block_view($delta = '') {
 						switch (count($_GET)) {
 							case 3:
 								$keyword = $path[2];
+								$block['content'] = get_website_search_results_category_list($keyword);
 								break;
 							case 4:
 								$keyword = $path[3];
+								$block['content'] = get_website_search_results_category_list($keyword);
 								break;
 						}
-						$block['content'] = get_website_search_results_category_list($keyword);
 					} else {
 						$block['content'] = '';
 					}
