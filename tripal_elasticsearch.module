@@ -318,9 +318,10 @@ function tripal_elasticsearch_block_view($delta = '') {
 								$keyword = $path[3];
 								$block['content'] = get_website_search_results_category_list($keyword);
 								break;
+							default:
+								$block['content'] = '';
+								break;
 						}
-					} else {
-						$block['content'] = '';
 					}
 				}
 				break;
