@@ -416,23 +416,23 @@ function get_table_search_result_table ($search_results, $index_name) {
 		$processed_search_results = array();
 		foreach ($search_results as $row) {
 			foreach ($field_url_pairs as $field => $url) {
-				if ($url == '')
-					break;
-				// replace field variables in url with field values.
-				preg_match_all('/\[.+?\]/', $url, $matches);
-				$field_variables = $matches[0];
-				array_walk($field_variables, function(&$value) {
-					$value = preg_replace('/\[(.+)\]/U', '${1}', $value);
-				});
-				$replacement = array();
-				foreach ($field_variables as $field_variable) {
-					$replacement[] = $row[$field_variable];
-				}
-				$url = str_replace($matches[0], $replacement, $url);
+				if ($url != '') {
+					// replace field variables in url with field values.
+					preg_match_all('/\[.+?\]/', $url, $matches);
+					$field_variables = $matches[0];
+					array_walk($field_variables, function(&$value) {
+						$value = preg_replace('/\[(.+)\]/U', '${1}', $value);
+					});
+					$replacement = array();
+					foreach ($field_variables as $field_variable) {
+						$replacement[] = $row[$field_variable];
+					}
+					$url = str_replace($matches[0], $replacement, $url);
 
-				// theme search results.
-				$field_search_result = $row[$field];
-				$row[$field] = l($field_search_result, $url);
+					// theme search results.
+					$field_search_result = $row[$field];
+					$row[$field] = l($field_search_result, $url);
+				}
 			}
 			$processed_search_results[] = $row;
 		}
