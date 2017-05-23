@@ -308,11 +308,19 @@ function tripal_elasticsearch_block_view($delta = '') {
 				$block['subject'] = '';
 				if(isset($_GET['q'])) {
 					$path = explode('/', $_GET['q']);
-					if ($path[0] == 'tripal_elasticsearch' && $path[1] == 'search_website')
-						$keyword = isset($path[2]) ? $path[2]: '';
+					if ($path[0] == 'tripal_elasticsearch' && $path[1] == 'search_website') {
+						switch (count($_GET)) {
+							case 3:
+								$keyword = $path[2];
+								break;
+							case 4:
+								$keyword = $path[3];
+								break;
+						}
 						$block['content'] = get_website_search_results_category_list($keyword);
-				} else {
-					$block['content'] = '';
+					} else {
+						$block['content'] = '';
+					}
 				}
 				break;
 		}
