@@ -176,7 +176,7 @@ function get_table_list() {
 	foreach ($chado_table_results as $value) {
 		$chado_tables[] = 'chado.'.$value->table_name;
 	}
-	return $public_tables + $chado_tables;
+	return array_merge($public_tables, $chado_tables);
 }
 
 
