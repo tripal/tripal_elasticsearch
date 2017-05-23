@@ -8,3 +8,4 @@ files[] = tripal_elasticsearch.module
 configuration = admin/tripal/extension/tripal_elasticsearch
 
 dependencies[] = libraries
+dependencies[] = queue_ui
