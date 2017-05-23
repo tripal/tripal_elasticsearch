@@ -245,11 +245,15 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				break;
 			case 'select':
 				$select_options_text = $record->form_field_options;
-				$select_options_pairs = preg_split("/[\s,]+/", $select_options_text, -1, PREG_SPLIT_NO_EMPTY);
+//				$select_options_pairs = preg_split("/[\s,]+/", $select_options_text, -1, PREG_SPLIT_NO_EMPTY);
+				preg_match_all('/\[.+?\]/', $select_options_text, $matches);
+				$select_options_pairs = $matches[0];
 				$select_options_keys = array_map(function($string) {
+					$string = preg_replace('/\[/', '', $string);
 					return explode('|', $string)[0];
 				}, $select_options_pairs);
 				$select_options_values = array_map(function($string) {
+					$string = preg_replace('/\]/', '', $string);
 					return explode('|', $string)[1];
 				}, $select_options_pairs);
 				$select_options = array_merge(array('' => 'Select'), array_combine($select_options_keys, $select_options_values));
@@ -494,7 +498,7 @@ function table_search_block_altering_form($form, &$form_state) {
 			);
 
 			array_walk($field_values, function(&$value, &$key) {
-				$value = $value.'|'.$value;
+				$value = "[$value|$value]";
 			});
 			$options_text = implode(', ', $field_values);
 			$form['field_wrapper'][$field]['options'] = array(
@@ -504,8 +508,8 @@ function table_search_block_altering_form($form, &$form_state) {
 							in your search form. Enter key-value pairs into this box in the format of
 							<font color="red"><b>key|value</b></font>. The keys should be the true values
 							in your database table, and the values can be anything that you want to show
-							to your users. <font color="red"><b>key|value pairs</b></font> can be separated 
-							by comma, space, tab or newline.'),
+							to your users. <font color="red"><b>key|value pairs</b></font> have to be placed within
+							the <font color="red"><b>[ ] (example: [key|value])</b></font>.'),
 				'#default_value' => $options_text,
 				// display options field only when the type field value is 'select'.
 				'#states' => array(

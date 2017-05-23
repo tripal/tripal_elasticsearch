@@ -45,6 +45,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 	$form['index_name'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Enter a unique Elasticsearch index name'),
+		'#field_suffix' => 'less than 28 characters',
 		'#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores, 
 												and start with letters.'),
 		// This field is only visible to table indexing.
@@ -198,6 +199,9 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
 	} else {
 		// Index name validation.
 		$index_name = $form_state['values']['index_name'];
+		if (strlen($index_name) > 28) {
+			form_set_error('index_name', t('String length cannot be larger than 28.'));
+		}
 		if (!preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name )) {
 			form_set_error('index_name', t('index name can only contain lowercase letters, 
 								numbers and underscores, and start with letters.'));
