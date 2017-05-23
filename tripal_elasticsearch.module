@@ -309,12 +309,12 @@ function tripal_elasticsearch_block_view($delta = '') {
 				if(isset($_GET['q'])) {
 					$path = explode('/', $_GET['q']);
 					if ($path[0] == 'tripal_elasticsearch' && $path[1] == 'search_website') {
-						switch (count($_GET)) {
-							case 3:
+						switch (count($path)) {
+							case '3':
 								$keyword = $path[2];
 								$block['content'] = get_website_search_results_category_list($keyword);
 								break;
-							case 4:
+							case '4':
 								$keyword = $path[3];
 								$block['content'] = get_website_search_results_category_list($keyword);
 								break;
