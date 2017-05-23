@@ -330,14 +330,16 @@ function tripal_elasticsearch_menu_alter(&$items) {
 		'title' => t('Search results'),
 		'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
 		'page arguments' => array(2, 3),
-		'access arguments' => array(TRUE),
+//		'access arguments' => array(TRUE),
+		'access callback' => user_access('access content'),
 	);
 
 	// Page to display table search result.
 	$items['tripal_elasticsearch/search_table'] = array(
 		'title' => '',
 		'page callback' => 'tripal_elasticsearch_table_search_page_callback',
-		'access arguments' => array(TRUE),
+//		'access arguments' => array(TRUE),
+		'access callback' => user_access('access content'),
 	);
 	return $items;
 }
