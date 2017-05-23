@@ -497,6 +497,7 @@ function table_search_block_altering_form($form, &$form_state) {
 				'#default_value' => 'textfield',
 			);
 
+			asort($field_values);
 			array_walk($field_values, function(&$value, &$key) {
 				$value = "[$value|$value]";
 			});
