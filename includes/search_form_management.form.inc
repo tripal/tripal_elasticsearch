@@ -3,12 +3,18 @@
  * Render array for website_search_box_form.
  */
 function website_search_box_form($form, &$form_state) {
-	$form['search_box'] = array(
+	$form['container'] = array(
+		'#type' => 'container',
+		'#attributes' => array(
+			'class' => array('container-inline'),
+		),
+	);
+	$form['container']['search_box'] = array(
 		'#type' => 'textfield',
 		'#size' => 15,
 	);
 
-	$form['submit'] = array(
+	$form['container']['submit'] = array(
 		'#type' => 'submit',
 		'#value' => t('Search'),
 	);
