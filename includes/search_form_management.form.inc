@@ -456,10 +456,10 @@ function table_search_block_altering_form($form, &$form_state) {
 			$form['field_wrapper'][$field]['type'] = array(
 				'#type' => 'select',
 				'#title' => t('Field type'),
-				'#description' => t('The field type in the search form. <font color="red"><b>textfield
-					</b></font> indicates an input box. <font color="red"><b>select</b></font> indicates
+				'#description' => t('The field type in the search form. <strong style="color: red">textfield
+					</strong> indicates an input box. <strong style="color: red">select</strong> indicates
 					a dropdown menu box. If this field has more than 50 unique values in the database table,
-					only the <font color="red"><b>textfield</b></font> will be available.'),
+					only the <strong style="color: red">textfield</strong> will be available.'),
 				'#options' => $type_options,
 				'#default_value' => 'textfield',
 			);
