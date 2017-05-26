@@ -1,0 +1,16 @@
+{
+  "name": "tripal/tripal_elasticsearch",
+  "description": "Support elasticsearch in Tripal",
+  "type": "drupal-module",
+  "require": {
+    "elasticsearch/elasticsearch": "^5.2",
+    "composer/installers": "~1.0"
+  },
+  "license": "GPLv2",
+  "authors": [
+    {
+      "name": "Staton Lab",
+      "email": "support@hardwoodgenomics.org"
+    }
+  ]
+}
