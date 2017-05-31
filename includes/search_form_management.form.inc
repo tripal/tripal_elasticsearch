@@ -467,10 +467,11 @@ function table_search_block_altering_form($form, &$form_state) {
 			);
 
 			asort($field_values);
-			array_walk($field_values, function(&$value, &$key) {
-				$value = "[$value|$value]";
-			});
-			$options_text = implode(', ', $field_values);
+			$options_arr = array();
+			foreach ($field_values as $field_value) {
+				$options_arr[] = '["'. $field_value .'"|'.$field_value.']';
+			}
+			$options_text = implode(', ', $options_arr);
 			$form['field_wrapper'][$field]['options'] = array(
 				'#type' => 'textarea',
 				'#title' => t('Options for select field'),
