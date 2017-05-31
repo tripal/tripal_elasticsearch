@@ -545,7 +545,11 @@ function table_search_block_altering_form_submit($form, &$form_state) {
 		$record['form_field_title'] = $form_state['values']['field_wrapper'][$field]['title'];
 		$record['form_field_type'] = $form_state['values']['field_wrapper'][$field]['type'];
 		$record['form_field_description'] = $form_state['values']['field_wrapper'][$field]['description'];
-		$record['form_field_options'] = $form_state['values']['field_wrapper'][$field]['options'];
+		if ($record['form_field_type'] === 'textfield') {
+			$record['form_field_options'] = '';
+		} else {
+			$record['form_field_options'] = $form_state['values']['field_wrapper'][$field]['options'];
+		}
 		$record['form_field_weight'] = $form_state['values']['field_wrapper'][$field]['weight'];
 		drupal_write_record('tripal_elasticsearch', $record);
 	}
