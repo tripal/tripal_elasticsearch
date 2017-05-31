@@ -9,3 +9,4 @@ configuration = admin/tripal/extension/tripal_elasticsearch
 
 dependencies[] = libraries
 dependencies[] = queue_ui
+dependencies[] = ultimate_cron

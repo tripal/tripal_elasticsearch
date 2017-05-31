@@ -86,7 +86,9 @@ function table_search_interface_building_form($form, &$form_state) {
 	$index_name = isset($form_state['values']['index_name']) ? $form_state['values']['index_name'] : '';
 	if (!empty($index_name)) {
 		$index_profile = $existing_indices[$index_name];
-		$table_name = array_keys($existing_indices[$index_name]['mappings'])[1];
+		$mappings_keys = drupal_map_assoc( array_keys($existing_indices[$index_name]['mappings']) );
+		unset($mappings_keys['_default_']);
+		$table_name = array_keys($mappings_keys)[0];
 		$index_fields = array_keys($index_profile['mappings']['_default_']['properties']);
 
 		$form['table_name'] = array(
