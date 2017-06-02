@@ -464,9 +464,11 @@ function tripal_elasticsearch_table_search_page_callback() {
  * Implements hook_form_FORM_ID_alter().
  */
 function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
+	$index_type_from_submit_button = '';
 	if (!isset($form_state['values']['op'])) {
 		return;
-	} elseif ($form_state['values']['op'] === 'Search') {
+	} else {
+
 		// add js and css files
 		drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch').'/css/jquery.dataTables.min.css');
 		drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/jquery.dataTables.min.js');

@@ -436,8 +436,8 @@ function get_website_search_result_table ($search_results) {
  */
 function get_table_search_result_table ($search_results, $index_name) {
 	// Get field url
-	$sql = "SELECT * FROM {tripal_elasticsearch_links}";
-	$result = db_query($sql);
+	$sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
+	$result = db_query($sql, array(':index_name' => $index_name));
 	$field_url_pairs = array();
 	foreach ($result as $record) {
 		$field = $record->index_field;

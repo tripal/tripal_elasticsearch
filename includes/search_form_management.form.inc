@@ -299,6 +299,11 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		'#value' => $index_name,
 	);
 
+	$form['index_type'] = array(
+		'#type' => 'hidden',
+		'#value' => $index_type,
+	);
+
 //	$form['#method'] = 'get';
 
 	// submit button
