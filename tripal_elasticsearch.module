@@ -467,7 +467,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 	$index_type_from_submit_button = '';
 	if (!isset($form_state['values']['op'])) {
 		return;
-	} else {
+	} elseif ($form_state['values']['op'] == 'Search') {
 
 		// add js and css files
 		drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch').'/css/jquery.dataTables.min.css');
@@ -515,6 +515,11 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 
 		// a markup element to display search results.
 
+		$form['actions']['download'] = array(
+			'#type' => 'submit',
+			'#value' => t('Download Table'),
+			'#weight' => 101,
+		);
 		$form['search_results'] = array(
 			'#item' => 'markup',
 			'#markup' => $output,
