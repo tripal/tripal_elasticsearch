@@ -347,7 +347,6 @@ function tripal_elasticsearch_menu_alter(&$items) {
 		'title' => t('Search results'),
 		'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
 		'page arguments' => array(2, 3),
-//		'access arguments' => array(TRUE),
 		'access callback' => user_access('access content'),
 	);
 
@@ -355,7 +354,6 @@ function tripal_elasticsearch_menu_alter(&$items) {
 	$items['tripal_elasticsearch/search_table'] = array(
 		'title' => '',
 		'page callback' => 'tripal_elasticsearch_table_search_page_callback',
-//		'access arguments' => array(TRUE),
 		'access callback' => user_access('access content'),
 	);
 	return $items;
@@ -457,97 +455,74 @@ function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2
  * tripal_elasticsearch_table_search_page_callback
  */
 function tripal_elasticsearch_table_search_page_callback() {
-	// add js and css files
-	drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch').'/css/jquery.dataTables.min.css');
-	drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/jquery.dataTables.min.js');
-	drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/table_search_results_datatable.js');
+  // create an empty page to host table search blocks.
+	return '';
+}
 
 
-	if (!isset($_GET['index_name'])) {
-		return '';
-	}
-	$index_name = $_GET['index_name'];
-	$select_window = $_GET['select_window'];
-	$from = 1000 * ($select_window - 1);
-	$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-	$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
-	// return an empty page if no search block is available in database.
-	if (empty($result)) {
-		return '';
-	}
-	$index_fields = array();
-	foreach ($result as $record) {
-		if (!empty($_GET[$record->index_field])) {
-			$index_fields[$record->index_field] = $_GET[$record->index_field];
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
+	if (!isset($form_state['values']['op'])) {
+		return;
+	} elseif ($form_state['values']['op'] === 'Search') {
+		// add js and css files
+		drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch').'/css/jquery.dataTables.min.css');
+		drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/jquery.dataTables.min.js');
+		drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/table_search_results_datatable.js');
+
+
+		/**
+		 * build an associated array in which keys are field names and values are user input contents.
+		 */
+		$sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+		$index_name = $form_state['values']['index_name'];
+		$result = db_query($sql, array(':index_name'=>$index_name))->fetchAll();
+		$index_fields = array();
+		foreach ($result as $record) {
+			$field_value = isset($form_state['values'][$record->index_field]) ? $form_state['values'][$record->index_field] : '';
+			if (!empty($field_value)) {
+				$index_fields[$record->index_field] = $field_value;
+			}
 		}
-	}
-	$index_type = $record->table_name;
-
-	// Build search query for table search.
-	$query = build_search_query_from_field_content_pairs($index_fields);
-	// Build table search params.
-	$params = build_table_search_params($index = $index_name, $type = $index_type, $query, $from = $from);
-	// Run Elasticsearch
-	$search_results = array();
-	try {
-		$search_results = tripal_elasticsearch_search_table($params);
-	} catch (\Exception $e) {
-
-	}
-
-	if (count($search_results) == 0) {
-		return '<font color="blue">Your search did not match any record.</font>';
-	}
-
-	// Download search results.
-	$save_to_file = isset($_GET['save_to_file']) ? $_GET['save_to_file']:'';
-	if ( $save_to_file == 'yes') {
+		// get index type
+		$index_type = $record->table_name;
 		// Build search query for table search.
 		$query = build_search_query_from_field_content_pairs($index_fields);
 		// Build table search params.
-		$params = build_table_search_params($index = $index_name, $type = $index_type, $query);
-		unset($params['size']);
-		unset($params['from']);
-		try{
-			libraries_load('elasticsearch-php');
-			$elasticsearch_host = variable_get('elasticsearch_host');
-			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
-			$count = $client->count($params)['count'];
-			$window_range = range(1, ceil($count/1000));
-			$count = '<font color="red"><b>'.$count.'</b> results match your search.</font>';
+		$select_window = isset($form_state['values']['select_window']) ? $form_state['values']['select_window'] : '';
+		$from = empty($select_window) ? 0: 1000 * ($select_window - 1);
+		$params = build_table_search_params($index = $index_name, $type = $index_type, $query, $from = $from);
+		// Run Elasticsearch and return search results into an array.
+		$search_results = array();
+		try {
+			$search_results = tripal_elasticsearch_search_table($params);
 		} catch (\Exception $e) {
-			drupal_set_message($e->getMessage(), 'warning');
-		}
-		// loop through window and write returned search results into a file.
-		$directory = 'public://table_search_results';
-		file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
-		$temp_file = drupal_tempnam($directory, 'search_results_').'.csv';
-		$params['size'] = 1000;
-		foreach ($window_range as $window) {
-			$params['from'] = 1000 * ($window - 1);
-			$result = tripal_elasticsearch_search_table($params);
-			foreach ($result as $row) {
-				$line = implode(',', $row)."\n";
-				file_put_contents($temp_file, $line, FILE_APPEND);
-			}
+
 		}
 
-//		drupal_add_http_header('Content-Type', 'text/csv; utf-8');
-//		file_transfer($temp_file);
-		$output = '<div id="table_search_results_datatable">';
-		$output .= l(t('Download search results'), file_create_url($temp_file));
-		$output .= get_table_search_result_table($search_results, $index_name);
-		$output .= '</div>';
-		return $output;
+		// theme search results
+		$output = '<strong style="color: blue">Your search did not match any record</strong>';
+		if (count($search_results) > 0) {
+			$output = '<div id="table_search_results_datatable">';
+			$output .= get_table_search_result_table($search_results, $index_name);
+			$output .= '</div>';
+		}
+
+
+		// a markup element to display search results.
+
+		$form['search_results'] = array(
+			'#item' => 'markup',
+			'#markup' => $output,
+			'#prefix' => '<div id="search_results_ajax_wrapper">',
+			'#suffix' => '</div>',
+			'#weight' => 101,
+		);
 	}
 
-	$output = '<div id="table_search_results_datatable">';
-	$output .= get_table_search_result_table($search_results, $index_name);
-	$output .= '</div>';
-
-	return $output;
 }
-
 
 /**
  * Implements hook_node_update().

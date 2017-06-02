@@ -200,20 +200,18 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				$form[$record->index_field] = array(
 					'#type' => 'textfield',
 					'#description' => $record->form_field_description,
-//					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
 					'#title' => t($record->form_field_title),
 					'#size' => 25,
 					'#weight' => $record->form_field_weight,
 					'#ajax' => array(
 						'callback' => 'search_content_ajax_callback',
 						'wrapper' => 'search_content_ajax_wrapper',
-						'keypress' => FALSE,
+						'keypress' => TRUE,
 					),
 				);
 				break;
 			case 'select':
 				$select_options_text = $record->form_field_options;
-//				$select_options_pairs = preg_split("/[\s,]+/", $select_options_text, -1, PREG_SPLIT_NO_EMPTY);
 				preg_match_all('/\[.+?\]/', $select_options_text, $matches);
 				$select_options_pairs = $matches[0];
 				$select_options_keys = array_map(function($string) {
@@ -228,7 +226,6 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				$form[$record->index_field] = array(
 					'#type' => 'select',
 					'#description' => $record->form_field_description,
-//					'#field_suffix' => t('<b>'.$record->form_field_title.'</b>'),
 					'#title' => t($record->form_field_title),
 					'#options' => $select_options,
 					'#weight' => $record->form_field_weight,
@@ -241,15 +238,15 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 				break;
 		}
 
-
 		if (isset($form_state['values'][$record->index_field])) {
 			$index_fields[$record->index_field] = $form_state['values'][$record->index_field];
 		}
 	}
 
+	// get the number of total search results.
 	$index_type = $record->table_name;
 	$count = '';
-	$window_range = array('' => 0);
+	$window_range = drupal_map_assoc(array(1));
 	if (count($index_fields) > 0) {
 		// Build search query for table search.
 		$query = build_search_query_from_field_content_pairs($index_fields);
@@ -262,7 +259,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 			$elasticsearch_host = variable_get('elasticsearch_host');
 			$client = Elasticsearch\ClientBuilder::create()->setHosts(array($elasticsearch_host))->build();
 			$count = $client->count($params)['count'];
-			$window_range = array_merge(array('' => 0), range(1, ceil($count/1000)));
+			$window_range = array_merge(range(1, ceil($count/1000)));
 			$count = '<font color="red"><b>'.$count.'</b> results match your search.</font>';
 		} catch (\Exception $e) {
 			drupal_set_message($e->getMessage(), 'warning');
@@ -280,8 +277,8 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 
 	$form['select_window'] = array(
 		'#title' => t('Please select a window number to display results.'),
-		'#description' => t('To improve search performance, 
-				a window with 1000 results is used to display search results. For example, 
+		'#description' => t('To improve search performance,
+				a window with 1000 results is used to display search results. For example,
 				the 1th window will display the first 1000 search records. The 4th window
 				will display search records from 4001 to 5000.'),
 		'#type' => 'select',
@@ -296,51 +293,20 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 		),
 	);
 
-
-
-	$form['save_to_file'] = array(
-		'#type' => 'radios',
-		'#title' => t('Do you want to save your results into a file?'),
-		'#options' => array(
-			'yes' => 'yes',
-			'no' => 'no',
-		),
-		'#states' => array(
-			'invisible' => array(
-				':input[name="select_window"]' => array('value' => '0'),
-			),
-		),
-		'#ajax' => array(
-			'callback' => 'save_to_file_ajax_callback',
-		),
-		'#weight' => 99,
-	);
-
+	// create a value form field to store index name. This value will be passed to $_GET.
 	$form['index_name'] = array(
 		'#type' => 'hidden',
 		'#value' => $index_name,
 	);
 
-//	$form['actions'] = array(
-//		'#type' => 'actions',
-//		'#weight' => 100,
-//	);
+//	$form['#method'] = 'get';
+
+	// submit button
 	$form['submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Show Search Results'),
-		'#states' => array(
-			'visible' => array(
-				':input[name="save_to_file"]' => array('checked' => TRUE),
-			),
-		),
+		'#value' => t('Search'),
 		'#weight' => 100,
 	);
-//	$form['actions']['download_table'] = array(
-//		'#type' => 'submit',
-//		'#value' => t('Download Table'),
-//	);
-
-	$form['#method'] = 'get';
 
 	return $form;
 }
@@ -349,11 +315,12 @@ function tripal_elasticsearch_build_search_block_form_validate($form, &$form_sta
 
 }
 
+
 /**
  * Form validation for tripal_elasticsearch_build_search_block_form.
  */
-function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state, $index_name) {
-
+function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state) {
+	$form_state['rebuild'] = TRUE;
 }
 
 /**
