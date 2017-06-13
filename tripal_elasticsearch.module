@@ -481,9 +481,7 @@ function tripal_elasticsearch_table_search_page_callback() {
 function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
   if (!isset($form_state['values']['op'])) {
     return;
-  }
-
-  elseif ($form_state['values']['op'] == 'Search') {
+  } elseif ($form_state['values']['op'] !== 'Download') {
     // add js and css files
     drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch') . '/css/jquery.dataTables.min.css');
     drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/jquery.dataTables.min.js');
