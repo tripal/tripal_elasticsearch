@@ -303,7 +303,7 @@ function tripal_elasticsearch_block_view($delta = '') {
     if (!empty($result)) {
       $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
       $block['content'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
-      dpm($block['content']);
+      dpm($block);
     }
   }
   else {
