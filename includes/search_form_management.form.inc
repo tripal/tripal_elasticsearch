@@ -188,6 +188,22 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 }
 
 /**
+ * Get the total count for results.
+ *
+ * @param $params
+ *
+ * @return mixed
+ */
+function tripal_elastisearch_results_count($params) {
+  libraries_load('elasticsearch-php');
+  $elasticsearch_host = variable_get('elasticsearch_host');
+  $client = Elasticsearch\ClientBuilder::create()
+    ->setHosts([$elasticsearch_host])
+    ->build();
+  return $client->count($params)['count'];
+}
+
+/**
  * Form builder function for table search.
  */
 function tripal_elasticsearch_build_search_block_form($form, &$form_state, $index_name) {
@@ -253,16 +269,11 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     // Build search query for table search.
     $query = build_search_query_from_field_content_pairs($index_fields);
     // Build table search params.
-    $params = build_table_search_params($index = $index_name, $type = $index_type, $query);
+    $params = build_table_search_params($index_name, $index_type, $query);
     unset($params['size']);
     unset($params['from']);
     try {
-      libraries_load('elasticsearch-php');
-      $elasticsearch_host = variable_get('elasticsearch_host');
-      $client = Elasticsearch\ClientBuilder::create()
-        ->setHosts([$elasticsearch_host])
-        ->build();
-      $count = $client->count($params)['count'];
+      $count = tripal_elasticsearch_results_count($params);
       $window_range = array_merge(range(1, ceil($count / 1000)));
       $count = '<span style="color: red"><b>' . $count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
@@ -307,7 +318,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#value' => $index_type,
   ];
 
-  //	$form['#method'] = 'get';
+  $form['#method'] = 'get';
 
   // submit button
   $form['actions'] = ['#type' => 'actions'];
@@ -353,12 +364,7 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
     unset($params['size']);
     unset($params['from']);
     try {
-      libraries_load('elasticsearch-php');
-      $elasticsearch_host = variable_get('elasticsearch_host');
-      $client = Elasticsearch\ClientBuilder::create()
-        ->setHosts([$elasticsearch_host])
-        ->build();
-      $count = $client->count($params)['count'];
+      $count = tripal_elastisearch_results_count($params);
       $window_range = range(1, ceil($count / 1000));
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');

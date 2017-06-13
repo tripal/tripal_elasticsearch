@@ -504,11 +504,5 @@ function get_table_search_result_table($search_results, $index_name) {
   ]);
   $output .= theme('pager', ['quantity', count($rows)]);
 
-  dpm($chunks);
-  dpm($current_page);
-
-  //	$output .= theme('table', array('header'=>$header, 'rows'=>$rows));
-
-
   return $output;
 }

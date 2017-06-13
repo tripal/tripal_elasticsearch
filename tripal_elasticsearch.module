@@ -288,6 +288,8 @@ function tripal_elasticsearch_block_info() {
 
 /**
  * Implements hook_block_view().
+ *
+ * @param $delta
  */
 function tripal_elasticsearch_block_view($delta = '') {
   $block = [];
@@ -505,8 +507,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 
     }
 
-
-    // theme search results
+    // Theme search results
     $output = '<strong style="color: blue">Your search did not match any record</strong>';
     if (count($search_results) > 0) {
       $output = '<div id="table_search_results_datatable">';
@@ -514,14 +515,13 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
       $output .= '</div>';
     }
 
-
-    // a markup element to display search results.
-
+    // A markup element to display search results.
     $form['actions']['download'] = [
       '#type' => 'submit',
       '#value' => t('Download Table'),
       '#weight' => 101,
     ];
+
     $form['search_results'] = [
       '#item' => 'markup',
       '#markup' => $output,
