@@ -351,7 +351,14 @@ function tripal_elasticsearch_search_table($params, $per_page = 10, $current_pag
     $params['size'] = 10;
   }
 
-  $hits = $client->search($params);
+  dpm($params);
+
+  try {
+    $hits = $client->search($params);
+  } catch (Exception $e) {
+    drupal_set_message($e->getMessage());
+  }
+  
   $search_res = [];
   foreach ($hits['hits']['hits'] as $hit) {
     $search_res[] = $hit['_source'];
