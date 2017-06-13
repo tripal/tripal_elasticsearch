@@ -341,10 +341,10 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
   $form_state['rebuild'] = TRUE;
 
   // Download table if only the 'Download table' button is clicked.
-  if ($form_state['values']['op'] == 'Download Table') {
+  /*if ($form_state['values']['op'] == 'Download Table') {
     /**
      * build an associated array in which keys are field names and values are user input contents.
-     */
+     *
     $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
     $index_name = $form_state['values']['index_name'];
     $result = db_query($sql, [':index_name' => $index_name])->fetchAll();
@@ -385,6 +385,7 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
 
     file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
   }
+     * */
 }
 
 /**
