@@ -194,7 +194,7 @@ function table_search_interface_building_form_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elastisearch_results_count($params) {
+function tripal_elasticsearch_results_count($params) {
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
   $client = Elasticsearch\ClientBuilder::create()
@@ -364,7 +364,7 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
     unset($params['size']);
     unset($params['from']);
     try {
-      $count = tripal_elastisearch_results_count($params);
+      $count = tripal_elasticsearch_results_count($params);
       $window_range = range(1, ceil($count / 1000));
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
