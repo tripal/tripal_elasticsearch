@@ -348,7 +348,7 @@ function tripal_elasticsearch_search_table($params, $per_page = 10, $current_pag
 
   if (!isset($params['from'])) {
     $params['from'] = $per_page * $current_page;
-    $params['size'] = $per_page;
+    $params['size'] = 10;
   }
 
   $hits = $client->search($params);
