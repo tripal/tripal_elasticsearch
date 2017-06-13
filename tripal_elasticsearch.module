@@ -651,7 +651,6 @@ function tripal_elasticsearch_paginate($per_page) {
   $params = build_table_search_params($index_name, $index_type, $query);
   unset($params['from']);
 
-  dpm($params);
   $total = tripal_elasticsearch_results_count($params);
   $current_page = pager_default_initialize(min($total, 10000), $per_page);
 

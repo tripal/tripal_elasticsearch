@@ -204,7 +204,11 @@ function tripal_elasticsearch_results_count($params) {
   unset($params['from']);
   unset($params['size']);
 
-  return $client->count($params)['count'];
+  $c = $client->count($params);
+
+  dpm($c);
+
+  return $c['count'];
 }
 
 /**
