@@ -340,8 +340,12 @@ function tripal_elasticsearch_build_search_block_form_validate($form, &$form_sta
 function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 
-  dpm('I got called');
-  drupal_set_message('I am here');
+  if (isset($_SESSION['iam_here'])) {
+    $_SESSION['iam_here'] = 'Found + ' . mt_rand(0, 3000000);
+  }
+  else {
+    $_SESSION['iam_here'] = mt_rand(0, 3000000);
+  }
 
   // Download table if only the 'Download table' button is clicked.
   if ($form_state['values']['op'] == 'Download Table') {
