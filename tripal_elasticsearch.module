@@ -652,8 +652,7 @@ function tripal_elasticsearch_paginate($per_page) {
   unset($params['from']);
 
   $total = tripal_elasticsearch_results_count($params);
-  dpm($total);
-  $current_page = pager_default_initialize($total, $per_page);
+  $current_page = pager_default_initialize(min($total, 10000), $per_page);
 
   // Run Elasticsearch and return search results into an array.
   try {
