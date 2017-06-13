@@ -306,13 +306,13 @@ function tripal_elasticsearch_block_view($delta = '') {
       $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
 
       $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
-      if ($_GET['op'] === 'Search') {
+      /*if ($_GET['op'] === 'Search') {
         $search_results = tripal_elasticsearch_paginate(10);
         $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
         $page['results'] = [
           '#markup' => $markup,
         ];
-      }
+      }*/
 
       $block['content'] = $page;
     }
