@@ -351,8 +351,6 @@ function tripal_elasticsearch_search_table($params, $per_page = 10, $current_pag
     $params['size'] = 10;
   }
 
-  dpm($params);
-
   try {
     $hits = $client->search($params);
   } catch (Exception $e) {
