@@ -503,6 +503,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 
 		}
 
+
 		// theme search results
 		$output = '<strong style="color: blue">Your search did not match any record</strong>';
 		if (count($search_results) > 0) {
