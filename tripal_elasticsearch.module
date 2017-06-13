@@ -306,13 +306,13 @@ function tripal_elasticsearch_block_view($delta = '') {
       $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
 
       $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
-      /*if ($_GET['op'] === 'Search') {
+      if ($_GET['op'] === 'Search') {
         $search_results = tripal_elasticsearch_paginate(10);
         $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
         $page['results'] = [
           '#markup' => $markup,
         ];
-      }*/
+      }
 
       $block['content'] = $page;
     }
@@ -481,7 +481,8 @@ function tripal_elasticsearch_table_search_page_callback() {
 function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
   if (!isset($form_state['values']['op'])) {
     return;
-  } elseif ($form_state['values']['op'] !== 'Download') {
+  }
+  elseif ($form_state['values']['op'] !== 'Download') {
     // add js and css files
     drupal_add_css(drupal_get_path('module', 'tripal_elasticsearch') . '/css/jquery.dataTables.min.css');
     drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/jquery.dataTables.min.js');
@@ -618,6 +619,10 @@ function tripal_elasticsearch_node_delete($node) {
 
 
 function tripal_elasticsearch_paginate($per_page) {
+  if (!isset($_GET['index_name'])) {
+    return [];
+  }
+
   // parameters from get
   $index_name = $_GET['index_name'];
 

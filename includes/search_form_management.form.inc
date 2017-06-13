@@ -200,6 +200,10 @@ function tripal_elasticsearch_results_count($params) {
   $client = Elasticsearch\ClientBuilder::create()
     ->setHosts([$elasticsearch_host])
     ->build();
+
+  unset($params['from']);
+  unset($params['size']);
+
   return $client->count($params)['count'];
 }
 
