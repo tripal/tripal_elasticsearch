@@ -464,7 +464,6 @@ function tripal_elasticsearch_table_search_page_callback() {
  * Implements hook_form_FORM_ID_alter().
  */
 function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
-	$index_type_from_submit_button = '';
 	if (!isset($form_state['values']['op'])) {
 		return;
 	} elseif ($form_state['values']['op'] == 'Search') {
@@ -495,7 +494,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 		// Build table search params.
 		$select_window = isset($form_state['values']['select_window']) ? $form_state['values']['select_window'] : '';
 		$from = empty($select_window) ? 0: 1000 * ($select_window - 1);
-		$params = build_table_search_params($index = $index_name, $type = $index_type, $query, $from = $from);
+		$params = build_table_search_params($index_name, $index_type, $query, $from);
 		// Run Elasticsearch and return search results into an array.
 		$search_results = array();
 		try {
