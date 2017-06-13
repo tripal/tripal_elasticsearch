@@ -340,6 +340,8 @@ function tripal_elasticsearch_build_search_block_form_validate($form, &$form_sta
 function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 
+  dpm($form_state['values']);
+
   // Download table if only the 'Download table' button is clicked.
   if ($form_state['values']['op'] == 'Download Table') {
     /**
