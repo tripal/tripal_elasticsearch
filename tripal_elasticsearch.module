@@ -302,8 +302,22 @@ function tripal_elasticsearch_block_view($delta = '') {
     // if query result is not empty, display the block.
     if (!empty($result)) {
       $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
-      $block['content'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
-      dpm($block);
+      $page = [
+        'header' => [
+          '#prefix' => '',
+          '#suffix' => '',
+          '#markup' => t('Page Header'),
+        ],
+        'form' => drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name),
+        'footer' => [
+          '#prefix' => '',
+          '#suffix' => '',
+          '#markup' => t('My page footer'),
+        ],
+      ];
+
+      $block['content'] = $page;
+
     }
   }
   else {
