@@ -333,14 +333,23 @@ function tripal_elasticsearch_search_website($params) {
 
 /**
  * Function to for Elasticsearch table.
+ *
+ * @param $params Elasticsearch api parameters
+ * @param $per_page number of results per page
+ * @param $current_page the current page number
  */
-function tripal_elasticsearch_search_table($params) {
+function tripal_elasticsearch_search_table($params, $per_page = 10, $current_page = 0) {
   // Build Elasticsearch client
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
   $client = Elasticsearch\ClientBuilder::create()
     ->setHosts([$elasticsearch_host])
     ->build();
+
+  if (!isset($params['from'])) {
+    $params['from'] = $per_page * $current_page;
+    $params['size'] = $per_page;
+  }
 
   $hits = $client->search($params);
   $search_res = [];
@@ -443,8 +452,14 @@ function get_website_search_result_table($search_results) {
 
 /**
  * Get table search result table.
+ *
+ * @param $search_results the trimmed search results
+ * @param $index_name
+ * @param $total the total number of results
+ *
+ * @return markup
  */
-function get_table_search_result_table($search_results, $index_name) {
+function get_table_search_result_table($search_results, $index_name, $total) {
   // Get field url
   $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
   $result = db_query($sql, [':index_name' => $index_name]);
@@ -491,18 +506,22 @@ function get_table_search_result_table($search_results, $index_name) {
 
   // theme search results as a table.
   $output = '';
-  $header = array_keys($search_results[0]);
-  //	$rows = $processed_search_results;
+  $header = [];
 
-  $per_page = 10;
-  $current_page = pager_default_initialize(count($rows), $per_page);
+  foreach ($search_results[0] as $key => $value) {
+    $header[] = ucwords(str_replace('_', ' ', $key));
+  }
+
+  //	$rows = $processed_search_results;
+  //$per_page = 10;
+  //$current_page = pager_default_initialize(count($rows), $per_page);
   // split list into page sized chunks
-  $chunks = array_chunk($rows, $per_page, TRUE);
+  //$chunks = array_chunk($rows, $per_page, TRUE);
   $output .= theme('table', [
     'header' => $header,
-    'rows' => $chunks[$current_page],
+    'rows' => $search_results,
   ]);
-  $output .= theme('pager', ['quantity', count($rows)]);
+  $output .= theme('pager', ['quantity', $total]);
 
   return $output;
 }
