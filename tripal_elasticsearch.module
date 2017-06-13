@@ -309,10 +309,10 @@ function tripal_elasticsearch_block_view($delta = '') {
           '#markup' => t('Page Header'),
         ],
         'form' => drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name),
-        'footer' => [
+        'results' => [
           '#prefix' => '',
           '#suffix' => '',
-          '#markup' => t('My page footer'),
+          '#markup' => t('My results go here'),
         ],
       ];
 
