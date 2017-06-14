@@ -123,16 +123,10 @@ function tripal_elasticsearch_menu() {
   //		'access callback' => true,
   //	);
   $items['tripal_elasticsearch/download/search_table'] = [
-    'page callback' => 'named_fn',
+    'page callback' => 'tripal_elasticsearch_table_search_download',
     'access callback' => TRUE,
-    'type' => MENU_LOCAL_TASK,
   ];
   return $items;
-}
-
-function named_fn() {
-  dpm('Another test');
-  return "TEXT";
 }
 
 /**
