@@ -517,8 +517,10 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   $output = '';
   $header = [];
 
-  foreach ($search_results[0] as $key => $value) {
-    $header[] = ucwords(str_replace('_', ' ', $key));
+  if (!empty($search_results)) {
+    foreach ($search_results as $key => $value) {
+      $header[] = ucwords(str_replace('_', ' ', $key));
+    }
   }
 
   //	$rows = $processed_search_results;
