@@ -296,6 +296,8 @@ function tripal_elasticsearch_build_download_url() {
     if ($i > 0) {
       $url .= '&';
     }
+    $key = urlencode($key);
+    $value = urlencode($value);
     $url .= "{$key}={$value}";
     $i++;
   }
