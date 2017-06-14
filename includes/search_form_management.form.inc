@@ -235,19 +235,27 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
         break;
       case 'select':
         $select_options_text = $record->form_field_options;
+
         preg_match_all('/\[.+?\]/', $select_options_text, $matches);
         $select_options_pairs = $matches[0];
+
         $select_options_keys = array_map(function ($string) {
           $string = preg_replace('/\[/', '', $string);
 
           return explode('|', $string)[0];
         }, $select_options_pairs);
+
         $select_options_values = array_map(function ($string) {
           $string = preg_replace('/\]/', '', $string);
 
           return explode('|', $string)[1];
         }, $select_options_pairs);
+
         $select_options = array_merge(['' => 'Select'], array_combine($select_options_keys, $select_options_values));
+
+        dpm($select_options);
+        dpm(isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '');
+
         $form[$record->index_field] = [
           '#type' => 'select',
           '#description' => $record->form_field_description,
