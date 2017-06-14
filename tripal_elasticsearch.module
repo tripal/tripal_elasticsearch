@@ -122,9 +122,10 @@ function tripal_elasticsearch_menu() {
   //		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
   //		'access callback' => true,
   //	);
-  $items['tripal_elasticsearch/download/search_table/%'] = [
+  $items['tripal_elasticsearch/download/search_table'] = [
     'page callback' => 'tripal_elasticsearch_table_search_download',
     'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
   ];
   return $items;
 }
