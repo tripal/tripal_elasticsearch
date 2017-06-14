@@ -707,6 +707,10 @@ function tripal_elasticsearch_paginate($per_page) {
  */
 function tripal_elasticsearch_table_search_download() {
   // Build an associated array in which keys are field names and values are user input contents.
+  if (!isset($_GET['index_name'])) {
+    return drupal_not_found();
+  }
+
   $index_name = $_GET['index_name'];
 
   $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
@@ -750,12 +754,5 @@ function tripal_elasticsearch_table_search_download() {
     }
   }
 
-  //  file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
-  $url = file_create_url($temp_file);
-
-  print $url;
-
-  //header('Location: /' . $url);
-
-  return $url;
+  file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
 }
