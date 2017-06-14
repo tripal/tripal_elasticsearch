@@ -1,5 +1,9 @@
 <?php
 
+function tripal_elasticsearch_escape($value = '') {
+  return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', FALSE);
+}
+
 /**
  * Define several arrays for elasticsearch indexing settings
  */
