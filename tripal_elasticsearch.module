@@ -708,6 +708,8 @@ function tripal_elasticsearch_paginate($per_page) {
  * @return mixed
  */
 function tripal_elasticsearch_table_search_download() {
+  dpm('test');
+  return;
   // Build an associated array in which keys are field names and values are user input contents.
   if (!isset($_GET['index_name'])) {
     return drupal_not_found();
