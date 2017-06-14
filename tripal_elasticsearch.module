@@ -287,7 +287,7 @@ function tripal_elasticsearch_block_info() {
 }
 
 function tripal_elasticsearch_build_download_url() {
-  $url = '/tripal_elasticsearch/download/search_table?';
+  $url = '/tripal_elasticsearch/download/results?';
   $i = 0;
   foreach ($_GET as $key => $value) {
     if ($i > 0) {
@@ -409,7 +409,7 @@ function tripal_elasticsearch_menu_alter(&$items) {
     'access callback' => user_access('access content'),
   ];
 
-  $items['tripal_elasticsearch/download/search_table'] = [
+  $items['tripal_elasticsearch/download/results'] = [
     'page callback' => 'tripal_elasticsearch_table_search_download',
     'access callback' => user_access('access content'),
   ];
