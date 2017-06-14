@@ -3,7 +3,6 @@
  * @file
  * A module that implements elasticsearch API.
  */
-
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
 
