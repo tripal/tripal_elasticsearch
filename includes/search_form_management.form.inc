@@ -253,8 +253,12 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 
         $select_options = array_merge(['' => 'Select'], array_combine($select_options_keys, $select_options_values));
 
-        dpm($select_options);
-        dpm(isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '');
+        $default_value = '';
+        if (isset($_GET[$record->index_field])) {
+          $default_value = '"';
+          $default_value .= tripal_elasticsearch_escape(str_replace('"', '', $_GET[$record->index_field]));
+          $default_value .= '"';
+        }
 
         $form[$record->index_field] = [
           '#type' => 'select',
@@ -267,7 +271,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => FALSE,
           ],
-          '#default_value' => isset($_GET[$record->index_field]) ? '"' . tripal_elasticsearch_escape(str_replace('"', '', $_GET[$record->index_field])) . '"' : '',
+          '#default_value' => $default_value,
         ];
         break;
     }
