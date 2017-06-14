@@ -192,6 +192,7 @@ function table_search_interface_building_form_submit($form, &$form_state) {
  *
  * @param $params array
  * @param $limit int The index.max_results_window setting in ES
+ *                    the limit can be set at elasticsearch.yml file
  *
  * @return mixed
  */
