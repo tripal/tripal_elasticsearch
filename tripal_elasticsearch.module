@@ -750,7 +750,10 @@ function tripal_elasticsearch_table_search_download() {
     }
   }
 
-  file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
+  //  file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
+  $url = file_create_url($temp_file);
+
+  header('Location: ' . $url);
 
   return;
 }
