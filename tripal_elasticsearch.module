@@ -290,6 +290,9 @@ function tripal_elasticsearch_build_download_url() {
   $url = '/tripal_elasticsearch/download/results?';
   $i = 0;
   foreach ($_GET as $key => $value) {
+    if ($key === 'q') {
+      continue;
+    }
     if ($i > 0) {
       $url .= '&';
     }
