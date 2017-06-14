@@ -122,10 +122,7 @@ function tripal_elasticsearch_menu() {
   //		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
   //		'access callback' => true,
   //	);
-  $items['tripal_elasticsearch/download/search_table'] = [
-    'page callback' => 'tripal_elasticsearch_table_search_download',
-    'access callback' => TRUE,
-  ];
+
   return $items;
 }
 
@@ -411,6 +408,12 @@ function tripal_elasticsearch_menu_alter(&$items) {
     'page callback' => 'tripal_elasticsearch_table_search_page_callback',
     'access callback' => user_access('access content'),
   ];
+
+  $items['tripal_elasticsearch/download/search_table'] = [
+    'page callback' => 'tripal_elasticsearch_table_search_download',
+    'access callback' => user_access('access content'),
+  ];
+
   return $items;
 }
 
