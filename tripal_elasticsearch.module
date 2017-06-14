@@ -307,6 +307,7 @@ function tripal_elasticsearch_block_view($delta = '') {
 
       $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
       if ($_GET['op'] === 'Search') {
+        drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
         $search_results = tripal_elasticsearch_paginate(10);
         $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
         $page['results'] = [
