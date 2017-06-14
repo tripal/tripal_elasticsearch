@@ -335,7 +335,7 @@ function tripal_elasticsearch_block_view($delta = '') {
         $page['download'] = [
           '#markup' =>
             '<p>'
-            . '<a href="' . tripal_elasticsearch_build_download_url() . '">Download all results in csv format</a>'
+            . '<a href="' . tripal_elasticsearch_build_download_url() . '" target="_blank">Download all results in csv format</a>'
             . '</p>',
         ];
         $page['count'] = [
