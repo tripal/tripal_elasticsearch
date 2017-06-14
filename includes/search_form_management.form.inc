@@ -272,7 +272,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
   // get the number of total search results.
   $index_type = $record->table_name;
   $count = '';
-  $window_range = drupal_map_assoc([1]);
+  //$window_range = drupal_map_assoc([1]);
   if (count($index_fields) > 0) {
     // Build search query for table search.
     $query = build_search_query_from_field_content_pairs($index_fields);
@@ -281,13 +281,15 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     unset($params['size']);
     unset($params['from']);
     try {
-      $count = tripal_elasticsearch_results_count($params);
-      $window_range = array_merge(range(1, ceil($count / 1000)));
-      $count = '<span style="color: red"><b>' . $count . '</b> results match your search.</span>';
+      $results_count = tripal_elasticsearch_results_count($params);
+      //$window_range = array_merge(range(1, ceil($count / 1000)));
+      $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
     }
   }
+
+  $count = mt_rand(0, 1000);
 
   $form['count'] = [
     '#type' => 'markup',
