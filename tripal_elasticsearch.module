@@ -313,7 +313,8 @@ function tripal_elasticsearch_block_view($delta = '') {
         $page_number = $search_results['page'] + 1;
         $total_pages = round($search_results['total'] / 10);
         $page['count'] = [
-          '#markup' => "<p>Found {$search_results['total']} results. Showing page {$page_number}/{$total_pages}.</p>",
+          '#markup' => "<p>Found {$search_results['total']} results.</p>"
+            . "<p>Showing page {$page_number} out of {$total_pages} pages.</p>",
         ];
         $page['results'] = [
           '#markup' => $markup,
