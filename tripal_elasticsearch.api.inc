@@ -525,6 +525,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   $output .= theme('table', [
     'header' => $header,
     'rows' => $search_results,
+    'attributes' => ['id' => ['tripal-elastic-search-results-table']],
   ]);
   $output .= theme('pager', ['quantity', $total]);
 

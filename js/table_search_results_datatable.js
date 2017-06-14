@@ -9,9 +9,7 @@
         // var info = table.page.info(); // Total number of pages = info.pages
         // // Current page = info.page //$('#pageInfo').html('Showing page: ' +
         // info.page + ' of ' + info.pages); });
-        console.log('ran');
-
-        $('#table_search_results_datatable tr td').each(function () {
+        $('#tripal-elastic-search-results-table tr td').each(function () {
           var text = $(this).html();
           var array = text.split('<br>');
 
