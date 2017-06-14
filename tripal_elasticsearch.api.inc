@@ -352,7 +352,6 @@ function tripal_elasticsearch_search_table($params, $per_page = 10, $current_pag
   }
 
   try {
-    dpm($params);
     $hits = $client->search($params);
   } catch (Exception $e) {
     drupal_set_message($e->getMessage());

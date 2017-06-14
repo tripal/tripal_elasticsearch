@@ -206,8 +206,6 @@ function tripal_elasticsearch_results_count($params) {
 
   $c = $client->count($params);
 
-  dpm($c);
-
   return $c['count'];
 }
 
