@@ -230,7 +230,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => TRUE,
           ],
-          '#default_value' => isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '',
+          '#default_value' => isset($_GET[$record->index_field]) ? $_GET[$record->index_field] : '',
         ];
         break;
       case 'select':
@@ -255,9 +255,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 
         $default_value = '';
         if (isset($_GET[$record->index_field])) {
-          $default_value = '"';
-          $default_value .= tripal_elasticsearch_escape(str_replace('"', '', $_GET[$record->index_field]));
-          $default_value .= '"';
+          $default_value = $_GET[$record->index_field];
         }
 
         $form[$record->index_field] = [
