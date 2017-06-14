@@ -264,9 +264,9 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
         break;
     }
 
-    /*if (isset($form_state['values'][$record->index_field])) {
+    if (isset($form_state['values'][$record->index_field])) {
       $index_fields[$record->index_field] = $form_state['values'][$record->index_field];
-    }*/
+    }
   }
 
   // get the number of total search results.
@@ -288,8 +288,6 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
       drupal_set_message($e->getMessage(), 'warning');
     }
   }
-
-  $count = mt_rand(0, 1000);
 
   $form['count'] = [
     '#type' => 'markup',
