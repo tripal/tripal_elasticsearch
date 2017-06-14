@@ -706,6 +706,8 @@ function tripal_elasticsearch_paginate($per_page) {
  * @return mixed
  */
 function tripal_elasticsearch_table_search_download() {
+  header('Location: /');
+  return;
   /**
    * build an associated array in which keys are field names and values are user input contents.
    */
