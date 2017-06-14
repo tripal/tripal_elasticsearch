@@ -122,7 +122,7 @@ function tripal_elasticsearch_menu() {
   //		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
   //		'access callback' => true,
   //	);
-  $items['tripal_elasticsearch/search_table/download'] = [
+  $items['tripal_elasticsearch/download/search_table/'] = [
     'page callback' => 'tripal_elasticsearch_table_search_download',
     'access callback' => TRUE,
   ];
@@ -290,7 +290,7 @@ function tripal_elasticsearch_block_info() {
 }
 
 function tripal_elasticsearch_build_download_url() {
-  $url = '/tripal_elasticsearch/search_table/download?';
+  $url = '/tripal_elasticsearch/download/search_table?';
   $i = 0;
   foreach ($_GET as $key => $value) {
     if ($i > 0) {
