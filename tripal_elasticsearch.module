@@ -709,7 +709,7 @@ function tripal_elasticsearch_table_search_download() {
   /**
    * build an associated array in which keys are field names and values are user input contents.
    */
-
+dpm($_GET);
   if (isset($_GET['index_name'])) {
     return drupal_not_found();
   }
