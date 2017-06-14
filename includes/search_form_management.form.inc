@@ -295,7 +295,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#weight' => 97,
   ];
 
-  $form['select_window'] = [
+  /*$form['select_window'] = [
     '#title' => t('Please select a window number to display results.'),
     '#description' => t('To improve search performance,
 				a window with 1000 results is used to display search results. For example,
@@ -311,7 +311,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#ajax' => [
       'callback' => 'select_window_ajax_callback',
     ],
-  ];
+  ];*/
 
   // create a value form field to store index name. This value will be passed to $_GET.
   $form['index_name'] = [
