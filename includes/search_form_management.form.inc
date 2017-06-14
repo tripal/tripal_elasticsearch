@@ -230,7 +230,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => TRUE,
           ],
-          '#default_value' => isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '',
+          '#value' => isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '',
         ];
         break;
       case 'select':
@@ -259,14 +259,14 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => FALSE,
           ],
-          '#default_value' => isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '',
+          '#value' => isset($_GET[$record->index_field]) ? tripal_elasticsearch_escape($_GET[$record->index_field]) : '',
         ];
         break;
     }
 
-    if (isset($form_state['values'][$record->index_field])) {
+    /*if (isset($form_state['values'][$record->index_field])) {
       $index_fields[$record->index_field] = $form_state['values'][$record->index_field];
-    }
+    }*/
   }
 
   // get the number of total search results.
