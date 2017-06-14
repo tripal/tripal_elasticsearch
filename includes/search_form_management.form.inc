@@ -190,11 +190,12 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 /**
  * Get the total count for results.
  *
- * @param $params
+ * @param $params array
+ * @param $limit int The index.max_results_window setting in ES
  *
  * @return mixed
  */
-function tripal_elasticsearch_results_count($params) {
+function tripal_elasticsearch_results_count($params, $limit = 1000000) {
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
   $client = Elasticsearch\ClientBuilder::create()
@@ -206,7 +207,7 @@ function tripal_elasticsearch_results_count($params) {
 
   $c = $client->count($params);
 
-  return $c['count'];
+  return min($c['count'], $limit);
 }
 
 /**
