@@ -188,6 +188,28 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 }
 
 /**
+ * Get the total count for results.
+ *
+ * @param $params
+ *
+ * @return mixed
+ */
+function tripal_elasticsearch_results_count($params) {
+  libraries_load('elasticsearch-php');
+  $elasticsearch_host = variable_get('elasticsearch_host');
+  $client = Elasticsearch\ClientBuilder::create()
+    ->setHosts([$elasticsearch_host])
+    ->build();
+
+  unset($params['from']);
+  unset($params['size']);
+
+  $c = $client->count($params);
+
+  return $c['count'];
+}
+
+/**
  * Form builder function for table search.
  */
 function tripal_elasticsearch_build_search_block_form($form, &$form_state, $index_name) {
@@ -208,23 +230,34 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => TRUE,
           ],
+          '#default_value' => isset($_GET[$record->index_field]) ? $_GET[$record->index_field] : '',
         ];
         break;
       case 'select':
         $select_options_text = $record->form_field_options;
+
         preg_match_all('/\[.+?\]/', $select_options_text, $matches);
         $select_options_pairs = $matches[0];
+
         $select_options_keys = array_map(function ($string) {
           $string = preg_replace('/\[/', '', $string);
 
           return explode('|', $string)[0];
         }, $select_options_pairs);
+
         $select_options_values = array_map(function ($string) {
           $string = preg_replace('/\]/', '', $string);
 
           return explode('|', $string)[1];
         }, $select_options_pairs);
+
         $select_options = array_merge(['' => 'Select'], array_combine($select_options_keys, $select_options_values));
+
+        $default_value = '';
+        if (isset($_GET[$record->index_field])) {
+          $default_value = $_GET[$record->index_field];
+        }
+
         $form[$record->index_field] = [
           '#type' => 'select',
           '#description' => $record->form_field_description,
@@ -236,6 +269,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => FALSE,
           ],
+          '#default_value' => $default_value,
         ];
         break;
     }
@@ -248,23 +282,18 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
   // get the number of total search results.
   $index_type = $record->table_name;
   $count = '';
-  $window_range = drupal_map_assoc([1]);
+  //$window_range = drupal_map_assoc([1]);
   if (count($index_fields) > 0) {
     // Build search query for table search.
     $query = build_search_query_from_field_content_pairs($index_fields);
     // Build table search params.
-    $params = build_table_search_params($index = $index_name, $type = $index_type, $query);
+    $params = build_table_search_params($index_name, $index_type, $query);
     unset($params['size']);
     unset($params['from']);
     try {
-      libraries_load('elasticsearch-php');
-      $elasticsearch_host = variable_get('elasticsearch_host');
-      $client = Elasticsearch\ClientBuilder::create()
-        ->setHosts([$elasticsearch_host])
-        ->build();
-      $count = $client->count($params)['count'];
-      $window_range = array_merge(range(1, ceil($count / 1000)));
-      $count = '<span style="color: red"><b>' . $count . '</b> results match your search.</span>';
+      $results_count = tripal_elasticsearch_results_count($params);
+      //$window_range = array_merge(range(1, ceil($count / 1000)));
+      $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
     }
@@ -278,7 +307,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#weight' => 97,
   ];
 
-  $form['select_window'] = [
+  /*$form['select_window'] = [
     '#title' => t('Please select a window number to display results.'),
     '#description' => t('To improve search performance,
 				a window with 1000 results is used to display search results. For example,
@@ -294,7 +323,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#ajax' => [
       'callback' => 'select_window_ajax_callback',
     ],
-  ];
+  ];*/
 
   // create a value form field to store index name. This value will be passed to $_GET.
   $form['index_name'] = [
@@ -307,7 +336,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#value' => $index_type,
   ];
 
-  //	$form['#method'] = 'get';
+  $form['#method'] = 'get';
 
   // submit button
   $form['actions'] = ['#type' => 'actions'];
@@ -330,10 +359,10 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
   $form_state['rebuild'] = TRUE;
 
   // Download table if only the 'Download table' button is clicked.
-  if ($form_state['values']['op'] == 'Download Table') {
+  /*if ($form_state['values']['op'] == 'Download Table') {
     /**
      * build an associated array in which keys are field names and values are user input contents.
-     */
+     *
     $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
     $index_name = $form_state['values']['index_name'];
     $result = db_query($sql, [':index_name' => $index_name])->fetchAll();
@@ -349,16 +378,11 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
     // Build search query for table search.
     $query = build_search_query_from_field_content_pairs($index_fields);
     // Build table search params.
-    $params = build_table_search_params($index = $index_name, $type = $index_type, $query);
+    $params = build_table_search_params($index_name, $index_type, $query);
     unset($params['size']);
     unset($params['from']);
     try {
-      libraries_load('elasticsearch-php');
-      $elasticsearch_host = variable_get('elasticsearch_host');
-      $client = Elasticsearch\ClientBuilder::create()
-        ->setHosts([$elasticsearch_host])
-        ->build();
-      $count = $client->count($params)['count'];
+      $count = tripal_elasticsearch_results_count($params);
       $window_range = range(1, ceil($count / 1000));
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
@@ -379,6 +403,7 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
 
     file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
   }
+     * */
 }
 
 /**

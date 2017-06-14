@@ -1,5 +1,9 @@
 <?php
 
+function tripal_elasticsearch_escape($value = '') {
+  return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', FALSE);
+}
+
 /**
  * Define several arrays for elasticsearch indexing settings
  */
@@ -333,8 +337,12 @@ function tripal_elasticsearch_search_website($params) {
 
 /**
  * Function to for Elasticsearch table.
+ *
+ * @param $params Elasticsearch api parameters
+ * @param $per_page number of results per page
+ * @param $current_page the current page number
  */
-function tripal_elasticsearch_search_table($params) {
+function tripal_elasticsearch_search_table($params, $per_page = 10, $current_page = 0) {
   // Build Elasticsearch client
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
@@ -342,7 +350,17 @@ function tripal_elasticsearch_search_table($params) {
     ->setHosts([$elasticsearch_host])
     ->build();
 
-  $hits = $client->search($params);
+  if (!isset($params['from'])) {
+    $params['from'] = $per_page * $current_page;
+    $params['size'] = 10;
+  }
+
+  try {
+    $hits = $client->search($params);
+  } catch (Exception $e) {
+    drupal_set_message($e->getMessage());
+  }
+
   $search_res = [];
   foreach ($hits['hits']['hits'] as $hit) {
     $search_res[] = $hit['_source'];
@@ -443,8 +461,14 @@ function get_website_search_result_table($search_results) {
 
 /**
  * Get table search result table.
+ *
+ * @param $search_results the trimmed search results
+ * @param $index_name
+ * @param $total the total number of results
+ *
+ * @return markup
  */
-function get_table_search_result_table($search_results, $index_name) {
+function get_table_search_result_table($search_results, $index_name, $total) {
   // Get field url
   $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
   $result = db_query($sql, [':index_name' => $index_name]);
@@ -491,24 +515,25 @@ function get_table_search_result_table($search_results, $index_name) {
 
   // theme search results as a table.
   $output = '';
-  $header = array_keys($search_results[0]);
-  //	$rows = $processed_search_results;
+  $header = [];
 
-  $per_page = 10;
-  $current_page = pager_default_initialize(count($rows), $per_page);
+  if (!empty($search_results)) {
+    foreach ($search_results[0] as $key => $value) {
+      $header[] = ucwords(str_replace('_', ' ', $key));
+    }
+  }
+
+  //	$rows = $processed_search_results;
+  //$per_page = 10;
+  //$current_page = pager_default_initialize(count($rows), $per_page);
   // split list into page sized chunks
-  $chunks = array_chunk($rows, $per_page, TRUE);
+  //$chunks = array_chunk($rows, $per_page, TRUE);
   $output .= theme('table', [
     'header' => $header,
-    'rows' => $chunks[$current_page],
+    'rows' => $search_results,
+    'attributes' => ['id' => ['tripal-elastic-search-results-table']],
   ]);
-  $output .= theme('pager', ['quantity', count($rows)]);
-
-  dpm($chunks);
-  dpm($current_page);
-
-  //	$output .= theme('table', array('header'=>$header, 'rows'=>$rows));
-
+  $output .= theme('pager', ['quantity', $total]);
 
   return $output;
 }
