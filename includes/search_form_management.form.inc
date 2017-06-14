@@ -362,48 +362,7 @@ function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state
 
   // Download table if only the 'Download table' button is clicked.
   /*if ($form_state['values']['op'] == 'Download Table') {
-    /**
-     * build an associated array in which keys are field names and values are user input contents.
-     *
-    $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-    $index_name = $form_state['values']['index_name'];
-    $result = db_query($sql, [':index_name' => $index_name])->fetchAll();
-    $index_fields = [];
-    foreach ($result as $record) {
-      $field_value = isset($form_state['values'][$record->index_field]) ? $form_state['values'][$record->index_field] : '';
-      if (!empty($field_value)) {
-        $index_fields[$record->index_field] = $field_value;
-      }
-    }
-    // get index type
-    $index_type = $record->table_name;
-    // Build search query for table search.
-    $query = build_search_query_from_field_content_pairs($index_fields);
-    // Build table search params.
-    $params = build_table_search_params($index_name, $index_type, $query);
-    unset($params['size']);
-    unset($params['from']);
-    try {
-      $count = tripal_elasticsearch_results_count($params);
-      $window_range = range(1, ceil($count / 1000));
-    } catch (\Exception $e) {
-      drupal_set_message($e->getMessage(), 'warning');
-    }
-    // loop through window and write returned search results into a file.
-    $directory = 'public://table_search_results';
-    file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
-    $temp_file = drupal_tempnam($directory, 'search_results_') . '.csv';
-    $params['size'] = 1000;
-    foreach ($window_range as $window) {
-      $params['from'] = 1000 * ($window - 1);
-      $result = tripal_elasticsearch_search_table($params);
-      foreach ($result as $row) {
-        $line = implode(',', $row) . "\n";
-        file_put_contents($temp_file, $line, FILE_APPEND);
-      }
-    }
 
-    file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
   }
      * */
 }
