@@ -310,6 +310,10 @@ function tripal_elasticsearch_block_view($delta = '') {
         drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
         $search_results = tripal_elasticsearch_paginate(10);
         $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
+        $page_number = $search_results['page'] + 1;
+        $page['count'] = [
+          '#markup' => "<p>Found {$search_results['total']} results. Showing page {$page_number}.</p>",
+        ];
         $page['results'] = [
           '#markup' => $markup,
         ];
@@ -660,6 +664,7 @@ function tripal_elasticsearch_paginate($per_page) {
     return [
       'results' => tripal_elasticsearch_search_table($params, 10, $current_page),
       'total' => $total,
+      'page' => $current_page,
     ];
   } catch (\Exception $e) {
     return [];
