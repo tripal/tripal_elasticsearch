@@ -738,6 +738,7 @@ function tripal_elasticsearch_table_search_download() {
   } catch (\Exception $e) {
     drupal_set_message($e->getMessage(), 'warning');
   }
+
   // loop through window and write returned search results into a file.
   $directory = 'public://table_search_results';
   file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
@@ -756,7 +757,9 @@ function tripal_elasticsearch_table_search_download() {
   //  file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
   $url = file_create_url($temp_file);
 
-  header('Location: /' . $url);
+  print $url;
 
-  return;
+  //header('Location: /' . $url);
+
+  return $url;
 }
