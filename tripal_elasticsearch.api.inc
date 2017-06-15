@@ -522,7 +522,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
     foreach ($search_results[0] as $key => $value) {
       $header = [
         'field' => 'chado_organism.title',
-        'data' => ucwords(str_replace('_', ' ', $key)),
+        'data' => $key,
       ];
 
       if (isset($_GET['order']) && $_GET['order'] === $key) {
