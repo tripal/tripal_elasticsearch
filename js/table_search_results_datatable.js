@@ -48,7 +48,9 @@
         var $table = $('#tripal-elastic-search-results-table');
         if ($table) {
           $table.find('th').each(function () {
-            $(this).html(ucwords($(this).text().replace('_', ' ')));
+            var a = $(this).find('a').first();
+            var text = a.text();
+            a.text(ucwords(text.replace('_', ' ')));
           });
         }
       });
