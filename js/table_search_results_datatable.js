@@ -3,12 +3,13 @@
   Drupal.behaviors.datatable_search_results = {
     attach: function (context, settings) {
       $(document).ready(function () {
-        // var table = $('#table_search_results_datatable
-        // .sticky-enabled').DataTable({ language: { search: 'Filter current
-        // results' }, retrieve: true });  table.on('page.dt', function () {
-        // var info = table.page.info(); // Total number of pages = info.pages
-        // // Current page = info.page //$('#pageInfo').html('Showing page: ' +
-        // info.page + ' of ' + info.pages); });
+        function ucwords(value) {
+          return (str + '')
+              .replace(/^(.)|\s+(.)/g, function (value) {
+                return value.toUpperCase();
+              });
+        }
+
         $('#tripal-elastic-search-results-table tr td').each(function () {
           var text = $(this).html();
           var array = text.split('<br>');
@@ -43,6 +44,13 @@
             $(this).html(div);
           }
         });
+
+        var $table = $('#tripal-elastic-search-results-table');
+        if ($table.length > 0) {
+          $table.find('th').each(function (value) {
+            $(this).html(ucwords(value.replace('_', ' ')));
+          });
+        }
       });
     }
   };
