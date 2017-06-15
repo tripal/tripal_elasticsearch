@@ -209,7 +209,7 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
   // remove query sequences
   $pattern_2 = preg_quote('<pre>Query') . "(.|\n)*" . preg_quote('</pre>');
   $page_html = preg_replace("!" . $pattern_2 . "!U", ' ', $page_html);
-  // add one space to html tags to avoid words catenation after stripping html tags
+  // add one space to html tags to avoid words concatenated after stripping html tags
   $page_html = str_replace('<', ' <', $page_html);
   // remove generated jQuery script
   $page_html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $page_html);
@@ -296,6 +296,7 @@ function build_website_search_params($search_content = '', $node_type = '', $ind
  * Function to build table search params.
  */
 function build_table_search_params($index, $type, $query, $from = 0, $size = 1000) {
+  dpm($query);
   $params = [];
   $params['index'] = $index;
   $params['type'] = $type;

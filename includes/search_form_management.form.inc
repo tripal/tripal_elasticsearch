@@ -294,7 +294,6 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     unset($params['from']);
     try {
       $results_count = tripal_elasticsearch_results_count($params);
-      //$window_range = array_merge(range(1, ceil($count / 1000)));
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
@@ -309,25 +308,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     '#weight' => 97,
   ];
 
-  /*$form['select_window'] = [
-    '#title' => t('Please select a window number to display results.'),
-    '#description' => t('To improve search performance,
-				a window with 1000 results is used to display search results. For example,
-				the 1th window will display the first 1000 search records. The 4th window
-				will display search records from 4001 to 5000.'),
-    '#type' => 'select',
-    '#options' => drupal_map_assoc($window_range),
-    '#field_prefix' => 'show the',
-    '#field_suffix' => 'th 1000 results',
-    '#prefix' => '<div id="select_window_ajax_wrapper">',
-    '#suffix' => '</div>',
-    '#weight' => 98,
-    '#ajax' => [
-      'callback' => 'select_window_ajax_callback',
-    ],
-  ];*/
-
-  // create a value form field to store index name. This value will be passed to $_GET.
+  // Create a value form field to store index name. This value will be passed to $_GET.
   $form['index_name'] = [
     '#type' => 'hidden',
     '#value' => $index_name,
@@ -359,12 +340,6 @@ function tripal_elasticsearch_build_search_block_form_validate($form, &$form_sta
  */
 function tripal_elasticsearch_build_search_block_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
-
-  // Download table if only the 'Download table' button is clicked.
-  /*if ($form_state['values']['op'] == 'Download Table') {
-
-  }
-     * */
 }
 
 /**
