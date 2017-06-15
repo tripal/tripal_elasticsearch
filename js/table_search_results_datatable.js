@@ -46,9 +46,9 @@
         });
 
         var $table = $('#tripal-elastic-search-results-table');
-        if ($table.length > 0) {
-          $table.find('th').each(function (value) {
-            $(this).html(ucwords(value.replace('_', ' ')));
+        if ($table) {
+          $table.find('th').each(function () {
+            $(this).html(ucwords(this.text().replace('_', ' ')));
           });
         }
       });
