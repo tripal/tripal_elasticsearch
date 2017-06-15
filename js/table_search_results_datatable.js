@@ -48,6 +48,9 @@
         var $table = $('#tripal-elastic-search-results-table');
         if ($table) {
           $table.find('th').each(function () {
+            $(this).css({
+              'white-space': 'nowrap'
+            })
             var a = $(this).find('a').first();
             var img = a.find('img');
             var text = a.text();
