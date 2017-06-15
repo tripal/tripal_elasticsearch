@@ -485,6 +485,7 @@ function table_search_block_altering_form($form, &$form_state) {
         '#type' => 'select',
         '#title' => t('Field weight'),
         '#options' => drupal_map_assoc(range(0, 20)),
+        '#default_value' => $record->form_field_weight,
       ];
     }
   }
