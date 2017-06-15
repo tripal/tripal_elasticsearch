@@ -307,7 +307,7 @@ function build_table_search_params($index, $type, $query, $from = 0, $size = 100
 
   if (isset($_GET['order'])) {
     $sort_field = $_GET['order'];
-    $sort_direction = isset($_GET['sort']) && $_GET['sort'] ? 'desc' : 'asc';
+    $sort_direction = isset($_GET['sort']) && $_GET['sort'] === 'desc' ? 'desc' : 'asc';
     $params['body']['sort'] = [
       $sort_field . ".raw" => $sort_direction,
     ];
