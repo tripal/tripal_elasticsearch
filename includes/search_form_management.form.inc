@@ -227,11 +227,11 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
           '#title' => t($record->form_field_title),
           '#size' => 25,
           '#weight' => $record->form_field_weight,
-          '#ajax' => [
+          /*'#ajax' => [
             'callback' => 'search_content_ajax_callback',
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => TRUE,
-          ],
+          ],*/
           '#default_value' => isset($_GET[$record->index_field]) ? $_GET[$record->index_field] : '',
         ];
         break;
@@ -266,11 +266,11 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
           '#title' => t($record->form_field_title),
           '#options' => $select_options,
           '#weight' => $record->form_field_weight,
-          '#ajax' => [
+          /*'#ajax' => [
             'callback' => 'search_content_ajax_callback',
             'wrapper' => 'search_content_ajax_wrapper',
             'keypress' => FALSE,
-          ],
+          ],*/
           '#default_value' => $default_value,
         ];
         break;
@@ -540,7 +540,10 @@ function table_search_block_altering_form_submit($form, &$form_state) {
       $record['form_field_options'] = '';
     }
     else {
-      $record['form_field_options'] = $form_state['values']['field_wrapper'][$field]['options'];
+      $options = $form_state['values']['field_wrapper'][$field]['options'];
+      $options = explode(',', $options);
+      $sortable = [];
+      $record['form_field_options'] = '';
     }
     $record['form_field_weight'] = $form_state['values']['field_wrapper'][$field]['weight'];
     drupal_write_record('tripal_elasticsearch', $record);
