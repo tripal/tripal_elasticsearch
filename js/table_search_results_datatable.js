@@ -52,7 +52,7 @@
               'white-space': 'nowrap'
             })
             var a = $(this).find('a').first();
-            var img = a.find('img');
+            var img = a.find('img').css('margin-left', '10px');
             var text = a.text();
             a.html(ucwords(text.replace('_', ' '))).append(img);
           });
