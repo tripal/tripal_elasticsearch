@@ -541,9 +541,9 @@ function table_search_block_altering_form_submit($form, &$form_state) {
     }
     else {
       $options = $form_state['values']['field_wrapper'][$field]['options'];
-      $options = explode(',', $options);
-      $sortable = [];
-      $record['form_field_options'] = '';
+      //$options = explode(',', $options);
+      //$sortable = [];
+      $record['form_field_options'] = $options;
     }
     $record['form_field_weight'] = $form_state['values']['field_wrapper'][$field]['weight'];
     drupal_write_record('tripal_elasticsearch', $record);
