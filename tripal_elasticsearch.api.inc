@@ -295,7 +295,7 @@ function build_website_search_params($search_content = '', $node_type = '', $ind
 /**
  * Function to build table search params.
  */
-function build_table_search_params($index, $type, $query, $from = 0, $size = 1000, $sort_direction = 'asc') {
+function build_table_search_params($index, $type, $query, $from = 0, $size = 1000) {
   $params = [];
   $params['index'] = $index;
   $params['type'] = $type;
@@ -303,10 +303,16 @@ function build_table_search_params($index, $type, $query, $from = 0, $size = 100
   //$sort_field = array_keys($field_content_pairs)[0];
   $params['body'] = [
     'query' => $query,
-    //		'sort' => [
-    //			$sort_field . ".raw" => $sort_direction,
-    //		]
   ];
+
+  if (isset($_GET['order'])) {
+    $sort_field = $_GET['order'];
+    $sort_direction = isset($_GET['sort']) && $_GET['desc'] ? 'desc' : 'asc';
+    $params['body']['sort'] = [
+      $sort_field . ".raw" => $sort_direction,
+    ];
+  }
+
   $params['from'] = $from;
   $params['size'] = $size;
   return $params;
