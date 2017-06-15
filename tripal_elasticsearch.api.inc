@@ -521,7 +521,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
       $header = [
-        'field' => [$key => $value],
+        'field' => 'THIS IS A FIELD',
         'data' => ucwords(str_replace('_', ' ', $key)),
       ];
 
