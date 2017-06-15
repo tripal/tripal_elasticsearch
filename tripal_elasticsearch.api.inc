@@ -485,7 +485,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
     return !empty($item);
   });
 
-  //add links to search results.
+  // Add links to search results.
   if (!empty($filtered_results)) {
     $processed_search_results = [];
     foreach ($search_results as $row) {
@@ -516,32 +516,25 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   // theme search results as a table.
   $output = '';
   $headers = [];
-  $rows = [];
   $i = 0;
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
       $header = [
-        'field' => 'chado_organism.title',
+        'field' => $key,
         'data' => $key,
       ];
 
       if (isset($_GET['order']) && $_GET['order'] === $key) {
-        $header['sort'] = $_GET['sort'];
+        $header['sort'] = isset($_GET['sort']) ? $_GET['sort'] : 'asc';
       }
       else {
         if ($i === 0) {
           $header['sort'] = 'asc';
         }
       }
+
       $headers[] = $header;
       $i++;
-    }
-
-    foreach ($search_results as $key => $result) {
-      $rows[] = [
-        'data' => $result,
-        'field' => $key,
-      ];
     }
   }
 
