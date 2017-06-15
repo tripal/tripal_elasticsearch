@@ -537,9 +537,10 @@ function get_table_search_result_table($search_results, $index_name, $total) {
       $i++;
     }
 
-    foreach ($search_results as $result) {
+    foreach ($search_results as $key => $result) {
       $rows[] = [
-        'data' => $result
+        'data' => $result,
+        'field' => $key,
       ];
     }
   }
