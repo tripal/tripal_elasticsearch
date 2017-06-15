@@ -49,8 +49,9 @@
         if ($table) {
           $table.find('th').each(function () {
             var a = $(this).find('a').first();
+            var img = a.find('img');
             var text = a.text();
-            //a.text(ucwords(text.replace('_', ' ')));
+            a.html(ucwords(text.replace('_', ' '))).append(img);
           });
         }
       });
