@@ -515,11 +515,26 @@ function get_table_search_result_table($search_results, $index_name, $total) {
 
   // theme search results as a table.
   $output = '';
-  $header = [];
-
+  $headers = [];
+  $fields = [];
+  $i = 0;
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
-      $header[] = ucwords(str_replace('_', ' ', $key));
+      $header = [
+        'data' => ucwords(str_replace('_', ' ', $key)),
+        'field' => $key,
+      ];
+
+      if ($_GET['order'] === $key) {
+        $header['sort'] = $_GET['sort'];
+      }
+      else {
+        if ($i === 0) {
+          $header['sort'] = 'asc';
+        }
+      }
+      $headers[] = $header;
+      $i++;
     }
   }
 
@@ -529,7 +544,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   // split list into page sized chunks
   //$chunks = array_chunk($rows, $per_page, TRUE);
   $output .= theme('table', [
-    'header' => $header,
+    'header' => $headers,
     'rows' => $search_results,
     'attributes' => ['id' => ['tripal-elastic-search-results-table']],
   ]);
