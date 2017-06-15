@@ -50,10 +50,10 @@
           $table.find('th').each(function () {
             $(this).css({
               'white-space': 'nowrap'
-            })
+            });
             var a = $(this).find('a').first();
             var img = a.find('img').css('margin-left', '10px');
-            var text = a.text();
+            var text = $(this).data('elasticTitle');
             a.html(ucwords(text.replace('_', ' '))).append(img);
           });
         }
