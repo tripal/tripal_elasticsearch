@@ -521,7 +521,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
       $header = [
-        'field' => 'THIS IS A FIELD',
+        'field' => 'chado_organism.title',
         'data' => ucwords(str_replace('_', ' ', $key)),
       ];
 
