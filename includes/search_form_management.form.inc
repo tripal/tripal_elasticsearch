@@ -412,7 +412,6 @@ function table_search_block_altering_form($form, &$form_state) {
     $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
     $index_name = $search_block;
     // Get table name and then query the table in database for unique values for specific fields.
-    $table_name = db_query("SELECT DISTINCT table_name FROM {tripal_elasticsearch} LIMIT 1")->fetchCol('table_name')[0];
     $result = db_query($sql, [':index_name' => $index_name]);
     foreach ($result as $record) {
       $field = $record->index_field;
@@ -426,21 +425,27 @@ function table_search_block_altering_form($form, &$form_state) {
         '#type' => 'textfield',
         '#title' => t('Available fields'),
         '#title' => t('Field title'),
+        '#default_value' => t($record->form_field_title),
       ];
       $form['field_wrapper'][$field]['description'] = [
         '#type' => 'textarea',
         '#title' => t('Field description'),
         '#description' => t('Enter some text to show users some searching examples,
 						or give some searching instructions.'),
+        '#default_value' => t($record->form_field_description),
       ];
 
+      //$table_name = $record->table_name;
+
       // Get unique values for this field in the database table.
-      $sql = "SELECT DISTINCT $field FROM {$table_name} LIMIT 51";
-      $field_values = db_query($sql)->fetchCol();
-      $type_options = (count($field_values) > 50) ? ['textfield' => 'textfield'] : [
+      //$table_name = db_query("SELECT DISTINCT table_name FROM {tripal_elasticsearch} LIMIT 1")->fetchCol('table_name')[0];
+      //$sql = "SELECT DISTINCT $field FROM {$table_name} LIMIT 51";
+      //$field_values = db_query($sql);
+      $type_options = [
         'textfield' => 'textfield',
         'select' => 'select',
       ];
+      //$field_values = $field_values->fetchCol();
       $form['field_wrapper'][$field]['type'] = [
         '#type' => 'select',
         '#title' => t('Field type'),
@@ -449,24 +454,25 @@ function table_search_block_altering_form($form, &$form_state) {
 					a dropdown menu box. If this field has more than 50 unique values in the database table,
 					only the <strong style="color: red">textfield</strong> will be available.'),
         '#options' => $type_options,
-        '#default_value' => 'textfield',
+        '#default_value' => $record->form_field_type,
       ];
 
-      asort($field_values);
-      $options_arr = [];
+      //asort($field_values);
+      /*$options_arr = [];
       foreach ($field_values as $field_value) {
         $options_arr[] = '["' . $field_value . '"|' . $field_value . ']';
-      }
-      $options_text = implode(', ', $options_arr);
+      }*/
+
+      $options_text = $record->form_field_options;
       $form['field_wrapper'][$field]['options'] = [
         '#type' => 'textarea',
         '#title' => t('Options for select field'),
         '#description' => t('This is used to convert an input box to a dropdown menu box
 							in your search form. Enter key-value pairs into this box in the format of
-							<font color="red"><b>key|value</b></font>. The keys should be the true values
+							<b style="color: red;">key|value</b>. The keys should be the true values
 							in your database table, and the values can be anything that you want to show
-							to your users. <font color="red"><b>key|value pairs</b></font> have to be placed within
-							the <font color="red"><b>[ ] (example: [key|value])</b></font>.'),
+							to your users. <b style="color: red;">key|value pairs</b> have to be placed within
+							the <b style="color: red;">[ ] (example: [key|value])</b>.'),
         '#default_value' => $options_text,
         // display options field only when the type field value is 'select'.
         '#states' => [
@@ -558,11 +564,11 @@ function link_results_to_pages_form($form, &$form_state) {
   $help_markup = '<p>This is administrative page allows you to add an url to the table
 									search results. Below is an example to show you how to associate
 									urls with table fields.</p>';
-  $help_markup .= '<p>You can add either a <font color="red"><b>consistent</b></font> url 
-									(see the organism_id field below) or a <font color="red"><b>variable</b></font> 
+  $help_markup .= '<p>You can add either a <b>consistent</b> url 
+									(see the organism_id field below) or a <b>variable</b> 
 									url (see the abbreviation field below). Variable urls are built with search results 
-									from specified fields. <font color="red"><b>Field names</b></font> within the 
-									<font color="red"><b>[ ]</b></font> in the url will be replaced with corresponding 
+									from specified fields. <b>Field names</b> within the 
+									<b>[ ]</b> in the url will be replaced with corresponding 
 									field search results.</p>';
   $form['help']['help'] = [
     '#type' => 'markup',
