@@ -472,12 +472,20 @@ function get_website_search_result_table($search_results) {
  * @param $index_name
  * @param $total the total number of results
  *
- * @return markup
+ * @return mixed
  */
 function get_table_search_result_table($search_results, $index_name, $total) {
   // Get field url
   $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
   $result = db_query($sql, [':index_name' => $index_name]);
+
+  $sql = "SELECT form_field_title, index_field FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+  $header_values = db_query($sql, [':index_name' => $index_name]);
+  $titles = [];
+  foreach ($header_values as $title) {
+    $titles[$title->index_field] = $title->form_field_title;
+  }
+
   $field_url_pairs = [];
   foreach ($result as $record) {
     $field = $record->index_field;
@@ -525,9 +533,12 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   $i = 0;
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
+      $title = $titles[$key];
+
       $header = [
         'field' => $key,
         'data' => $key,
+        'data-elastic-title' => $title,
       ];
 
       if (isset($_GET['order']) && $_GET['order'] === $key) {
