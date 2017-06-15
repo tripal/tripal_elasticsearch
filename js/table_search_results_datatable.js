@@ -4,7 +4,7 @@
     attach: function (context, settings) {
       $(document).ready(function () {
         function ucwords(value) {
-          return (str + '')
+          return (value + '')
               .replace(/^(.)|\s+(.)/g, function (value) {
                 return value.toUpperCase();
               });
