@@ -50,7 +50,7 @@
           $table.find('th').each(function () {
             var a = $(this).find('a').first();
             var text = a.text();
-            a.text(ucwords(text.replace('_', ' ')));
+            //a.text(ucwords(text.replace('_', ' ')));
           });
         }
       });
