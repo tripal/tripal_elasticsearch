@@ -516,14 +516,13 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   // theme search results as a table.
   $output = '';
   $headers = [];
+  $rows = [];
   $i = 0;
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
       $header = [
         'field' => 'THIS IS A FIELD',
-        'data' => [
-          $key => ucwords(str_replace('_', ' ', $key)),
-        ]
+        'data' => ucwords(str_replace('_', ' ', $key)),
       ];
 
       if (isset($_GET['order']) && $_GET['order'] === $key) {
@@ -537,6 +536,12 @@ function get_table_search_result_table($search_results, $index_name, $total) {
       $headers[] = $header;
       $i++;
     }
+
+    foreach ($search_results as $result) {
+      $rows[] = [
+        'data' => $result
+      ];
+    }
   }
 
   //	$rows = $processed_search_results;
@@ -546,7 +551,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   //$chunks = array_chunk($rows, $per_page, TRUE);
   $output .= theme('table', [
     'header' => $headers,
-    'rows' => $search_results,
+    'rows' => $rows,
     'attributes' => ['id' => ['tripal-elastic-search-results-table']],
   ]);
   $output .= theme('pager', ['quantity', $total]);
