@@ -521,8 +521,8 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
       $header = [
-        'data' => ucwords(str_replace('_', ' ', $key)),
         'field' => $key,
+        'data' => ucwords(str_replace('_', ' ', $key)),
       ];
 
       if ($_GET['order'] === $key) {
