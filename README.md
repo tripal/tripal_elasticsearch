@@ -2,7 +2,11 @@
 * Elasticsearch
 * Elasticsearch-PHP library
 
-# Install Elasticsearch-PHP library
+## Install Elasticsearch
+
+Please refer to this (page](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html) to install Elasticsearch.
+
+## Install Elasticsearch-PHP library
 * Create a folder named `elasticsearch-php` within your drupal 'sites/all/libraries' directory.
 * Move into the `sites/all/libraries/elasticsearch-php` and Run the following command to install the library:
 ```
@@ -49,7 +53,7 @@ Database table indexing also allows you to specify **tokenizer** and **token fil
 If you are not familiar with these concepts, we recommend you select `standard` for 
 tokenizer and `standard` for token filters. Below is an example:
 
-![database indexing](images/) 
+![database indexing](images/database-table-index.png) 
 
 # Parallel indexing with multiple threads
 
