@@ -102,7 +102,7 @@ The search results can be used to build URLs and link the results to particular 
 through the admin page `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/search_form_management/link_results_to_pages`. 
 For example:
 
-![link results](images/link-results-to-pages.png)
+![link results](images/link-results-to-page.png)
 
 # Create, update and delete pages
 
