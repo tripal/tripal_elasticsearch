@@ -204,15 +204,20 @@ function _remove_special_chars($keyword) {
 function get_node_content_by_nid($nid, $base_url, $node_title) {
   $page_html = file_get_contents($base_url . "/node/" . $nid);
   // remove raw sequences
-  $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . "(.|\n)*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_1 . "!U", ' ', $page_html);
+  $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . ".*" . preg_quote('</pre>');
+  $page_html = preg_replace("!" . $pattern_1 . "!sU", ' ', $page_html);
   // remove query sequences
-  $pattern_2 = preg_quote('<pre>Query') . "(.|\n)*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_2 . "!U", ' ', $page_html);
+  $pattern_2 = preg_quote('<pre>Query') . ".*" . preg_quote('</pre>');
+  $page_html = preg_replace("!" . $pattern_2 . "!sU", ' ', $page_html);
+  // remove blast alignments if tripal_analysis_blast is installed
+  $pattern_3 = preg_quote('<pre class="blast_align">') . ".*" . preg_quote('</pre>');
+  $page_html = preg_replace("!".$pattern_3."!sU", ' ', $page_html);
   // add one space to html tags to avoid words concatenated after stripping html tags
   $page_html = str_replace('<', ' <', $page_html);
   // remove generated jQuery script
-  $page_html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $page_html);
+  $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
+  // remove css stuff
+  $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
   // make page title searchable
   $page_content = $node_title . ' ' . strip_tags($page_html);
   // merge multiple spaces into one
