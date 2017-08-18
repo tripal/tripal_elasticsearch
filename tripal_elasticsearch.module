@@ -5,6 +5,7 @@
  */
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
 
 /**
  * Implements hook_init().
@@ -15,7 +16,7 @@ function tripal_elasticsearch_init() {
   $library = libraries_detect('elasticsearch-php');
   if (user_access('administer tripal elasticsearch', $user)) {
     if (!$library) {
-      drupal_set_message(t('The Elastichsearch-PHP library is not installed. 
+      drupal_set_message(t('The Elastichsearch-PHP library is not installed.
 				Please install this library first.'), 'warning');
     }
 
@@ -41,13 +42,13 @@ function tripal_elasticsearch_menu() {
     'description' => t('Administration pages for Tripal Elasticsearch'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['elasticsearch_connection_form'],
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'file' => 'includes/elasticsearch_connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
   ];
   $items[$admin_url_base . '/elasticsearch_connection'] = [
     'title' => 'Elasticsearch Connection',
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ];
@@ -55,7 +56,7 @@ function tripal_elasticsearch_menu() {
     'title' => 'Indices Management',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_indexing_form'],
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
@@ -63,7 +64,7 @@ function tripal_elasticsearch_menu() {
   ];
   $items[$admin_url_base . '/indices_management/indexing'] = [
     'title' => 'Indexing',
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ];
@@ -71,7 +72,7 @@ function tripal_elasticsearch_menu() {
     'title' => 'Delete Indices',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_delete_indices_form'],
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
@@ -82,7 +83,7 @@ function tripal_elasticsearch_menu() {
     'title' => 'Search Form Management',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['table_search_interface_building_form'],
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'file' => 'includes/search_form_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
@@ -90,7 +91,7 @@ function tripal_elasticsearch_menu() {
   ];
   $items[$admin_url_base . '/search_form_management/build_table_search_block'] = [
     'title' => 'Build Search Block',
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ];
@@ -98,7 +99,7 @@ function tripal_elasticsearch_menu() {
     'title' => 'Alter Search Block',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['table_search_block_altering_form'],
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'file' => 'includes/search_form_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
@@ -108,40 +109,20 @@ function tripal_elasticsearch_menu() {
     'title' => 'Link Results to Pages',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['link_results_to_pages_form'],
-    'access callback' => user_access('administer tripal elasticsearch'),
+    'access arguments' => array('administer tripal elasticsearch'),
     'file' => 'includes/search_form_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   ];
 
-	// Page to display website search results for all node types.
-	$items['tripal_elasticsearch/search_website'] = [
-		'title' => t('Search results'),
-		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
-		'access callback' => TRUE,
-	];
 
-	// Page to display website search result for a specific node type.
-	$items['tripal_elasticsearch/search_website/%/%'] = [
-		'title' => t('Search results'),
-		'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
-		'page arguments' => [2, 3],
-		'access callback' => user_access('access content'),
-	];
-
-	// Page to display table search result.
-	$items['tripal_elasticsearch/search_table'] = [
-		'title' => '',
-		'page callback' => 'tripal_elasticsearch_table_search_page_callback',
-		'access callback' => user_access('access content'),
-	];
-
-	$items['tripal_elasticsearch/download/results'] = [
-		'page callback' => 'tripal_elasticsearch_table_search_download',
-		'access callback' => user_access('access content'),
-		'type' => MENU_CALLBACK,
-	];
+  // page to display search results.
+  //	$items['tripal_elasticsearch'] = array(
+  //		'title' => t('Search results'),
+  //		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
+  //		'access callback' => true,
+  //	);
 
   return $items;
 }
@@ -278,6 +259,8 @@ function tripal_elasticsearch_block_info() {
   // Define block for website search box.
   $blocks['elasticsearch_website_search_box'] = [
     'info' => t('Tripal Elasticsearch website search box'),
+    'status' => 1,
+    'region' => 'header',
     'cache' => DRUPAL_NO_CACHE,
   ];
 
@@ -307,22 +290,12 @@ function tripal_elasticsearch_block_info() {
 }
 
 function tripal_elasticsearch_build_download_url() {
-  $url = '/tripal_elasticsearch/download/results?';
-  $i = 0;
-  foreach ($_GET as $key => $value) {
-    if ($key === 'q') {
-      continue;
-    }
-    if ($i > 0) {
-      $url .= '&';
-    }
-    $key = urlencode($key);
-    $value = urlencode($value);
-    $url .= "{$key}={$value}";
-    $i++;
+  $query = array('query' => $_GET);
+  if (array_key_exists('q', $query['query'])) {
+      unset($query['query']['q']);
   }
 
-  return $url;
+  return url('tripal_elasticsearch/download/results', $query);
 }
 
 /**
@@ -410,7 +383,33 @@ function tripal_elasticsearch_block_view($delta = '') {
  * Implements hook_menu_alter().
  */
 function tripal_elasticsearch_menu_alter(&$items) {
+  // Page to display website search results for all node types.
+  $items['tripal_elasticsearch/search_website'] = [
+    'title' => t('Search results'),
+    'page callback' => 'tripal_elasticsearch_search_results_page_callback',
+    'access callback' => TRUE,
+  ];
 
+  // Page to display website search result for a specific node type.
+  $items['tripal_elasticsearch/search_website/%/%'] = [
+    'title' => t('Search results'),
+    'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
+    'page arguments' => [2, 3],
+    'access callback' => user_access('access content'),
+  ];
+
+  // Page to display table search result.
+  $items['tripal_elasticsearch/search_table'] = [
+    'title' => '',
+    'page callback' => 'tripal_elasticsearch_table_search_page_callback',
+    'access callback' => user_access('access content'),
+  ];
+
+  $items['tripal_elasticsearch/download/results'] = [
+    'page callback' => 'tripal_elasticsearch_table_search_download',
+    'access callback' => user_access('access content'),
+    'type' => MENU_CALLBACK,
+  ];
 
   return $items;
 }
