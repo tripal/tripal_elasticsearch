@@ -10,7 +10,7 @@ function tripal_elasticsearch_admin_settings() {
 		'#type' => 'textfield',
 		'#title' => t('Elasticsearch Connection'),
 		'#default_value' => variable_get('elasticsearch_connection_setting', array()),
-		'#requied' => TRUE,
+		'#required' => TRUE,
 	);
 	return system_settings_form($form);
 }
