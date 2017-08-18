@@ -116,7 +116,6 @@ function tripal_elasticsearch_menu() {
     'weight' => 2,
   ];
 
-
 	// Page to display website search results for all node types.
 	$items['tripal_elasticsearch/search_website'] = [
 		'title' => t('Search results'),
