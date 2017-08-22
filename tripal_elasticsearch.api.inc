@@ -219,9 +219,9 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
   // remove css stuff
   $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
   // make page title searchable
-  $page_content = $node_title . ' ' . strip_tags($page_html);
+  $page_html = $node_title . ' ' . strip_tags($page_html);
   // merge multiple spaces into one
-  return preg_replace('!\s+!', ' ', $page_content);
+  return preg_replace('!\s+!', ' ', $page_html);
 }
 
 
