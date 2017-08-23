@@ -183,7 +183,7 @@ function tripal_elasticsearch_libraries_info() {
 function tripal_elasticsearch_cron_queue_info() {
   // Define N = 10 cron queues
   $queue_number = 10;
-  for ($n = 0; $n < $queue_number; $n++) {
+  for ($n = 1; $n <= $queue_number; $n++) {
     $queues['elasticsearch_queue_' . $n] = [
       'worker callback' => 'tripal_elasticsearch_cron_queue_worker_callback',
       'time' => 60 * 2,
