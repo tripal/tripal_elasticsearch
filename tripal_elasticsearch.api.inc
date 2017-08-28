@@ -64,13 +64,9 @@ function get_field_mapping_types() {
 /**
  * Function to build elasticsearch index.
  */
-function build_elasticsearch_index($index_name,
-                                   $shards = 5,
-                                   $replicas = 0,
-                                   $character_filters = [],
-                                   $tokenizer,
-                                   $token_filters = [],
-                                   $field_mapping_types = []) {
+function build_elasticsearch_index(
+  $index_name, $shards = 5, $replicas = 0, $character_filters = [], $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []
+) {
   $analysis = [
     'analyzer' => [
       $index_name => [
@@ -119,8 +115,8 @@ function build_elasticsearch_index($index_name,
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
   $client = Elasticsearch\ClientBuilder::create()
-    ->setHosts([$elasticsearch_host])
-    ->build();
+                                       ->setHosts([$elasticsearch_host])
+                                       ->build();
   try {
     $response = $client->indices()->create($params);
   } catch (\Exception $e) {
@@ -128,7 +124,6 @@ function build_elasticsearch_index($index_name,
     drupal_set_message(t($message), 'warning');
   }
 }
-
 
 /**
  * This function return an array containing tables from the chado schema
@@ -188,7 +183,6 @@ function get_table_list() {
   return array_merge($public_tables, $chado_tables);
 }
 
-
 /*
  * Escape special characters for elasticsearch
  */
@@ -196,7 +190,6 @@ function _remove_special_chars($keyword) {
   //	$keyword = str_replace('"', '\"', $keyword);
   return $keyword;
 }
-
 
 /**
  * Get node content by node id.
@@ -211,7 +204,7 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
   $page_html = preg_replace("!" . $pattern_2 . "!sU", ' ', $page_html);
   // remove blast alignments if tripal_analysis_blast is installed
   $pattern_3 = preg_quote('<pre class="blast_align">') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!".$pattern_3."!sU", ' ', $page_html);
+  $page_html = preg_replace("!" . $pattern_3 . "!sU", ' ', $page_html);
   // add one space to html tags to avoid words concatenated after stripping html tags
   $page_html = str_replace('<', ' <', $page_html);
   // remove generated jQuery script
@@ -224,6 +217,31 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
   return preg_replace('!\s+!', ' ', $page_html);
 }
 
+/**
+ * Get node content by node id.
+ */
+function get_node_content_by_entity_id($entity_id, $base_url, $title) {
+  $page_html = file_get_contents($base_url . "/bio_data/" . $entity_id);
+  // remove raw sequences
+  $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . ".*" . preg_quote('</pre>');
+  $page_html = preg_replace("!" . $pattern_1 . "!sU", ' ', $page_html);
+  // remove query sequences
+  $pattern_2 = preg_quote('<pre>Query') . ".*" . preg_quote('</pre>');
+  $page_html = preg_replace("!" . $pattern_2 . "!sU", ' ', $page_html);
+  // remove blast alignments if tripal_analysis_blast is installed
+  $pattern_3 = preg_quote('<pre class="blast_align">') . ".*" . preg_quote('</pre>');
+  $page_html = preg_replace("!" . $pattern_3 . "!sU", ' ', $page_html);
+  // add one space to html tags to avoid words concatenated after stripping html tags
+  $page_html = str_replace('<', ' <', $page_html);
+  // remove generated jQuery script
+  $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
+  // remove css stuff
+  $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
+  // make page title searchable
+  $page_html = $title . ' ' . strip_tags($page_html);
+  // merge multiple spaces into one
+  return preg_replace('!\s+!', ' ', $page_html);
+}
 
 /**
  * Build search query from field content pairs.
@@ -248,7 +266,6 @@ function build_search_query_from_field_content_pairs(array $field_content_pairs,
   ];
   return $query;
 }
-
 
 /**
  * Function to build website search params.
@@ -296,7 +313,6 @@ function build_website_search_params($search_content = '', $node_type = '', $ind
   return $params;
 }
 
-
 /**
  * Function to build table search params.
  */
@@ -323,7 +339,6 @@ function build_table_search_params($index, $type, $query, $from = 0, $size = 100
   return $params;
 }
 
-
 /**
  * Function for Elasticsearch website.
  */
@@ -332,8 +347,8 @@ function tripal_elasticsearch_search_website($params) {
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
   $client = Elasticsearch\ClientBuilder::create()
-    ->setHosts([$elasticsearch_host])
-    ->build();
+                                       ->setHosts([$elasticsearch_host])
+                                       ->build();
 
   $hits = $client->search($params);
   $search_res = [];
@@ -344,7 +359,6 @@ function tripal_elasticsearch_search_website($params) {
   }
   return $search_res;
 }
-
 
 /**
  * Function to for Elasticsearch table.
@@ -358,8 +372,8 @@ function tripal_elasticsearch_search_table($params, $per_page = 10, $current_pag
   libraries_load('elasticsearch-php');
   $elasticsearch_host = variable_get('elasticsearch_host');
   $client = Elasticsearch\ClientBuilder::create()
-    ->setHosts([$elasticsearch_host])
-    ->build();
+                                       ->setHosts([$elasticsearch_host])
+                                       ->build();
 
   if (!isset($params['from'])) {
     $params['from'] = $per_page * $current_page;
@@ -379,7 +393,6 @@ function tripal_elasticsearch_search_table($params, $per_page = 10, $current_pag
   return $search_res;
 }
 
-
 /**
  * Function to theme search results count by node type.
  * This function returns an html list.
@@ -389,8 +402,8 @@ function get_website_search_results_category_list($keyword) {
     libraries_load('elasticsearch-php');
     $elasticsearch_host = variable_get('elasticsearch_host');
     $client = Elasticsearch\ClientBuilder::create()
-      ->setHosts([$elasticsearch_host])
-      ->build();
+                                         ->setHosts([$elasticsearch_host])
+                                         ->build();
   } catch (\Exception $e) {
 
   }
@@ -401,10 +414,7 @@ function get_website_search_results_category_list($keyword) {
   $search_website_count_by_category = [];
   foreach ($node_types as $node_type) {
     // Build search params.
-    $params = build_website_search_params(
-      $search_content = _remove_special_chars($keyword),
-      $node_type = $node_type
-    );
+    $params = build_website_search_params($search_content = _remove_special_chars($keyword), $node_type = $node_type);
     // To get a total number of all search results, we need to unset 'from' and 'size' from $params.
     unset($params['from']);
     unset($params['size']);
@@ -442,7 +452,6 @@ function get_website_search_results_category_list($keyword) {
   return $output;
 }
 
-
 /**
  * Get website search result table.
  * $search_results: an associative array with three keys: nid, title, and
@@ -468,7 +477,6 @@ function get_website_search_result_table($search_results) {
 
   return $output;
 }
-
 
 /**
  * Get table search result table.
