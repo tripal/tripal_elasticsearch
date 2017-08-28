@@ -606,7 +606,7 @@ function tripal_elasticsearch_node_update($node) {
 /**
  * Implements hook_node_insert()
  */
-function tripal_elasticsearch_node_inset($node) {
+function tripal_elasticsearch_node_insert($node) {
   $item = new stdClass();
 
   $item->index_name = 'website';
