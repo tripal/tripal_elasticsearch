@@ -443,8 +443,8 @@ function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
   $keyword = $arg1;
 
   // Build search params.
-  $params = build_website_search_params($search_content = _remove_special_chars($keyword));
-  $params = build_website_search_params(_remove_special_chars($keyword), $node_type = '', $index = 'entities', $type = 'entities', $from = 0, $size = 1000);
+  //$params = build_website_search_params($search_content = _remove_special_chars($keyword));
+  $params = build_website_search_params(_remove_special_chars($keyword), '', $index = 'entities,website', $type = '');
   // Run Elasticsearch.
   try {
     $search_result = tripal_elasticsearch_search_website($params);
@@ -452,6 +452,7 @@ function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
     // grab page title and highlight content from search results.
     $results = [];
     $output = '';
+    $i = 0;
     foreach ($search_result as $item) {
       $results[] = [
         'nid' => isset($item['nid']) ? $item['nid'] : $item['entity_id'],
@@ -462,13 +463,18 @@ function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
       if (isset($item['nid'])) {
         $output .= '<h3>' . l($item['title'], 'node/' . $item['nid']) . '</h3>';
       } else {
+        unset($results[$i]['nid']);
+        $results[$i]['entity_id'] = $item['entity_id'];
         $output .= '<h3>' . l($item['title'], 'bio_data/' . $item['entity_id']) . '</h3>';
       }
       $output .= '<p>' . $item['highlight'] . '</p>';
+      $i++;
     }
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
+
+  dpm($results);
 
   if (count($results) == 0) {
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
