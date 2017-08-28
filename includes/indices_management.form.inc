@@ -36,7 +36,10 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
                            "http://www.example.com:8080". Do not add forward slash (/) at the end.'),
     '#states' => [
       'visible' => [
-        ':input[name="website_or_table"]' => ['value' => 'website'],
+        ':input[name="website_or_table"]' => [
+          ['value' => 'website'],
+          ['value' => 'entities'],
+        ],
       ],
     ],
 
@@ -51,7 +54,10 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     // This field is only visible to table indexing.
     '#states' => [
       'invisible' => [
-        ':input[name="website_or_table"]' => ['value' => 'website'],
+        ':input[name="website_or_table"]' => [
+          ['value' => 'website'],
+          ['value' => 'entities'],
+        ],
       ],
     ],
     '#size' => 25,
@@ -67,7 +73,10 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#collapsed' => TRUE,
     '#states' => [
       'invisible' => [
-        ':input[name="website_or_table"]' => ['value' => 'website'],
+        ':input[name="website_or_table"]' => [
+          ['value' => 'website'],
+          ['value' => 'entities'],
+        ],
       ],
     ],
   ];
@@ -94,7 +103,10 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#options' => array_merge(['' => 'Select a table'], drupal_map_assoc(get_table_list())),
     '#states' => [
       'invisible' => [
-        ':input[name="website_or_table"]' => ['value' => 'website'],
+        ':input[name="website_or_table"]' => [
+          ['value' => 'website'],
+          ['value' => 'entities'],
+        ],
       ],
     ],
     '#ajax' => [
@@ -179,12 +191,13 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  */
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   // validate base url if it is website indexing
-  if ($form_state['values']['website_or_table'] == 'website') {
+  $type = $form_state['values']['website_or_table'];
+  if ($type == 'website' || $type == 'entities') {
     $website_base_url = $form_state['values']['website_base_url'];
     // Define a variable to store website base url.
     variable_set('website_base_url', $website_base_url);
     try {
-      @ $content = file_get_contents($website_base_url . '/node');
+      $content = @file_get_contents($website_base_url . '/node');
       if ($content === FALSE) {
         $error_message = t('The website base url is invalid. Please check your website base url.');
         form_set_error('website_base_url', $error_message);
@@ -256,7 +269,8 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
       'title' => 'string',
       'content' => 'string',
     ];
-  } elseif ($website_or_table === 'entities') {
+  }
+  elseif ($website_or_table === 'entities') {
     // indexing website: has default index settings.
     // $index_name = $form_state['values']['index_name'];
     $index_name = 'entities';
@@ -274,7 +288,8 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
       'title' => 'string',
       'content' => 'string',
     ];
-  } else {
+  }
+  else {
     // indexing a table: has customized index settings
     $index_name = $form_state['values']['index_name'];
     $index_table = $form_state['values']['index_table'];
@@ -338,6 +353,8 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   }
 
   $form_state['rebuild'] = TRUE;
+
+  drupal_set_message('Index created successfully');
 }
 
 /**
