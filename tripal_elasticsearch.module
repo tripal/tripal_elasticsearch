@@ -474,8 +474,6 @@ function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
     return 'Searching is not available. Please try later.';
   }
 
-  dpm($results);
-
   if (count($results) == 0) {
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
