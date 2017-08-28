@@ -357,6 +357,7 @@ function tripal_elasticsearch_search_website($params) {
     $hit['_source']['highlight'] = $highlight;
     $search_res[] = $hit['_source'];
   }
+
   return $search_res;
 }
 
@@ -461,7 +462,12 @@ function get_website_search_result_table($search_results) {
   $output = '';
   $rows = [];
   foreach ($search_results as $item) {
-    $row = '<h3>' . l($item['title'], 'node/' . $item['nid']) . '</h3>';
+    if (isset($item['nid'])) {
+      $row = '<h3>' . l($item['title'], 'node/' . $item['nid']) . '</h3>';
+    }
+    else {
+      $row = '<h3>' . l($item['title'], 'bio_data/' . $item['entity_id']) . '</h3>';
+    }
     $row .= '<p>' . $item['highlight'] . '</p>';
     $rows[] = [$row];
   }
