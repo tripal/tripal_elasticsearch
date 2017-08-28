@@ -444,7 +444,7 @@ function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
 
   // Build search params.
   //$params = build_website_search_params($search_content = _remove_special_chars($keyword));
-  $params = build_website_search_params(_remove_special_chars($keyword), '', $index = 'entities,website', $type = '');
+  $params = build_website_search_params(_remove_special_chars($keyword), '', 'entities,website', '');
   // Run Elasticsearch.
   try {
     $search_result = tripal_elasticsearch_search_website($params);
