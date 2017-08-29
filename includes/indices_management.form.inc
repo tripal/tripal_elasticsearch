@@ -369,14 +369,20 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
                                          ->setHosts([$elasticsearch_host])
                                          ->build();
     // associate index name with indexed table.
-    $raw_existing_indices = array_keys($client->indices()->getMapping());
-    $mappings = $client->indices()->getMapping();
-    $existing_indices = ['entities', 'website'];
-    foreach ($raw_existing_indices as $index) {
-      if (!in_array($index, ['entities', 'website'])) {
-        $new_index = [$index . ' (indexed table: ' . array_keys($mappings[$index]['mappings'])[1] . ')'];
-        $existing_indices = array_merge($existing_indices, $new_index);
-      }
+
+
+    $indices = array_keys($client->indices()->getMapping());
+
+
+    $params['index'] = 'website';
+
+    $existing_indices = [];
+    foreach ($indices as $index) {
+    	$params = [
+    		'index' => $index,
+			];
+			$existing_indices[$index] = $index . ' (indexed table: ' .
+				$client->indices()->get($params)[$index]['settings']['index']['analysis']['analyzer'][$index]['type'] . ')';
     }
   } catch (\Exception $e) {
     $message = $e->getMessage();
@@ -389,7 +395,7 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
     '#title' => t('Existing indices'),
     '#description' => t('Delete indexed data from Eleasticsearch. Please make sure you know 
 												what the data is. This process can not be undone.'),
-    '#options' => drupal_map_assoc($existing_indices),
+    '#options' => $existing_indices,
   ];
 
   $form['submit'] = [
