@@ -15,8 +15,8 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Number of cron queues'),
     '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
-                         queues will be used for indexing jobs. Use more queues if your server has high ability
-                         for multi-threads process.'),
+                         queues that will be used for indexing jobs. Use more queues if your server has higher capacity
+                         for multi-thread processes.'),
     '#options' => drupal_map_assoc(range(1, 10)),
   ];
 
@@ -33,7 +33,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Enter your website base url'),
     '#description' => t('Enter the base url of your website. Examples: "http://www.example.com",  
-                           "http://www.example.com:8080". Do not add forward slash (/) at the end.'),
+                           "http://www.example.com:8080". Do not include the forward slash (/) at the end.'),
     '#states' => [
       'visible' => [
         ':input[name="website_or_table"]' => [
@@ -49,8 +49,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Enter a unique Elasticsearch index name'),
     '#field_suffix' => 'less than 28 characters',
-    '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores, 
-												and start with letters.'),
+    '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores.  It must start with a letter.'),
     // This field is only visible to table indexing.
     '#states' => [
       'invisible' => [
@@ -68,7 +67,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#tree' => TRUE,
     '#title' => t('Elasticsearch index settings'),
-    '#description' => t('These settings determin how your data will be indexed and searchable.'),
+    '#description' => t('These settings determine how your data will be indexed and made searchable.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#states' => [
@@ -134,7 +133,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     $form['table_fields'][$field] = [
       '#type' => 'select',
       '#title' => t('Field name: ' . $field),
-      '#description' => t('Please select a mapping type each field. If no 
+      '#description' => t('Please select a mapping type for each field. If no 
 													mapping type is selected for a field, that field will
 													no be indexed. This can be used to selectively index
 													table fields.'),
@@ -210,23 +209,23 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     // Index name validation.
     $index_name = $form_state['values']['index_name'];
     if (strlen($index_name) > 28) {
-      form_set_error('index_name', t('String length cannot be larger than 28.'));
+      form_set_error('index_name', t('String length cannot be greater than 28.'));
     }
     if (!preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name)) {
       form_set_error('index_name', t('index name can only contain lowercase letters, 
-								numbers and underscores, and start with letters.'));
+								numbers and underscores, and must start with a letter.'));
     }
     // 'website' is reserved for website indexing and search, use a different name
     // as index name for table search.
     if ($index_name == 'website') {
-      form_set_error('index_name', t('"website" is reserved for website index. Please
+      form_set_error('index_name', t('"website" is reserved for the website index. Please
 					use a different name.'));
     }
 
     // At least one table field need to be selected.
     $table_fields = array_filter($form_state['values']['table_fields']);
     if (empty($table_fields)) {
-      form_set_error('table_fields', t('Please specify mapping type for at least one field.'));
+      form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
     }
   }
 }
