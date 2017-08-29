@@ -72,11 +72,14 @@ function table_search_interface_building_form($form, &$form_state) {
   }
 
   $index_name_options = array_merge(['' => 'Select an index'], drupal_map_assoc(array_keys($existing_indices)));
-  // 'website' is reserved for website indexing and search, no need to build search
+  // 'website' and 'entities' are reserved for website indexing and search, no need to build search
   // block for this index.
   if (isset($index_name_options['website'])) {
     unset($index_name_options['website']);
   }
+	if (isset($index_name_options['entities'])) {
+		unset($index_name_options['entities']);
+	}
   $form['index_name'] = [
     '#type' => 'select',
     '#title' => t('Select an index to build search interface'),
