@@ -371,18 +371,18 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
     // associate index name with indexed table.
 
 
-    $indices = array_keys($client->indices()->getMapping());
-
-
-    $params['index'] = 'website';
-
-    $existing_indices = [];
-    foreach ($indices as $index) {
-    	$params = [
-    		'index' => $index,
-			];
-			$existing_indices[$index] = $index . ' (indexed table: ' .
-				$client->indices()->get($params)[$index]['settings']['index']['analysis']['analyzer'][$index]['type'] . ')';
+    $mappings = $client->indices()->getMapping();
+		$existing_indices = [];
+    foreach (array_keys($mappings) as $index) {
+    	if (isset(array_keys($mappings[$index]['mappings'])[1])) {
+    		if (!in_array($index, ['entities', 'website'])) {
+					$existing_indices[$index] = $index . ' (indexed table: <b>'. array_keys($mappings[$index]['mappings'])[1] . '</b>)';
+				} else {
+					$existing_indices[$index] = $index . ' (index for site-wide search)';
+				}
+			} else {
+				$existing_indices[$index] = $index . ' (empty index)';
+			}
     }
   } catch (\Exception $e) {
     $message = $e->getMessage();
