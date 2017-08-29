@@ -373,11 +373,11 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
     $mappings = $client->indices()->getMapping();
     $existing_indices = ['entities', 'website'];
     foreach ($raw_existing_indices as $index) {
-    	if (!in_array($index, ['entities', 'website'])) {
-    		$new_index = [$index . ' (indexed table: '. array_keys($mappings[$index]['mappings'])[1] . ')'];
-    		$existing_indices = array_merge($existing_indices, $new_index);
-			}
-		}
+      if (!in_array($index, ['entities', 'website'])) {
+        $new_index = [$index . ' (indexed table: ' . array_keys($mappings[$index]['mappings'])[1] . ')'];
+        $existing_indices = array_merge($existing_indices, $new_index);
+      }
+    }
   } catch (\Exception $e) {
     $message = $e->getMessage();
     drupal_set_message($message, 'warning');
