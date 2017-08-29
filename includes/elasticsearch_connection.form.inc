@@ -12,7 +12,7 @@ function elasticsearch_connection_form($form, &$form_state) {
 		'#description' => t('URL and port of an elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
 		'#default_value' => variable_get('elasticsearch_host'),
 		'#attributes' => array(
-			'placehodler' => 'http://localhost:9200',
+			'placeholder' => 'http://localhost:9200',
 		),
 	);
 
@@ -43,9 +43,9 @@ function elasticsearch_connection_form($form, &$form_state) {
 			$form['health'] = array(
 				'#type' => 'markup',
 				'#title' => t('Elasticsearch server health'),
-				'#description' => t('The table below shows the health information of connected Elasticsearch server.'),
+				'#description' => t('The table below shows the health information of connected Elasticsearch servers.'),
 				'#markup' => '<h4>'. t('Elasticsearch server health').'</h4>'.
-					           '<p>'.t('The table below shows the health of connected Elasticsearch server.').'</p>'.
+					           '<p>'.t('The table below shows the health of connected Elasticsearch servers.').'</p>'.
 										 $output,
 			);
 		}
