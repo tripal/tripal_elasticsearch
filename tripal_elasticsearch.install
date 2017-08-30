@@ -5,77 +5,78 @@
  * Input, update, and delete data for build search blocks.
  */
 
-
 /**
  * Implements hook_schema().
  */
-function tripal_elasticsearch_schema(){
-	$schema['tripal_elasticsearch'] = array(
-		'description' => 'The table for store data for building search blocks',
-		'fields' => array(
-			'index_name' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'table_name' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'index_field' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'form_field_type' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'form_field_title' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-		'form_field_description' => array(
-			'type' => 'text',
-		),
-			'form_field_options' => array(
-				'type' => 'text',
-			),
-			'form_field_weight' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-		),
-	);
+function tripal_elasticsearch_schema()
+{
+    $schema['tripal_elasticsearch'] = [
+        'description' => 'The table for store data for building search blocks',
+        'fields' => [
+            'index_name' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'table_name' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'index_field' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'form_field_type' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'form_field_title' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'form_field_description' => [
+                'type' => 'text',
+            ],
+            'form_field_options' => [
+                'type' => 'text',
+            ],
+            'form_field_weight' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+        ],
+    ];
 
-	$schema['tripal_elasticsearch_links'] = array(
-		'description' => t('A table for storing data for adding page links to search results'),
-		'fields' => array(
-			'index_name' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'table_name' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'index_field' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-			'field_url' => array(
-				'type' => 'varchar',
-				'length' => '255',
-			),
-		),
-	);
+    $schema['tripal_elasticsearch_links'] = [
+        'description' => t('A table for storing data for adding page links to search results'),
+        'fields' => [
+            'index_name' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'table_name' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'index_field' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+            'field_url' => [
+                'type' => 'varchar',
+                'length' => '255',
+            ],
+        ],
+    ];
     $schema['tripal_elasticsearch_servers'] = [
         'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
         'fields' => [
-            'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+            'id' => ['type' => 'serial', 'unsigned' => true, 'not null' => true],
             'url' => ['type' => 'varchar', 'length' => '255'],
             'label' => ['type' => 'varchar', 'length' => '255'],
             'description' => ['type' => 'text'],
         ],
         'primary key' => ['id'],
     ];
-	return $schema;
+
+    return $schema;
 }
