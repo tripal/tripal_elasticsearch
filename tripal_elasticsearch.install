@@ -67,6 +67,15 @@ function tripal_elasticsearch_schema(){
 			),
 		),
 	);
-
+    $schema['tripal_elasticsearch_servers'] = [
+        'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
+        'fields' => [
+            'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+            'url' => ['type' => 'varchar', 'length' => '255'],
+            'label' => ['type' => 'varchar', 'length' => '255'],
+            'description' => ['type' => 'text'],
+        ],
+        'primary key' => ['id'],
+    ];
 	return $schema;
 }
