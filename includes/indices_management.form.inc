@@ -237,122 +237,78 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state)
 /**
  * tripal_elasticsearch_indexing_form submission.
  */
-function tripal_elasticsearch_indexing_form_submit($form, &$form_state)
-{
+function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 
-    $queue_number = $form_state['values']['queue_number'];
+  $queue_number = $form_state['values']['queue_number'];
 
-    /*
-     * Build Elasticsearch index settings, which needs the following parameters
-     *    $index_name
-     *    $shards
-     *    $replicas
-     *    $character_filters
-     *    $tokenizer
-     *    $token_filters
-     *    $field_mapping_types
-     */
+  // Build Elasticsearch index settings.
+  $website_or_table = $form_state['values']['website_or_table'];
 
-    $website_or_table = $form_state['values']['website_or_table'];
+  if ($website_or_table == 'website') {
+    // indexing website: has default index settings.
+    // $index_name = $form_state['values']['index_name'];
+    $index_name = 'website';
+    $index_table = 'node';
+    $index_type = 'website';
+    //$character_filters = drupal_map_assoc(['html_string']);
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'nid' => 'integer',
+      'type' => 'string',
+      'title' => 'string',
+      'content' => 'string',
+    ];
+  }
+  elseif ($website_or_table === 'entities') {
+    // indexing website: has default index settings.
+    // $index_name = $form_state['values']['index_name'];
+    $index_name = 'entities';
+    $index_table = 'tripal_entity';
+    $index_type = 'entities';
+    $character_filters = drupal_map_assoc(['html_string']);
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'entity_id' => 'integer',
+      'bundle_label' => 'string',
+      'title' => 'string',
+      'content' => 'string',
+    ];
+  }
+  else {
+    // indexing a table: has customized index settings
+    $index_name = $form_state['values']['index_name'];
+    $index_table = $form_state['values']['index_table'];
+    $index_type = $index_table;
+    //		$character_filters = array_filter($form_state['values']['index_settings']['character_filters']);
+    //$character_filters = drupal_map_assoc(['html_string']);
+    $tokenizer = $form_state['values']['index_settings']['tokenizer'];
+    $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
+    $field_mapping_types = array_filter($form_state['values']['table_fields']);
+  }
 
-    if ($website_or_table == 'website') {
-        // indexing website: has default index settings.
-        // $index_name = $form_state['values']['index_name'];
-        $index_name = 'website';
-        $index_table = 'node';
-        $index_type = 'website';
-        $character_filters = drupal_map_assoc(['html_string']);
-        $tokenizer = 'standard';
-        $token_filters = drupal_map_assoc([
-            'standard',
-            'lowercase',
-        ]);
-        $field_mapping_types = [
-            'nid' => 'integer',
-            'type' => 'string',
-            'title' => 'string',
-            'content' => 'string',
-        ];
-    } elseif ($website_or_table === 'entities') {
-        // indexing website: has default index settings.
-        // $index_name = $form_state['values']['index_name'];
-        $index_name = 'entities';
-        $index_table = 'tripal_entity';
-        $index_type = 'entities';
-        $character_filters = drupal_map_assoc(['html_string']);
-        $tokenizer = 'standard';
-        $token_filters = drupal_map_assoc([
-            'standard',
-            'lowercase',
-        ]);
-        $field_mapping_types = [
-            'entity_id' => 'integer',
-            'bundle_label' => 'string',
-            'title' => 'string',
-            'content' => 'string',
-        ];
-    } else {
-        // indexing a table: has customized index settings
-        $index_name = $form_state['values']['index_name'];
-        $index_table = $form_state['values']['index_table'];
-        $index_type = $index_table;
-        //		$character_filters = array_filter($form_state['values']['index_settings']['character_filters']);
-        $character_filters = drupal_map_assoc(['html_string']);
-        $tokenizer = $form_state['values']['index_settings']['tokenizer'];
-        $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
-        $field_mapping_types = $form_state['values']['table_fields'];
-        $field_mapping_types = array_filter($form_state['values']['table_fields']);
-    }
+  // Create the index.
+  try {
+    $es = new ESInstance();
+    $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
+       ->createIndex();
+  } catch (Exception $exception) {
+    form_set_error($exception->getMessage());
+    watchdog('tripal_elasticsearch', $exception->getMessage());
+    return;
+  }
 
-    build_elasticsearch_index($index_name = $index_name, $shards = 5, $replicas = 0, $character_filters = $character_filters, $tokenizer = $tokenizer, $token_filters = $token_filters, $field_mapping_types = $field_mapping_types);
+  // Populate the index
+  $es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
 
-    /*
-     * Bind the following data to a cron queue item.
-     *    index_name
-     *    index_type
-     *    index_table
-     *    selected_table_fields
-     *    field_mapping_types
-     *    sql query that will extract values from the database table for the selected table fields.
-     */
-
-    // Get row count of selected table.
-    $row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
-    // Get total number of offsets (offset interval is 1000)
-    $k = 1000;
-    $total_offsets = intval($row_count / $k);
-    // Separate table fields with comma
-    $comma_separated_fields = implode(',', array_keys($field_mapping_types));
-    $order_by_field = array_keys($field_mapping_types)[0];
-    foreach (range(0, $total_offsets) as $offset) {
-        $id = $offset % $queue_number + 1;
-        $cron_queue_id = 'elasticsearch_queue_'.$id;
-        $cron_queue = DrupalQueue::get($cron_queue_id);
-        $OFFSET = $k * $offset;
-        $item = new stdClass();
-
-        // Use the first field to sort the table
-        if ($website_or_table == 'website') {
-            $sql = "SELECT nid,title,type FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
-        } elseif ($website_or_table == 'entities') {
-            $sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
-              FROM tripal_entity
-              JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              ORDER BY title ASC LIMIT $k OFFSET $OFFSET";
-        } else {
-            $sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
-        }
-
-        $item->index_name = $index_name;
-        $item->index_type = $index_type;
-        $item->website_or_table = $website_or_table;
-        $item->field_mapping_types = $field_mapping_types;
-        $item->sql = $sql;
-
-        $cron_queue->createItem($item);
-    }
-
-    $form_state['rebuild'] = true;
+  $form_state['rebuild'] = TRUE;
 
     drupal_set_message('Index created successfully');
 }

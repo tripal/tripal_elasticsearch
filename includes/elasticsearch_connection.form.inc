@@ -6,6 +6,7 @@
  * Admin page callback to build form for Elasticsearch connection.
  */
 
+
 /**
  * @param $form
  * @param $form_state
@@ -227,7 +228,6 @@ function remote_delete_confirm($form, &$form_state, $remote_id)
  * @param $form
  * @param $form_state
  */
-
 function remote_delete_confirm_submit($form, &$form_state)
 {
     if ($form_state['values']['confirm']) {
