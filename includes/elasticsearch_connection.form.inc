@@ -267,7 +267,6 @@ function remote_edit_confirm($form, &$form_state, $remote_id)
         '#default_value' => $label,
         '#description' => t('Label for this Elasticsearch server'),
 
-
     ];
     $form['description_field'] = [
         '#title' => t('Description'),
