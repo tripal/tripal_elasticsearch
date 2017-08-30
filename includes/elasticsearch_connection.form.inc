@@ -87,7 +87,7 @@ function elasticsearch_connection_form($form, &$form_state)
             $output = theme('table', ['header' => $header, 'rows' => $rows]);
             $form['health'] = [
                 '#type' => 'markup',
-                '#title' => t('Elasticsearch server health'),
+                '#title' => t('Elasticsearch Server Health'),
                 '#description' => t('The table below shows the health information of connected Elasticsearch servers.'),
                 '#markup' => '<h4>'.t('Elasticsearch server health').'</h4>'.'<p>'.t('The table below shows the health of connected Elasticsearch servers.').'</p>'.$output,
             ];
@@ -95,11 +95,6 @@ function elasticsearch_connection_form($form, &$form_state)
     } catch (\Exception $e) {
         $message = $e->getMessage();
     }
-
-    $form['remotes'] = [
-        '#type' => 'markup',
-        '#markup' => '<h4>'.t('Elasticsearch remote servers').'</h4>'.'<p>No remote Elasticsearch servers have been added. When remote servers are added, their status will be displayed below.</p>',
-    ];
 
     $remotes = db_query('SELECT * FROM tripal_elasticsearch_servers')->fetchAll();
 
@@ -115,12 +110,20 @@ function elasticsearch_connection_form($form, &$form_state)
 
             array_push($rows, [$url, $label, $description, $edit, $delete]);
         }
-        $output = theme('table', ['header' => $header, 'rows' => $rows]);
-        $form['remote'] = [
+        $output = "<h4>Elasticsearch Remote Servers </h4><p>Remote Elasticsearch server connections can be viewed, edited, or deleted below.</p>".theme('table', [
+                'header' => $header,
+                'rows' => $rows,
+            ]);
+        $form['remotes'] = [
             '#type' => 'markup',
             '#title' => 'Remote Elasticsearch Servers',
-            '#description' => t('The table below shows the health information of connected Elasticsearch servers.'),
             '#markup' => $output,
+        ];
+    }
+    if (! $remotes) {
+        $form['remotes'] = [
+            '#type' => 'markup',
+            '#markup' => '<h4>'.t('Elasticsearch Remote Servers').'</h4>'.'<p>No remote Elasticsearch servers have been added. When remote servers are added, their status will be displayed below.</p>',
         ];
     }
 
