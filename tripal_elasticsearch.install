@@ -67,6 +67,7 @@ function tripal_elasticsearch_schema()
             ],
         ],
     ];
+
     $schema['tripal_elasticsearch_servers'] = [
         'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
         'fields' => [
