@@ -7,6 +7,7 @@
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
 
 /**
  * Implements hook_init().
@@ -160,6 +161,7 @@ function tripal_elasticsearch_libraries_info() {
  */
 function tripal_elasticsearch_cron_queue_info() {
   // Define N = 10 cron queues
+  $queues = [];
   $queue_number = 10;
   for ($n = 1; $n <= $queue_number; $n++) {
     $queues['elasticsearch_queue_' . $n] = [
@@ -174,7 +176,6 @@ function tripal_elasticsearch_cron_queue_info() {
  * Define tripal_elasticsearch_cron_queue_worker_callback function
  */
 function tripal_elasticsearch_cron_queue_worker_callback($item) {
-
   $index_name = $item->index_name;
   $index_type = $item->index_type;
   $sql = $item->sql;
@@ -195,7 +196,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
           'entity_id' => $entity_id,
           'title' => $entity_title,
           'bundle_label' => $bundle_label,
-          'content' => get_node_content_by_entity_id($entity_id, variable_get('website_base_url'), $entity_title),
+          'content' => get_entity_content_by_entity_id($entity_id, variable_get('website_base_url'), $entity_title),
         ],
       ];
 
@@ -205,7 +206,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
         $client = Elasticsearch\ClientBuilder::create()
                                              ->setHosts([$elasticsearch_host])
                                              ->build();
-        $response = $client->index($params);
+        $client->index($params);
         watchdog('tripal_elasticsearch', 'A page has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
         $message = $e->getMessage();
@@ -265,7 +266,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
         $client = Elasticsearch\ClientBuilder::create()
                                              ->setHosts([$elasticsearch_host])
                                              ->build();
-        $response = $client->index($params);
+        $client->index($params);
         watchdog('tripal_elasticsearch', 'A table row has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
         $message = $e->getMessage();
@@ -434,42 +435,18 @@ function tripal_elasticsearch_menu_alter(&$items) {
 /**
  * tripal_elasticsearch_search_results_page_callback
  */
-function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
+function tripal_elasticsearch_search_results_page_callback($keyword = '') {
   // $arg1 is empty by default. $arg1 has be to set, otherwise it will
   // have a argument missing error when visit page 'tripal_elasticsearch/search_website'.
-  if (empty($arg1)) {
+  if (empty($keyword)) {
     return 'Please enter some content into the search box and click the search button.';
   }
-  $keyword = $arg1;
 
-  // Build search params.
-  //$params = build_website_search_params($search_content = _remove_special_chars($keyword));
-  $params = build_website_search_params(_remove_special_chars($keyword), '', 'entities,website', '');
   // Run Elasticsearch.
   try {
-    $search_result = tripal_elasticsearch_search_website($params);
-
-    // grab page title and highlight content from search results.
-    $results = [];
-    $output = '';
-    $i = 0;
-    foreach ($search_result as $item) {
-      $results[] = [
-        'nid' => isset($item['nid']) ? $item['nid'] : $item['entity_id'],
-        'title' => $item['title'],
-        'highlight' => $item['highlight'],
-      ];
-
-      if (isset($item['nid'])) {
-        $output .= '<h3>' . l($item['title'], 'node/' . $item['nid']) . '</h3>';
-      } else {
-        unset($results[$i]['nid']);
-        $results[$i]['entity_id'] = $item['entity_id'];
-        $output .= '<h3>' . l($item['title'], 'bio_data/' . $item['entity_id']) . '</h3>';
-      }
-      $output .= '<p>' . $item['highlight'] . '</p>';
-      $i++;
-    }
+    $es = new ESInstance();
+    $results = $es->setWebsiteSearchParams($keyword, '', 'website,entities', '')
+                  ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
@@ -477,46 +454,28 @@ function tripal_elasticsearch_search_results_page_callback($arg1 = '') {
   if (count($results) == 0) {
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
+
   return get_website_search_result_table($results);
 }
 
 /**
  * tripal_elasticsearch_search_results_category_page_callback
  */
-function tripal_elasticsearch_search_results_category_page_callback($arg1, $arg2) {
-  $node_type = $arg1;
-  $keyword = $arg2;
-
-  // Build search params.
-  $params = build_website_search_params($search_content = _remove_special_chars($keyword), $node_type);
-
+function tripal_elasticsearch_search_results_category_page_callback($node_type, $keyword) {
   // Run Elasticsearch.
   try {
-    $search_result = tripal_elasticsearch_search_website($params);
-
-    // grab page title and highlight content from search results.
-    $results = [];
-    foreach ($search_result as $item) {
-      $results[] = [
-        'nid' => $item['nid'],
-        'title' => $item['title'],
-        'highlight' => $item['highlight'],
-      ];
-    }
-
-    $output = '';
-    foreach ($results as $item) {
-      $output .= '<h3>' . l($item['title'], 'node/' . $item['nid']) . '</h3>';
-      $output .= '<p>' . $item['highlight'] . '</p>';
-    }
+    $es = new ESInstance();
+    $search_results = $es->setWebsiteSearchParams($keyword, $node_type, 'website,entities', '')
+                         ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
 
-  if (count($results) == 0) {
+  if (count($search_results) == 0) {
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
-  return get_website_search_result_table($results);
+
+  return get_website_search_result_table($search_results);
 }
 
 /**
@@ -571,9 +530,10 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 
     // Theme search results
     $output = '<strong style="color: blue">Your search did not match any record</strong>';
-    if (count($search_results) > 0) {
+    $total = count($search_results);
+    if ($total > 0) {
       $output = '<div id="table_search_results_datatable">';
-      $output .= get_table_search_result_table($search_results, $index_name);
+      $output .= get_table_search_result_table($search_results, $index_name, $total);
       $output .= '</div>';
     }
 
@@ -603,14 +563,13 @@ function tripal_elasticsearch_node_update($node) {
   $item->index_name = 'website';
   $item->index_type = 'website';
   $item->website_or_table = 'website';
+  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
   $item->field_mapping_types = [
     'nid' => 'integer',
     'type' => 'string',
     'title' => 'string',
     'content' => 'string',
   ];
-  $nid = $node->nid;
-  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
 
   // randomly assign the updated node to a cron queue
   $id = rand(1, 10);
@@ -627,14 +586,13 @@ function tripal_elasticsearch_node_insert($node) {
   $item->index_name = 'website';
   $item->index_type = 'website';
   $item->website_or_table = 'website';
+  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
   $item->field_mapping_types = [
     'nid' => 'integer',
     'type' => 'string',
     'title' => 'string',
     'content' => 'string',
   ];
-  $nid = $node->nid;
-  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
 
   // randomly assign the updated node to a cron queue
   $id = rand(1, 10);
