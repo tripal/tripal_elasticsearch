@@ -72,23 +72,27 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = 'website', $offset = []) {
-    $queries = [
-      [
-        "query_string" => [
-          "default_field" => "content",
-          "query" => $search_terms,
-          "default_operator" => "OR",
-        ],
+  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = []) {
+    $queries = [];
+
+    $queries[0] = [
+      "query_string" => [
+        "default_field" => "content",
+        "query" => $search_terms,
+        "default_operator" => "OR",
       ],
     ];
 
     if (!empty($node_type)) {
-      $queries[] = [
-        "match" => [
-          "type" => $node_type,
-        ],
-      ];
+      $indices = $this->getIndices();
+
+      if (in_array('website', $indices)) {
+        //$queries[1]['match']['type'] = $node_type;
+      }
+
+      if (in_array('entities', $indices)) {
+        $queries[1]['match']['entity_label'] = $node_type;
+      }
     }
 
     $query = [
@@ -245,12 +249,36 @@ class ESInstance {
     $hits = $this->client->search($this->searchParams);
     $results = [];
     foreach ($hits['hits']['hits'] as $hit) {
-      $highlight = implode('......', $hit['highlight']['content']);
-      $hit['_source']['highlight'] = $highlight;
-      $results[] = (object) $hit['_source'];
+      if (isset($hit['highlight'])) {
+        $highlight = implode('......', $hit['highlight']['content']);
+        $hit['_source']['highlight'] = $highlight;
+      }
+      $results[] = $hit['_source'];
     }
 
     return $results;
+  }
+
+  /**
+   * Get the number of available results for a given search query.
+   *
+   * @return mixed
+   * @throws \Exception
+   */
+  public function count() {
+    if (empty($this->searchParams)) {
+      throw new Exception('Please build search parameters before attempting to count results.');
+    }
+
+    // Get the search query
+    $params = $this->searchParams;
+
+    // Remove offset restrictions
+    unset($params['from']);
+    unset($params['size']);
+    unset($params['body']['highlight']);
+
+    return $this->client->count($params)['count'];
   }
 
   /**
@@ -369,5 +397,38 @@ class ESInstance {
 
       $cron_queue->createItem($item);
     }
+  }
+
+  /**
+   * Paginate search results.
+   *
+   * @param $per_page
+   *
+   * @return array
+   */
+  public function paginate($per_page) {
+    $total = $this->count();
+    $current_page = pager_default_initialize($total, $per_page);
+
+    // Set the offset.
+    $this->searchParams['from'] = $per_page * $current_page;
+    $this->searchParams['size'] = $per_page;
+
+    $results = $this->search();
+
+    return [
+      'results' => $results,
+      'total' => $total,
+      'page' => $current_page,
+    ];
+  }
+
+  /**
+   * Get a flat list of indices.
+   *
+   * @return array
+   */
+  public function getIndices() {
+    return array_keys($this->client->indices()->getMapping());
   }
 }

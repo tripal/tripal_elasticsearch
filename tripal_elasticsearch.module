@@ -231,7 +231,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
           'nid' => $nid,
           'title' => $node_title,
           'type' => $node_type,
-          'content' => get_node_content_by_nid($nid = $nid, $base_url = variable_get('website_base_url'), $node_title = $node_title),
+          'content' => get_node_content_by_nid($nid, $base_url = variable_get('website_base_url'), $node_title),
         ],
       ];
 
@@ -245,7 +245,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
         watchdog('tripal_elasticsearch', 'A page has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
         $message = $e->getMessage();
-        watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+        watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
       }
     }
   }
@@ -270,7 +270,7 @@ function tripal_elasticsearch_cron_queue_worker_callback($item) {
         watchdog('tripal_elasticsearch', 'A table row has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
         $message = $e->getMessage();
-        watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
+        watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
       }
     }
   }
@@ -367,6 +367,7 @@ function tripal_elasticsearch_block_view($delta = '') {
   else {
     switch ($delta) {
       case 'elasticsearch_website_search_box':
+
         $block['subject'] = '';
         $block['content'] = drupal_get_form('website_search_box_form');
         break;
@@ -512,6 +513,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
         $index_fields[$record->index_field] = $field_value;
       }
     }
+    $record = end($results);
     // get index type
     $index_type = $record->table_name;
     // Build search query for table search.
@@ -519,21 +521,24 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     // Build table search params.
     $select_window = isset($form_state['values']['select_window']) ? $form_state['values']['select_window'] : '';
     $from = empty($select_window) ? 0 : 1000 * ($select_window - 1);
-    $params = build_table_search_params($index_name, $index_type, $query, $from);
     // Run Elasticsearch and return search results into an array.
-    $search_results = [];
+    $results = [];
     try {
-      $search_results = tripal_elasticsearch_search_table($params);
+      $es = new ESInstance();
+      $results = $es->setTableSearchParams($index_name, $index_type, $query, [
+        $from,
+        1000,
+      ])->search();
     } catch (\Exception $e) {
-
+      tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR', $e->getMessage());
     }
 
     // Theme search results
     $output = '<strong style="color: blue">Your search did not match any record</strong>';
-    $total = count($search_results);
+    $total = count($results);
     if ($total > 0) {
       $output = '<div id="table_search_results_datatable">';
-      $output .= get_table_search_result_table($search_results, $index_name, $total);
+      $output .= get_table_search_result_table($results, $index_name, $total);
       $output .= '</div>';
     }
 
@@ -645,29 +650,19 @@ function tripal_elasticsearch_paginate($per_page) {
     }
   }
 
+  $record = end($result);
+
   // Get index type
   $index_type = $record->table_name;
 
   // Build search query for table search.
   $query = build_search_query_from_field_content_pairs($index_fields);
 
-  // Build table search params.
-  //$select_window = isset($form_state['values']['select_window']) ? $form_state['values']['select_window'] : '';
-  //$from = empty($select_window) ? 0 : 1000 * ($select_window - 1);
-
-  $params = build_table_search_params($index_name, $index_type, $query);
-  unset($params['from']);
-
-  $total = tripal_elasticsearch_results_count($params);
-  $current_page = pager_default_initialize($total, $per_page);
-
   // Run Elasticsearch and return search results into an array.
   try {
-    return [
-      'results' => tripal_elasticsearch_search_table($params, 10, $current_page),
-      'total' => $total,
-      'page' => $current_page,
-    ];
+    $es = new ESInstance();
+    return $es->setTableSearchParams($index_name, $index_type, $query)
+              ->paginate($per_page);
   } catch (\Exception $e) {
     return [];
   }
@@ -702,9 +697,6 @@ function tripal_elasticsearch_table_search_download() {
   // Build search query for table search.
   $query = build_search_query_from_field_content_pairs($index_fields);
 
-  // Build table search params.
-  $params = build_table_search_params($index_name, $index_type, $query);
-
   try {
     $count = tripal_elasticsearch_results_count($params);
     $window_range = range(1, ceil($count / 1000));
@@ -717,10 +709,20 @@ function tripal_elasticsearch_table_search_download() {
   file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
   $temp_file = drupal_tempnam($directory, 'search_results_') . '.csv';
 
-  $params['size'] = 1000;
+  try {
+    $es = new ESInstance();
+    $count = $es->setTableSearchParams($index_name, $index_type, $query)
+                ->count();
+    $window_range = range(1, ceil($count / 1000));
+  } catch (Exception $exception) {
+    tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR', $exception->getMessage());
+    return [];
+  }
+
   foreach ($window_range as $window) {
-    $params['from'] = 1000 * ($window - 1);
-    $result = tripal_elasticsearch_search_table($params);
+    $offset = [1000 * ($window - 1), 1000];
+    $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
+                 ->search();
     foreach ($result as $row) {
       $line = implode(',', $row) . "\n";
       file_put_contents($temp_file, $line, FILE_APPEND);
