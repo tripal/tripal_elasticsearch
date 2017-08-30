@@ -5,8 +5,47 @@
  * @file
  * Admin page callback to build form for Elasticsearch connection.
  */
+
+/**
+ * @return array
+ */
+function elasticsearch_connection_form_menu()
+{
+    $items = [];
+    //$items['admin/tripal/extension/tripal_elasticsearch'] = [
+    //    'title' => t('Add or delete elasticsearch hosts'),
+    //    'page callback' => 'elasticsearch_connection_form',
+    //    'access callback' => true,
+    //];
+    $items['delete/%'] = [
+        'title' => t('Delete Remote Server'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => ['remote_delete_confirm', 2],
+        'access callback' => true,
+        'type' => MENU_CALLBACK,
+        'access arguments' => ['adminster tripal elasticsearch']
+    ];
+    return $items;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+
 function elasticsearch_connection_form($form, &$form_state)
 {
+
+    $form['host'] = [
+        '#type' => 'textfield',
+        '#title' => 'Elasticsearch Server URL',
+        '#description' => t('URL and port of an elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
+        '#default_value' => variable_get('elasticsearch_host'),
+        '#attributes' => [
+            'placeholder' => 'http://localhost:9200',
+        ],
+    ];
 
     $form['server_type'] = [
         '#title' => t('File type'),
@@ -15,26 +54,6 @@ function elasticsearch_connection_form($form, &$form_state)
         '#options' => [
             'local' => t('A local Elasticsearch server.  This will be your primary search database.'),
             'remote' => t('A remote Elasticsearch server.  You can connect any number of additional servers.'),
-        ],
-    ];
-
-    $form['local_host'] = [
-        '#type' => 'fieldset',
-        '#title' => t('Elasticsearch Local Server'),
-        '#states' => [
-            'visible' => [
-                ':input[name="server_type"]' => ['value' => 'local'],
-            ],
-        ],
-    ];
-
-    $form['local_host']['host'] = [
-        '#type' => 'textfield',
-        '#title' => 'Elasticsearch Server URL',
-        '#description' => t('URL and port of an elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
-        '#default_value' => variable_get('elasticsearch_host'),
-        '#attributes' => [
-            'placeholder' => 'http://localhost:9200',
         ],
     ];
 
@@ -47,20 +66,12 @@ function elasticsearch_connection_form($form, &$form_state)
             ],
         ],
     ];
-    $form['remote_host']['host'] = [
-        '#type' => 'textfield',
-        '#title' => 'Elasticsearch Server URL',
-        '#description' => t('URL and port of an elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
-        '#default_value' => variable_get('elasticsearch_host'),
-        '#attributes' => [
-            'placeholder' => 'http://localhost:9200',
-        ],
-    ];
+
     $form['remote_host']['label'] = [
         '#type' => 'textfield',
         '#title' => 'Elasticsearch Server Label',
         '#description' => t('Label for this elasticsearch server'),
-        '#default_value' => variable_get('My Elasticsearch Server'),
+        '#default_value' => '',
         '#attributes' => [],
     ];
 
@@ -68,7 +79,7 @@ function elasticsearch_connection_form($form, &$form_state)
         '#type' => 'textfield',
         '#title' => 'Elasticsearch Server Description',
         '#description' => t('A description for this Elasticsearch server.'),
-        '#default_value' => variable_get(''),
+        '#default_value' => '',
         '#attributes' => [],
     ];
 
@@ -90,8 +101,6 @@ function elasticsearch_connection_form($form, &$form_state)
         $params['v'] = true;
         $health = $client->cat()->health($params)[0];
 
-        //TODO:  Add remote ES servers to this table.
-
         // if $health is not empty, create a form element to display it.
         if (! empty($health)) {
             $header = array_keys($health);
@@ -107,26 +116,45 @@ function elasticsearch_connection_form($form, &$form_state)
     } catch (\Exception $e) {
         $message = $e->getMessage();
     }
+
+    $form['remotes'] = [
+        '#type' => 'markup',
+        '#markup' => '<h4>'.t('Elasticsearch remote servers').'</h4>'.'<p>No remote Elasticsearch servers have been added. When remote servers are added, their status will be displayed below.</p>',
+    ];
+
+    $remotes = db_query('SELECT * FROM tripal_elasticsearch_servers')->fetchAll();
+
+    if ($remotes) {
+        $header = ["url", "label", "value", "delete"];
+        $rows = [];
+        foreach ($remotes as $remote) {
+            $url = $remote->url;
+            $label = $remote->label;
+            $description = $remote->description;
+            $options = "<a href ='tripal_elasticsearch/delete/{$remote->id}'>". t("delete") . "</a>";
+
+            array_push($rows, [$url, $label, $description, $options]);
+        }
+        $output = theme('table', ['header' => $header, 'rows' => $rows]);
+        $form['remote'] = [
+            '#type' => 'markup',
+            '#title' => 'Remote Elasticsearch Servers',
+            '#description' => t('The table below shows the health information of connected Elasticsearch servers.'),
+            '#markup' => $output,
+        ];
+    }
     return $form;
 }
-
-    /**
-     *
-     * Table of existing remote DBs
-     * TO DO:  modify function to return something that meshes with above health table.
-     */
-
-    function elasticsearch_fetch_DBs()
-    {
-        $results = db_query('SELECT * FROM tripal_elasticsearch_servers')->fetchAssociated();
-
-        return ($results);
-    }
 
 
 /**
  * elasticsearch_connection_form submit
+ * Submits the form, setting either the localhost or adding a new remote host
+ *
+ * @param $form
+ * @param $form_state
  */
+
 function elasticsearch_connection_form_submit($form, &$form_state)
 {
 
@@ -153,4 +181,66 @@ function elasticsearch_connection_form_submit($form, &$form_state)
         drupal_set_message('External elasticsearch server added!');
         drupal_goto('admin/tripal/extension/tripal_elasticsearch');
     }
+}
+
+/**
+ * Implements a function that validates and submits the form that adds new elasticsearch servers.
+ *
+ */
+function elasticsearch_connection_form_validate($form, &$form_state)
+{
+    $server_type = $form_state['values']['server_type'];
+    $url = $form_state['values']['host'];
+    $label = $form_state['values']['label'];
+    $description = $form_state['values']['description'];
+
+    if (! $server_type) {
+        form_set_error('server_type', 'Please select a server type.');
+    }
+
+    if ($server_type == "local") {
+        //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
+        //    form_set_error('host', 'Please enter a valid URL for this remote host');
+        //}
+    }
+
+    if ($server_type == "remote") {
+        //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
+        //    form_set_error('host', 'Please enter a valid URL for this remote host');
+        //}
+        if ($label == '') {
+            form_set_error('label', 'Please enter a label for this remote host');
+        }
+        if ($description == '') {
+            form_set_error('description', 'Please enter a description for this remote host ');
+        }
+    }
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @param $product_code
+ * @return mixed
+ */
+
+function remote_delete_confirm($form ,&$form_state, $remote_name) {
+
+    dpm("callback yo!");
+    //$form['_remote_id'] = array(
+    //    '#type' => 'value',
+    //    '#value' => $remote_name,);
+
+    return confirm_form($form,t('Are you sure you want to delete the remote elasticsearch server entry '.$remote_name.'?'),
+        isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch",t('This action cannot be undone.'),t('Delete'),t('Cancel'));
+
+}
+
+function remote_delete_confirm_submit($form, &$form_state) {
+    if ($form_state['values']['confirm']) {
+        $remote_id = $form_state['values']['_remote_id'];
+        $remote_name = $form_state['values']['_remote_name'];
+        $result = db_query("DELETE FROM {elasticsearch_remotes} where id='{$remote_id}'");
+        drupal_set_message(t('Remote server '. $remote_name .' has been deleted successfully.'));}
+    drupal_goto("admin/tripal/extension/tripal_elasticsearch");
 }
