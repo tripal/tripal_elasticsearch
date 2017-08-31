@@ -16,6 +16,11 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   // Need base url for website indexing.
   global $base_url;
 
+  $form['instructions'] = [
+    '#type' => 'markup',
+    '#markup' => '<h1>Create New Index</h1>'
+  ];
+
   $form['website_base_url'] = [
     '#type' => 'item',
     '#title' => t("Base URL"),
@@ -52,7 +57,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Enter a unique Elasticsearch index name'),
     '#field_suffix' => 'less than 28 characters',
-    '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores.  It must start with a letter.'),
+    '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores. It must start with a letter.'),
     // This field is only visible to table indexing.
     '#states' => [
       'invisible' => [
