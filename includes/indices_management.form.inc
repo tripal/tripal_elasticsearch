@@ -395,3 +395,4 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
     }
   }
 }
+
