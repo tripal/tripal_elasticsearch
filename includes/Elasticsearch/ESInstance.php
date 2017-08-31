@@ -331,18 +331,24 @@ class ESInstance {
   /**
    * Create a new entry and add it to the provided index.
    *
-   * @param string $index
-   * @param string $index_type
-   * @param int $id Entry ID (node or entity id)
-   * @param array $body
+   * @param string $index Index name
+   * @param string $type Table name for table entries and index name for
+   *                     website entries
+   * @param int $id Entry ID (node or entity id). Set as FALSE if a table index
+   *                entry.
+   * @param array $body Array of record data to index. Must match index
+   *                    structure.
    */
-  public function createEntry($index, $index_type, $id, $body) {
+  public function createEntry($index, $type, $id, $body) {
     $params = [
       'index' => $index,
-      'type' => $index_type,
-      'id' => $id,
+      'type' => $type,
       'body' => $body,
     ];
+
+    if ($id !== FALSE) {
+      $params['id'] = $id;
+    }
 
     return $this->client->index($params);
   }
@@ -391,7 +397,7 @@ class ESInstance {
 
       $item->index_name = $index_name;
       $item->index_type = $index_type;
-      $item->website_or_table = $type;
+      $item->type = $type;
       $item->field_mapping_types = $field_mapping_types;
       $item->sql = $sql;
 
