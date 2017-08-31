@@ -13,6 +13,11 @@
  * @return mixed
  */
 function elasticsearch_connection_form($form, &$form_state) {
+  $form['instructions'] = [
+    '#type' => 'markup',
+    '#markup' => '<h1>Add Elasticsearch Servers</h1>'
+  ];
+
   $form['server_type'] = [
     '#title' => t('Server Type'),
     '#type' => 'radios',
@@ -163,7 +168,7 @@ function elasticsearch_connection_form($form, &$form_state) {
  */
 function elasticsearch_connection_form_submit($form, &$form_state) {
   $server_type = $form_state['values']['server_type'];
-  $url = $server_type === 'local' ? $form_state['values']['remote_url'] : $form['values']['local_url'];
+  $url = $server_type == 'remote' ? $form_state['values']['remote_url'] : $form_state['values']['local_url'];
   $label = $form_state['values']['label'];
   $description = $form_state['values']['description'];
 
@@ -194,7 +199,7 @@ function elasticsearch_connection_form_submit($form, &$form_state) {
  */
 function elasticsearch_connection_form_validate($form, &$form_state) {
   $server_type = $form_state['values']['server_type'];
-  $url = $server_type === 'local' ? $form_state['values']['remote_url'] : $form['values']['local_url'];
+  $url = $server_type === 'local' ? $form_state['values']['remote_url'] : $form_state['values']['local_url'];
   $label = $form_state['values']['label'];
   $description = $form_state['values']['description'];
 
@@ -212,6 +217,9 @@ function elasticsearch_connection_form_validate($form, &$form_state) {
     //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
     //    form_set_error('host', 'Please enter a valid URL for this remote host');
     //}
+    if ($url == '') {
+      form_set_error('label', 'Please enter a label for this remote host');
+    }
     if ($label == '') {
       form_set_error('label', 'Please enter a label for this remote host');
     }
@@ -236,7 +244,9 @@ function remote_delete_confirm($form, &$form_state, $remote_id) {
     '#value' => $remote_id,
   ];
 
-  return confirm_form($form, t('Are you sure you want to delete the remote elasticsearch server entry?'), isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch", t('Are you sure you want to delete the remote elasticsearch server entry ' . $remote_id . '?'), t('Delete'), t('Cancel'));
+  $server = db_query("SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id", [':id' => $remote_id])->fetchObject();
+
+  return confirm_form($form, t('Are you sure you want to delete the remote elasticsearch server entry?'), isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch", t('Are you sure you want to delete the remote elasticsearch server "'.$server->label.'"?'), t('Delete'), t('Cancel'));
 }
 
 /**
