@@ -1,5 +1,3 @@
-; $Id$
-
 name = Tripal Elasticsearch
 description = This module implements the full-text search engine Elasticsearch and provide site-wide indexing and search for Tripal sites.
 core = 7.x
@@ -10,3 +8,5 @@ configuration = admin/tripal/extension/tripal_elasticsearch
 dependencies[] = libraries
 dependencies[] = queue_ui
 dependencies[] = ultimate_cron
+
+stylesheets[all][] = css/tripal_elasticsearch.css
