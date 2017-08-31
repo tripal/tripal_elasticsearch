@@ -1,12 +1,6 @@
 <?php
-
 /**
  * Render array for website_search_box_form.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
  */
 function website_search_box_form($form, &$form_state) {
   $form['container'] = [
@@ -29,10 +23,7 @@ function website_search_box_form($form, &$form_state) {
 }
 
 /**
- * website_search_box_form submit.
- *
- * @param $form
- * @param $form_state
+ * website_search_box_form submit
  */
 function website_search_box_form_submit($form, &$form_state) {
   $keyword = $form_state['values']['search_box'];
@@ -48,11 +39,6 @@ function website_search_box_form_submit($form, &$form_state) {
 
 /**
  * Render array to build a form for creating table search interface.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
  */
 function table_search_interface_building_form($form, &$form_state) {
   $form['help'] = [
@@ -62,36 +48,38 @@ function table_search_interface_building_form($form, &$form_state) {
   ];
 
   try {
-    $client = (new ESInstance())->client;
+    libraries_load('elasticsearch-php');
+    $elasticsearch_host = variable_get('elasticsearch_host');
+    $client = Elasticsearch\ClientBuilder::create()
+      ->setHosts([$elasticsearch_host])
+      ->build();
     $existing_indices = $client->indices()->getMapping();
+    if (count($existing_indices) == 0) {
+      $form['markup'] = [
+        '#type' => 'markup',
+        '#markup' => '<h3>No index data exists.</h3>',
+      ];
+
+      return $form;
+    }
   } catch (\Exception $e) {
     $form['markup'] = [
       '#type' => 'markup',
       '#markup' => '<h3>' . $e->getMessage() . '</h3>',
-    ];
-    return $form;
-  }
-
-  // 'website' and 'entities' are reserved for website indexing and search, no need to build search
-  // block for this index.
-  if (isset($existing_indices['website'])) {
-    unset($existing_indices['website']);
-  }
-  if (isset($existing_indices['entities'])) {
-    unset($existing_indices['entities']);
-  }
-
-  if (count($existing_indices) == 0) {
-    $form['markup'] = [
-      '#type' => 'markup',
-      '#markup' => '<h3>No index data exists.</h3>',
     ];
 
     return $form;
   }
 
   $index_name_options = array_merge(['' => 'Select an index'], drupal_map_assoc(array_keys($existing_indices)));
-
+  // 'website' and 'entities' are reserved for website indexing and search, no need to build search
+  // block for this index.
+  if (isset($index_name_options['website'])) {
+    unset($index_name_options['website']);
+  }
+	if (isset($index_name_options['entities'])) {
+		unset($index_name_options['entities']);
+	}
   $form['index_name'] = [
     '#type' => 'select',
     '#title' => t('Select an index to build a search interface'),
@@ -147,12 +135,7 @@ function table_search_interface_building_form($form, &$form_state) {
 }
 
 /**
- * Index fields ajax callback.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
+ * index fields ajax callback.
  */
 function tripal_elasticsearch_index_fields_ajax_callback($form, &$form_state) {
   return $form['index_fields'];
@@ -160,9 +143,6 @@ function tripal_elasticsearch_index_fields_ajax_callback($form, &$form_state) {
 
 /**
  * table_search_interface_building_form validation.
- *
- * @param $form
- * @param $form_state
  */
 function table_search_interface_building_form_validate($form, $form_state) {
   $index_fields = array_filter($form_state['values']['index_fields']);
@@ -173,9 +153,6 @@ function table_search_interface_building_form_validate($form, $form_state) {
 
 /**
  * table_search_interface_building_form submit.
- *
- * @param $form
- * @param $form_state
  */
 function table_search_interface_building_form_submit($form, &$form_state) {
   $index_name = $form_state['values']['index_name'];
@@ -214,13 +191,31 @@ function table_search_interface_building_form_submit($form, &$form_state) {
 }
 
 /**
- * Form builder function for table search.
+ * Get the total count for results.
  *
- * @param $form
- * @param $form_state
- * @param $index_name
+ * @param $params array
+ * @param $limit int The index.max_results_window setting in ES
+ *                    the limit can be set at elasticsearch.yml file
  *
  * @return mixed
+ */
+function tripal_elasticsearch_results_count($params, $limit = 1000000) {
+  libraries_load('elasticsearch-php');
+  $elasticsearch_host = variable_get('elasticsearch_host');
+  $client = Elasticsearch\ClientBuilder::create()
+    ->setHosts([$elasticsearch_host])
+    ->build();
+
+  unset($params['from']);
+  unset($params['size']);
+
+  $c = $client->count($params);
+
+  return min($c['count'], $limit);
+}
+
+/**
+ * Form builder function for table search.
  */
 function tripal_elasticsearch_build_search_block_form($form, &$form_state, $index_name) {
   $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
@@ -290,17 +285,18 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
   }
 
   // get the number of total search results.
-  $record = end($result);
   $index_type = $record->table_name;
   $count = '';
-
   //$window_range = drupal_map_assoc([1]);
   if (count($index_fields) > 0) {
     // Build search query for table search.
     $query = build_search_query_from_field_content_pairs($index_fields);
+    // Build table search params.
+    $params = build_table_search_params($index_name, $index_type, $query);
+    unset($params['size']);
+    unset($params['from']);
     try {
-      $es = new ESInstance();
-      $results_count = $es->setTableSearchParams($index_name, $index_type, $query)->count();
+      $results_count = tripal_elasticsearch_results_count($params);
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');

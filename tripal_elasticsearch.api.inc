@@ -156,12 +156,8 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
 /**
  * Get node content by node id.
  */
-function tripal_elasticsearch_get_page_content_by_id($id, $base_url, $title, $is_node = true) {
-  if($is_node) {
-    $page_html = file_get_contents($base_url . "/node/" . $id);
-  } else {
-    $page_html = file_get_contents($base_url . "/bio_data/" . $id);
-  }
+function get_entity_content_by_entity_id($entity_id, $base_url, $title) {
+  $page_html = file_get_contents($base_url . "/bio_data/" . $entity_id);
   // remove raw sequences
   $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . ".*" . preg_quote('</pre>');
   $page_html = preg_replace("!" . $pattern_1 . "!sU", ' ', $page_html);
