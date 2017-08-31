@@ -1,0 +1,10 @@
+.elastic-status-circle {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #bdbdbd; }
+.elastic-status-circle.is-success {
+  background-color: #2ab27b; }
+.elastic-status-circle.is-danger {
+  background-color: #bf5329; }
