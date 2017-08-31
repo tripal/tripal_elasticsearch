@@ -26,7 +26,7 @@ function elasticsearch_connection_form($form, &$form_state) {
   ];
 
   $form['server_type'] = [
-    '#title' => t('File type'),
+    '#title' => t('Server type'),
     '#type' => 'radios',
     '#required' => TRUE,
     '#options' => [

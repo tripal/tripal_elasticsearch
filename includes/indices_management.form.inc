@@ -43,8 +43,8 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   // Index website or a database table
   $form['website_or_table'] = [
     '#type' => 'select',
-    '#title' => t('Index website or database table'),
-    '#options' => drupal_map_assoc(['website', 'database table', 'entities']),
+    '#title' => t('Index website nodes, website entities, or database table'),
+    '#options' => drupal_map_assoc(['website nodes', 'website entities' , 'database table']),
     '#default_value' => 'website',
   ];
 
@@ -57,8 +57,8 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#states' => [
       'invisible' => [
         ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+          ['value' => 'website nodes'],
+          ['value' => 'website entities'],
         ],
       ],
     ],
@@ -106,8 +106,8 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#states' => [
       'invisible' => [
         ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+          ['value' => 'website nodes'],
+          ['value' => 'website entities'],
         ],
       ],
     ],
@@ -203,7 +203,7 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   // validate base url if it is website indexing
   $type = $form_state['values']['website_or_table'];
-  if ($type == 'website' || $type == 'entities') {
+  if ($type == 'website nodes' || $type == 'website entities') {
     global $base_url;
     // Define a variable to store website base url.
     variable_set('website_base_url', $base_url);
@@ -230,7 +230,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     // 'website' is reserved for website indexing and search, use a different name
     // as index name for table search.
     if ($index_name == 'website') {
-      form_set_error('index_name', t('"website" is reserved for the website index. Please
+      form_set_error('index_name', t('"website" is reserved for the website nodes index. Please
 					use a different name.'));
     }
 
@@ -255,7 +255,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
 
-  if ($website_or_table == 'website') {
+  if ($website_or_table == 'website nodes') {
     // indexing website: has default index settings.
     // $index_name = $form_state['values']['index_name'];
     $index_name = 'website';
@@ -274,7 +274,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
       'content' => 'string',
     ];
   }
-  elseif ($website_or_table === 'entities') {
+  elseif ($website_or_table === 'website entities') {
     // indexing website: has default index settings.
     // $index_name = $form_state['values']['index_name'];
     $index_name = 'entities';
