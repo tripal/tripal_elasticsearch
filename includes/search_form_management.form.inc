@@ -72,14 +72,17 @@ function table_search_interface_building_form($form, &$form_state) {
   }
 
   $index_name_options = array_merge(['' => 'Select an index'], drupal_map_assoc(array_keys($existing_indices)));
-  // 'website' is reserved for website indexing and search, no need to build search
+  // 'website' and 'entities' are reserved for website indexing and search, no need to build search
   // block for this index.
   if (isset($index_name_options['website'])) {
     unset($index_name_options['website']);
   }
+	if (isset($index_name_options['entities'])) {
+		unset($index_name_options['entities']);
+	}
   $form['index_name'] = [
     '#type' => 'select',
-    '#title' => t('Select an index to build search interface'),
+    '#title' => t('Select an index to build a search interface'),
     '#options' => $index_name_options,
     '#ajax' => [
       'callback' => 'tripal_elasticsearch_index_fields_ajax_callback',
@@ -430,8 +433,8 @@ function table_search_block_altering_form($form, &$form_state) {
       $form['field_wrapper'][$field]['description'] = [
         '#type' => 'textarea',
         '#title' => t('Field description'),
-        '#description' => t('Enter some text to show users some searching examples,
-						or give some searching instructions.'),
+        '#description' => t('A description for this search.  Enter some text to show users some example searches,
+						or give some instructions.'),
         '#default_value' => t($record->form_field_description),
       ];
 
