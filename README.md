@@ -45,7 +45,7 @@ distributed to the 5 cron queues. Then you will be able to set up 5 threads for 
 ## Indexing database tables
 
 
-Tripal Elasticsearch module allows you to index any tables from the public and chado schema.
+The Tripal Elasticsearch module allows you to index any tables from the public and chado schema.
 You can index all fields or a subset of fields from a table. You can select mapping types for each fields. 
 Only fields that have a mapping type selected will get indexed and become searchable later. 
 
@@ -57,13 +57,13 @@ tokenizer and `standard` for token filters. Below is an example:
 
 # Parallel indexing with multiple threads
 
-Drupal needs URL request to trigger cron jobs. But you can manually set up cron jobs in your server.
+Drupal needs URL requests to trigger cron jobs. But you can manually set up cron jobs in your server.
 To do this, you will need to know the cron job names triggered by Tripal Elasticsearch.
 
 ## Obtain cron job names
 
 Go to `http://[your-tripal-site-domain]/admin/config/system/cron`. On this page, you will find
-the 10 cron queues created by Tripal Elasticsearch module. Hover the mouse over the **Run** link on the
+the 10 cron queues created by the Tripal Elasticsearch module. Hover the mouse over the **Run** link on the
 right of each cron queue. At the bottom of the page, the URL will display. The cron job name is within
 the URL. For example, the cron job name is `queue_elasticsearch_queue_1` in the example below:
 
@@ -89,7 +89,7 @@ crontab -e
 
 # Build search blocks
 
-After your database tables get indexed, you can build search interface for indexed table.
+After your database tables get indexed, you can build a search interface for them.
 You can choose to expose all table fields or a subset of fields for searching.
 
 The admin page for building search blocks is at `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/search_form_management`.
@@ -111,7 +111,7 @@ For example:
 # Create, update and delete pages
 
 Whenever you create a new page, update existing pages or delete pages, indexing jobs will automatically 
-be added to the cron queues. When the indexing jobs get executed depends on how your configure cron jobs
+be added to the cron queues. When the indexing jobs get executed depends on how you configure cron jobs
 on your Tripal site. If you need the updated indexing process to start immediately, you can always launch 
 your cron jobs manually by going to `http://[your-tripal-site-domain]/admin/config/system/cron`. If you 
 have added the crob jobs into the crontab file, then no extra work needs to be done.

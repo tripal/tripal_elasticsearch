@@ -1,7 +1,7 @@
 ; $Id$
 
 name = Tripal Elasticsearch
-description = This module implements the full-text search engine Elasticsearch and provide site-wide indexing and search for Tripal site.
+description = This module implements the full-text search engine Elasticsearch and provide site-wide indexing and search for Tripal sites.
 core = 7.x
 package = Tripal Extensions
 files[] = tripal_elasticsearch.module
