@@ -200,77 +200,107 @@ function tripal_elasticsearch_cron_queue_info() {
 
 /**
  * Define tripal_elasticsearch_cron_queue_worker_callback function
- *
- * @return void
  */
 function tripal_elasticsearch_cron_queue_worker_callback($item) {
   $index_name = $item->index_name;
   $index_type = $item->index_type;
   $sql = $item->sql;
-  $base_url = variable_get('website_base_url');
-  $result = db_query($sql)->fetchAll();
 
-  // Init ES
-  try {
-    $es = new ESInstance();
-  } catch (Exception $exception) {
-    watchdog('tripal_elasticsearch', 'Elasticsearch could not be instantiated');
-    return;
-  }
-
-  if ($item->type == 'entities') {
+  if ($item->website_or_table == 'entities') {
+    // Index website.
+    $result = db_query($sql)->fetchAll();
     foreach ($result as $record) {
       $entity_id = $record->entity_id;
       $entity_title = $record->title;
       $bundle_label = $record->bundle_label;
 
-      $body = [
-        'entity_id' => $entity_id,
-        'title' => $entity_title,
-        'bundle_label' => $bundle_label,
-        'content' => tripal_elasticsearch_get_page_content_by_id($entity_id, $base_url, $entity_title, FALSE),
+      $params = [
+        'index' => $index_name,
+        'type' => $index_type,
+        'id' => $entity_id,
+        'body' => [
+          'entity_id' => $entity_id,
+          'title' => $entity_title,
+          'bundle_label' => $bundle_label,
+          'content' => get_entity_content_by_entity_id($entity_id, variable_get('website_base_url'), $entity_title),
+        ],
       ];
 
       try {
-        $es->createEntry($index_name, $index_type, $entity_id, $body);
+        libraries_load('elasticsearch-php');
+        $elasticsearch_host = variable_get('elasticsearch_host');
+        $client = Elasticsearch\ClientBuilder::create()
+                                             ->setHosts([$elasticsearch_host])
+                                             ->build();
+        $client->index($params);
+        watchdog('tripal_elasticsearch', 'A page has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
-        watchdog('tripal_elasticsearch', $e->getMessage(), $severity = WATCHDOG_WARNING);
+        $message = $e->getMessage();
+        watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
       }
     }
   }
-  elseif ($item->type == 'website') {
+  elseif ($item->website_or_table == 'website') {
     // Index website.
+    $result = db_query($sql)->fetchAll();
+    $params = [];
     foreach ($result as $record) {
       $nid = $record->nid;
       $node_title = $record->title;
       $node_type = $record->type;
 
-      $body = [
-        'nid' => $nid,
-        'title' => $node_title,
-        'type' => $node_type,
-        'content' => tripal_elasticsearch_get_page_content_by_id($nid, variable_get('website_base_url'), $node_title, TRUE),
+      $params = [
+        'index' => $index_name,
+        'type' => $index_type,
+        'id' => $nid,
+        'body' => [
+          'nid' => $nid,
+          'title' => $node_title,
+          'type' => $node_type,
+          'content' => get_node_content_by_nid($nid, $base_url = variable_get('website_base_url'), $node_title),
+        ],
       ];
 
       try {
-        $es->createEntry($index_name, $index_type, $nid, $body);
+        libraries_load('elasticsearch-php');
+        $elasticsearch_host = variable_get('elasticsearch_host');
+        $client = Elasticsearch\ClientBuilder::create()
+                                             ->setHosts([$elasticsearch_host])
+                                             ->build();
+        $response = $client->index($params);
+        watchdog('tripal_elasticsearch', 'A page has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
-        watchdog('tripal_elasticsearch', $e->getMessage(), WATCHDOG_WARNING);
+        $message = $e->getMessage();
+        watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
       }
     }
   }
   else {
     // Index table.
+    $result = db_query($sql)->fetchAll();
+    $params = [];
     foreach ($result as $record) {
+      $params = [
+        'index' => $index_name,
+        'type' => $index_type,
+        'body' => $record,
+      ];
+
       try {
-        $es->createEntry($index_name, $index_type, FALSE, $record);
+        libraries_load('elasticsearch-php');
+        $elasticsearch_host = variable_get('elasticsearch_host');
+        $client = Elasticsearch\ClientBuilder::create()
+                                             ->setHosts([$elasticsearch_host])
+                                             ->build();
+        $client->index($params);
+        watchdog('tripal_elasticsearch', 'A table row has been indexed by Tripal Elasticsearch.');
       } catch (\Exception $e) {
-        watchdog('tripal_elasticsearch', $e->getMessage(), WATCHDOG_WARNING);
+        $message = $e->getMessage();
+        watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
       }
     }
   }
 }
-
 /**
  * Implements hook_block_info().
  */
@@ -603,14 +633,24 @@ function tripal_elasticsearch_node_insert($node) {
  * Implements hook_node_delete().
  */
 function tripal_elasticsearch_node_delete($node) {
+  $params = [
+    'index' => 'website',
+    'type' => 'website',
+    'id' => $node->nid,
+  ];
+
   try {
-    $es = new ESInstance();
-    $es->deleteEntry('website', 'website', $node->id);
+    libraries_load('elasticsearch-php');
+    $elasticsearch_host = variable_get('elasticsearch_host');
+    $client = Elasticsearch\ClientBuilder::create()
+                                         ->setHosts([$elasticsearch_host])
+                                         ->build();
+    $response = $client->delete($params);
     $message = 'Removed document ' . $node->nid . 'from index "website"';
     watchdog('tripal_elasticsearch', $message);
   } catch (\Exception $e) {
     $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
-    watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+    watchdog('tripal_elasticsearch', $message, $severity = WATCHDOG_WARNING);
   }
 }
 
@@ -683,6 +723,13 @@ function tripal_elasticsearch_table_search_download() {
   // Build search query for table search.
   $query = build_search_query_from_field_content_pairs($index_fields);
 
+  try {
+    $count = tripal_elasticsearch_results_count($params);
+    $window_range = range(1, ceil($count / 1000));
+  } catch (\Exception $e) {
+    drupal_set_message($e->getMessage(), 'warning');
+  }
+
   // loop through window and write returned search results into a file.
   $directory = 'public://table_search_results';
   file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
@@ -695,15 +742,13 @@ function tripal_elasticsearch_table_search_download() {
     $window_range = range(1, ceil($count / 1000));
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR', $exception->getMessage());
-    return;
+    return [];
   }
 
   foreach ($window_range as $window) {
     $offset = [1000 * ($window - 1), 1000];
-
     $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
                  ->search();
-
     foreach ($result as $row) {
       $line = implode(',', $row) . "\n";
       file_put_contents($temp_file, $line, FILE_APPEND);

@@ -1,252 +1,241 @@
 <?php
+// $Id$
+
 /**
  * @file
  * Administrative forms for management of Elasticsearch indices.
  */
 
 /**
- * Render array for tripal_elasticsearch_index_website_form.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
+ * render array for tripal_elasticsearch_index_website_form
  */
-function tripal_elasticsearch_indexing_form($form, &$form_state) {
-  // Need base url for website indexing.
-  global $base_url;
+function tripal_elasticsearch_indexing_form($form, &$form_state)
+{
 
-  $form['website_base_url'] = [
-    '#type' => 'item',
-    '#title' => t("Base URL"),
-    '#markup' => '<p>The Base URL used for this index will be: ' . $base_url . '.  If this doesn\'t match your site, reconfigure your $base_url in your settings.php file.</p>',
-    '#states' => [
-      'visible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+    // Need base url for website indexing.
+
+    global $base_url;
+    $form['website_base_url'] = [
+        '#type' => 'item',
+        '#title' => t("Base URL"),
+        '#markup' => '<p>The Base URL used for this index will be: '.$base_url.'.  If this doesn\'t match your site, reconfigure your $base_url in your settings.php file.</p>',
+        '#states' => [
+            'visible' => [
+                ':input[name="website_or_table"]' => [
+                    ['value' => 'website'],
+                    ['value' => 'entities'],
+                ],
+            ],
         ],
-      ],
-    ],
-  ];
+    ];
 
-  // Cron queue numbers
-  $form['queue_number'] = [
-    '#type' => 'select',
-    '#title' => t('Number of cron queues'),
-    '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
+    // Cron queue numbers
+    $form['queue_number'] = [
+        '#type' => 'select',
+        '#title' => t('Number of cron queues'),
+        '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
                          queues that will be used for indexing jobs. Use more queues if your server has higher capacity
                          for multi-thread processes.'),
-    '#options' => drupal_map_assoc(range(1, 10)),
-  ];
+        '#options' => drupal_map_assoc(range(1, 10)),
+    ];
 
-  // Index website or a database table
-  $form['website_or_table'] = [
-    '#type' => 'select',
-    '#title' => t('Index website or database table'),
-    '#options' => drupal_map_assoc(['website', 'database table', 'entities']),
-    '#default_value' => 'website',
-  ];
+    // Index website or a database table
+    $form['website_or_table'] = [
+        '#type' => 'select',
+        '#title' => t('Index website or database table'),
+        '#options' => drupal_map_assoc(['website', 'database table', 'entities']),
+        '#default_value' => 'website',
+    ];
 
-  $form['index_name'] = [
-    '#type' => 'textfield',
-    '#title' => t('Enter a unique Elasticsearch index name'),
-    '#field_suffix' => 'less than 28 characters',
-    '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores.  It must start with a letter.'),
-    // This field is only visible to table indexing.
-    '#states' => [
-      'invisible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+    $form['index_name'] = [
+        '#type' => 'textfield',
+        '#title' => t('Enter a unique Elasticsearch index name'),
+        '#field_suffix' => 'less than 28 characters',
+        '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores.  It must start with a letter.'),
+        // This field is only visible to table indexing.
+        '#states' => [
+            'invisible' => [
+                ':input[name="website_or_table"]' => [
+                    ['value' => 'website'],
+                    ['value' => 'entities'],
+                ],
+            ],
         ],
-      ],
-    ],
-    '#size' => 25,
-  ];
+        '#size' => 25,
+    ];
 
-  // Elasticsearch index settings
-  $form['index_settings'] = [
-    '#type' => 'fieldset',
-    '#tree' => TRUE,
-    '#title' => t('Elasticsearch index settings'),
-    '#description' => t('These settings determine how your data will be indexed and made searchable.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#states' => [
-      'invisible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+    // Elasticsearch index settings
+    $form['index_settings'] = [
+        '#type' => 'fieldset',
+        '#tree' => true,
+        '#title' => t('Elasticsearch index settings'),
+        '#description' => t('These settings determine how your data will be indexed and made searchable.'),
+        '#collapsible' => true,
+        '#collapsed' => true,
+        '#states' => [
+            'invisible' => [
+                ':input[name="website_or_table"]' => [
+                    ['value' => 'website'],
+                    ['value' => 'entities'],
+                ],
+            ],
         ],
-      ],
-    ],
-  ];
-  //	$form['index_settings']['character_filters'] = array(
-  //		'#type' => 'checkboxes',
-  //		'#title' => t('Character filters'),
-  //		'#options' => get_character_filter_options(),
-  //	);
-  $form['index_settings']['tokenizer'] = [
-    '#type' => 'select',
-    '#title' => t('Tokenizer'),
-    '#options' => get_tokenizer_options(),
-  ];
-  $form['index_settings']['token_filters'] = [
-    '#type' => 'checkboxes',
-    '#title' => t('Token filters'),
-    '#options' => get_token_filter_options(),
-  ];
+    ];
+    //	$form['index_settings']['character_filters'] = array(
+    //		'#type' => 'checkboxes',
+    //		'#title' => t('Character filters'),
+    //		'#options' => get_character_filter_options(),
+    //	);
+    $form['index_settings']['tokenizer'] = [
+        '#type' => 'select',
+        '#title' => t('Tokenizer'),
+        '#options' => get_tokenizer_options(),
+    ];
+    $form['index_settings']['token_filters'] = [
+        '#type' => 'checkboxes',
+        '#title' => t('Token filters'),
+        '#options' => get_token_filter_options(),
+    ];
 
-  // Table fields and mapping types
-  $form['index_table'] = [
-    '#type' => 'select',
-    '#title' => t('Select a table and fields to index'),
-    '#options' => array_merge(['' => 'Select a table'], drupal_map_assoc(get_table_list())),
-    '#states' => [
-      'invisible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+    // Table fields and mapping types
+    $form['index_table'] = [
+        '#type' => 'select',
+        '#title' => t('Select a table and fields to index'),
+        '#options' => array_merge(['' => 'Select a table'], drupal_map_assoc(get_table_list())),
+        '#states' => [
+            'invisible' => [
+                ':input[name="website_or_table"]' => [
+                    ['value' => 'website'],
+                    ['value' => 'entities'],
+                ],
+            ],
         ],
-      ],
-    ],
-    '#ajax' => [
-      'callback' => 'tripal_elasticsearch_table_fields_ajax_callback',
-      'wrapper' => 'tripal_elasticsearch_table_fields_wrapper',
-    ],
-  ];
+        '#ajax' => [
+            'callback' => 'tripal_elasticsearch_table_fields_ajax_callback',
+            'wrapper' => 'tripal_elasticsearch_table_fields_wrapper',
+        ],
+    ];
 
-  $table_name = isset($form_state['values']['index_table']) ? $form_state['values']['index_table'] : '';
-  $form['table_fields'] = [
-    '#type' => 'fieldset',
-    '#title' => t('Select fields to index'),
-    '#tree' => TRUE,
-    '#options' => drupal_map_assoc(get_column_list($table_name)),
-    '#states' => [
-      'invisible' => [
-        ':input[name="index_table"]' => ['value' => ''],
-      ],
-    ],
-    '#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
-    '#suffix' => '</div>',
-  ];
+    $table_name = isset($form_state['values']['index_table']) ? $form_state['values']['index_table'] : '';
+    $form['table_fields'] = [
+        '#type' => 'fieldset',
+        '#title' => t('Select fields to index'),
+        '#tree' => true,
+        '#options' => drupal_map_assoc(get_column_list($table_name)),
+        '#states' => [
+            'invisible' => [
+                ':input[name="index_table"]' => ['value' => ''],
+            ],
+        ],
+        '#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
+        '#suffix' => '</div>',
+    ];
 
-  foreach (get_column_list($table_name) as $field) {
-    $form['table_fields'][$field] = [
-      '#type' => 'select',
-      '#title' => t('Field name: ' . $field),
-      '#description' => t('Please select a mapping type for each field. If no 
+    foreach (get_column_list($table_name) as $field) {
+        $form['table_fields'][$field] = [
+            '#type' => 'select',
+            '#title' => t('Field name: '.$field),
+            '#description' => t('Please select a mapping type for each field. If no 
 													mapping type is selected for a field, that field will
 													no be indexed. This can be used to selectively index
 													table fields.'),
-      '#options' => array_merge(['' => 'Select mapping type'], get_field_mapping_types()),
+            '#options' => array_merge(['' => 'Select mapping type'], get_field_mapping_types()),
+        ];
+    }
+
+    //	$header = array(
+    //		'field' => 'Field',
+    //		'mapping_type' => 'Mapping Type',
+    //	);
+    //	$options = array();
+    //	foreach (get_column_list($table_name) as $field) {
+    //		$options[$field] = array(
+    //			'field' => $field,
+    //			'mapping_type' => theme('select', array(
+    //				'element' => array(
+    //					'#options' => get_field_mapping_types(),
+    //				),
+    //			)),
+    //		);
+    //	}
+
+    //	$form['table_fields'] = array(
+    //		'#type' => 'tableselect',
+    //		'#header' => $header,
+    //		'#options' => $options,
+    //		'#empty' => t('No content available.'),
+    //		'#states' => array(
+    //			'invisible' => array(
+    //				':input[name="website_or_table"]' => array('value' => 'website'),
+    //			),
+    //		),
+    //		'#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
+    //		'#suffix' => '</div>',
+    //	);
+
+    $form['submit'] = [
+        '#type' => 'submit',
+        '#value' => t('Submit'),
     ];
-  }
 
-  //	$header = array(
-  //		'field' => 'Field',
-  //		'mapping_type' => 'Mapping Type',
-  //	);
-  //	$options = array();
-  //	foreach (get_column_list($table_name) as $field) {
-  //		$options[$field] = array(
-  //			'field' => $field,
-  //			'mapping_type' => theme('select', array(
-  //				'element' => array(
-  //					'#options' => get_field_mapping_types(),
-  //				),
-  //			)),
-  //		);
-  //	}
-
-  //	$form['table_fields'] = array(
-  //		'#type' => 'tableselect',
-  //		'#header' => $header,
-  //		'#options' => $options,
-  //		'#empty' => t('No content available.'),
-  //		'#states' => array(
-  //			'invisible' => array(
-  //				':input[name="website_or_table"]' => array('value' => 'website'),
-  //			),
-  //		),
-  //		'#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
-  //		'#suffix' => '</div>',
-  //	);
-
-  $form['submit'] = [
-    '#type' => 'submit',
-    '#value' => t('Submit'),
-  ];
-
-  return $form;
+    return $form;
 }
 
 /**
- * AJAX callback for table fields.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
+ * AJAX callback for table fields
  */
-function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
-  return $form['table_fields'];
+function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state)
+{
+    return $form['table_fields'];
 }
 
 /**
  * tripal_elasticsearch_indexing_form validation
- *
- * @param $form
- * @param $form_state
  */
-function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
-  // validate base url if it is website indexing
-  $type = $form_state['values']['website_or_table'];
-  if ($type == 'website' || $type == 'entities') {
-    global $base_url;
-    // Define a variable to store website base url.
-    variable_set('website_base_url', $base_url);
-    try {
-      $content = @file_get_contents($base_url . '/node');
-      if ($content === FALSE) {
-        $error_message = t('The website base url is invalid. You can reconfigure your $base_url variable in your settings.php file.');
-        form_set_error('website_base_url', $error_message);
-      }
-    } catch (Exception $e) {
-      form_set_error('website_base_url', $e->getMessage());
-    }
-  }
-  else {
-    // Index name validation.
-    $index_name = $form_state['values']['index_name'];
-    if (strlen($index_name) > 28) {
-      form_set_error('index_name', t('String length cannot be greater than 28.'));
-    }
-    if (!preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name)) {
-      form_set_error('index_name', t('index name can only contain lowercase letters, 
+function tripal_elasticsearch_indexing_form_validate($form, &$form_state)
+{
+    // validate base url if it is website indexing
+    $type = $form_state['values']['website_or_table'];
+    if ($type == 'website' || $type == 'entities') {
+        global $base_url;
+        // Define a variable to store website base url.
+        variable_set('website_base_url', $base_url);
+        try {
+            $content = @file_get_contents($base_url.'/node');
+            if ($content === false) {
+                $error_message = t('The website base url is invalid. You can reconfigure your $base_url variable in your settings.php file.');
+                form_set_error('website_base_url', $error_message);
+            }
+        } catch (Exception $e) {
+            form_set_error('website_base_url', $e->getMessage());
+        }
+    } else {
+        // Index name validation.
+        $index_name = $form_state['values']['index_name'];
+        if (strlen($index_name) > 28) {
+            form_set_error('index_name', t('String length cannot be greater than 28.'));
+        }
+        if (! preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name)) {
+            form_set_error('index_name', t('index name can only contain lowercase letters, 
 								numbers and underscores, and must start with a letter.'));
-    }
-    // 'website' is reserved for website indexing and search, use a different name
-    // as index name for table search.
-    if ($index_name == 'website') {
-      form_set_error('index_name', t('"website" is reserved for the website index. Please
+        }
+        // 'website' is reserved for website indexing and search, use a different name
+        // as index name for table search.
+        if ($index_name == 'website') {
+            form_set_error('index_name', t('"website" is reserved for the website index. Please
 					use a different name.'));
-    }
+        }
 
-    // At least one table field need to be selected.
-    $table_fields = array_filter($form_state['values']['table_fields']);
-    if (empty($table_fields)) {
-      form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
+        // At least one table field need to be selected.
+        $table_fields = array_filter($form_state['values']['table_fields']);
+        if (empty($table_fields)) {
+            form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
+        }
     }
-  }
 }
 
 /**
  * tripal_elasticsearch_indexing_form submission.
- *
- * @param $form
- * @param $form_state
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 
@@ -321,77 +310,76 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
 
   $form_state['rebuild'] = TRUE;
 
-  drupal_set_message('Index created successfully');
+    drupal_set_message('Index created successfully');
 }
 
 /**
  * Render array for tripal_elasticsearch_delete_indices_form.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
  */
-function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
-  $existing_indices = [];
-  try {
-    $client = (new ESInstance())->client;
-
-    // associate index name with indexed table.
-    $mappings = $client->indices()->getMapping();
+function tripal_elasticsearch_delete_indices_form($form, &$form_state)
+{
     $existing_indices = [];
-    foreach (array_keys($mappings) as $index) {
-      if (isset(array_keys($mappings[$index]['mappings'])[1])) {
-        if (!in_array($index, ['entities', 'website'])) {
-          $existing_indices[$index] = $index . ' (indexed table: <b>' . array_keys($mappings[$index]['mappings'])[1] . '</b>)';
+    try {
+        libraries_load('elasticsearch-php');
+        $elasticsearch_host = variable_get('elasticsearch_host');
+        $client = Elasticsearch\ClientBuilder::create()->setHosts([$elasticsearch_host])->build();
+        // associate index name with indexed table.
+
+        $mappings = $client->indices()->getMapping();
+        $existing_indices = [];
+        foreach (array_keys($mappings) as $index) {
+            if (isset(array_keys($mappings[$index]['mappings'])[1])) {
+                if (! in_array($index, ['entities', 'website'])) {
+                    $existing_indices[$index] = $index.' (indexed table: <b>'.array_keys($mappings[$index]['mappings'])[1].'</b>)';
+                } else {
+                    $existing_indices[$index] = $index.' (index for site-wide search)';
+                }
+            } else {
+                $existing_indices[$index] = $index.' (empty index)';
+            }
         }
-        else {
-          $existing_indices[$index] = $index . ' (index for site-wide search)';
-        }
-      }
-      else {
-        $existing_indices[$index] = $index . ' (empty index)';
-      }
+    } catch (\Exception $e) {
+        $message = $e->getMessage();
+        drupal_set_message($message, 'warning');
+        drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
     }
-  } catch (\Exception $exception) {
-    drupal_set_message($exception->getMessage(), 'warning');
-    drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
-  }
 
-  $form['indices'] = [
-    '#type' => 'checkboxes',
-    '#title' => t('Existing indices'),
-    '#description' => t('DELETE indexed DATA FROM Eleasticsearch. Please make sure you know 
-												what the DATA IS. This process can NOT be undone.'),
-    '#options' => $existing_indices,
-  ];
+    $form['indices'] = [
+        '#type' => 'checkboxes',
+        '#title' => t('Existing indices'),
+        '#description' => t('Delete indexed data from Eleasticsearch. Please make sure you know 
+												what the data is. This process can not be undone.'),
+        '#options' => $existing_indices,
+    ];
 
-  $form['submit'] = [
-    '#type' => 'submit',
-    '#value' => t('Delete'),
-  ];
+    $form['submit'] = [
+        '#type' => 'submit',
+        '#value' => t('Delete'),
+    ];
 
-  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/indices_delete_confirm.js');
+    drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/indices_delete_confirm.js');
 
-  return $form;
+    return $form;
 }
 
 /**
- * Submit function for the tripal_elasticsearch_delete_indices_form.
- *
- * @param $form
- * @param $form_state
+ * Submit function for the tripal_elasticsearch_delete_indices_form
  */
-function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
-  $delete_indices = array_filter($form_state['values']['indices']);
-  if (!empty($delete_indices)) {
-    foreach ($delete_indices as $index) {
-      try {
-        $es = new ESInstance();
-        $es->deleteIndex($index);
-      } catch (\Exception $exception) {
-        drupal_set_message($exception->getMessage(), 'warning');
-      }
+function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state)
+{
+    $delete_indices = array_filter($form_state['values']['indices']);
+    if (! empty($delete_indices)) {
+        foreach ($delete_indices as $index) {
+            try {
+                libraries_load('elasticsearch-php');
+                $elasticsearch_host = variable_get('elasticsearch_host');
+                $client = Elasticsearch\ClientBuilder::create()->setHosts([$elasticsearch_host])->build();
+                $response = $client->indices()->delete(['index' => $index]);
+            } catch (\Exception $e) {
+                $message = $e->getMessage();
+                drupal_set_message($message, 'warning');
+            }
+        }
     }
-  }
 }
+
