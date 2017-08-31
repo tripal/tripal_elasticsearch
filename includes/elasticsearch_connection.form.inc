@@ -194,7 +194,7 @@ function elasticsearch_connection_form_submit($form, &$form_state) {
  */
 function elasticsearch_connection_form_validate($form, &$form_state) {
   $server_type = $form_state['values']['server_type'];
-  $url = $form_state['values']['host'];
+  $url = $server_type === 'local' ? $form_state['values']['remote_url'] : $form['values']['local_url'];
   $label = $form_state['values']['label'];
   $description = $form_state['values']['description'];
 
