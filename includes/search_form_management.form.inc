@@ -102,7 +102,7 @@ function table_search_interface_building_form($form, &$form_state)
 
     // if the block already exists get info for it.
 
-    $start_check = [];// which fields should be selected at the start?
+    $start_check = [];// which fields should be selected at the start in index_fields checkbox?
 
     if (! empty($index_name) && $block_exists) {
         $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
@@ -111,7 +111,7 @@ function table_search_interface_building_form($form, &$form_state)
         foreach ($existing_block as $key => $existing_settings) {
             $field_name = $existing_settings->index_field;
             $recast_blocks[$field_name] = $existing_settings;
-            $start_check[$existing_settings->index_field] = $existing_settings->index_field;
+            $start_check[$field_name] = $existing_settings->index_field;
         }
 
         $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
