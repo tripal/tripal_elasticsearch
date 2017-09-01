@@ -70,7 +70,7 @@ function table_search_interface_building_form($form, &$form_state)
         $mappings_keys = drupal_map_assoc(array_keys($existing_indices[$index_name]['mappings']));
         unset($mappings_keys['_default_']);
         $table_name = array_keys($mappings_keys)[0];
-        if (! $table_name){
+        if (! $table_name) {
             //TODO: THROW AN ERROR HERE!  THERE HAS TO BE A TABLE!
         }
         $index_fields = array_keys($index_profile['mappings']['_default_']['properties']);
@@ -92,106 +92,143 @@ function table_search_interface_building_form($form, &$form_state)
         '#tree' => true,
         '#prefix' => '<div id="tripal_elasticsearch_manage_block">',
         '#suffix' => '</div>',
+        '#states' => [
+            //only show this field if its checked.
+            'invisible' => [
+                ':input[name="index_name"]' => ['value' => ''],
+            ],
+        ],
     ];
 
     // if the block already exists get info for it.
 
+    $start_check = [];// which fields should be selected at the start?
+
     if (! empty($index_name) && $block_exists) {
         $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
         $existing_block = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchAll();
+        $recast_blocks = [];
+        foreach ($existing_block as $key => $existing_settings) {
+            $field_name = $existing_settings->index_field;
+            $recast_blocks[$field_name] = $existing_settings;
+            $start_check[$existing_settings->index_field] = $existing_settings->index_field;
+        }
+
         $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
         $existing_links = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchAll();
+        $recast_links = [];
+        foreach ($existing_links as $key => $link) {
+            $field_name = $link->form_field_title;
+            $recast_links[$field_name] = $link->field_url;
+        }
     }
 
+    $form['manage_block']['index_fields'] = [
+        '#type' => 'checkboxes',
+        '#title' => t('Select index fields'),
+        '#description' => t('Select will index fields will show up on the table search interface.'),
+        '#options' => drupal_map_assoc($index_fields),
+        '#default_value' => array_keys($start_check),
+    ];
 
-        $form['manage_block']['index_fields'] = [
-            '#type' => 'checkboxes',
-            '#title' => t('Select index fields'),
-            '#description' => t('Select will index fields will show up on the table search interface.'),
-            '#options' => drupal_map_assoc($index_fields),
-        ];
+    foreach ($index_fields as $field) {
+        //set up blank variables
+        $settings["form_field_title"] = $field;
+        $settings["form_field_description"] = '';
+        $settings["form_field_options"] = '';
+        $settings["form_field_weight"] = '10';
+        $settings["url"] = '';
+        $settings["form_field_type"] = "textfield";
 
-
-        foreach ($index_fields as $field) {
-            $record = [];
-            //set up blank variables
-            $record->form_field_title = '';
-            $record->form_field_description = '';
-            $record->form_field_options = '';
-            $record->form_field_weight = '10';
-
-            //set up expandable block for each field
-            $form['manage_block']['field_settings'][$field] = [
-                '#type' => 'fieldset',
-                '#title' => t('Settings for field: <b>'.$field.'</b>'),
-                '#collapsible' => true,
-                '#collapsed' => true,
-                '#states' => [
-                    //only show this field if its checked.
-                    'visible' => [
-                        ':input[name="[manage_block][index_fields]['.$field.']"]' => [
-                            ['checked' => true],
-                        ],
+        if ($block_exists) {
+            if ($recast_blocks[$field]) {
+                $settings["form_field_title"] = $recast_blocks[$field]->form_field_title;
+                $settings["form_field_description"] = $recast_blocks[$field]->form_field_description;
+                $settings["form_field_options"] = $recast_blocks[$field]->form_field_options;
+                $settings["form_field_weight"] = $recast_blocks[$field]->form_field_weight;
+                $settings["form_field_type"] = $recast_blocks[$field]->form_field_type;
+            }
+        }
+        if ($existing_links) {
+            if ($recast_links[$field]) {
+                $settings["url"] = $recast_links[$field];
+            }
+        }
+        //set up expandable block for each field
+        $form['manage_block']['field_settings'][$field] = [
+            '#type' => 'fieldset',
+            '#title' => t('Settings for field: <b>'.$field.'</b>'),
+            '#collapsible' => true,
+            '#collapsed' => true,
+            '#states' => [
+                //only show this field if its checked.
+                'visible' => [
+                    ':input[name="manage_block[index_fields]['.$field.']"]' => [
+                        ['checked' => true],
                     ],
                 ],
-            ];
-            $form['manage_block']['field_settings'][$field]['title'] = [
-                '#type' => 'textfield',
-                '#title' => t('Available fields'),
-                '#title' => t('Field title'),
-                '#default_value' => t($record->form_field_title),
-            ];
-            $form['manage_block']['field_settings'][$field]['description'] = [
-                '#type' => 'textarea',
-                '#title' => t('Field description'),
-                '#description' => t('A description for this search.  Enter some text to show users some example searches,
+            ],
+        ];
+        $form['manage_block']['field_settings'][$field]['title'] = [
+            '#type' => 'textfield',
+            '#title' => t('Available fields'),
+            '#title' => t('Field title'),
+            '#default_value' => t($settings["form_field_title"]),
+        ];
+        $form['manage_block']['field_settings'][$field]['description'] = [
+            '#type' => 'textarea',
+            '#title' => t('Field description'),
+            '#description' => t('A description for this search.  Enter some text to show users some example searches,
 						or give some instructions.'),
-                '#default_value' => t($record->form_field_description),
-            ];
+            '#default_value' => t($settings["form_field_description"]),
+        ];
 
-            $type_options = [
-                'textfield' => 'textfield',
-                'select' => 'select',
-            ];
-            $form['manage_block']['field_settings'][$field]['type'] = [
-                '#type' => 'select',
-                '#title' => t('Field type'),
-                '#description' => t('The field type in the search form. <strong style="color: red">textfield
+        $type_options = [
+            'textfield' => 'textfield',
+            'select' => 'select',
+        ];
+        $form['manage_block']['field_settings'][$field]['type'] = [
+            '#type' => 'select',
+            '#title' => t('Field type'),
+            '#description' => t('The field type in the search form. <strong style="color: red">textfield
 					</strong> indicates an input box. <strong style="color: red">select</strong> indicates
 					a dropdown menu box. If this field has more than 50 unique values in the database table,
 					only the <strong style="color: red">textfield</strong> will be available.'),
-                '#options' => $type_options,
-                '#default_value' => $record->form_field_type,
-            ];
-            $options_text = $record->form_field_options;
-            $form['manage_block']['field_settings'][$field]['options'] = [
-                '#type' => 'textarea',
-                '#title' => t('Options for select field'),
-                '#description' => t('This is used to convert an input box to a dropdown menu box
+            '#options' => $type_options,
+            '#default_value' => $settings["form_field_type"],
+        ];
+
+        $form['manage_block']['field_settings'][$field]['options'] = [
+            '#type' => 'textarea',
+            '#title' => t('Options for select field'),
+            '#description' => t('This is used to convert an input box to a dropdown menu box
 							in your search form. Enter key-value pairs into this box in the format of
 							<b style="color: red;">key|value</b>. The keys should be the true values
 							in your database table, and the values can be anything that you want to show
 							to your users. <b style="color: red;">key|value pairs</b> have to be placed within
 							the <b style="color: red;">[ ] (example: [key|value])</b>.'),
-                '#default_value' => $options_text,
-                // display options field only when the type field value is 'select'.
-                '#states' => [
-                    'invisible' => [
-                        ":input[name=\"['manage_block']['field_settings'][$field][type]\"]" => ['value' => 'textfield'],
-                    ],
+            '#default_value' => $settings->form_field_options,
+            // display options field only when the type field value is 'select'.
+            '#states' => [
+                'invisible' => [
+                    ":input[name=\"['manage_block']['field_settings'][$field][type]\"]" => ['value' => 'textfield'],
                 ],
-            ];
-            $form['manage_block']['field_settings'][$field]['weight'] = [
-                '#type' => 'select',
-                '#title' => t('Field weight'),
-                '#options' => drupal_map_assoc(range(0, 20)),
-                '#default_value' => $record->form_field_weight,
-            ];
-            $form['manage_block']['field_settings'][$field]['url_link'] = [            '#title' => 'URL linking',
-                '#type' => 'textfield',
-                '#description' => t('A URL linking for this field.  You can add a static url (https://www.ncbi.nim.nih.gov) or a dynamic field (organism/[genus]/[species]')
-            ];
-        }
+            ],
+        ];
+        $form['manage_block']['field_settings'][$field]['weight'] = [
+            '#type' => 'select',
+            '#title' => t('Field weight'),
+            '#options' => drupal_map_assoc(range(0, 20)),
+            '#default_value' => $settings["form_field_weight"],
+        ];
+        $form['manage_block']['field_settings'][$field]['url_link'] = [
+            '#title' => 'URL linking',
+            '#type' => 'textfield',
+            '#description' => t('A URL linking for this field.  You can add a static url (https://www.ncbi.nim.nih.gov) or a dynamic field (organism/[genus]/[species]'),
+            '#default_value' => $settings["url"],
+
+        ];
+    }
 
     $form['submit'] = [
         '#type' => 'submit',
@@ -220,8 +257,9 @@ function tripal_elasticsearch_manage_ajax_callback($form, &$form_state)
  * @param $form
  * @param $form_state
  */
-function table_search_interface_building_form_validate($form, $form_state){
-    $index_fields = array_filter($form_state['values']['index_fields']);
+function table_search_interface_building_form_validate($form, $form_state)
+{
+    $index_fields = array_filter($form_state['values']['manage_block']['index_fields']);
     if (empty($index_fields)) {
         form_set_error('index_fields', t('Please select at least one index field.'));
     }
@@ -236,8 +274,9 @@ function table_search_interface_building_form_validate($form, $form_state){
 function table_search_interface_building_form_submit($form, &$form_state)
 {
     $index_name = $form_state['values']['index_name'];
-    $index_fields = array_filter($form_state['values']['index_fields']);
-    $table_name =   $form_state['values']['table_name'];
+    $index_fields = array_filter($form_state['values']['manage_block']['index_fields']);
+    $field_settings = array_filter($form_state['values']['manage_block']['field_settings']);
+    $table_name = $form_state['values']['table_name'];
     // Delete record if it already exists in database table 'tripal_elasticsearch' and 'tripal_elasticsearch_links.
     $sql = "SELECT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
     $result = db_query($sql, [':index_name' => $index_name])->fetchCol('index_name');
@@ -250,98 +289,38 @@ function table_search_interface_building_form_submit($form, &$form_state)
         }
     }
 
-
     //Loop through index fields that are checked.
     foreach ($index_fields as $key => $field) {
+
+        $field_setting = $field_settings[$field];
         $record = [];
         $record['index_name'] = $index_name;
         $record['table_name'] = $table_name;
         $record['index_field'] = $field;
-        $record['form_field_type'] = 'textfield';
-        $record['form_field_description'] = '';
-        $record['form_field_options'] = '';
-        $record['form_field_weight'] = 0;
-        $record['form_field_title'] = $form_state['values']['manage_block']['field_settings'][$field]['title'];
-        $record['form_field_type'] = $form_state['values']['manage_block']['field_settings'][$field]['type'];
-        $record['form_field_description'] = $form_state['values']['manage_block']['field_settings'][$field]['description'];
+        $record['form_field_description'] = $field_setting['description'];
+        $record['form_field_type'] = $field_setting['type'];
+        $record['form_field_weight'] = $field_setting['weight'];
+        $record['form_field_title'] = $field_setting['title'];
         if ($record['form_field_type'] === 'textfield') {
             $record['form_field_options'] = '';
         } else {
-            $options = $form_state['values']['manage_block']['field_settings'][$field]['options'];
-            //$options = explode(',', $options);
-            //$sortable = [];
-            $record['form_field_options'] = $options;
+            $record['form_field_options'] = $field_setting['options'];
         }
-        $record['form_field_weight'] = $form_state['values']['manage_block']['field_settings'][$field]['weight'];
         try {
             drupal_write_record('tripal_elasticsearch', $record);
-
         } catch (\Exception $e) {
             drupal_set_message(t($e->getMessage()), 'warning');
         }
-    }
-}
-
-
-
-
-
-
-/**
- * Form submit for table_search_block_altering_form.
- */
-function table_search_block_altering_form_submit($form, &$form_state)
-{
-    $index_name = $form_state['values']['search_block'];
-    $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch}";
-    $table_name = db_query($sql)->fetchCol('table_name')[0];
-
-    // Delete old records.
-    db_delete("tripal_elasticsearch")->condition('index_name', $index_name)->execute();
-
-    $index_fields = array_keys($form_state['values']['field_wrapper']);
-
-    $record = [];
-    foreach ($index_fields as $field) {
+        //now set URL
+        $record = [];
         $record['index_name'] = $index_name;
         $record['table_name'] = $table_name;
         $record['index_field'] = $field;
-        $record['form_field_title'] = $form_state['values']['field_wrapper'][$field]['title'];
-        $record['form_field_type'] = $form_state['values']['field_wrapper'][$field]['type'];
-        $record['form_field_description'] = $form_state['values']['field_wrapper'][$field]['description'];
-        if ($record['form_field_type'] === 'textfield') {
-            $record['form_field_options'] = '';
-        } else {
-            $options = $form_state['values']['field_wrapper'][$field]['options'];
-            //$options = explode(',', $options);
-            //$sortable = [];
-            $record['form_field_options'] = $options;
+        $record['field_url'] = $field_setting['url_link'];
+        try {
+            drupal_write_record('tripal_elasticsearch_links', $record);
+        } catch (\Exception $e) {
+            drupal_set_message(t($e->getMessage(), "warning"));
         }
-        $record['form_field_weight'] = $form_state['values']['field_wrapper'][$field]['weight'];
-        drupal_write_record('tripal_elasticsearch', $record);
     }
-
-    drupal_set_message('Search block settings for <b>'.$index_name.'</b> has been successfully updated.');
-    $form_state['rebuild'] = true;
-}
-
-/**
- * Form submit for link_results_to_pages_form.
- */
-function link_results_to_pages_form_submit($form, &$form_state)
-{
-    $index_name = $form_state['values']['index_name'];
-    $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch}";
-    $table_name = db_query($sql)->fetchCol('table_name')[0];
-    $record = [];
-    // Delete old links first.
-    db_delete('tripal_elasticsearch_links')->condition('index_name', $index_name)->execute();
-    foreach ($form_state['values']['manage_block']['field_settings'] as $field => $field_settings) {
-        $record['index_name'] = $index_name;
-        $record['table_name'] = $table_name;
-        $record['index_field'] = $field;
-        $record['field_url'] = $field_settings['url_link'];
-        drupal_write_record('tripal_elasticsearch_links', $record);
-    }
-    $form_state['rebuild'] = true;
 }
