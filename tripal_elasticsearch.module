@@ -116,7 +116,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   ];
-  
+
 
   $items['elasticsearch/api/v1/status'] = [
     'title' => 'Test',

@@ -20,7 +20,7 @@ function table_search_interface_building_form($form, &$form_state) {
   $form['help'] = [
     '#type' => 'markup',
     '#markup' => t('This administrative page is used to build search blocks for 
-				indexed data. You do not need to build or alter search blocks for website node or website entitity indices.'),
+				indexed data. You do not need to build or alter search blocks for website node or website entity indices.  To begin, select a data table index below.'),
   ];
 
   try {
@@ -66,13 +66,18 @@ function table_search_interface_building_form($form, &$form_state) {
 
   $index_name = isset($form_state['values']['index_name']) ? $form_state['values']['index_name'] : '';
   if (!empty($index_name)) {
-    $index_profile = $existing_indices[$index_name];
-    $mappings_keys = drupal_map_assoc(array_keys($existing_indices[$index_name]['mappings']));
-    unset($mappings_keys['_default_']);
-    $table_name = array_keys($mappings_keys)[0];
+
+    //get the dbtable mapping
+    $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch_indices} WHERE index_name = :index_name ";
+    $dbtable = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchCol('table_name');
+    $table_name = $dbtable[0];
     if (!$table_name) {
-      //TODO: THROW AN ERROR HERE!  THERE HAS TO BE A TABLE!
+
+      drupal_set_message(t("Error: no database table associated with this index.  Recreate the index and try again."), 'error');
     }
+
+    $index_profile = $existing_indices[$index_name];
+
     $index_fields = array_keys($index_profile['mappings']['_default_']['properties']);
 
     $form['table_name'] = [
@@ -336,4 +341,6 @@ function table_search_interface_building_form_submit($form, &$form_state) {
       drupal_set_message(t($e->getMessage(), "warning"));
     }
   }
+
+  drupal_set_message("Search block set!");
 }
