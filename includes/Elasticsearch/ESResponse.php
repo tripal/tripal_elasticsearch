@@ -2,7 +2,7 @@
 /**
  * Provides a response interface for Http Ajax requests.
  *
- * @file
+ * @file includes/Elasticsearch/ESResponse.php
  */
 
 class ESResponse {
@@ -22,7 +22,7 @@ class ESResponse {
       'error' => FALSE,
     ]);
 
-    return true;
+    return TRUE;
   }
 
   /**
@@ -38,11 +38,11 @@ class ESResponse {
       'error' => TRUE,
     ]);
 
-    return true;
+    return TRUE;
   }
 
   /**
-   * Return 422 Unprocessible Entity response.
+   * Return 422 Unprocessable Entity response.
    *
    * @param mixed $data Array or string of error message.
    *
@@ -56,7 +56,7 @@ class ESResponse {
       'error' => TRUE,
     ]);
 
-    return true;
+    return TRUE;
   }
 
   /**
