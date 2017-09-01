@@ -345,10 +345,15 @@ function remote_edit_confirm_submit($form, &$form_state) {
     $description = $form_values['description_field'];
 
     $query = "UPDATE {tripal_elasticsearch_servers}
-         SET url = '$url', label = '$label', description = '$description'
-         WHERE id='$remote_id'";
+         SET url=:url, label=:label, description=:description
+         WHERE id=:id";
 
-    db_query($query);
+    db_query($query, [
+      ':id' => $remote_id,
+      ':description' => $description,
+      ':label' => $label,
+      ':url' => $url
+    ]);
 
     drupal_set_message(t('Remote server ' . $label . ' has been edited successfully.'));
     drupal_goto("admin/tripal/extension/tripal_elasticsearch");
