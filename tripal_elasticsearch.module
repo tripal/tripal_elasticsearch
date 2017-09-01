@@ -446,7 +446,21 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
   // Run Elasticsearch.
   try {
     $es = new ESInstance();
-    $results = $es->setWebsiteSearchParams($keyword, '', 'website,entities', '')
+    $indices = $es->getIndices();
+    $index_name = [];
+    if (in_array('website', $indices)) {
+      $index_name[] = 'website';
+    }
+
+    if (in_array('entities', $indices)) {
+      $index_name[] = 'entities';
+    }
+
+    if (empty($index_name)) {
+      return 'Searching is not available. Please try later.';
+    }
+
+    $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '')
                   ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
