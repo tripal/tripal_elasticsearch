@@ -18,7 +18,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 
   $form['instructions'] = [
     '#type' => 'markup',
-    '#markup' => '<h1>Create New Index</h1>'
+    '#markup' => '<h1>Create New Index</h1>',
   ];
 
   $form['website_base_url'] = [
@@ -49,7 +49,11 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   $form['website_or_table'] = [
     '#type' => 'select',
     '#title' => t('Index website nodes, website entities, or database table'),
-    '#options' => drupal_map_assoc(['website nodes', 'website entities' , 'database table']),
+    '#options' => drupal_map_assoc([
+      'website nodes',
+      'website entities',
+      'database table',
+    ]),
     '#default_value' => 'website',
   ];
 
@@ -338,29 +342,30 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
  * @return mixed
  */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
-  $existing_indices = [];
   try {
     $client = (new ESInstance())->client;
 
     // associate index name with indexed table.
     $mappings = $client->indices()->getMapping();
-    $existing_indices = [];
-    foreach (array_keys($mappings) as $index) {
-      if (isset(array_keys($mappings[$index]['mappings'])[1])) {
-        if (!in_array($index, ['entities', 'website'])) {
-          $existing_indices[$index] = $index . ' (indexed table: <b>' . array_keys($mappings[$index]['mappings'])[1] . '</b>)';
-        }
-        else {
-          $existing_indices[$index] = $index . ' (index for site-wide search)';
-        }
-      }
-      else {
-        $existing_indices[$index] = $index . ' (empty index)';
-      }
-    }
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+    return;
+  }
+
+  $existing_indices = [];
+  foreach (array_keys($mappings) as $index) {
+    if (isset(array_keys($mappings[$index]['mappings'])[1])) {
+      if (!in_array($index, ['entities', 'website'])) {
+        $existing_indices[$index] = $index . ' (indexed table: <b>' . array_keys($mappings[$index]['mappings'])[1] . '</b>)';
+      }
+      else {
+        $existing_indices[$index] = $index . ' (index for site-wide search)';
+      }
+    }
+    else {
+      $existing_indices[$index] = $index . ' (empty index)';
+    }
   }
 
   $form['indices'] = [
@@ -401,3 +406,112 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
   }
 }
 
+/**
+ * Indices List Page.
+ *
+ * @return array|mixed
+ */
+function tripal_elasticsearch_indices_list_page() {
+  $form = drupal_get_form('tripal_elasticsearch_indexing_form');
+
+  try {
+    $es = new ESInstance();
+
+    // associate index name with indexed table.
+    $indices = $es->getIndices();
+  } catch (\Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'warning');
+    drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+    return;
+  }
+
+  // Get table indices
+  $sql = 'SELECT DISTINCT(index_name), table_name FROM {tripal_elasticsearch}';
+  $table_indices = db_query($sql)->fetchAll();
+  $tables = [];
+  foreach ($table_indices as $index) {
+    $tables[$index->index_name] = $index->table_name;
+  }
+
+  $rows = [];
+  foreach ($indices as $index) {
+    if ($index === 'entities') {
+      $table = 'Indexes Tripal Entities';
+    }
+    elseif ($index === 'website') {
+      $table = 'Indexes Drupal Nodes';
+    }
+    elseif (isset($tables[$index])) {
+      $table = $tables[$index];
+    }
+    else {
+      $table = 'Unknown';
+    }
+
+    $delete = l('Delete', 'admin/tripal/extension/tripal_elasticsearch/indices_management/delete/' . $index);
+    $rows[] = [$index, $table, $delete];
+  }
+
+  $output = '<h3>List of Available Indices</h3>';
+  $output .= theme('table', [
+    'header' => ['Index Name', 'Indexed Table', 'Delete'],
+    'rows' => $rows,
+  ]);
+
+  $form['indices_list'] = [
+    '#type' => 'markup',
+    '#markup' => $output
+  ];
+
+  return $form;
+}
+
+/**
+ * Index Deletion Confirmation Form.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $index_name
+ *
+ * @return mixed
+ */
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
+  $form = [];
+  $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
+  $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+  $form['index_name'] = [
+    '#type' => 'hidden',
+    '#value' => $index_name,
+  ];
+  return confirm_form($form, 'Are you sure?', $cancel_path, $description, 'Delete');
+}
+
+/**
+ * Index deletion.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
+  $index = $form_state['values']['index_name'];
+
+  // Find the index and delete it from ES
+  try {
+    $es = new ESInstance();
+    $es->deleteIndex($index);
+  } catch (Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'error');
+    return;
+  }
+
+  // Find the index and delete it from the DB
+  $result = db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name", [':index_name' => $index]);
+
+  if (!$result) {
+    drupal_set_message("$index could not be deleted from the database.", 'error');
+    return;
+  }
+
+  drupal_set_message('Index "' . $index . '" deleted successfully.');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+}

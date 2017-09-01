@@ -80,28 +80,28 @@ function tripal_elasticsearch_menu() {
 
   $items[$admin_url_base . '/indices_management'] = [
     'title' => 'Indices Management',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_elasticsearch_indexing_form'],
+    'page callback' => 'tripal_elasticsearch_indices_list_page',
+    //'page arguments' => ['tripal_elasticsearch_indexing_form'],
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   ];
-  $items[$admin_url_base . '/indices_management/indexing'] = [
+  /*$items[$admin_url_base . '/indices_management/indexing'] = [
     'title' => 'Indexing',
     'access arguments' => ['administer tripal elasticsearch'],
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
-  ];
-  $items[$admin_url_base . '/indices_management/delete_indices'] = [
+  ];*/
+  $items[$admin_url_base . '/indices_management/delete/%'] = [
     'title' => 'Delete Indices',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_elasticsearch_delete_indices_form'],
+    'page arguments' => ['tripal_elasticsearch_index_delete_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'weight' => 1,
   ];
 
