@@ -123,12 +123,15 @@ function table_search_interface_building_form($form, &$form_state)
         }
     }
 
+    dpm(drupal_map_assoc($index_fields));
+    dpm(array_keys($start_check));
+
     $form['manage_block']['index_fields'] = [
         '#type' => 'checkboxes',
         '#title' => t('Select index fields'),
-        '#description' => t('Select will index fields will show up on the table search interface.'),
+        '#description' => t('Select which index fields will show up on the table search interface.'),
         '#options' => drupal_map_assoc($index_fields),
-        '#default_value' => array_keys($start_check),
+        '#default_value' => ['organism_id'],
     ];
 
     foreach ($index_fields as $field) {
