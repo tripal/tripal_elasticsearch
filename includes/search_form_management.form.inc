@@ -136,6 +136,7 @@ function table_search_interface_building_form($form, &$form_state) {
     '#title' => t('Select index fields'),
     '#description' => t('Select which index fields will show up on the table search interface.'),
     '#options' => drupal_map_assoc($index_fields),
+    '#default_value' => $start_check,
   ];
 
   foreach ($start_check as $choice) {
@@ -343,4 +344,36 @@ function table_search_interface_building_form_submit($form, &$form_state) {
   }
 
   drupal_set_message("Search block set!");
+}
+
+/**
+ * implement hook_form_FORM_ID_alter().
+ * set checkbox default values for table_search_interface_building_form
+ */
+function tripal_elasticsearch_form_table_search_interface_building_form_alter(&$form, &$form_state, $form_id) {
+  if (!isset($form['manage_block']['index_fields'])) {
+    return;
+  }
+  else {
+    $index_fields = $form['manage_block']['index_fields']['#options'];
+    $default_value = $form['manage_block']['index_fields']['#default_value'];
+    $checked_fields = [];
+    foreach ($default_value as $checked_field) {
+      $checked_fields[] = $index_fields[$checked_field];
+    }
+    foreach ($index_fields as $field) {
+      if (in_array($field, array_values($checked_fields))) {
+        $form['manage_block']['index_fields'][$field] = [
+          '#type' => 'checkbox',
+          '#default_value' => $field,
+        ];
+      }
+      else {
+        $form['manage_block']['index_fields'][$field] = [
+          '#type' => 'checkbox',
+          '#return_value' => $field,
+        ];
+      }
+    }
+  }
 }
