@@ -101,17 +101,30 @@ function tripal_elasticsearch_update_7200() {
       ],
     ],
   ];
-
-  db_create_table('tripal_elasticsearch_indices', $tripal_elasticsearch_indices);
+    db_create_table('tripal_elasticsearch_indices', $tripal_elasticsearch_indices);
 
   // Transfer entries from old table
-  $indices = db_query('SELECT DISTINCT(index_name), table_name FROM {tripal_elasticsearch}')->fetchAll();
-  foreach ($indices as $index) {
+    $client = (new ESInstance())->client;
+    $existing_indices = $client->indices()->getMapping();
+
+    if (isset($existing_indices['website'])) {
+        unset($existing_indices['website']);
+    }
+    if (isset($existing_indices['entities'])) {
+        unset($existing_indices['entities']);
+    }
+
+  foreach ($existing_indices as $index) {
+
+      $mappings_keys = drupal_map_assoc(array_keys($index['mappings']));
+      unset($mappings_keys['_default_']);
+      $table_name = array_keys($mappings_keys)[0];
     $data = [
       'index_name' => $index->index_name,
-      'index_table' => $index->index_table,
+      'table_table' => $table_name
     ];
-    drupal_write_record('tripal_elasticsearch_indices', $data);
+  drupal_write_record('tripal_elasticsearch_indices', $data);
+
   }
 
   // Add a new column to the old table
@@ -122,7 +135,7 @@ function tripal_elasticsearch_update_7200() {
     'not null' => TRUE,
     'default' => 1,
   ];
-  db_add_field('tripal_elasticsearch', 'index_id', $spec);
+ // db_add_field('tripal_elasticsearch', 'index_id', $spec);
 
   // Assign the right values to the new id field in tripal_elasticsearch_indices
   $fields = db_query('SELECT * FROM {tripal_elasticsearch_indices}')->fetchAll();
