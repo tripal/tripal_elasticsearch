@@ -87,6 +87,9 @@ function table_search_interface_building_form($form, &$form_state)
         $index_fields = [];
     }
 
+
+
+
     $form['manage_block'] = [
         '#type' => 'fieldset',
         '#tree' => true,
@@ -111,8 +114,10 @@ function table_search_interface_building_form($form, &$form_state)
         foreach ($existing_block as $key => $existing_settings) {
             $field_name = $existing_settings->index_field;
             $recast_blocks[$field_name] = $existing_settings;
-            $start_check[$field_name] = $existing_settings->index_field;
+            $start_check[$field_name] = $field_name;
         }
+
+        //Stick field choices in state
 
         $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
         $existing_links = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchAll();
@@ -123,16 +128,21 @@ function table_search_interface_building_form($form, &$form_state)
         }
     }
 
-    dpm(drupal_map_assoc($index_fields));
-    dpm(array_keys($start_check));
-
     $form['manage_block']['index_fields'] = [
         '#type' => 'checkboxes',
         '#title' => t('Select index fields'),
         '#description' => t('Select which index fields will show up on the table search interface.'),
         '#options' => drupal_map_assoc($index_fields),
-        '#default_value' => ['organism_id'],
     ];
+
+    foreach($start_check as $choice ) {
+        $form['manage_block']['index_fields'][$choice] = [
+            '#type' => 'checkbox',
+            '#return_value' => $choice,
+            '#default_value' => $choice,
+            '#attributes' => array('class' => array('hidden')),
+        ];
+    }
 
     foreach ($index_fields as $field) {
         //set up blank variables
