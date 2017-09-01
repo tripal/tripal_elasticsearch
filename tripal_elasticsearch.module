@@ -5,11 +5,13 @@
  * A module that implements elasticsearch API.
  */
 
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESResponse.php';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.ws.inc';
 
 /**
  * Implements hook_init().
@@ -79,28 +81,28 @@ function tripal_elasticsearch_menu() {
 
   $items[$admin_url_base . '/indices_management'] = [
     'title' => 'Indices Management',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_elasticsearch_indexing_form'],
+    'page callback' => 'tripal_elasticsearch_indices_list_page',
+    //'page arguments' => ['tripal_elasticsearch_indexing_form'],
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   ];
-  $items[$admin_url_base . '/indices_management/indexing'] = [
+  /*$items[$admin_url_base . '/indices_management/indexing'] = [
     'title' => 'Indexing',
     'access arguments' => ['administer tripal elasticsearch'],
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
-  ];
-  $items[$admin_url_base . '/indices_management/delete_indices'] = [
+  ];*/
+  $items[$admin_url_base . '/indices_management/delete/%'] = [
     'title' => 'Delete Indices',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_elasticsearch_delete_indices_form'],
+    'page arguments' => ['tripal_elasticsearch_index_delete_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'weight' => 1,
   ];
 
@@ -147,6 +149,13 @@ function tripal_elasticsearch_menu() {
   //		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
   //		'access callback' => true,
   //	);
+
+  $items['elasticsearch/api/v1/status'] = [
+    'title' => 'Test',
+    'page callback' => 'tripal_elasticsearch_api_v1_status',
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
   return $items;
 }
@@ -438,7 +447,21 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
   // Run Elasticsearch.
   try {
     $es = new ESInstance();
-    $results = $es->setWebsiteSearchParams($keyword, '', 'website,entities', '')
+    $indices = $es->getIndices();
+    $index_name = [];
+    if (in_array('website', $indices)) {
+      $index_name[] = 'website';
+    }
+
+    if (in_array('entities', $indices)) {
+      $index_name[] = 'entities';
+    }
+
+    if (empty($index_name)) {
+      return 'Searching is not available. Please try later.';
+    }
+
+    $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '')
                   ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
@@ -613,6 +636,13 @@ function tripal_elasticsearch_node_delete($node) {
   }
 }
 
+/**
+ * Paginate results.
+ *
+ * @param $per_page
+ *
+ * @return array
+ */
 function tripal_elasticsearch_paginate($per_page) {
   if (!isset($_GET['index_name'])) {
     return [];

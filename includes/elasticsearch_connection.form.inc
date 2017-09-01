@@ -15,7 +15,7 @@
 function elasticsearch_connection_form($form, &$form_state) {
   $form['instructions'] = [
     '#type' => 'markup',
-    '#markup' => '<h1>Add Elasticsearch Servers</h1>'
+    '#markup' => '<h1>Add Elasticsearch Servers</h1>',
   ];
 
   $form['server_type'] = [
@@ -96,7 +96,7 @@ function elasticsearch_connection_form($form, &$form_state) {
 
   $form['health'] = [
     '#type' => 'markup',
-    '#markup' => '<h4>' . t('Elasticsearch server health') . '</h4>' . '<p>No running Elasticsearch server is connected. Please check your Elasticsearch server URL and port.</p>',
+    '#markup' => '<h4>' . t('Elasticsearch Server Health') . '</h4>' . '<p>No running Elasticsearch server is connected. Please check your Elasticsearch server URL and port.</p>',
   ];
 
   try {
@@ -114,7 +114,7 @@ function elasticsearch_connection_form($form, &$form_state) {
         '#type' => 'markup',
         '#title' => t('Elasticsearch Server Health'),
         '#description' => t('The table below shows the health information of connected Elasticsearch servers.'),
-        '#markup' => '<h4>' . t('Elasticsearch server health') . '</h4>' . '<p>' . t('The table below shows the health of connected Elasticsearch servers.') . '</p>' . $output,
+        '#markup' => '<h4>' . t('Local Elasticsearch Server Health') . '</h4>' . '<p>' . t('The table below shows the health of connected Elasticsearch servers.') . '</p>' . $output,
       ];
     }
   } catch (\Exception $e) {
@@ -124,23 +124,26 @@ function elasticsearch_connection_form($form, &$form_state) {
   $remotes = db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
 
   if ($remotes) {
-    $header = ["URL", "Label", "Description", "Edit", "Delete"];
+    $header = ["URL", "Label", "Description", "Status", "Edit", "Delete"];
     $rows = [];
 
     foreach ($remotes as $remote) {
       $url = $remote->url;
       $label = $remote->label;
       $description = $remote->description;
-      $edit = "<a href ='tripal_elasticsearch/edit/{$remote->id}'>" . t("edit") . "</a>";
-      $delete = "<a href ='tripal_elasticsearch/delete/{$remote->id}'>" . t("delete") . "</a>";
+      $status = "<span class='elastic-status-circle' id='remote-host-{$remote->id}-circle'></span> <span id='remote-host-{$remote->id}'>Loading</span>";
+      $edit = l("Edit", "admin/tripal/extension/tripal_elasticsearch/edit/{$remote->id}");
+      $delete = l("Delete", "admin/tripal/extension/tripal_elasticsearch/delete/{$remote->id}");
 
-      array_push($rows, [$url, $label, $description, $edit, $delete]);
+      $rows[] = [$url, $label, $description, $status, $edit, $delete];
     }
 
-    $output = "<h4>Elasticsearch Remote Servers </h4><p>Remote Elasticsearch server connections can be viewed, edited, or deleted below.</p>" . theme('table', [
-        'header' => $header,
-        'rows' => $rows,
-      ]);
+    $output = "<h4>Elasticsearch Remote Servers </h4>";
+    $output .= "<p>Remote Elasticsearch server connections can be viewed, edited, or deleted below.</p>";
+    $output .= theme('table', [
+      'header' => $header,
+      'rows' => $rows,
+    ]);
 
     $form['remotes'] = [
       '#type' => 'markup',
@@ -155,6 +158,10 @@ function elasticsearch_connection_form($form, &$form_state) {
       '#markup' => '<h4>' . t('Elasticsearch Remote Servers') . '</h4>' . '<p>No remote Elasticsearch servers have been added. When remote servers are added, their status will be displayed below.</p>',
     ];
   }
+
+  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/axios.min.js');
+  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
+  drupal_add_js(['remotes' => $remotes, 'action' => 'getStatus'], 'setting');
 
   return $form;
 }
@@ -247,7 +254,7 @@ function remote_delete_confirm($form, &$form_state, $remote_id) {
 
   $server = db_query("SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id", [':id' => $remote_id])->fetchObject();
 
-  return confirm_form($form, t('Are you sure you want to delete the remote elasticsearch server entry?'), isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch", t('Are you sure you want to delete the remote elasticsearch server "'.$server->label.'"?'), t('Delete'), t('Cancel'));
+  return confirm_form($form, t('Are you sure you want to delete the remote elasticsearch server entry?'), isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch", t('Are you sure you want to delete the remote elasticsearch server "' . $server->label . '"?'), t('Delete'), t('Cancel'));
 }
 
 /**
@@ -259,9 +266,10 @@ function remote_delete_confirm($form, &$form_state, $remote_id) {
 function remote_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $remote_id = $form_state['values']['_remote_id'];
-    $result = db_query("DELETE FROM {tripal_elasticsearch_servers} where id='{$remote_id}'");
+    db_query("DELETE FROM {tripal_elasticsearch_servers} WHERE id=:id", [':id' => $remote_id]);
     drupal_set_message(t('Remote server ' . $remote_id . ' has been deleted successfully.'));
   }
+
   drupal_goto("admin/tripal/extension/tripal_elasticsearch");
 }
 
@@ -338,10 +346,15 @@ function remote_edit_confirm_submit($form, &$form_state) {
     $description = $form_values['description_field'];
 
     $query = "UPDATE {tripal_elasticsearch_servers}
-         SET url = '$url', label = '$label', description = '$description'
-         WHERE id='$remote_id'";
+         SET url=:url, label=:label, description=:description
+         WHERE id=:id";
 
-    db_query($query);
+    db_query($query, [
+      ':id' => $remote_id,
+      ':description' => $description,
+      ':label' => $label,
+      ':url' => $url
+    ]);
 
     drupal_set_message(t('Remote server ' . $label . ' has been edited successfully.'));
     drupal_goto("admin/tripal/extension/tripal_elasticsearch");
