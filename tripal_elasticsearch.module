@@ -7,6 +7,7 @@
 
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
 

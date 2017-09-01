@@ -208,15 +208,16 @@ function elasticsearch_connection_form_validate($form, &$form_state) {
   }
 
   if ($server_type == "local") {
-    //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
-    //    form_set_error('host', 'Please enter a valid URL for this remote host');
-    //}
+      //TODO: replace local host WITH IP
+    if (! (filter_var($url, FILTER_VALIDATE_URL & FILTER_VALIDATE_IP))) {
+        form_set_error('host', 'Please enter a valid URL for this remote host');
+    }
   }
 
   if ($server_type == "remote") {
-    //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
-    //    form_set_error('host', 'Please enter a valid URL for this remote host');
-    //}
+    if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
+        form_set_error('host', 'Please enter a valid URL for this remote host');
+    }
     if ($url == '') {
       form_set_error('label', 'Please enter a label for this remote host');
     }
