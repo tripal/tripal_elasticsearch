@@ -260,13 +260,12 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
  * @param $form_state
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
-
   $queue_number = $form_state['values']['queue_number'];
 
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
 
-  if ($website_or_table == 'nodes') {
+  if ($website_or_table === 'nodes') {
     // indexing website: has default index settings.
     // $index_name = $form_state['values']['index_name'];
     $index_name = 'website';
@@ -314,6 +313,12 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
     $field_mapping_types = array_filter($form_state['values']['table_fields']);
+
+    $insert = [
+      ':index_name' => $index_name,
+      ':table_name' => $index_table,
+    ];
+    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
   }
 
   // Create the index.
@@ -333,6 +338,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 
   drupal_set_message('Index created successfully');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
 /**
@@ -401,6 +407,9 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
       try {
         $es = new ESInstance();
         $es->deleteIndex($index);
+        db_query('DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name', [
+          ':index_name' => $index,
+        ]);
       } catch (\Exception $exception) {
         drupal_set_message($exception->getMessage(), 'warning');
       }
@@ -426,7 +435,7 @@ function tripal_elasticsearch_indices_list_page() {
   }
 
   // Get table indices
-  $sql = 'SELECT DISTINCT(index_name), table_name FROM {tripal_elasticsearch}';
+  $sql = 'SELECT DISTINCT(index_name), table_name FROM {tripal_elasticsearch_indices}';
   $table_indices = db_query($sql)->fetchAll();
   $tables = [];
   foreach ($table_indices as $index) {

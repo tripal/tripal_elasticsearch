@@ -635,6 +635,13 @@ function tripal_elasticsearch_node_delete($node) {
   }
 }
 
+/**
+ * Paginate results.
+ *
+ * @param $per_page
+ *
+ * @return array
+ */
 function tripal_elasticsearch_paginate($per_page) {
   if (!isset($_GET['index_name'])) {
     return [];

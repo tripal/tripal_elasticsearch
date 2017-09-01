@@ -80,3 +80,56 @@ function tripal_elasticsearch_schema() {
 
   return $schema;
 }
+
+function tripal_elasticsearch_update_7200() {
+  // Create new table
+  $tripal_elasticsearch_indices = [
+    'description' => 'Store elasticsearch indices',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'index_name' => [
+        'type' => 'varchar',
+        'length' => '255',
+      ],
+      'table_name' => [
+        'type' => 'varchar',
+        'length' => '255',
+      ],
+    ],
+  ];
+
+  db_create_table('tripal_elasticsearch_indices', $tripal_elasticsearch_indices);
+
+  // Transfer entries from old table
+  $indices = db_query('SELECT DISTINCT(index_name), table_name FROM {tripal_elasticsearch}')->fetchAll();
+  foreach ($indices as $index) {
+    $data = [
+      'index_name' => $index->index_name,
+      'index_table' => $index->index_table,
+    ];
+    drupal_write_record('tripal_elasticsearch_indices', $data);
+  }
+
+  // Add a new column to the old table
+  $spec = [
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'description' => "Foreign key references id on tripal_elasticsearch_indices",
+    'not null' => TRUE,
+    'default' => 1,
+  ];
+  db_add_field('tripal_elasticsearch', 'index_id', $spec);
+
+  // Assign the right values to the new id field in tripal_elasticsearch_indices
+  $fields = db_query('SELECT * FROM {tripal_elasticsearch_indices}')->fetchAll();
+  foreach ($fields as $field) {
+    db_query('UPDATE {tripal_elasticsearch_indices} SET index_id=:id WHERE index_name=:index_name', [
+      ':index_name' => $field->index_name,
+      ':id' => $field->id,
+    ]);
+  }
+}
