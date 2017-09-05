@@ -9,6 +9,7 @@ require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticse
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESResponse.php';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.ws.inc';
 
@@ -115,39 +116,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   ];
-  $items[$admin_url_base . '/search_form_management/build_table_search_block'] = [
-    'title' => 'Build Search Block',
-    'access arguments' => ['administer tripal elasticsearch'],
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 0,
-  ];
-  $items[$admin_url_base . '/search_form_management/alter_search_form'] = [
-    'title' => 'Alter Search Block',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['table_search_block_altering_form'],
-    'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/search_form_management.form.inc',
-    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
-  ];
-  $items[$admin_url_base . '/search_form_management/link_results_to_pages'] = [
-    'title' => 'Link Results to Pages',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['link_results_to_pages_form'],
-    'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/search_form_management.form.inc',
-    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  ];
 
-  // page to display search results.
-  //	$items['tripal_elasticsearch'] = array(
-  //		'title' => t('Search results'),
-  //		'page callback' => 'tripal_elasticsearch_search_results_page_callback',
-  //		'access callback' => true,
-  //	);
 
   $items['elasticsearch/api/v1/status'] = [
     'title' => 'Test',
