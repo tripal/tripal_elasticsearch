@@ -136,6 +136,14 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
+  $items['elasticsearch/api/v1/get-status/%'] = [
+    'title' => 'Test',
+    'page callback' => 'tripal_elasticsearch_api_v1_get_status',
+    'access arguments' => ['access content'],
+    'page arguments' => [4],
+    'type' => MENU_CALLBACK,
+  ];
+
   $items['elasticsearch/api/v1/search/%'] = [
     'title' => 'Test',
     'page callback' => 'tripal_elasticsearch_api_v1_search',

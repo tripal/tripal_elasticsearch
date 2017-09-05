@@ -33,8 +33,7 @@
      */
     getStatus: function () {
       this.remotes.map(function (remote) {
-        this.axios.defaults.baseURL = '';
-        this.axios.get(remote.url + '/elasticsearch/api/v1/status').then(function (response) {
+        this.axios.get('/get-status/' + remote.id).then(function (response) {
           var data = response.data.data;
           $('#remote-host-' + remote.id).html(data.status);
           $('#remote-host-' + remote.id + '-circle').addClass('is-success');
@@ -87,7 +86,7 @@
           var data = response.data.data;
           block.find('.elastic-result-block-count').html(data.count + ' total results');
 
-          if (data.count === 0) {
+          if (data.count === 0 || data.count === null) {
             data.markup = 'No results found';
           }
           else {
