@@ -160,6 +160,14 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     ];
   }
 
+
+  $form['exposed'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Expose Index to Cross-Site Search'),
+    '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
+    '#default_value' => false,
+  ];
+
   $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Create New Index'),
@@ -465,6 +473,7 @@ function tripal_elasticsearch_index_edit_confirm(
 ) {
 
   $form = [];
+  $exposed = false; //set default exposed for cross-site search
 
   //Get table name from index name.
   if ($index_name == 'website') {
@@ -484,8 +493,10 @@ function tripal_elasticsearch_index_edit_confirm(
   else {
     $website_or_table = "table";
 
-    $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
-    $table_name = db_query($sql, [':index_name' => $index_name])->fetchcol('table_name')[0];
+    $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
+    $result = db_query($sql, [':index_name' => $index_name])->fetch();
+    $table_name = $result->table_name;
+    $exposed = $result->result;
 
     $form['table_name'] = [
       '#type' => 'value',
@@ -614,6 +625,14 @@ function tripal_elasticsearch_index_edit_confirm(
       '#options' => array_merge(['' => 'Select mapping type'], get_field_mapping_types()),
     ];
   }
+
+
+  $form['exposed'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Expose Index to Cross-Site Search'),
+    '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
+    '#default_value' => $exposed,
+  ];
 
   $description = 'Edit settings for' . $index_name;
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';

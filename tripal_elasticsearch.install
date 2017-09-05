@@ -157,3 +157,18 @@ function tripal_elasticsearch_update_7201() {
     ]);
   }
 }
+
+function tripal_elasticsearch_update_7202() {
+
+  echo("running the update!");
+  
+  if (!db_field_exists('tripal_elasticsearch_indices', 'exposed')) {
+    $spec = [
+      'type' => 'boolean',
+      'description' => "Boolean for if this index is exposed to other sites for cross-site search",
+      'not null' => '1',
+      'default' => 'false',
+    ];
+    db_add_field('tripal_elasticsearch_indices', 'exposed', $spec);
+  }
+}
