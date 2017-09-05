@@ -41,7 +41,7 @@ function elasticsearch_connection_form($form, &$form_state) {
 
   $form['local_host']['local_url'] = [
     '#type' => 'textfield',
-    '#title' => 'Elasticsearch Server URL',
+    '#title' => t('Elasticsearch Server URL'),
     '#description' => t('URL and port of an elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
     '#default_value' => variable_get('elasticsearch_host'),
     '#attributes' => [
@@ -206,32 +206,36 @@ function elasticsearch_connection_form_submit($form, &$form_state) {
  */
 function elasticsearch_connection_form_validate($form, &$form_state) {
   $server_type = $form_state['values']['server_type'];
-  $url = $server_type === 'local' ? $form_state['values']['remote_url'] : $form_state['values']['local_url'];
+  $url = $server_type === 'local' ? $form_state['values']['local_url'] : $form_state['values']['remote_url'];
   $label = $form_state['values']['label'];
   $description = $form_state['values']['description'];
 
-  if (!$server_type) {
+  if (empty($server_type)) {
     form_set_error('server_type', 'Please select a server type.');
   }
 
-  if ($server_type == "local") {
-    //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
-    //    form_set_error('host', 'Please enter a valid URL for this remote host');
-    //}
+  if ($url == '') {
+    form_set_error('label', 'Please enter a url for this host');
+  }
+  else {
+    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
+      form_set_error($server_type === 'remote' ? 'remote_url' : 'local_url', 'Please enter a valid URL for the host');
+    }
   }
 
   if ($server_type == "remote") {
-    //if (! (filter_var($url, FILTER_VALIDATE_URL) || filter_var($url, FILTER_VALIDATE_IP))) {
-    //    form_set_error('host', 'Please enter a valid URL for this remote host');
-    //}
-    if ($url == '') {
+    if (empty($label)) {
       form_set_error('label', 'Please enter a label for this remote host');
     }
-    if ($label == '') {
-      form_set_error('label', 'Please enter a label for this remote host');
-    }
-    if ($description == '') {
+
+    if (empty($description)) {
       form_set_error('description', 'Please enter a description for this remote host ');
+    }
+
+    // Check to make sure the server doesn't already exist
+    $count = db_query('SELECT COUNT(*) FROM {tripal_elasticsearch_servers} WHERE url=:url', [':url' => $url])->fetchObject();
+    if ($count->count > 0) {
+      form_set_error('remote_url', 'The remote server URL already exists in our records.');
     }
   }
 }
@@ -345,14 +349,14 @@ function remote_edit_confirm_submit($form, &$form_state) {
     $description = $form_values['description_field'];
 
     $query = "UPDATE {tripal_elasticsearch_servers}
-         SET url=:url, label=:label, description=:description
+         SET url=:url, LABEL=:LABEL, description=:description
          WHERE id=:id";
 
     db_query($query, [
       ':id' => $remote_id,
       ':description' => $description,
       ':label' => $label,
-      ':url' => $url
+      ':url' => $url,
     ]);
 
     drupal_set_message(t('Remote server ' . $label . ' has been edited successfully.'));
