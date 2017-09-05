@@ -19,13 +19,16 @@ function tripal_elasticsearch_indexing_form($form, &$form_state, $indices) {
 
   $form['instructions'] = [
     '#type' => 'markup',
-    '#markup' => '<h1>Create New Index</h1>',
+    '#markup' => '<h1>Create New Index</h1>
+<p>You can create indices for your local Elasticsearch server here.  There are three types of indices:  website-wide <b>node</b>, website-wide <b>Tripal entity</b>, and <b>database table</b>.  
+The website-wide indices are intended to index all Tripal 2 or Tripal 3 content, respectively, and cannot be configured beyond Token settings.
+  <b>Database table</b> indices can be customized by indexing and displaying specific fields. </p><p>Please note that that the indices of remote Elasticsearch servers cannot be created or or edited.</p>',
   ];
 
   $form['website_base_url'] = [
     '#type' => 'item',
     '#title' => t("Base URL"),
-    '#markup' => 'The Base URL used for this index will be: ' . $base_url . '.  If this doesn\'t match your site, reconfigure your $base_url in your settings.php file.',
+    '#markup' => 'The Base URL used for this index will be: ' . $base_url . '.  If this doesn\'t match your site, reconfigure the $base_url variable in your Drupal settings.php file.',
   ];
 
   // Cron queue numbers
@@ -47,16 +50,18 @@ function tripal_elasticsearch_indexing_form($form, &$form_state, $indices) {
   }
 
   if (!in_array('entities', $indices)) {
-    $index_types['entities'] = 'Tripal Entities';
+    $index_types['entities'] = 'Website Tripal Entities';
   }
 
   // Index website or a database table
   $form['website_or_table'] = [
     '#type' => 'select',
-    '#title' => t('Index website nodes, Tripal entities, or a database table'),
-    '#description' => t('Tripal entities are available for Tripal version 3 only.'),
+    '#title' => t('Index type'),
+    '#description' => t('If you already have a website-wide node or tripal entities index, it must be edited or deleted in the table below.  Website Tripal entities are available for Tripal version 3 only.'),
     '#options' => $index_types,
     '#default_value' => isset($index_types['nodes']) ? 'nodes' : 'database',
+    '#attributes' => (in_array('website', $indices) && in_array('entities', $indices)) ? ['disabled' => 'disabled'] : ['enabled' => 'enabled'],
+    //Disable if there is already a node and entity index.
   ];
 
   $form['index_name'] = [
@@ -149,41 +154,11 @@ function tripal_elasticsearch_indexing_form($form, &$form_state, $indices) {
       '#title' => t('Field name: ' . $field),
       '#description' => t('Please select a mapping type for each field. If no 
 													mapping type is selected for a field, that field will
-													no be indexed. This can be used to selectively index
+													not be indexed. This can be used to selectively index
 													table fields.'),
       '#options' => array_merge(['' => 'Select mapping type'], get_field_mapping_types()),
     ];
   }
-
-  //	$header = array(
-  //		'field' => 'Field',
-  //		'mapping_type' => 'Mapping Type',
-  //	);
-  //	$options = array();
-  //	foreach (get_column_list($table_name) as $field) {
-  //		$options[$field] = array(
-  //			'field' => $field,
-  //			'mapping_type' => theme('select', array(
-  //				'element' => array(
-  //					'#options' => get_field_mapping_types(),
-  //				),
-  //			)),
-  //		);
-  //	}
-
-  //	$form['table_fields'] = array(
-  //		'#type' => 'tableselect',
-  //		'#header' => $header,
-  //		'#options' => $options,
-  //		'#empty' => t('No content available.'),
-  //		'#states' => array(
-  //			'invisible' => array(
-  //				':input[name="website_or_table"]' => array('value' => 'website'),
-  //			),
-  //		),
-  //		'#prefix' => '<div id="tripal_elasticsearch_table_fields_wrapper">',
-  //		'#suffix' => '</div>',
-  //	);
 
   $form['submit'] = [
     '#type' => 'submit',
@@ -261,10 +236,8 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   $queue_number = $form_state['values']['queue_number'];
-
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
-
   if ($website_or_table === 'nodes') {
     // indexing website: has default index settings.
     // $index_name = $form_state['values']['index_name'];
@@ -325,7 +298,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-       ->createIndex();
+      ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -457,15 +430,16 @@ function tripal_elasticsearch_indices_list_page() {
       $table = 'Unknown';
     }
 
+    $edit = l('Edit', 'admin/tripal/extension/tripal_elasticsearch/indices_management/edit/' . $index);
     $delete = l('Delete', 'admin/tripal/extension/tripal_elasticsearch/indices_management/delete/' . $index);
-    $rows[] = [$index, $table, $delete];
+    $rows[] = [$index, $table, $edit, $delete];
   }
 
   $form = drupal_get_form('tripal_elasticsearch_indexing_form', $indices);
 
   $output = '<h2>List of Available Indices</h2>';
   $output .= theme('table', [
-    'header' => ['Index Name', 'Indexed Table', 'Delete'],
+    'header' => ['Index Name', 'Indexed Table', 'Edit', 'Delete'],
     'rows' => $rows,
   ]);
 
@@ -478,6 +452,276 @@ function tripal_elasticsearch_indices_list_page() {
 }
 
 /**
+ * @param $form
+ * @param $form_state
+ * @param $index_name
+ *
+ * @return mixed
+ */
+function tripal_elasticsearch_index_edit_confirm(
+  $form,
+  &$form_state,
+  $index_name
+) {
+
+  $form = [];
+
+  //Get table name from index name.
+  if ($index_name == 'website') {
+    $website_or_table = "nodes";
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => 'website'
+    ];
+  }
+  elseif ($index_name == 'entities') {
+    $website_or_table = "entities";
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => 'entities'
+    ];
+  }
+  else {
+    $website_or_table = "table";
+
+    $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
+    $table_name = db_query($sql, [':index_name' => $index_name])->fetchcol('table_name')[0];
+
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => $table_name,
+    ];
+  }
+
+  $form['index_name'] = [
+    '#type' => 'value',
+    '#value' => $index_name,
+  ];
+  $form['website_or_table'] = [
+    '#type' => 'value',
+    '#value' => $website_or_table,
+  ];
+
+  //get existing index settings and mappings.
+  //TODO: what about default tables?
+  try {
+    $es = new ESInstance();
+    $index_settings = $es->getIndexSettings($index_name);
+    $index_mappings = $es->getIndexMappings($index_name);
+  } catch (Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'error');
+    return;
+  }
+
+  $preset_token_settings = $index_settings[$index_name]["settings"]["index"]["analysis"]["analyzer"][$index_name];
+
+  $preset_mappings = [];
+
+  if ($website_or_table == 'table') {
+    $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
+  }
+
+  if (!$preset_mappings && $website_or_table == "table") {
+    // there is no dbtable mapping settings yet.  Cron still needs to run!
+    drupal_set_message("The index $index_name has no database mapping.  Please make sure that your CRON job to create the index has finished running.", 'error');
+  }
+
+  $index_settings = ["tokenizer" => "standard", "token_filters" => ""];
+
+  if (array_key_exists("tokenizer", $preset_token_settings)) {
+    $index_settings["tokenizer"] = $preset_token_settings["tokenizer"];
+
+    if (array_key_exists("filter", $preset_token_settings)) {
+
+      $index_settings["token_filters"] = $preset_token_settings["filter"];
+    }
+  }
+
+  $form['instructions'] = [
+    '#type' => 'markup',
+    '#markup' => '<h1>Edit Index: ' . $index_name . '</h1>
+<p>This form will allow you to edit the tokenizer settings and field settings for the index <b>' . $index_name . '.</b>  Please note that changing settings will automatically rebuild the index.</p>',
+  ];
+
+  $form['queue_number'] = [
+    '#type' => 'select',
+    '#title' => t('Number of cron queues'),
+    '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
+                         queues that will be used for indexing jobs. Use more queues if your server has higher capacity
+                         for multi-thread processes.'),
+    '#options' => drupal_map_assoc(range(1, 10)),
+  ];
+
+  // Elasticsearch index settings
+  $form['index_settings'] = [
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#title' => t('Elasticsearch index settings'),
+    '#description' => t('These settings determine how your data will be indexed and made searchable.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  ];
+
+  $form['index_settings']['tokenizer'] = [
+    '#type' => 'select',
+    '#title' => t('Tokenizer'),
+    '#options' => get_tokenizer_options(),
+    '#default_value' => $index_settings["tokenizer"],
+  ];
+
+  $form['index_settings']['token_filters'] = [
+    '#type' => 'checkboxes',
+    '#title' => t('Token filters'),
+    '#options' => get_token_filter_options(),
+    '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : '[]',
+  ];
+
+  // if this is website nodes or entities, return here.
+
+  if ($index_name == 'website' || $index_name == 'entities') {
+    $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+
+    return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
+  }
+
+  $form['table_fields'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Select fields to index'),
+    '#description' => t('Please select a mapping type for each field. If no 
+													mapping type is selected for a field, that field will
+													not be indexed. This can be used to selectively index
+													table fields.'),
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#options' => drupal_map_assoc(get_column_list($table_name)),
+
+  ];
+
+  foreach (get_column_list($table_name) as $field) {
+
+    $preset = '';
+    if ($preset_mappings && array_key_exists($field, $preset_mappings)) {
+      $preset = $preset_mappings[$field]["type"];
+    }
+
+    $form['table_fields'][$field] = [
+      '#type' => 'select',
+      '#title' => t('Field name: ' . $field),
+      '#default_value' => $preset,
+      '#options' => array_merge(['' => 'Select mapping type'], get_field_mapping_types()),
+    ];
+  }
+
+  $description = 'Edit settings for' . $index_name;
+  $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+
+  return confirm_form($form, 'Edit Index', $cancel_path, $description, 'Submit Edits');
+}
+
+/**
+ * Submit editing for index.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
+  $index = $form_state['values']['index_name'];
+
+  // Delete the existing index in ES
+  try {
+    $es = new ESInstance();
+    $es->deleteIndex($index);
+  } catch (Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'error');
+    return;
+  }
+  // Find the index and delete it from the DB
+
+  $result = db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name", [':index_name' => $index]);
+  if (!$result) {
+    drupal_set_message("$index could not be deleted from the database.", 'error');
+    return;
+  }
+  //Create the new index
+
+  //TODO:  THIS CODE IS VERY REDUNDANT WITH CREATE SUBMIT.  REFACTOR.
+
+  $queue_number = $form_state['values']['queue_number'];
+  // Build Elasticsearch index settings.
+  $website_or_table = $form_state['values']['website_or_table'];
+  if ($website_or_table === 'nodes') {
+    // indexing website: has default index settings.
+    $index_name = 'website';
+    $index_table = 'node';
+    $index_type = 'website';
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'nid' => 'integer',
+      'type' => 'string',
+      'title' => 'string',
+      'content' => 'string',
+    ];
+  }
+  elseif ($website_or_table === 'entities') {
+
+    $index_name = 'entities';
+    $index_table = 'tripal_entity';
+    $index_type = 'entities';
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'entity_id' => 'integer',
+      'bundle_label' => 'string',
+      'title' => 'string',
+      'content' => 'string',
+    ];
+  }
+  else {
+    // indexing a table: has customized index settings
+    $index_name = $form_state['values']['index_name'];
+    $index_table = $form_state['values']['table_name'];
+    $index_type = $index_table;
+
+    $tokenizer = $form_state['values']['index_settings']['tokenizer'];
+    $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
+    $field_mapping_types = array_filter($form_state['values']['table_fields']);
+
+    $insert = [
+      ':index_name' => $index_name,
+      ':table_name' => $index_table,
+    ];
+    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
+  }
+
+  // Create the index.
+  try {
+    $es = new ESInstance();
+    $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
+      ->createIndex();
+  } catch (Exception $exception) {
+    form_set_error($exception->getMessage());
+    watchdog('tripal_elasticsearch', $exception->getMessage());
+    return;
+  }
+
+  // Populate the index
+  $es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
+
+  $form_state['rebuild'] = TRUE;
+
+  drupal_set_message('Index update submitted and will be executed by CRON.');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+}
+
+/**
  * Index Deletion Confirmation Form.
  *
  * @param $form
@@ -486,7 +730,11 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
+function tripal_elasticsearch_index_delete_confirm(
+  $form,
+  &$form_state,
+  $index_name
+) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';

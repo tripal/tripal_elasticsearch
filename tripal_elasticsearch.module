@@ -96,8 +96,19 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ];*/
+  $items[$admin_url_base . '/indices_management/edit/%'] = [
+    'title' => 'Edit Index',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_elasticsearch_index_edit_confirm', 6],
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/indices_management.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
+    'weight' => 1,
+  ];
+
   $items[$admin_url_base . '/indices_management/delete/%'] = [
-    'title' => 'Delete Indices',
+    'title' => 'Delete Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_index_delete_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
