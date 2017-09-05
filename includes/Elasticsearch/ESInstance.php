@@ -478,11 +478,6 @@ class ESInstance{
    * @return mixed
    */
 
-  public function updateIndexSettings($settings, $index) {
-    //TODO BUILD REQUEST
-    return ($this->client->indices()->putSettings($params));
-  }
-
   /**Get the mappings for a particular index
    *
    * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_index_management_operations.html#_get_mappings_api
@@ -493,27 +488,14 @@ class ESInstance{
     return ($this->client->indices()->getMapping($params));
   }
 
-  /**Update the mappings for a given index.
-   *
-   * @param $params
-   *
-   * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_index_management_operations.html#_put_mappings_api
-   * @return mixed
-   */
-  public function updateIndexMappings($settings, $index) {
-
-    //TODO BUILD REQUEST
-
-    return ($this->client->indices()->putMapping($params));
-  }
-}
-   * Returns results from all indices.
-   *
-   * @param $terms
-   * @param $size
-   *
-   * @return array
-   */
+  /*
+     * Returns results from all indices.
+     *
+     * @param $terms
+     * @param $size
+     *
+     * @return array
+     */
   public function searchAllIndices($terms, $size) {
     $index_name = [];
 
