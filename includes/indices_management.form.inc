@@ -478,10 +478,15 @@ function tripal_elasticsearch_index_edit_confirm(
     $table_name = db_query($sql, [':index_name' => $index_name])->fetchcol('table_name')[0];
     $form = [];
   }
-  //TODO:  PUTTING THESE IN FORM BREAKS IT!
-  //$form['website_or_table'] = $website_or_table;
-  //stick index name in the form for submission
-//  $form["index_name"] = $index_name;
+
+  $form['index_name'] = [
+    '#type' => 'value',
+    '#value' => $index_name,
+  ];
+  $form['website_or_table'] = [
+    '#type' => 'value',
+    '#value' => $website_or_table,
+  ];
 
   //get existing index settings and mappings.
   //TODO: what about default tables?
@@ -496,9 +501,13 @@ function tripal_elasticsearch_index_edit_confirm(
 
   $preset_token_settings = $index_settings[$index_name]["settings"]["index"]["analysis"]["analyzer"][$index_name];
 
-  $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
+  $preset_mappings = [];
 
-  if (!$preset_mappings) {
+  if ($website_or_table == 'table') {
+    $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
+  }
+
+  if (!$preset_mappings && $website_or_table == "table") {
     //TODO: WHAT TO DO HERE?  THERE IS NO TABLE. WE CAN GET INFO FROM _DEFAULT_ BUT SHOULD WE?
     // $preset_mappings  = $index_mappings[$index_name]["mappings"][$table_name]
     drupal_set_message("The index $index_name has no database mapping.  Please delete the index and try again.", 'error');
@@ -521,7 +530,6 @@ function tripal_elasticsearch_index_edit_confirm(
 <p>This form will allow you to edit the tokenizer settings and field settings for the index <b>' . $index_name . '.</b>  Please note that changing settings will automatically rebuild the index.</p>',
   ];
 
-
   $form['queue_number'] = [
     '#type' => 'select',
     '#title' => t('Number of cron queues'),
@@ -530,7 +538,6 @@ function tripal_elasticsearch_index_edit_confirm(
                          for multi-thread processes.'),
     '#options' => drupal_map_assoc(range(1, 10)),
   ];
-
 
   // Elasticsearch index settings
   $form['index_settings'] = [
@@ -553,8 +560,16 @@ function tripal_elasticsearch_index_edit_confirm(
     '#type' => 'checkboxes',
     '#title' => t('Token filters'),
     '#options' => get_token_filter_options(),
-    '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : '',
+    '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : '[]',
   ];
+
+  // if this is website nodes or entities, return here.
+
+  if ($index_name == 'website' || $index_name == 'entities') {
+    $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+
+    return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
+  }
 
   $form['table_fields'] = [
     '#type' => 'fieldset',
@@ -569,7 +584,6 @@ function tripal_elasticsearch_index_edit_confirm(
     '#options' => drupal_map_assoc(get_column_list($table_name)),
 
   ];
-
 
   foreach (get_column_list($table_name) as $field) {
 
@@ -618,8 +632,83 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   }
   //Create the new index
 
-  tripal_elasticsearch_indexing_form_submit($form);
+  $queue_number = $form_state['values']['queue_number'];
+  // Build Elasticsearch index settings.
+  $website_or_table = $form_state['values']['website_or_table'];
+  if ($website_or_table === 'nodes') {
+    // indexing website: has default index settings.
+    // $index_name = $form_state['values']['index_name'];
+    $index_name = 'website';
+    $index_table = 'node';
+    $index_type = 'website';
+    //$character_filters = drupal_map_assoc(['html_string']);
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'nid' => 'integer',
+      'type' => 'string',
+      'title' => 'string',
+      'content' => 'string',
+    ];
+  }
+  elseif ($website_or_table === 'entities') {
+    // indexing website: has default index settings.
+    // $index_name = $form_state['values']['index_name'];
+    $index_name = 'entities';
+    $index_table = 'tripal_entity';
+    $index_type = 'entities';
+    $character_filters = drupal_map_assoc(['html_string']);
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'entity_id' => 'integer',
+      'bundle_label' => 'string',
+      'title' => 'string',
+      'content' => 'string',
+    ];
+  }
+  else {
+    // indexing a table: has customized index settings
+    $index_name = $form_state['values']['index_name'];
+    $index_table = $form_state['values']['index_table'];
+    $index_type = $index_table;
+    //		$character_filters = array_filter($form_state['values']['index_settings']['character_filters']);
+    //$character_filters = drupal_map_assoc(['html_string']);
+    $tokenizer = $form_state['values']['index_settings']['tokenizer'];
+    $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
+    $field_mapping_types = array_filter($form_state['values']['table_fields']);
 
+    $insert = [
+      ':index_name' => $index_name,
+      ':table_name' => $index_table,
+    ];
+    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
+  }
+
+  // Create the index.
+  try {
+    $es = new ESInstance();
+    $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
+      ->createIndex();
+  } catch (Exception $exception) {
+    form_set_error($exception->getMessage());
+    watchdog('tripal_elasticsearch', $exception->getMessage());
+    return;
+  }
+
+  // Populate the index
+  $es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
+
+  $form_state['rebuild'] = TRUE;
+
+  drupal_set_message('Index created successfully');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
 /**
