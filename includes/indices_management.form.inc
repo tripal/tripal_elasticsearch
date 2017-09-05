@@ -471,14 +471,14 @@ function tripal_elasticsearch_index_edit_confirm(
     $website_or_table = "nodes";
     $form['table_name'] = [
       '#type' => 'value',
-      '#value' => 'website'
+      '#value' => 'website',
     ];
   }
   elseif ($index_name == 'entities') {
     $website_or_table = "entities";
     $form['table_name'] = [
       '#type' => 'value',
-      '#value' => 'entities'
+      '#value' => 'entities',
     ];
   }
   else {
@@ -518,7 +518,9 @@ function tripal_elasticsearch_index_edit_confirm(
   $preset_mappings = [];
 
   if ($website_or_table == 'table') {
-    $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
+    if (array_key_exists($table_name, $index_mappings[$index_name]["mappings"])) {
+      $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
+    }
   }
 
   if (!$preset_mappings && $website_or_table == "table") {
@@ -573,7 +575,7 @@ function tripal_elasticsearch_index_edit_confirm(
     '#type' => 'checkboxes',
     '#title' => t('Token filters'),
     '#options' => get_token_filter_options(),
-    '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : '[]',
+    '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : [],
   ];
 
   // if this is website nodes or entities, return here.
