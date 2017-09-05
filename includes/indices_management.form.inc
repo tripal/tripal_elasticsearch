@@ -463,20 +463,34 @@ function tripal_elasticsearch_index_edit_confirm(
   &$form_state,
   $index_name
 ) {
+
+  $form = [];
+
   //Get table name from index name.
   if ($index_name == 'website') {
     $website_or_table = "nodes";
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => 'website'
+    ];
   }
   elseif ($index_name == 'entities') {
     $website_or_table = "entities";
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => 'entities'
+    ];
   }
   else {
     $website_or_table = "table";
 
     $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
-
     $table_name = db_query($sql, [':index_name' => $index_name])->fetchcol('table_name')[0];
-    $form = [];
+
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => $table_name,
+    ];
   }
 
   $form['index_name'] = [
@@ -508,9 +522,8 @@ function tripal_elasticsearch_index_edit_confirm(
   }
 
   if (!$preset_mappings && $website_or_table == "table") {
-    //TODO: WHAT TO DO HERE?  THERE IS NO TABLE. WE CAN GET INFO FROM _DEFAULT_ BUT SHOULD WE?
-    // $preset_mappings  = $index_mappings[$index_name]["mappings"][$table_name]
-    drupal_set_message("The index $index_name has no database mapping.  Please delete the index and try again.", 'error');
+    // there is no dbtable mapping settings yet.  Cron still needs to run!
+    drupal_set_message("The index $index_name has no database mapping.  Please make sure that your CRON job to create the index has finished running.", 'error');
   }
 
   $index_settings = ["tokenizer" => "standard", "token_filters" => ""];
@@ -632,16 +645,16 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   }
   //Create the new index
 
+  //TODO:  THIS CODE IS VERY REDUNDANT WITH CREATE SUBMIT.  REFACTOR.
+
   $queue_number = $form_state['values']['queue_number'];
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
   if ($website_or_table === 'nodes') {
     // indexing website: has default index settings.
-    // $index_name = $form_state['values']['index_name'];
     $index_name = 'website';
     $index_table = 'node';
     $index_type = 'website';
-    //$character_filters = drupal_map_assoc(['html_string']);
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -655,12 +668,10 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     ];
   }
   elseif ($website_or_table === 'entities') {
-    // indexing website: has default index settings.
-    // $index_name = $form_state['values']['index_name'];
+
     $index_name = 'entities';
     $index_table = 'tripal_entity';
     $index_type = 'entities';
-    $character_filters = drupal_map_assoc(['html_string']);
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -676,10 +687,9 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   else {
     // indexing a table: has customized index settings
     $index_name = $form_state['values']['index_name'];
-    $index_table = $form_state['values']['index_table'];
+    $index_table = $form_state['values']['table_name'];
     $index_type = $index_table;
-    //		$character_filters = array_filter($form_state['values']['index_settings']['character_filters']);
-    //$character_filters = drupal_map_assoc(['html_string']);
+
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
     $field_mapping_types = array_filter($form_state['values']['table_fields']);
@@ -707,7 +717,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   $form_state['rebuild'] = TRUE;
 
-  drupal_set_message('Index created successfully');
+  drupal_set_message('Index update submitted and will be executed by CRON.');
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
