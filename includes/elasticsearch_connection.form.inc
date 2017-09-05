@@ -217,7 +217,6 @@ function elasticsearch_connection_form_validate($form, &$form_state) {
     form_set_error('server_type', 'Please select a server type.');
   }
 
-
   if ($url == '') {
     form_set_error('url', 'Please enter a url for this host');
   }
@@ -353,7 +352,7 @@ function remote_edit_confirm_submit($form, &$form_state) {
     $description = $form_values['description_field'];
 
     $query = "UPDATE {tripal_elasticsearch_servers}
-         SET url=:url, LABEL=:LABEL, description=:description
+         SET url=:url, {label}=:label, description=:description
          WHERE id=:id";
 
     db_query($query, [

@@ -82,6 +82,7 @@ function tripal_elasticsearch_schema() {
 }
 
 function tripal_elasticsearch_update_7201() {
+  //require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
 
   if (!db_table_exists('tripal_elasticsearch_indices')) {
     // Create new table
@@ -106,7 +107,7 @@ function tripal_elasticsearch_update_7201() {
     db_create_table('tripal_elasticsearch_indices', $tripal_elasticsearch_indices);
   }
 
-  // Transfer entries from old table
+  /*// Transfer entries from old table
   $es_live = TRUE;
   try {
     $client = (new ESInstance())->client;
@@ -131,9 +132,9 @@ function tripal_elasticsearch_update_7201() {
         ':index_name' => $index_name,
         ':table_name' => $table_name,
       ];
-      db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
+      db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME) VALUES (:index_name, :TABLE_NAME)', $insert);
     }
-  }
+  }*/
 
   // Add a new column to the old table
   if (!db_field_exists('tripal_elasticsearch', 'index_id')) {

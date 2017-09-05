@@ -507,3 +507,35 @@ class ESInstance{
     return ($this->client->indices()->putMapping($params));
   }
 }
+   * Returns results from all indices.
+   *
+   * @param $terms
+   * @param $size
+   *
+   * @return array
+   */
+  public function searchAllIndices($terms, $size) {
+    $index_name = [];
+
+    $indices = $this->getIndices();
+
+    if (in_array('website', $indices)) {
+      $index_name[] = 'website';
+    }
+
+    if (in_array('entities', $indices)) {
+      $index_name[] = 'entities';
+    }
+
+    $index = implode(',', $index_name);
+
+    $this->setWebsiteSearchParams($terms, '', $index, '', [0, $size]);
+    $count = $this->count();
+    $results = $this->search();
+
+    return [
+      'count' => $count,
+      'results' => $results,
+    ];
+  }
+}

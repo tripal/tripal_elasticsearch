@@ -42,14 +42,15 @@ class ESResponse {
   }
 
   /**
-   * Return 422 Unprocessable Entity response.
+   * Return Errors.
+   * 422 Unprocessable Entity response by default.
    *
    * @param mixed $data Array or string of error message.
    *
    * @return bool
    */
-  public static function error($data) {
-    static::setHeaders(422);
+  public static function error($data, $code = 422) {
+    static::setHeaders($code);
 
     print json_encode([
       'data' => $data,
