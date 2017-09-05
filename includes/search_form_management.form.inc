@@ -19,8 +19,7 @@ function table_search_interface_building_form($form, &$form_state) {
 
   $form['help'] = [
     '#type' => 'markup',
-    '#markup' => t('This administrative page is used to build search blocks for 
-				indexed data. You do not need to build or alter search blocks for website node or website entity indices.  To begin, select a data table index below.'),
+    '#markup' => t('This administrative page is used to build search blocks for indexed data. You cannot and do not need to build or alter search blocks for website node or website entity indices.  To begin, select a data table index below.'),
   ];
 
   try {
@@ -134,7 +133,7 @@ function table_search_interface_building_form($form, &$form_state) {
   $form['manage_block']['index_fields'] = [
     '#type' => 'checkboxes',
     '#title' => t('Select index fields'),
-    '#description' => t('Select which index fields will show up on the table search interface.'),
+    '#description' => t('Select which index fields will show up on the table search interface. Click on the settings dropdown below to configure a given field.'),
     '#options' => drupal_map_assoc($index_fields),
     '#default_value' => $start_check,
   ];
@@ -207,7 +206,7 @@ function table_search_interface_building_form($form, &$form_state) {
     $form['manage_block']['field_settings'][$field]['type'] = [
       '#type' => 'select',
       '#title' => t('Field type'),
-      '#description' => t('The field type in the search form. <strong style="color: red">textfield
+      '#description' => t('The field type available to users in the search form. <strong style="color: red">textfield
 					</strong> indicates an input box. <strong style="color: red">select</strong> indicates
 					a dropdown menu box. If this field has more than 50 unique values in the database table,
 					only the <strong style="color: red">textfield</strong> will be available.'),
@@ -235,6 +234,7 @@ function table_search_interface_building_form($form, &$form_state) {
     $form['manage_block']['field_settings'][$field]['weight'] = [
       '#type' => 'select',
       '#title' => t('Field weight'),
+      '#description' => t('The search rank weight for this field.  A higher weight means matches in this field will influence the relevance more.'),
       '#options' => drupal_map_assoc(range(0, 20)),
       '#default_value' => $settings["form_field_weight"],
     ];
@@ -350,7 +350,11 @@ function table_search_interface_building_form_submit($form, &$form_state) {
  * implement hook_form_FORM_ID_alter().
  * set checkbox default values for table_search_interface_building_form
  */
-function tripal_elasticsearch_form_table_search_interface_building_form_alter(&$form, &$form_state, $form_id) {
+function tripal_elasticsearch_form_table_search_interface_building_form_alter(
+  &$form,
+  &$form_state,
+  $form_id
+) {
   if (!isset($form['manage_block']['index_fields'])) {
     return;
   }
