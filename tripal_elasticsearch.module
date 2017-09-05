@@ -7,6 +7,7 @@
 
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESResponse.php';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESRequest.php';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
@@ -117,11 +118,37 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
+  // Cross site search page
+  $items['elasticsearch/cross-site'] = [
+    'Title' => 'Cross Site Search',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_elasticsearch_cross_site_search_form'],
+    'access arguments' => ['access content'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
+
+  // Tripal Elasticsearch API Endpoints
 
   $items['elasticsearch/api/v1/status'] = [
     'title' => 'Test',
     'page callback' => 'tripal_elasticsearch_api_v1_status',
     'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['elasticsearch/api/v1/search/%'] = [
+    'title' => 'Test',
+    'page callback' => 'tripal_elasticsearch_api_v1_search',
+    'access arguments' => ['access content'],
+    'page arguments' => [4],
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['elasticsearch/api/v1/local-search'] = [
+    'title' => 'Test',
+    'page callback' => 'tripal_elasticsearch_api_v1_local_search',
+    'access arguments' => ['access content'],
+    'page arguments' => [4],
     'type' => MENU_CALLBACK,
   ];
 

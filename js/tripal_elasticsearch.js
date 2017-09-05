@@ -33,7 +33,8 @@
      */
     getStatus: function () {
       this.remotes.map(function (remote) {
-        this.axios.get('/status').then(function (response) {
+        this.axios.defaults.baseURL = '';
+        this.axios.get(remote.url + '/elasticsearch/api/v1/status').then(function (response) {
           var data = response.data.data;
           $('#remote-host-' + remote.id).html(data.status);
           $('#remote-host-' + remote.id + '-circle').addClass('is-success');
@@ -50,6 +51,87 @@
           $('#remote-host-' + remote.id + '-circle').addClass('is-danger');
         });
       }.bind(this));
+    },
+
+    /**
+     * Respond to search events in search from.
+     */
+    setupSearchPage: function () {
+      $('#tripal-elasticsearch-search-button').click(function (e) {
+        e.preventDefault();
+        var terms = $('#tripal-elasticsearch-search-field').val();
+        this.sendSearchRequest(terms);
+      }.bind(this));
+    },
+
+    /**
+     * Sends a cross site search request.
+     *
+     * @param terms
+     */
+    sendSearchRequest: function (terms) {
+      var resultsBlock = $('#tripal-elasticsearch-results-block');
+
+      resultsBlock.html('');
+
+      this.remotes.map(function (remote) {
+        var block = this.createSiteBlock(remote);
+        resultsBlock.append(block);
+
+        this.axios.get('/search/' + remote.id, {
+          params: {
+            terms: terms,
+            size : 2
+          }
+        }).then(function (response) {
+          var data = response.data.data;
+          block.find('.elastic-result-block-count').html(data.count + ' total results');
+
+          if (data.count === 0) {
+            data.markup = 'No results found';
+          }
+          else {
+            var footer = $('<div />', {
+              'class': 'elastic-result-block-footer'
+            }).append('<a href="' + data.url + '">See All Results</a>');
+            block.append(footer);
+          }
+
+          block.find('.elastic-result-block-content').html(data.markup);
+        }).catch(function (error) {
+          console.log(error);
+          block.remove();
+        });
+      }.bind(this));
+    },
+
+    /**
+     * Create a result block.
+     *
+     * @param remote
+     * @returns {*|HTMLElement}
+     */
+    createSiteBlock: function (remote) {
+      var block = $('<div />', {
+        'class': 'elastic-result-block'
+      });
+
+      var title = $('<h3 />', {
+        'class': 'elastic-result-block-title'
+      }).append(remote.label);
+      block.append(title);
+
+      var count = $('<div />', {
+        'class': 'elastic-result-block-count'
+      });
+      block.append(count);
+
+      var content = $('<div />', {
+        'class': 'elastic-result-block-content'
+      }).append('Searching <div class="ajax-progress ajax-progress-throbber"><div class="throbber">&nbsp;</div></div>');
+      block.append(content);
+
+      return block;
     }
   };
 }(jQuery));

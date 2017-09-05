@@ -214,7 +214,6 @@ function elasticsearch_connection_form_validate($form, &$form_state) {
     form_set_error('server_type', 'Please select a server type.');
   }
 
-
   if ($url == '') {
     form_set_error('label', 'Please enter a url for this host');
   }

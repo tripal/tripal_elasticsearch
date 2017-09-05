@@ -8,3 +8,28 @@
   background-color: #2ab27b; }
 .elastic-status-circle.is-danger {
   background-color: #bf5329; }
+.elastic-result-block {
+  position: relative;
+  background-color: #fff;
+  border-radius: 3px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1); }
+.elastic-result-block-title {
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 10px 0 !important; }
+.elastic-result-block-count {
+  position: absolute;
+  top: 10px;
+  right: 10px; }
+.elastic-result-block-content {
+  padding: 10px;
+  padding-top: 0; }
+.elastic-result-block-footer {
+  padding: 10px;
+  border-top: #ddd;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  text-align: center;
+  background-color: #f7f7f7}
