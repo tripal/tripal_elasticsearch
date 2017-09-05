@@ -467,7 +467,7 @@ function tripal_elasticsearch_index_edit_confirm(
   if ($index_name == 'website') {
     $website_or_table = "nodes";
   }
-  elseif ($index_name == "entities") {
+  elseif ($index_name == 'entities') {
     $website_or_table = "entities";
   }
   else {
@@ -478,10 +478,10 @@ function tripal_elasticsearch_index_edit_confirm(
     $table_name = db_query($sql, [':index_name' => $index_name])->fetchcol('table_name')[0];
     $form = [];
   }
-  $form['website_or_table'] = $website_or_table;
-
+  //TODO:  PUTTING THESE IN FORM BREAKS IT!
+  //$form['website_or_table'] = $website_or_table;
   //stick index name in the form for submission
-  $form["index_name"] = $index_name;
+//  $form["index_name"] = $index_name;
 
   //get existing index settings and mappings.
   //TODO: what about default tables?
@@ -521,6 +521,7 @@ function tripal_elasticsearch_index_edit_confirm(
 <p>This form will allow you to edit the tokenizer settings and field settings for the index <b>' . $index_name . '.</b>  Please note that changing settings will automatically rebuild the index.</p>',
   ];
 
+
   $form['queue_number'] = [
     '#type' => 'select',
     '#title' => t('Number of cron queues'),
@@ -529,6 +530,7 @@ function tripal_elasticsearch_index_edit_confirm(
                          for multi-thread processes.'),
     '#options' => drupal_map_assoc(range(1, 10)),
   ];
+
 
   // Elasticsearch index settings
   $form['index_settings'] = [
@@ -587,11 +589,6 @@ function tripal_elasticsearch_index_edit_confirm(
   $description = 'Edit settings for' . $index_name;
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
 
-  //$form['index_name'] = [
-  //  '#type' => 'hidden',
-  //  '#value' => $index_name,
-  //];
-
   return confirm_form($form, 'Edit Index', $cancel_path, $description, 'Submit Edits');
 }
 
@@ -613,12 +610,16 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     return;
   }
   // Find the index and delete it from the DB
-  $result = db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name", [':index_name' => $index]);
+
+  $result = db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name", [':index_name' => $index]);
   if (!$result) {
     drupal_set_message("$index could not be deleted from the database.", 'error');
     return;
   }
   //Create the new index
+
+  tripal_elasticsearch_indexing_form_submit($form);
+
 }
 
 /**
