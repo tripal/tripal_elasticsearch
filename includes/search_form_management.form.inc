@@ -227,11 +227,13 @@ function table_search_interface_building_form($form, &$form_state) {
       // display options field only when the type field value is 'select'.
       '#states' => [
         'invisible' => [
-          ":input[name=\"['manage_block']['field_settings'][$field][type]\"]" => ['value' => 'textfield'],
+          ":input[name=\"manage_block[field_settings][$field][type]\"]" => ['value' => 'textfield'],
         ],
       ],
     ];
-    $form['manage_block']['field_settings'][$field]['weight'] = [
+
+
+      $form['manage_block']['field_settings'][$field]['weight'] = [
       '#type' => 'select',
       '#title' => t('Field weight'),
       '#description' => t('The search rank weight for this field.  A higher weight means matches in this field will influence the relevance more.'),

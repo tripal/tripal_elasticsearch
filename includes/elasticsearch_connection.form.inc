@@ -219,7 +219,7 @@ function elasticsearch_connection_form_validate($form, &$form_state) {
 
 
   if ($url == '') {
-    form_set_error('label', 'Please enter a url for this host');
+    form_set_error('url', 'Please enter a url for this host');
   }
   else {
     if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
