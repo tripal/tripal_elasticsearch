@@ -81,7 +81,7 @@ function tripal_elasticsearch_schema() {
   return $schema;
 }
 
-function tripal_elasticsearch_update_7200() {
+function tripal_elasticsearch_update_7201() {
 
   if (!db_table_exists('tripal_elasticsearch_indices')) {
     // Create new table
