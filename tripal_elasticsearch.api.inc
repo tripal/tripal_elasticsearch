@@ -156,10 +156,11 @@ function get_node_content_by_nid($nid, $base_url, $node_title) {
 /**
  * Get node content by node id.
  */
-function tripal_elasticsearch_get_page_content_by_id($id, $base_url, $title, $is_node = true) {
-  if($is_node) {
+function tripal_elasticsearch_get_page_content_by_id($id, $base_url, $title, $is_node = TRUE) {
+  if ($is_node) {
     $page_html = file_get_contents($base_url . "/node/" . $id);
-  } else {
+  }
+  else {
     $page_html = file_get_contents($base_url . "/bio_data/" . $id);
   }
   // remove raw sequences
@@ -204,32 +205,6 @@ function build_search_query_from_field_content_pairs(array $field_content_pairs,
     ],
   ];
   return $query;
-}
-
-/**
- * Function to build table search params.
- */
-function build_table_search_params($index, $type, $query, $from = 0, $size = 1000) {
-  $params = [];
-  $params['index'] = $index;
-  $params['type'] = $type;
-  // sort the table by the first field by default
-  //$sort_field = array_keys($field_content_pairs)[0];
-  $params['body'] = [
-    'query' => $query,
-  ];
-
-  if (isset($_GET['order'])) {
-    $sort_field = $_GET['order'];
-    $sort_direction = isset($_GET['sort']) && $_GET['sort'] === 'desc' ? 'desc' : 'asc';
-    $params['body']['sort'] = [
-      $sort_field . ".raw" => $sort_direction,
-    ];
-  }
-
-  $params['from'] = $from;
-  $params['size'] = $size;
-  return $params;
 }
 
 /**
@@ -310,16 +285,22 @@ function get_website_search_results_category_list($keyword) {
  * $search_results: an associative array with three keys: nid, title, and
  * highlight.
  */
-function get_website_search_result_table($search_results) {
+function get_website_search_result_table($search_results, $pager = TRUE, $base_url = NULL) {
   // grab page title and highlight content from search results.
   $rows = [];
   foreach ($search_results as $item) {
     $item = (object) $item;
     if (isset($item->nid)) {
       $row = '<h3>' . l($item->title, 'node/' . $item->nid) . '</h3>';
+      if ($base_url) {
+        $row = '<h3><a href="' . $base_url . '/node/' . $item->nid . '">' . $item->title . '</a></h3>';
+      }
     }
     else {
       $row = '<h3>' . l($item->title, 'bio_data/' . $item->entity_id) . '</h3>';
+      if ($base_url) {
+        $row = '<h3><a href="' . $base_url . '/bio_data/' . $item->entity_id . '">' . $item->title . '</a></h3>';
+      }
     }
     $row .= '<p>' . $item->highlight . '</p>';
 
@@ -333,7 +314,9 @@ function get_website_search_result_table($search_results) {
   $chunks = array_chunk($rows, $per_page, TRUE);
 
   $output = theme('table', ['header' => [], 'rows' => $chunks[$current_page]]);
-  $output .= theme('pager', ['quantity', count($rows)]);
+  if ($pager) {
+    $output .= theme('pager', ['quantity', count($rows)]);
+  }
 
   return $output;
 }
