@@ -17,7 +17,7 @@
 
       this.axios   = window.axios.create({
         baseURL: '/elasticsearch/api/v1',
-        timeout: 7000,
+        timeout: 20000,
         headers: {
           'Accept'          : 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
@@ -33,7 +33,8 @@
      */
     getStatus: function () {
       this.remotes.map(function (remote) {
-        this.axios.get('/get-status/' + remote.id).then(function (response) {
+        this.axios.defaults.baseURL = '';
+        this.axios.get(remote.url + '/status/').then(function (response) {
           var data = response.data.data;
           $('#remote-host-' + remote.id).html(data.status);
           $('#remote-host-' + remote.id + '-circle').addClass('is-success');
@@ -88,6 +89,11 @@
 
           if (data.count === 0 || data.count === null) {
             data.markup = 'No results found';
+
+            if (remote.id !== 0) {
+              block.slideUp();
+              return;
+            }
           }
           else {
             var footer = $('<div />', {
@@ -99,7 +105,7 @@
           block.find('.elastic-result-block-content').html(data.markup);
         }).catch(function (error) {
           console.log(error);
-          block.remove();
+          block.slideUp();
         });
       }.bind(this));
     },
