@@ -81,11 +81,8 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores. It must start with a letter.'),
     // This field is only visible to table indexing.
     '#states' => [
-      'invisible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'nodes'],
-          ['value' => 'website entities'],
-        ],
+      'visible' => [
+        ':input[name="website_or_table"]' => ['value' => 'database'],
       ],
     ],
     '#size' => 25,
@@ -309,7 +306,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     ':table_name' => $index_table,
     ':exposed' => intval($exposed) ? 1 : 0,
   ];
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
 
   // Create the index.
   try {
@@ -734,7 +731,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     ':exposed' => $exposed,
   ];
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
 
   // Create the index.
   try {
