@@ -415,15 +415,17 @@ function tripal_elasticsearch_indices_list_page() {
   }
 
   // Get table indices
-  $sql = 'SELECT DISTINCT(index_name), table_name FROM {tripal_elasticsearch_indices}';
+  $sql = 'SELECT DISTINCT(index_name), table_name, exposed FROM {tripal_elasticsearch_indices}';
   $table_indices = db_query($sql)->fetchAll();
   $tables = [];
   foreach ($table_indices as $index) {
-    $tables[$index->index_name] = $index->table_name;
+    $tables[$index->index_name]["table"] = $index->table_name;
+    $tables[$index->index_name]["exposed"] = $index->exposed;
   }
 
   $rows = [];
   foreach ($indices as $index) {
+
     if ($index === 'entities') {
       $table = 'Indexes Tripal Entities';
     }
@@ -431,16 +433,23 @@ function tripal_elasticsearch_indices_list_page() {
       $table = 'Indexes Drupal Nodes';
     }
     elseif (isset($tables[$index])) {
-      $table = $tables[$index];
+      $table = $tables[$index]["table"];
     }
     else {
       $table = 'Unknown';
     }
-    $exposed =false;
+    if (isset($tables[$index])) {
+      $exposed = $tables[$index]["exposed"];
+    }
+    $exposed_text = "private";
+
+    if ($exposed) {
+      $exposed_text = "public";
+    }
 
     $edit = l('Edit', 'admin/tripal/extension/tripal_elasticsearch/indices_management/edit/' . $index);
     $delete = l('Delete', 'admin/tripal/extension/tripal_elasticsearch/indices_management/delete/' . $index);
-    $rows[] = [$index, $table, $exposed, $edit, $delete];
+    $rows[] = [$index, $table, $exposed_text, $edit, $delete];
   }
 
   $form = drupal_get_form('tripal_elasticsearch_indexing_form', $indices);
@@ -473,8 +482,7 @@ function tripal_elasticsearch_index_edit_confirm(
 ) {
 
   $form = [];
-  $exposed = FALSE; //set default exposed for cross-site search
-
+$exposed = false;
   //Get table name from index name.
   if ($index_name == 'website') {
     $website_or_table = "nodes";
@@ -482,6 +490,7 @@ function tripal_elasticsearch_index_edit_confirm(
       '#type' => 'value',
       '#value' => 'website',
     ];
+
   }
   elseif ($index_name == 'entities') {
     $website_or_table = "entities";
@@ -489,20 +498,22 @@ function tripal_elasticsearch_index_edit_confirm(
       '#type' => 'value',
       '#value' => 'entities',
     ];
+
   }
   else {
     $website_or_table = "table";
-
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
     $result = db_query($sql, [':index_name' => $index_name])->fetch();
     $table_name = $result->table_name;
-    $exposed = $result->exposed;
-
     $form['table_name'] = [
       '#type' => 'value',
       '#value' => $table_name,
     ];
   }
+  // need to query ALL types for exposed setting.
+  $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
+  $result = db_query($sql, [':index_name' => $index_name])->fetch();
+  $exposed = $result->exposed;
 
   $form['index_name'] = [
     '#type' => 'value',
@@ -589,13 +600,16 @@ function tripal_elasticsearch_index_edit_confirm(
     '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : [],
   ];
 
+  dpm($exposed);
   // if this is website nodes or entities, return here.
   $form['exposed'] = [
     '#type' => 'checkbox',
     '#title' => t('Expose Index to Cross-Site Search'),
     '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
-    '#default_value' => "checked => $exposed",
+    '#default_value' => $exposed == 1 ? TRUE : FALSE,
+
   ];
+
   if ($index_name == 'website' || $index_name == 'entities') {
 
 
@@ -647,7 +661,6 @@ function tripal_elasticsearch_index_edit_confirm(
  */
 function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
-
 
   // Delete the existing index in ES
   try {
@@ -715,7 +728,6 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
     $field_mapping_types = array_filter($form_state['values']['table_fields']);
-
   }
 
   //insert index record into database for all types.
