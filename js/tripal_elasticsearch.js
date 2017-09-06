@@ -17,7 +17,7 @@
 
       this.axios   = window.axios.create({
         baseURL: '/elasticsearch/api/v1',
-        timeout: 7000,
+        timeout: 20000,
         headers: {
           'Accept'          : 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
@@ -94,6 +94,11 @@
 
           if (data.count === 0 || data.count === null) {
             data.markup = 'No results found';
+
+            if (remote.id !== 0) {
+              block.slideUp();
+              return;
+            }
           }
           else {
             var footer = $('<div />', {
@@ -105,7 +110,7 @@
           block.find('.elastic-result-block-content').html(data.markup);
         }).catch(function (error) {
           console.log(error);
-          block.remove();
+          block.slideUp();
         });
       }.bind(this));
     },

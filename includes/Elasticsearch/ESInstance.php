@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance {
+class ESInstance{
 
   /**
    * Elasticsearch client.
@@ -57,8 +57,8 @@ class ESInstance {
     libraries_load('elasticsearch-php');
 
     $this->client = Elasticsearch\ClientBuilder::create()
-                                               ->setHosts($host)
-                                               ->build();
+      ->setHosts($host)
+      ->build();
   }
 
   /**
@@ -72,7 +72,13 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = []) {
+  public function setWebsiteSearchParams(
+    $search_terms,
+    $node_type = '',
+    $index = 'website',
+    $index_type = '',
+    $offset = []
+  ) {
     $queries = [];
 
     $queries[0] = [
@@ -184,7 +190,14 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
+  public function setIndexParams(
+    $index_name,
+    $shards = 5,
+    $replicas = 0,
+    $tokenizer = 'standard',
+    $token_filters = [],
+    $field_mapping_types = []
+  ) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -365,7 +378,14 @@ class ESInstance {
    * @param array $field_mapping_types
    * @param int $queue_count
    */
-  public function populateIndex($type, $index_table, $index_name, $index_type, $field_mapping_types, $queue_count) {
+  public function populateIndex(
+    $type,
+    $index_table,
+    $index_name,
+    $index_type,
+    $field_mapping_types,
+    $queue_count
+  ) {
     // Get row count of selected table.
     $row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
     // Get total number of offsets (offset interval is 1000)
@@ -439,13 +459,43 @@ class ESInstance {
   }
 
   /**
-   * Returns results from all indices.
-   *
-   * @param $terms
-   * @param $size
+   * Return settings for a particular index
    *
    * @return array
    */
+  public function getIndexSettings($index) {
+    $params = ['index' => $index];
+    return ($this->client->indices()->getSettings($params));
+  }
+
+  /**
+   * Update Index settings.
+   * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_index_management_operations.html#_put_settings_api
+   * Note that the index to update is in the settings array.
+   *
+   * @param $settings
+   *
+   * @return mixed
+   */
+
+  /**Get the mappings for a particular index
+   *
+   * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_index_management_operations.html#_get_mappings_api
+   */
+
+  public function getIndexMappings($index) {
+    $params = ['index' => $index];
+    return ($this->client->indices()->getMapping($params));
+  }
+
+  /*
+     * Returns results from all indices.
+     *
+     * @param $terms
+     * @param $size
+     *
+     * @return array
+     */
   public function searchAllIndices($terms, $size) {
     $index_name = [];
 

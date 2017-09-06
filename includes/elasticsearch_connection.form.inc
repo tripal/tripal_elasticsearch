@@ -15,7 +15,10 @@
 function elasticsearch_connection_form($form, &$form_state) {
   $form['instructions'] = [
     '#type' => 'markup',
-    '#markup' => '<h1>Add Elasticsearch Servers</h1>',
+    '#markup' => '<h1>Add Elasticsearch Servers</h1>
+<p>This administrative page allows you to add or manage local and remote Elasticsearch server connections.  To configure an Elasticsearch server for your site, please see <a href="https://github.com/tripal/tripal_elasticsearch"> the Readme documentation for this module</a>.</p>
+
+',
   ];
 
   $form['server_type'] = [
@@ -23,8 +26,8 @@ function elasticsearch_connection_form($form, &$form_state) {
     '#type' => 'radios',
     '#required' => TRUE,
     '#options' => [
-      'local' => t('A local Elasticsearch server.  This will be your primary search database.'),
-      'remote' => t('A remote Elasticsearch server.  You can connect any number of additional servers.'),
+      'local' => t('A local Elasticsearch server.  This will be your primary search database, indexing content on the current site.'),
+      'remote' => t('A remote Elasticsearch server.  You can connect any number of additional servers, enabling cross-site searching.'),
     ],
     '#default_value' => 'local',
   ];
@@ -42,7 +45,7 @@ function elasticsearch_connection_form($form, &$form_state) {
   $form['local_host']['local_url'] = [
     '#type' => 'textfield',
     '#title' => t('Elasticsearch Server URL'),
-    '#description' => t('URL and port of an elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
+    '#description' => t('URL and port of an Elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
     '#default_value' => variable_get('elasticsearch_host'),
     '#attributes' => [
       'placeholder' => 'http://localhost:9200',
@@ -71,7 +74,7 @@ function elasticsearch_connection_form($form, &$form_state) {
   $form['remote_host']['label'] = [
     '#type' => 'textfield',
     '#title' => 'Server Label',
-    '#description' => t('Label for this elasticsearch server'),
+    '#description' => t('Label for this Elasticsearch server.'),
     '#default_value' => '',
     '#attributes' => [],
   ];
@@ -113,8 +116,8 @@ function elasticsearch_connection_form($form, &$form_state) {
       $form['health'] = [
         '#type' => 'markup',
         '#title' => t('Elasticsearch Server Health'),
-        '#description' => t('The table below shows the health information of connected Elasticsearch servers.'),
-        '#markup' => '<h4>' . t('Local Elasticsearch Server Health') . '</h4>' . '<p>' . t('The table below shows the health of connected Elasticsearch servers.') . '</p>' . $output,
+        '#description' => t('The table below shows the health  of your local Elasticsearch server.'),
+        '#markup' => '<h4>' . t('Local Elasticsearch Server Health') . '</h4>' . '<p>' . t('The table below shows the health of your local Elasticsearch server.') . '</p>' . $output,
       ];
     }
   } catch (\Exception $e) {
@@ -215,27 +218,27 @@ function elasticsearch_connection_form_validate($form, &$form_state) {
   }
 
   if ($url == '') {
-    form_set_error('label', 'Please enter a url for this host');
+    form_set_error('url', 'Please enter a url for this host');
   }
   else {
     if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
-      form_set_error($server_type === 'remote' ? 'remote_url' : 'local_url', 'Please enter a valid URL for the host');
+      form_set_error($server_type === 'remote' ? 'remote_url' : 'local_url', 'Please enter a valid URL for the host.');
     }
   }
 
   if ($server_type == "remote") {
     if (empty($label)) {
-      form_set_error('label', 'Please enter a label for this remote host');
+      form_set_error('label', 'Please enter a label for this remote host.');
     }
 
     if (empty($description)) {
-      form_set_error('description', 'Please enter a description for this remote host ');
+      form_set_error('description', 'Please enter a description for this remote host.');
     }
 
     // Check to make sure the server doesn't already exist
     $count = db_query('SELECT COUNT(*) FROM {tripal_elasticsearch_servers} WHERE url=:url', [':url' => $url])->fetchObject();
     if ($count->count > 0) {
-      form_set_error('remote_url', 'The remote server URL already exists in our records.');
+      form_set_error('remote_url', 'The remote server URL already exists in the database.  Please edit or delete it in the Elasticsearch Remote Servers table below.');
     }
   }
 }
@@ -257,7 +260,7 @@ function remote_delete_confirm($form, &$form_state, $remote_id) {
 
   $server = db_query("SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id", [':id' => $remote_id])->fetchObject();
 
-  return confirm_form($form, t('Are you sure you want to delete the remote elasticsearch server entry?'), isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch", t('Are you sure you want to delete the remote elasticsearch server "' . $server->label . '"?'), t('Delete'), t('Cancel'));
+  return confirm_form($form, t('Are you sure you want to delete the remote Elasticsearch server entry?'), isset($_GET['destination']) ? $_GET['destination'] : "tripal_elasticsearch", t('Are you sure you want to delete the remote elasticsearch server "' . $server->label . '"?'), t('Delete'), t('Cancel'));
 }
 
 /**

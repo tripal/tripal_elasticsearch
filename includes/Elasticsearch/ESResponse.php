@@ -68,11 +68,11 @@ class ESResponse {
    * @return void
    */
   protected static function setHeaders($code = 200) {
+    // All our responses our going to be in JSON Format
     drupal_add_http_header('Content-Type', 'application/ld+json');
     // Allow other sites to request results from us using AJAX directly
     drupal_add_http_header('Access-Control-Allow-Origin', '*');
     drupal_add_http_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    
     // Set the response code
     http_response_code($code);
   }
