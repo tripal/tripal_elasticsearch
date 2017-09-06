@@ -24,8 +24,26 @@
         }
       });
       this.remotes = settings.remotes;
+      this.state   = {
+        resultsCount: 0,
+        sitesCount  : 0,
+        emptySites  : [],
+        footerBlock : $('<div />')
+      };
 
       this[settings.action]();
+    },
+
+    /**
+     * Reset state
+     */
+    resetState: function () {
+      this.state = {
+        resultsCount: 0,
+        sitesCount  : 0,
+        emptySites  : [],
+        footerBlock : $('<div />')
+      };
     },
 
     /**
@@ -37,8 +55,8 @@
         this.axios.get(remote.url + '/elasticsearch/api/v1/status').then(function (response) {
           var data = response.data.data;
 
-          if(typeof data.status === 'undefined') {
-            data.status = 'No Elasticsearch Instance found'
+          if (typeof data.status === 'undefined') {
+            data.status = 'No Elasticsearch Instance found';
           }
 
           $('#remote-host-' + remote.id).html(data.status);
@@ -60,6 +78,8 @@
 
     /**
      * Respond to search events in search from.
+     * This method is called by this[action]() in the constructor (attach
+     * method).
      */
     setupSearchPage: function () {
       $('#tripal-elasticsearch-search-button').click(function (e) {
@@ -70,14 +90,38 @@
     },
 
     /**
+     * Update results stats.
+     */
+    updateStats: function () {
+      var content = 'Found ' + this.state.resultsCount + ' results from ' + this.state.sitesCount + ' websites';
+      $('.elastic-stats-block').html(content);
+
+      var footer = $('<div />').css('margin-top', '20px');
+
+      if (this.state.emptySites.length > 0) {
+        footer.html('<h3>Sites that returned no results</h3>');
+        this.state.emptySites.map(function (site) {
+          site.block.find('.elastic-result-block-content').html('No results found');
+          site.block.find('.elastic-result-block-count').html('<a href="' + site.remote.url + '">Visit Site</a>');
+          footer.append(site.block);
+        }.bind(this));
+      }
+      this.state.footerBlock.html(footer);
+    },
+
+    /**
      * Sends a cross site search request.
      *
      * @param terms
      */
     sendSearchRequest: function (terms) {
-      var resultsBlock = $('#tripal-elasticsearch-results-block');
-
-      resultsBlock.html('');
+      this.resetState();
+      var block        = $('#tripal-elasticsearch-results-block');
+      var resultsBlock = $('<div />');
+      var statsBlock   = $('<div />', {'class': 'elastic-stats-block'});
+      block.html(statsBlock);
+      block.append(resultsBlock);
+      block.append(this.state.footerBlock);
 
       this.remotes.map(function (remote) {
         var block = this.createSiteBlock(remote);
@@ -90,13 +134,11 @@
           }
         }).then(function (response) {
           var data = response.data.data;
-          block.find('.elastic-result-block-count').html(data.count + ' total results');
 
           if (data.count === 0 || data.count === null) {
             data.markup = 'No results found';
-
             if (remote.id !== 0) {
-              block.slideUp();
+              this.state.emptySites.push({block: block, remote: remote});
               return;
             }
           }
@@ -107,11 +149,14 @@
             block.append(footer);
           }
 
+          this.state.resultsCount += data.count || 0;
+          this.state.sitesCount++;
           block.find('.elastic-result-block-content').html(data.markup);
-        }).catch(function (error) {
+          block.find('.elastic-result-block-count').html((data.count || 0) + ' total results');
+        }.bind(this)).catch(function (error) {
           console.log(error);
-          block.slideUp();
-        });
+          //block.slideUp();
+        }.bind(this)).then(this.updateStats.bind(this));
       }.bind(this));
     },
 
