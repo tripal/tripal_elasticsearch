@@ -37,32 +37,6 @@ function tripal_elasticsearch_api_v1_status() {
 }
 
 /**
- * Avoid AJAX Allow-Cross-Site header.
- *
- * @param $remote_host_id
- *
- * @return mixed
- */
-function tripal_elasticsearch_api_v1_get_status($remote_host_id) {
-  $remote_host_id = abs(intval(trim($remote_host_id)));
-  $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_host_id])->fetchObject();
-
-  $response = ESRequest::get($host->url . '/elasticsearch/api/v1/status');
-
-  if (!isset($response->data) || !isset($response->data->status)) {
-    return ESResponse::error([
-      'status' => 'Invalid Elasticsearch Server',
-      'healthy' => FALSE,
-    ]);
-  }
-
-  return ESResponse::success([
-    'status' => $response->data->status,
-    'healthy' => $response->data->healthy,
-  ]);
-}
-
-/**
  * Send a search request to the given host and return rendered results.
  *
  * @param $remote_host_id
