@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance{
+class ESInstance {
 
   /**
    * Elasticsearch client.
@@ -57,8 +57,8 @@ class ESInstance{
     libraries_load('elasticsearch-php');
 
     $this->client = Elasticsearch\ClientBuilder::create()
-      ->setHosts($host)
-      ->build();
+                                               ->setHosts($host)
+                                               ->build();
   }
 
   /**
@@ -72,16 +72,10 @@ class ESInstance{
    *
    * @return $this
    */
-  public function setWebsiteSearchParams(
-    $search_terms,
-    $node_type = '',
-    $index = 'website',
-    $index_type = '',
-    $offset = []
-  ) {
+  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = []) {
     $queries = [];
 
-    $queries[0] = [
+    $queries[] = [
       "query_string" => [
         "default_field" => "content",
         "query" => $search_terms,
@@ -93,11 +87,27 @@ class ESInstance{
       $indices = $this->getIndices();
 
       if (in_array('website', $indices)) {
-        //$queries[1]['match']['type'] = $node_type;
+        $queries[1]['query_string'] = [
+          "default_field" => "type",
+          "query" => $node_type,
+          "default_operator" => "OR",
+        ];
       }
 
       if (in_array('entities', $indices)) {
-        $queries[1]['match']['entity_label'] = $node_type;
+        $queries[1]['query_string'] = [
+          "default_field" => "bundle_label",
+          "query" => $node_type,
+          "default_operator" => "OR",
+        ];
+      }
+
+      if (in_array('entities', $indices) && in_array('website', $indices)) {
+        $queries[1]['query_string'] = [
+          "fields" => ["type", "bundle_label"],
+          "query" => $node_type,
+          "default_operator" => "OR",
+        ];
       }
     }
 
@@ -191,12 +201,7 @@ class ESInstance{
    * @return $this
    */
   public function setIndexParams(
-    $index_name,
-    $shards = 5,
-    $replicas = 0,
-    $tokenizer = 'standard',
-    $token_filters = [],
-    $field_mapping_types = []
+    $index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []
   ) {
     $analysis = [
       'analyzer' => [
@@ -379,12 +384,7 @@ class ESInstance{
    * @param int $queue_count
    */
   public function populateIndex(
-    $type,
-    $index_table,
-    $index_name,
-    $index_type,
-    $field_mapping_types,
-    $queue_count
+    $type, $index_table, $index_name, $index_type, $field_mapping_types, $queue_count
   ) {
     // Get row count of selected table.
     $row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
