@@ -131,7 +131,7 @@ function tripal_elasticsearch_update_7201() {
         ':index_name' => $index_name,
         ':table_name' => $table_name,
       ];
-      db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME) VALUES (:index_name, :TABLE_NAME)', $insert);
+      db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
     }
   }*/
 

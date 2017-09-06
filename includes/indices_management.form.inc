@@ -309,7 +309,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     ':table_name' => $index_table,
     ':exposed' => $exposed,
   ];
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
   // Create the index.
   try {
@@ -734,7 +734,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     ':exposed' => $exposed,
   ];
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
   // Create the index.
   try {
