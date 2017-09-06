@@ -604,8 +604,6 @@ $exposed = false;
     '#options' => get_token_filter_options(),
     '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : [],
   ];
-
-  dpm($exposed);
   // if this is website nodes or entities, return here.
   $form['exposed'] = [
     '#type' => 'checkbox',
