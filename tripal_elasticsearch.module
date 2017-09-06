@@ -505,7 +505,17 @@ function tripal_elasticsearch_search_results_category_page_callback($node_type, 
   // Run Elasticsearch.
   try {
     $es = new ESInstance();
-    $search_results = $es->setWebsiteSearchParams($keyword, $node_type, 'website,entities', '')
+    $indices = $es->getIndices();
+    $index_name = [];
+    if (in_array('website', $indices)) {
+      $index_name[] = 'website';
+    }
+
+    if (in_array('entities', $indices)) {
+      $index_name[] = 'entities';
+    }
+
+    $search_results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
                          ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
