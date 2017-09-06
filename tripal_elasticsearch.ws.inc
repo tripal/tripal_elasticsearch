@@ -121,7 +121,7 @@ function tripal_elasticsearch_api_v1_local_search() {
   }
 
   return ESResponse::success(array_merge($results, [
-    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/citrus'),
+    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/'.$terms),
   ]));
 }
 
