@@ -160,12 +160,11 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     ];
   }
 
-
   $form['exposed'] = [
     '#type' => 'checkbox',
     '#title' => t('Expose Index to Cross-Site Search'),
     '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
-    '#default_value' => false,
+    '#default_value' => FALSE,
   ];
 
   $form['submit'] = [
@@ -248,11 +247,10 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   $website_or_table = $form_state['values']['website_or_table'];
   if ($website_or_table === 'nodes') {
     // indexing website: has default index settings.
-    // $index_name = $form_state['values']['index_name'];
+    $exposed = $form_state['values']['index_table'];
     $index_name = 'website';
     $index_table = 'node';
     $index_type = 'website';
-    //$character_filters = drupal_map_assoc(['html_string']);
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -271,7 +269,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     $index_name = 'entities';
     $index_table = 'tripal_entity';
     $index_type = 'entities';
-    $character_filters = drupal_map_assoc(['html_string']);
+    $exposed = $form_state['values']['index_table'];
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -288,19 +286,20 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     // indexing a table: has customized index settings
     $index_name = $form_state['values']['index_name'];
     $index_table = $form_state['values']['index_table'];
+    $exposed = $form_state['values']['exposed'];
     $index_type = $index_table;
-    //		$character_filters = array_filter($form_state['values']['index_settings']['character_filters']);
-    //$character_filters = drupal_map_assoc(['html_string']);
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
     $field_mapping_types = array_filter($form_state['values']['table_fields']);
-
-    $insert = [
-      ':index_name' => $index_name,
-      ':table_name' => $index_table,
-    ];
-    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
   }
+
+  //insert index record into database for all types.
+  $insert = [
+    ':index_name' => $index_name,
+    ':table_name' => $index_table,
+    ':exposed' => $exposed,
+  ];
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
   // Create the index.
   try {
@@ -437,17 +436,18 @@ function tripal_elasticsearch_indices_list_page() {
     else {
       $table = 'Unknown';
     }
+    $exposed =false;
 
     $edit = l('Edit', 'admin/tripal/extension/tripal_elasticsearch/indices_management/edit/' . $index);
     $delete = l('Delete', 'admin/tripal/extension/tripal_elasticsearch/indices_management/delete/' . $index);
-    $rows[] = [$index, $table, $edit, $delete];
+    $rows[] = [$index, $table, $exposed, $edit, $delete];
   }
 
   $form = drupal_get_form('tripal_elasticsearch_indexing_form', $indices);
 
   $output = '<h2>List of Available Indices</h2>';
   $output .= theme('table', [
-    'header' => ['Index Name', 'Indexed Table', 'Edit', 'Delete'],
+    'header' => ['Index Name', 'Indexed Table', 'Exposed', 'Edit', 'Delete'],
     'rows' => $rows,
   ]);
 
@@ -473,7 +473,7 @@ function tripal_elasticsearch_index_edit_confirm(
 ) {
 
   $form = [];
-  $exposed = false; //set default exposed for cross-site search
+  $exposed = FALSE; //set default exposed for cross-site search
 
   //Get table name from index name.
   if ($index_name == 'website') {
@@ -496,7 +496,7 @@ function tripal_elasticsearch_index_edit_confirm(
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
     $result = db_query($sql, [':index_name' => $index_name])->fetch();
     $table_name = $result->table_name;
-    $exposed = $result->result;
+    $exposed = $result->exposed;
 
     $form['table_name'] = [
       '#type' => 'value',
@@ -590,8 +590,15 @@ function tripal_elasticsearch_index_edit_confirm(
   ];
 
   // if this is website nodes or entities, return here.
-
+  $form['exposed'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Expose Index to Cross-Site Search'),
+    '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
+    '#default_value' => "checked => $exposed",
+  ];
   if ($index_name == 'website' || $index_name == 'entities') {
+
+
     $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
 
     return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
@@ -626,14 +633,6 @@ function tripal_elasticsearch_index_edit_confirm(
     ];
   }
 
-
-  $form['exposed'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Expose Index to Cross-Site Search'),
-    '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
-    '#default_value' => $exposed,
-  ];
-
   $description = 'Edit settings for' . $index_name;
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
 
@@ -648,6 +647,7 @@ function tripal_elasticsearch_index_edit_confirm(
  */
 function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
+
 
   // Delete the existing index in ES
   try {
@@ -673,6 +673,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $website_or_table = $form_state['values']['website_or_table'];
   if ($website_or_table === 'nodes') {
     // indexing website: has default index settings.
+    $exposed = $form_state['values']['exposed'];
     $index_name = 'website';
     $index_table = 'node';
     $index_type = 'website';
@@ -689,7 +690,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     ];
   }
   elseif ($website_or_table === 'entities') {
-
+    $exposed = $form_state['values']['exposed'];
     $index_name = 'entities';
     $index_table = 'tripal_entity';
     $index_type = 'entities';
@@ -710,17 +711,21 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     $index_name = $form_state['values']['index_name'];
     $index_table = $form_state['values']['table_name'];
     $index_type = $index_table;
-
+    $exposed = $form_state['values']['exposed'];
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
     $field_mapping_types = array_filter($form_state['values']['table_fields']);
 
-    $insert = [
-      ':index_name' => $index_name,
-      ':table_name' => $index_table,
-    ];
-    db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name) VALUES (:index_name, :table_name)', $insert);
   }
+
+  //insert index record into database for all types.
+  $insert = [
+    ':index_name' => $index_name,
+    ':table_name' => $index_table,
+    ':exposed' => $exposed,
+  ];
+
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
   // Create the index.
   try {
