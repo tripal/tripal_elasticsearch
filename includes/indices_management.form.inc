@@ -32,7 +32,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#markup' => '<h1>Create New Index</h1>
 <p>You can create indices for your local Elasticsearch server here.  There are three types of indices:  website-wide <b>node</b>, website-wide <b>Tripal entity</b>, and <b>database table</b>.  
 The website-wide indices are intended to index all Tripal 2 or Tripal 3 content, respectively, and cannot be configured beyond Token settings.
-  <b>Database table</b> indices can be customized by indexing and displaying specific fields. </p><p>Please note that that the indices of remote Elasticsearch servers cannot be created or or edited.</p>',
+  <b>Database table</b> indices can be customized by indexing and displaying specific fields. </p><p>Please note that that the indices of remote Elasticsearch servers cannot be created or edited.</p>',
   ];
 
   $form['website_base_url'] = [
