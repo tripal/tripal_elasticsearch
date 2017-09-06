@@ -37,7 +37,7 @@ function get_token_filter_options() {
     'asciifolding',
     'length',
     'lowercase',
-    'upppercase',
+    'uppercase',
   ]);
 }
 

@@ -9,13 +9,23 @@
  *
  * @param array $form
  * @param array $form_state
- * @param array $indices Available indices.
  *
  * @return mixed
  */
-function tripal_elasticsearch_indexing_form($form, &$form_state, $indices) {
+function tripal_elasticsearch_indexing_form($form, &$form_state) {
   // Need base url for website indexing.
   global $base_url;
+
+  try {
+    $es = new ESInstance();
+
+    // associate index name with indexed table.
+    $indices = $es->getIndices();
+  } catch (\Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'warning');
+    drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+    return;
+  }
 
   $form['instructions'] = [
     '#type' => 'markup',
@@ -452,20 +462,14 @@ function tripal_elasticsearch_indices_list_page() {
     $rows[] = [$index, $table, $exposed_text, $edit, $delete];
   }
 
-  $form = drupal_get_form('tripal_elasticsearch_indexing_form', $indices);
-
   $output = '<h2>List of Available Indices</h2>';
   $output .= theme('table', [
     'header' => ['Index Name', 'Indexed Table', 'Exposed', 'Edit', 'Delete'],
     'rows' => $rows,
   ]);
+  $output .= '<p>To create a new index, click the "create index" tab above.</p>';
 
-  $form['indices_list'] = [
-    '#type' => 'markup',
-    '#markup' => $output,
-  ];
-
-  return $form;
+  return $output;
 }
 
 /**
