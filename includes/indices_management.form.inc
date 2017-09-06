@@ -309,13 +309,13 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     ':table_name' => $index_table,
     ':exposed' => $exposed,
   ];
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
 
   // Create the index.
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-      ->createIndex();
+       ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -453,7 +453,7 @@ function tripal_elasticsearch_indices_list_page() {
     }
     $exposed_text = "private";
 
-    if ($exposed) {
+    if (isset($exposed) && $exposed) {
       $exposed_text = "public";
     }
 
@@ -468,7 +468,7 @@ function tripal_elasticsearch_indices_list_page() {
     'rows' => $rows,
   ]);
   $link = l('Create Index', 'admin/tripal/extension/tripal_elasticsearch/indices_management/create');
-  $output .= '<p>To create a new index, click the '.$link.' tab above.</p>';
+  $output .= '<p>To create a new index, click the ' . $link . ' tab above.</p>';
 
   return $output;
 }
@@ -480,14 +480,10 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
 
   $form = [];
-$exposed = false;
+  $exposed = FALSE;
   //Get table name from index name.
   if ($index_name == 'website') {
     $website_or_table = "nodes";
@@ -495,7 +491,6 @@ $exposed = false;
       '#type' => 'value',
       '#value' => 'website',
     ];
-
   }
   elseif ($index_name == 'entities') {
     $website_or_table = "entities";
@@ -503,11 +498,10 @@ $exposed = false;
       '#type' => 'value',
       '#value' => 'entities',
     ];
-
   }
   else {
     $website_or_table = "table";
-    $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
+    $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
     $result = db_query($sql, [':index_name' => $index_name])->fetch();
     $table_name = $result->table_name;
     $form['table_name'] = [
@@ -516,7 +510,7 @@ $exposed = false;
     ];
   }
   // need to query ALL types for exposed setting.
-  $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices WHERE index_name =:index_name}";
+  $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
   $result = db_query($sql, [':index_name' => $index_name])->fetch();
   $exposed = $result->exposed;
 
@@ -740,13 +734,13 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     ':exposed' => $exposed,
   ];
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
 
   // Create the index.
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-      ->createIndex();
+       ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -772,9 +766,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  * @return mixed
  */
 function tripal_elasticsearch_index_delete_confirm(
-  $form,
-  &$form_state,
-  $index_name
+  $form, &$form_state, $index_name
 ) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
