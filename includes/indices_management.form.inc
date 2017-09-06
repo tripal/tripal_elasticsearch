@@ -307,7 +307,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   $insert = [
     ':index_name' => $index_name,
     ':table_name' => $index_table,
-    ':exposed' => $exposed,
+    ':exposed' => intval($exposed) ? 1 : 0,
   ];
   db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
