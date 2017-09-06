@@ -467,7 +467,8 @@ function tripal_elasticsearch_indices_list_page() {
     'header' => ['Index Name', 'Indexed Table', 'Exposed', 'Edit', 'Delete'],
     'rows' => $rows,
   ]);
-  $output .= '<p>To create a new index, click the "create index" tab above.</p>';
+  $link = l('Create Index', 'admin/tripal/extension/tripal_elasticsearch/indices_management/create');
+  $output .= '<p>To create a new index, click the '.$link.' tab above.</p>';
 
   return $output;
 }
