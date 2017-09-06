@@ -33,8 +33,14 @@
      */
     getStatus: function () {
       this.remotes.map(function (remote) {
-        this.axios.get('/get-status/' + remote.id).then(function (response) {
+        this.axios.defaults.baseURL = '';
+        this.axios.get(remote.url + '/elasticsearch/api/v1/status').then(function (response) {
           var data = response.data.data;
+
+          if(typeof data.status === 'undefined') {
+            data.status = 'No Elasticsearch Instance found'
+          }
+
           $('#remote-host-' + remote.id).html(data.status);
           $('#remote-host-' + remote.id + '-circle').addClass('is-success');
         }).catch(function (error) {
