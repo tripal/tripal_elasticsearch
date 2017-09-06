@@ -246,9 +246,9 @@ function get_website_search_results_category_list($keyword) {
     try {
       $count = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name))
                   ->count();
-      //if ($count > 0) {
-      $search_website_count_by_category[$node_type] = $count;
-      //}
+      if ($count > 0) {
+        $search_website_count_by_category[$node_type] = $count;
+      }
     } catch (Exception $exception) {
       tripal_report_error('tripal_elasticsearch', 'TRIPAL_WARNING', $exception->getMessage());
       watchdog('tripal_elasticsearch', $exception->getMessage());
