@@ -484,7 +484,6 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
     if (empty($index_name)) {
       return 'Searching is not available. Please try later.';
     }
-
     $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '')
                   ->search();
   } catch (\Exception $e) {
