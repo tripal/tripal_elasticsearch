@@ -81,7 +81,10 @@ function tripal_elasticsearch_schema() {
   return $schema;
 }
 
-function tripal_elasticsearch_update_7201() {
+/**
+ * create tripal_elasticsearch_indices table to store indices information.
+ */
+function tripal_elasticsearch_update_7203() {
 
   if (!db_table_exists('tripal_elasticsearch_indices')) {
     // Create new table
@@ -156,19 +159,21 @@ function tripal_elasticsearch_update_7201() {
     ]);
   }
 }
+
 /**
- * Add field to tripal_elasticsearch_indices table to indicate whether an index is exposed via elasticsearch or not
+ * Add field to tripal_elasticsearch_indices table to indicate whether an index
+ * is exposed via elasticsearch or not
  */
-function tripal_elasticsearch_update_7202() {
+function tripal_elasticsearch_update_7204() {
   if (!db_field_exists('tripal_elasticsearch_indices', 'exposed')) {
 
     $spec = [
       'type' => 'int',
       'size' => 'small',
       'description' => "Exposes index to other sites for cross-site search",
-      'not NULL' => true,
+      'not NULL' => TRUE,
       'default' => 0,
     ];
-    db_add_field('tripal_elasticsearch_indices', 'exposed', $spec );
+    db_add_field('tripal_elasticsearch_indices', 'exposed', $spec);
   }
 }
