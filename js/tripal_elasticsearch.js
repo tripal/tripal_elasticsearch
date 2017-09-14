@@ -84,8 +84,12 @@
     setupSearchPage: function () {
       $('#tripal-elasticsearch-search-button').click(function (e) {
         e.preventDefault();
-        var terms = $('#tripal-elasticsearch-search-field').val();
-        this.sendSearchRequest(terms);
+        var form     = {};
+        var category = $('#tripal-elasticsearch-search-category').val();
+
+        form.terms    = $('#tripal-elasticsearch-search-field').val();
+        form.category = category === 'Any Type' ? null : category;
+        this.sendSearchRequest(form);
       }.bind(this));
     },
 
@@ -112,9 +116,9 @@
     /**
      * Sends a cross site search request.
      *
-     * @param terms
+     * @param form
      */
-    sendSearchRequest: function (terms) {
+    sendSearchRequest: function (form) {
       this.resetState();
       var block        = $('#tripal-elasticsearch-results-block');
       var resultsBlock = $('<div />');
@@ -129,8 +133,9 @@
 
         this.axios.get('/search/' + remote.id, {
           params: {
-            terms: terms,
-            size : 2
+            terms   : form.terms,
+            category: form.category,
+            size    : 2
           }
         }).then(function (response) {
           var data = response.data.data;

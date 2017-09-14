@@ -496,7 +496,7 @@ class ESInstance {
      *
      * @return array
      */
-  public function searchAllIndices($terms, $size) {
+  public function searchAllIndices($terms, $size, $category = null) {
     $index_name = [];
 
     $indices = $this->getIndices();
@@ -511,7 +511,7 @@ class ESInstance {
 
     $index = implode(',', $index_name);
 
-    $this->setWebsiteSearchParams($terms, '', $index, '', [0, $size]);
+    $this->setWebsiteSearchParams($terms, $category, $index, '', [0, $size]);
     $count = $this->count();
     $results = $this->search();
 

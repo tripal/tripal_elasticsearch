@@ -67,6 +67,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
   try {
     $response = ESRequest::get($url, [
       'terms' => $_GET['terms'],
+      'category' => $_GET['category'] ?: '',
       'size' => $size,
     ]);
   } catch (Exception $exception) {
@@ -96,6 +97,7 @@ function tripal_elasticsearch_api_v1_local_search() {
   // Validate the request
   $terms = isset($_GET['terms']) ? $_GET['terms'] : NULL;
   $size = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
+  $category = isset($_GET['category']) ? $_GET['category'] : NULL;
 
   if (empty($terms)) {
     return ESResponse::error([
@@ -115,13 +117,13 @@ function tripal_elasticsearch_api_v1_local_search() {
 
   try {
     $es = new ESInstance();
-    $results = $es->searchAllIndices($terms, $size);
+    $results = $es->searchAllIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return ESResponse::error($exception->getMessage(), 500);
   }
 
   return ESResponse::success(array_merge($results, [
-    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/'.$terms),
+    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/' . $terms),
   ]));
 }
 
@@ -135,17 +137,42 @@ function tripal_elasticsearch_api_v1_local_search() {
  */
 function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
 
-  $form['search_term'] = [
+  $form['options'] = [
+    '#type' => 'fieldset',
+    '#attributes' => ['class' => ['container-inline']],
+  ];
+
+  $form['options']['label'] = [
+    '#type' => 'markup',
+    '#markup' => '<p><label>' . t('Enter Search Terms') . '</label></p>',
+  ];
+
+  $form['options']['category'] = [
+    '#type' => 'select',
+    '#attributes' => [
+      'id' => 'tripal-elasticsearch-search-category',
+    ],
+    '#options' => [
+      'Any Type' => 'Any Type',
+      'Organism' => 'Organism',
+      'Gene' => 'Gene',
+      'mRNA' => 'mRNA',
+    ],
+    '#default_value' => 'Any Type',
+    '#required' => TRUE,
+  ];
+
+  $form['options']['search_term'] = [
     '#type' => 'textfield',
+    '#size' => '50',
     '#attributes' => [
       'placeholder' => t('E,g. Faxinus Excelsior mRNA'),
       'id' => 'tripal-elasticsearch-search-field',
     ],
     '#required' => TRUE,
-    '#title' => t('Search Terms'),
   ];
 
-  $form['search_button'] = [
+  $form['options']['search_button'] = [
     '#type' => 'submit',
     '#value' => t('Search'),
     '#attributes' => [
