@@ -306,7 +306,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     ':table_name' => $index_table,
     ':exposed' => intval($exposed) ? 1 : 0,
   ];
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
   // Create the index.
   try {
@@ -509,7 +509,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   // need to query ALL types for exposed setting.
   $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
   $result = db_query($sql, [':index_name' => $index_name])->fetch();
-  $exposed = $result->exposed;
+  $exposed = $result ? $result->exposed : 0;
 
   $form['index_name'] = [
     '#type' => 'value',
@@ -605,8 +605,6 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   ];
 
   if ($index_name == 'website' || $index_name == 'entities') {
-
-
     $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
 
     return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
@@ -627,7 +625,6 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   ];
 
   foreach (get_column_list($table_name) as $field) {
-
     $preset = '';
     if ($preset_mappings && array_key_exists($field, $preset_mappings)) {
       $preset = $preset_mappings[$field]["type"];
@@ -641,7 +638,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     ];
   }
 
-  $description = 'Edit settings for' . $index_name;
+  $description = 'Edit settings for ' . $index_name;
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
 
   return confirm_form($form, 'Edit Index', $cancel_path, $description, 'Submit Edits');
@@ -731,7 +728,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     ':exposed' => $exposed,
   ];
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, TABLE_NAME, exposed) VALUES (:index_name, :TABLE_NAME, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
 
   // Create the index.
   try {
