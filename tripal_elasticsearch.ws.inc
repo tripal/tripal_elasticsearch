@@ -46,7 +46,7 @@ function tripal_elasticsearch_api_v1_status() {
 function tripal_elasticsearch_api_v1_search($remote_host_id) {
   $remote_host_id = abs(intval(trim($remote_host_id)));
 
-  if (!isset($_GET['terms']) || empty($_GET['terms'])) {
+  if (!isset($_GET['terms'])) {
     return ESResponse::error(['terms' => ['Please provide search terms']]);
   }
 
@@ -95,15 +95,9 @@ function tripal_elasticsearch_api_v1_local_search() {
   global $base_url;
 
   // Validate the request
-  $terms = isset($_GET['terms']) ? $_GET['terms'] : NULL;
+  $terms = isset($_GET['terms']) ? $_GET['terms'] : '';
   $size = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
   $category = isset($_GET['category']) ? $_GET['category'] : NULL;
-
-  if (empty($terms)) {
-    return ESResponse::error([
-      'terms' => ['Please provide search terms'],
-    ]);
-  }
 
   if ($size !== 0 && $size > 20) {
     return ESResponse::error([
