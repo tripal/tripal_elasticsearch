@@ -211,7 +211,7 @@ function build_search_query_from_field_content_pairs(array $field_content_pairs,
  * Function to theme search results count by node type.
  * This function returns an html list.
  *
- * @return array
+ * @return string
  */
 function get_website_search_results_category_list($keyword) {
   try {
@@ -282,8 +282,13 @@ function get_website_search_results_category_list($keyword) {
 
 /**
  * Get website search result table.
- * $search_results: an associative array with three keys: nid, title, and
- * highlight.
+ *
+ * @param array $search_results an associative array with three keys: nid,
+ *   title, and highlight.
+ * @param boolean $pager Whether to render a pager
+ * @param string $base_url Specify the site that owns the results.
+ *
+ * @return string
  */
 function get_website_search_result_table($search_results, $pager = TRUE, $base_url = NULL) {
   // grab page title and highlight content from search results.
@@ -307,13 +312,13 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
     $rows[] = [$row];
   }
 
-  //$per_page = 10;
-  //$current_page = pager_default_initialize(count($rows), $per_page);
-
-  // split list into page sized chunks
-  //$chunks = array_chunk($rows, $per_page, TRUE);
-
-  $output = theme('table', ['header' => [], 'rows' => $rows]);
+  $output = theme('table', [
+    'header' => [],
+    'rows' => $rows,
+    'attributes' => [
+      'id' => 'es-search-results-table'
+    ],
+  ]);
   if ($pager) {
     $output .= theme('pager', ['quantity', count($rows)]);
   }
