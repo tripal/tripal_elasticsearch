@@ -121,6 +121,23 @@ function tripal_elasticsearch_api_v1_local_search() {
   ]));
 }
 
+function tripal_elasticsearch_api_v1_categories() {
+  return ESResponse::success([
+    [
+      'label' => 'Gene',
+      'table' => 'chado.feature',
+    ],
+    [
+      'label' => 'mRNA',
+      'table' => 'chado.feature',
+    ],
+    [
+      'label' => 'Organism',
+      'table' => 'chado.organism',
+    ]
+  ]);
+}
+
 /**
  * Get the search page.
  *
@@ -160,7 +177,7 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
     '#type' => 'textfield',
     '#size' => '50',
     '#attributes' => [
-      'placeholder' => t('E,g. Faxinus Excelsior mRNA'),
+      'placeholder' => t('E,g. Fraxinus Excelsior mRNA'),
       'id' => 'tripal-elasticsearch-search-field',
     ],
     '#required' => TRUE,
