@@ -64,16 +64,28 @@
         }).catch(function (error) {
           var response = error.response;
           if (response) {
-            var data = response.data.data;
-            $('#remote-host-' + remote.id).html(data.status);
+            if (response.status === 404) {
+              $('#remote-host-' + remote.id).html('Host Not Found');
+            }
+            else if (response.status === 500) {
+              $('#remote-host-' + remote.id).html('Server Error');
+            }
+            else {
+              var data = response.data.data;
+              $('#remote-host-' + remote.id).html(data.status);
+            }
           }
           else {
-            $('#remote-host-' + remote.id).html('Inactive');
+            $('#remote-host-' + remote.id).html('Invalid Host');
           }
 
           $('#remote-host-' + remote.id + '-circle').addClass('is-danger');
         });
       }.bind(this));
+    },
+
+    getCategories: function() {
+
     },
 
     /**

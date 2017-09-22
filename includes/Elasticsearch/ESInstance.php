@@ -105,7 +105,7 @@ class ESInstance {
       if (in_array('entities', $indices) && in_array('website', $indices)) {
         $queries[1]['query_string'] = [
           "fields" => ["type", "bundle_label"],
-          "query" => $node_type,
+          "query" => $node_type, // Gene or mRNA (feature,Gene)
           "default_operator" => "OR",
         ];
       }
