@@ -501,6 +501,7 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
     ];
     $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '', $offset)
                   ->search();
+    dpm($offset);
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
@@ -543,6 +544,7 @@ function tripal_elasticsearch_search_results_category_page_callback($node_type, 
     ];
     $search_results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '', $offset)
                          ->search();
+    dpm($offset);
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
