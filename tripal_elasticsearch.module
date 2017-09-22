@@ -469,8 +469,16 @@ function tripal_elasticsearch_menu_alter(&$items) {
  * tripal_elasticsearch_search_results_page_callback
  */
 function tripal_elasticsearch_search_results_page_callback($keyword = '') {
-  // $arg1 is empty by default. $arg1 has be to set, otherwise it will
-  // have a argument missing error when visit page 'tripal_elasticsearch/search_website'.
+  return tripal_elasticsearch_search_results_category_page_callback('', $keyword);
+}
+
+/**
+ * tripal_elasticsearch_search_results_category_page_callback
+ *
+ * @param string $node_type Category name
+ * @param string $keyword Keywords
+ */
+function tripal_elasticsearch_search_results_category_page_callback($node_type, $keyword) {
   if (empty($keyword)) {
     return 'Please enter some content into the search box and click the search button.';
   }
@@ -491,66 +499,23 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
     if (empty($index_name)) {
       return 'Searching is not available. Please try later.';
     }
-    $count = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '')
-                ->count();
+
     $per_page = 10;
-    $current_page = pager_default_initialize($count, $per_page);
-    $offset = [$current_page * $per_page, $per_page];
-    $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '', $offset)
-                  ->search();
+    $results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
+                  ->paginate($per_page);
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
 
   if (count($results) == 0) {
-    return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
+    return "Your search -<strong>" . $keyword . "</strong>- didn't match any content.";
   }
 
-  $pages = ceil($count / $per_page);
-  $content = '<p><strong>' . $count . ' results found</strong> <span style="float: right">Page ' . ($current_page + 1) . ' out of ' . $pages . '</span></p>';
-  $content .= get_website_search_result_table($results, FALSE);
-  $content .= theme('pager', ['quantity', $count]);
-
-  return $content;
-}
-
-/**
- * tripal_elasticsearch_search_results_category_page_callback
- */
-
-function tripal_elasticsearch_search_results_category_page_callback($node_type, $keyword) {
-  // Run Elasticsearch.
-  try {
-    $es = new ESInstance();
-    $indices = $es->getIndices();
-    $index_name = [];
-    if (in_array('website', $indices)) {
-      $index_name[] = 'website';
-    }
-
-    if (in_array('entities', $indices)) {
-      $index_name[] = 'entities';
-    }
-
-    $count = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
-                ->count();
-    $per_page = 10;
-    $current_page = pager_default_initialize($count, $per_page);
-    $offset = [$current_page * $per_page, $per_page];
-    $search_results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '', $offset)
-                         ->search();
-  } catch (\Exception $e) {
-    return 'Searching is not available. Please try later.';
-  }
-
-  if (count($search_results) == 0) {
-    return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
-  }
-
-  $pages = ceil($count / $per_page);
-  $content = '<p><strong>' . $count . ' results found</strong> <span style="float: right">Page ' . ($current_page + 1) . ' out of ' . $pages . '</span></p>';
-  $content .= get_website_search_result_table($search_results, FALSE);
-  $content .= theme('pager', ['quantity', $count]);
+  $current_page = $results['page'];
+  $pages = $results['pages'];
+  $content = '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
+  $content .= get_website_search_result_table($results['results'], FALSE);
+  $content .= $results['pager'];
 
   return $content;
 }
