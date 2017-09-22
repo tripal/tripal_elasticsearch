@@ -159,14 +159,14 @@ function tripal_elasticsearch_menu() {
   // Tripal Elasticsearch API Endpoints
 
   $items['elasticsearch/api/v1/status'] = [
-    'title' => 'Test',
+    'title' => t('Status'),
     'page callback' => 'tripal_elasticsearch_api_v1_status',
     'access arguments' => ['access content'],
     'type' => MENU_CALLBACK,
   ];
 
   $items['elasticsearch/api/v1/search/%'] = [
-    'title' => 'Test',
+    'title' => t('Search'),
     'page callback' => 'tripal_elasticsearch_api_v1_search',
     'access arguments' => ['access content'],
     'page arguments' => [4],
@@ -174,10 +174,17 @@ function tripal_elasticsearch_menu() {
   ];
 
   $items['elasticsearch/api/v1/local-search'] = [
-    'title' => 'Test',
+    'title' => t('Local Search'),
     'page callback' => 'tripal_elasticsearch_api_v1_local_search',
     'access arguments' => ['access content'],
     'page arguments' => [4],
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['elasticsearch/api/v1/categories'] = [
+    'title' => t('Categories'),
+    'page callback' => 'tripal_elasticsearch_api_v1_categories',
+    'access arguments' => ['access content'],
     'type' => MENU_CALLBACK,
   ];
 
@@ -402,11 +409,11 @@ function tripal_elasticsearch_block_view($delta = '') {
           $path = explode('/', $_GET['q']);
           if ($path[0] == 'tripal_elasticsearch' && $path[1] == 'search_website') {
             switch (count($path)) {
-              case '3':
+              case 3:
                 $keyword = $path[2];
                 $block['content'] = get_website_search_results_category_list($keyword);
                 break;
-              case '4':
+              case 4:
                 $keyword = $path[3];
                 $block['content'] = get_website_search_results_category_list($keyword);
                 break;
@@ -484,7 +491,15 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
     if (empty($index_name)) {
       return 'Searching is not available. Please try later.';
     }
-    $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '')
+    $count = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '')
+                ->count();
+    $per_page = 10;
+    $current_page = pager_default_initialize($count, $per_page);
+    $offset = [
+      $current_page * $per_page,
+      ($current_page * $per_page) + $per_page,
+    ];
+    $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '', $offset)
                   ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
@@ -494,7 +509,9 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
 
-  return get_website_search_result_table($results);
+  $content = get_website_search_result_table($results, FALSE);
+  $content .= theme('pager', ['quantity', $count]);
+  return $content;
 }
 
 /**
@@ -515,7 +532,15 @@ function tripal_elasticsearch_search_results_category_page_callback($node_type, 
       $index_name[] = 'entities';
     }
 
-    $search_results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
+    $count = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
+                ->count();
+    $per_page = 10;
+    $current_page = pager_default_initialize($count, $per_page);
+    $offset = [
+      $current_page * $per_page,
+      ($current_page * $per_page) + $per_page,
+    ];
+    $search_results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '', $offset)
                          ->search();
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
@@ -525,7 +550,10 @@ function tripal_elasticsearch_search_results_category_page_callback($node_type, 
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
 
-  return get_website_search_result_table($search_results);
+  $content = get_website_search_result_table($search_results, FALSE);
+  $content .= theme('pager', ['quantity', $count]);
+
+  return $content;
 }
 
 /**
