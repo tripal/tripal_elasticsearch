@@ -446,6 +446,8 @@ class ESInstance {
       'results' => $results,
       'total' => $total,
       'page' => $current_page,
+      'pages' => ceil($total / $per_page),
+      'pager' => theme('pager', ['quantity', $total])
     ];
   }
 
@@ -496,7 +498,7 @@ class ESInstance {
      *
      * @return array
      */
-  public function searchAllIndices($terms, $size, $category = null) {
+  public function searchAllIndices($terms, $size, $category = NULL) {
     $index_name = [];
 
     $indices = $this->getIndices();
