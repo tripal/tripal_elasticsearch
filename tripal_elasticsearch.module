@@ -495,14 +495,9 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
                 ->count();
     $per_page = 10;
     $current_page = pager_default_initialize($count, $per_page);
-    $offset = [
-      $current_page * $per_page,
-      ($current_page * $per_page) + $per_page,
-    ];
+    $offset = [$current_page * $per_page, $per_page];
     $results = $es->setWebsiteSearchParams($keyword, '', implode(',', $index_name), '', $offset)
                   ->search();
-    dpm($offset);
-    dpm(count($results));
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
@@ -539,14 +534,9 @@ function tripal_elasticsearch_search_results_category_page_callback($node_type, 
                 ->count();
     $per_page = 10;
     $current_page = pager_default_initialize($count, $per_page);
-    $offset = [
-      $current_page * $per_page,
-      ($current_page * $per_page) + $per_page,
-    ];
+    $offset = [$current_page * $per_page, $per_page];
     $search_results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '', $offset)
                          ->search();
-    dpm($offset);
-    dpm(count($search_results));
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
