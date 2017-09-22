@@ -272,8 +272,9 @@ function remote_delete_confirm($form, &$form_state, $remote_id) {
 function remote_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $remote_id = $form_state['values']['_remote_id'];
+    $remote = db_query('SELECT label FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_id])->fetchObject();
     db_query("DELETE FROM {tripal_elasticsearch_servers} WHERE id=:id", [':id' => $remote_id]);
-    drupal_set_message(t('Remote server ' . $remote_id . ' has been deleted successfully.'));
+    drupal_set_message(t('Remote server ' . $remote->label . ' has been deleted successfully.'));
   }
 
   drupal_goto("admin/tripal/extension/tripal_elasticsearch");

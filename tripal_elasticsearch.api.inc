@@ -307,13 +307,13 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
     $rows[] = [$row];
   }
 
-  $per_page = 10;
-  $current_page = pager_default_initialize(count($rows), $per_page);
+  //$per_page = 10;
+  //$current_page = pager_default_initialize(count($rows), $per_page);
 
   // split list into page sized chunks
-  $chunks = array_chunk($rows, $per_page, TRUE);
+  //$chunks = array_chunk($rows, $per_page, TRUE);
 
-  $output = theme('table', ['header' => [], 'rows' => $chunks[$current_page]]);
+  $output = theme('table', ['header' => [], 'rows' => $rows]);
   if ($pager) {
     $output .= theme('pager', ['quantity', count($rows)]);
   }

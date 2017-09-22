@@ -72,7 +72,7 @@ class ESResponse {
     drupal_add_http_header('Content-Type', 'application/ld+json');
     // Allow other sites to request results from us using AJAX directly
     drupal_add_http_header('Access-Control-Allow-Origin', '*');
-    drupal_add_http_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    drupal_add_http_header('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization, X-Requested-With');
     // Set the response code
     http_response_code($code);
   }
