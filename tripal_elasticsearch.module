@@ -506,7 +506,9 @@ function tripal_elasticsearch_search_results_page_callback($keyword = '') {
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
 
-  $content = get_website_search_result_table($results, FALSE);
+  $pages = ceil($count / $per_page);
+  $content = '<p><strong>' . $count . ' results found</strong> <span style="float: right">Page ' . ($current_page + 1) . ' out of ' . $pages . '</span></p>';
+  $content .= get_website_search_result_table($results, FALSE);
   $content .= theme('pager', ['quantity', $count]);
 
   return $content;
@@ -545,7 +547,9 @@ function tripal_elasticsearch_search_results_category_page_callback($node_type, 
     return "Your search -<b>" . $keyword . "</b>- didn't match any content.";
   }
 
-  $content = get_website_search_result_table($search_results, FALSE);
+  $pages = ceil($count / $per_page);
+  $content = '<p><strong>' . $count . ' results found</strong> <span style="float: right">Page ' . ($current_page + 1) . ' out of ' . $pages . '</span></p>';
+  $content .= get_website_search_result_table($search_results, FALSE);
   $content .= theme('pager', ['quantity', $count]);
 
   return $content;
