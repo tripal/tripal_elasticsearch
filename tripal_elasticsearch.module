@@ -428,6 +428,13 @@ function tripal_elasticsearch_menu_alter(&$items) {
     'access callback' => TRUE,
   ];
 
+  $items['tripal_elasticsearch/search_website/%'] = [
+    'title' => t('Search results'),
+    'page callback' => 'tripal_elasticsearch_web_search_results_page_callback',
+    'page arguments' => [2],
+    'access callback' => TRUE,
+  ];
+
   // Page to display table search result.
   $items['tripal_elasticsearch/search_table'] = [
     'title' => '',
@@ -448,11 +455,9 @@ function tripal_elasticsearch_menu_alter(&$items) {
  * tripal_elasticsearch_search_results_category_page_callback
  *
  * @param string $node_type Category name
- * @param string $keyword Keywords
  */
-function tripal_elasticsearch_web_search_results_page_callback() {
+function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
-  $node_type = isset($_GET['category']) ? $_GET['category'] : '';
 
   if (empty($keyword)) {
     return 'Please enter some content into the search box and click the search button.';
@@ -622,6 +627,7 @@ function tripal_elasticsearch_node_delete($node) {
 
 /**
  * @implements hook_entity_update()
+ *
  * @param $entity
  * @param $entity_type
  */
@@ -651,6 +657,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
 
 /**
  * @implements hook_entity_insert()
+ *
  * @param $entity
  * @param $entity_type
  */
@@ -658,9 +665,9 @@ function tripal_elasticsearch_entity_insert($entity, $entity_type) {
   tripal_elasticsearch_entity_update($entity, $entity_type);
 }
 
-
 /**
  * @implements hook_entity_deleted()
+ *
  * @param $entity
  * @param $entity_type
  */

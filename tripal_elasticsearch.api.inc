@@ -275,7 +275,7 @@ function get_website_search_results_category_list($keyword) {
   $items = [];
   foreach ($website_search_by_node_type['count'] as $category => $count) {
     $text = $category . ' (' . $count . ')';
-    $url = 'tripal_elasticsearch/search_website';
+    $url = 'tripal_elasticsearch/search_website/' . $category;
     $items[] = l($text, $url, [
       'query' => [
         'search_box' => $website_search_by_node_type['keyword'],

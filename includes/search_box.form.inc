@@ -15,7 +15,7 @@
  */
 function website_search_box_form($form, &$form_state) {
   $default = isset($_GET['search_box']) ? $_GET['search_box'] : '';
-
+  $category = isset($_GET['category']) ? $_GET['category'] : '';
   $form['container'] = [
     '#type' => 'container',
     '#attributes' => [
@@ -29,13 +29,18 @@ function website_search_box_form($form, &$form_state) {
     '#default_value' => $default,
   ];
 
+  $form['container']['category'] = [
+    '#type' => 'hidden',
+    '#value' => $category,
+  ];
+
   $form['container']['submit'] = [
     '#type' => 'submit',
     '#value' => t('Search'),
   ];
 
   $form['#method'] = 'GET';
-  $form['#action'] = '/tripal_elasticsearch/search_website';
+  $form['#action'] = '/tripal_elasticsearch/search_website/' . $category;
 
   return $form;
 }
@@ -47,7 +52,8 @@ function website_search_box_form($form, &$form_state) {
  * @param $form_state
  */
 function website_search_box_form_submit($form, &$form_state) {
-  $keyword = $form_state['values']['search_box'];
+  /*
+   * $keyword = $form_state['values']['search_box'];
   $url = "tripal_elasticsearch/search_website/$keyword";
   // only redirect to the search results page when $keyword is not empty.
   if (empty($keyword)) {
@@ -56,6 +62,7 @@ function website_search_box_form_submit($form, &$form_state) {
   else {
     drupal_goto($url);
   }
+   */
 }
 
 /**
