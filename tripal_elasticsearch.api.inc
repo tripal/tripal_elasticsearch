@@ -219,7 +219,7 @@ function get_website_search_results_category_list($keyword) {
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_WARNING', $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
-    return [];
+    return '';
   }
 
   $node_types = [];
@@ -264,15 +264,24 @@ function get_website_search_results_category_list($keyword) {
   ];
 
   $all_categories_text = 'All categories (' . $website_search_by_node_type['count']['all categories'] . ')';
-  $all_categories_link = 'tripal_elasticsearch/search_website/' . $website_search_by_node_type['keyword'];
-  $output = l($all_categories_text, $all_categories_link);
+  $all_categories_link = 'tripal_elasticsearch/search_website';
+  $output = l($all_categories_text, $all_categories_link, [
+    'query' => [
+      'search_box' => $website_search_by_node_type['keyword'],
+    ],
+  ]);
   unset($website_search_by_node_type['count']['all categories']);
 
   $items = [];
   foreach ($website_search_by_node_type['count'] as $category => $count) {
     $text = $category . ' (' . $count . ')';
-    $url = 'tripal_elasticsearch/search_website/' . $category . '/' . $website_search_by_node_type['keyword'];
-    $items[] = l($text, $url);
+    $url = 'tripal_elasticsearch/search_website';
+    $items[] = l($text, $url, [
+      'query' => [
+        'search_box' => $website_search_by_node_type['keyword'],
+        'category' => $category,
+      ],
+    ]);
   }
 
   $output .= theme('item_list', ['items' => $items]);
@@ -316,7 +325,7 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
     'header' => [],
     'rows' => $rows,
     'attributes' => [
-      'id' => 'es-search-results-table'
+      'id' => 'es-search-results-table',
     ],
   ]);
   if ($pager) {

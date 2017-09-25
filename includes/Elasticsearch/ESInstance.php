@@ -445,7 +445,7 @@ class ESInstance {
     return [
       'results' => $results,
       'total' => $total,
-      'page' => $current_page,
+      'page' => $current_page + 1,
       'pages' => ceil($total / $per_page),
       'pager' => theme('pager', ['quantity', $total])
     ];

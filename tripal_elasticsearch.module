@@ -381,7 +381,7 @@ function tripal_elasticsearch_block_view($delta = '') {
         drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
         $search_results = tripal_elasticsearch_paginate(10);
         $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
-        $page_number = $search_results['page'] + 1;
+        $page_number = $search_results['page'];
         $total_pages = ceil($search_results['total'] / 10);
 
         $page['download'] = [
@@ -405,22 +405,12 @@ function tripal_elasticsearch_block_view($delta = '') {
         break;
       case 'website_search_category':
         $block['subject'] = '';
+        $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
+
         if (isset($_GET['q'])) {
           $path = explode('/', $_GET['q']);
           if ($path[0] == 'tripal_elasticsearch' && $path[1] == 'search_website') {
-            switch (count($path)) {
-              case 3:
-                $keyword = $path[2];
-                $block['content'] = get_website_search_results_category_list($keyword);
-                break;
-              case 4:
-                $keyword = $path[3];
-                $block['content'] = get_website_search_results_category_list($keyword);
-                break;
-              default:
-                $block['content'] = '';
-                break;
-            }
+            $block['content'] = get_website_search_results_category_list($keyword);
           }
         }
         break;
@@ -437,16 +427,8 @@ function tripal_elasticsearch_menu_alter(&$items) {
   // Page to display website search results for all node types.
   $items['tripal_elasticsearch/search_website'] = [
     'title' => t('Search results'),
-    'page callback' => 'tripal_elasticsearch_search_results_page_callback',
+    'page callback' => 'tripal_elasticsearch_web_search_results_page_callback',
     'access callback' => TRUE,
-  ];
-
-  // Page to display website search result for a specific node type.
-  $items['tripal_elasticsearch/search_website/%/%'] = [
-    'title' => t('Search results'),
-    'page callback' => 'tripal_elasticsearch_search_results_category_page_callback',
-    'page arguments' => [2, 3],
-    'access callback' => user_access('access content'),
   ];
 
   // Page to display table search result.
@@ -466,19 +448,15 @@ function tripal_elasticsearch_menu_alter(&$items) {
 }
 
 /**
- * tripal_elasticsearch_search_results_page_callback
- */
-function tripal_elasticsearch_search_results_page_callback($keyword = '') {
-  return tripal_elasticsearch_search_results_category_page_callback('', $keyword);
-}
-
-/**
  * tripal_elasticsearch_search_results_category_page_callback
  *
  * @param string $node_type Category name
  * @param string $keyword Keywords
  */
-function tripal_elasticsearch_search_results_category_page_callback($node_type, $keyword) {
+function tripal_elasticsearch_web_search_results_page_callback() {
+  $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
+  $node_type = isset($_GET['category']) ? $_GET['category'] : '';
+
   if (empty($keyword)) {
     return 'Please enter some content into the search box and click the search button.';
   }
