@@ -263,11 +263,16 @@ function get_website_search_results_category_list($keyword) {
     'count' => $search_website_count_by_category,
   ];
 
+  $output = '<h4>Filter by Category</h4>';
+
   $all_categories_text = 'All categories (' . $website_search_by_node_type['count']['all categories'] . ')';
   $all_categories_link = 'tripal_elasticsearch/search_website';
-  $output = l($all_categories_text, $all_categories_link, [
+  $output .= l($all_categories_text, $all_categories_link, [
     'query' => [
       'search_box' => $website_search_by_node_type['keyword'],
+    ],
+    'attributes' => [
+      'class' => ['es-category-item', 'es-category-item__all'],
     ],
   ]);
   unset($website_search_by_node_type['count']['all categories']);
@@ -280,6 +285,9 @@ function get_website_search_results_category_list($keyword) {
       'query' => [
         'search_box' => $website_search_by_node_type['keyword'],
         'category' => $category,
+      ],
+      'attributes' => [
+        'class' => ['es-category-item'],
       ],
     ]);
   }
