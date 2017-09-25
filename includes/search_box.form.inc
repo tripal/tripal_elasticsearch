@@ -29,14 +29,14 @@ function website_search_box_form($form, &$form_state) {
     '#default_value' => $default,
   ];
 
-  $form['container']['category'] = [
-    '#type' => 'hidden',
-    '#value' => $category,
-  ];
-
   $form['container']['submit'] = [
     '#type' => 'submit',
     '#value' => t('Search'),
+  ];
+
+  $form['container']['category'] = [
+    '#type' => 'hidden',
+    '#value' => $category,
   ];
 
   $form['#method'] = 'GET';
