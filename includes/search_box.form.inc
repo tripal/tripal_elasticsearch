@@ -14,18 +14,7 @@
  * @return mixed
  */
 function website_search_box_form($form, &$form_state) {
-  $default = '';
-  if (isset($_GET['q'])) {
-    $path = explode('/', $_GET['q']);
-    switch (count($path)) {
-      case 3:
-        $default = $path[2];
-        break;
-      case 4:
-        $default = $path[3];
-        break;
-    }
-  }
+  $default = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
   $form['container'] = [
     '#type' => 'container',
@@ -44,6 +33,9 @@ function website_search_box_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Search'),
   ];
+
+  $form['#method'] = 'GET';
+  $form['#action'] = '/tripal_elasticsearch/search_website';
 
   return $form;
 }
