@@ -70,8 +70,8 @@ function table_search_interface_building_form($form, &$form_state) {
     $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch_indices} WHERE index_name = :index_name ";
     $dbtable = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchCol('table_name');
     $table_name = $dbtable[0];
-    if (!$table_name) {
 
+    if (!$table_name) {
       drupal_set_message(t("Error: no database table associated with this index.  Recreate the index and try again."), 'error');
     }
 
@@ -187,7 +187,6 @@ function table_search_interface_building_form($form, &$form_state) {
     ];
     $form['manage_block']['field_settings'][$field]['title'] = [
       '#type' => 'textfield',
-      '#title' => t('Available fields'),
       '#title' => t('Field title'),
       '#default_value' => t($settings["form_field_title"]),
     ];
@@ -203,6 +202,7 @@ function table_search_interface_building_form($form, &$form_state) {
       'textfield' => 'textfield',
       'select' => 'select',
     ];
+
     $form['manage_block']['field_settings'][$field]['type'] = [
       '#type' => 'select',
       '#title' => t('Field type'),
@@ -232,18 +232,17 @@ function table_search_interface_building_form($form, &$form_state) {
       ],
     ];
 
-
-      $form['manage_block']['field_settings'][$field]['weight'] = [
+    $form['manage_block']['field_settings'][$field]['weight'] = [
       '#type' => 'select',
       '#title' => t('Field weight'),
-      '#description' => t('The search rank weight for this field.  A higher weight means matches in this field will influence the relevance more.'),
+      '#description' => t('The search rank weight for this field. A higher weight means matches in this field will influence the relevance more.'),
       '#options' => drupal_map_assoc(range(0, 20)),
       '#default_value' => $settings["form_field_weight"],
     ];
     $form['manage_block']['field_settings'][$field]['url_link'] = [
       '#title' => 'URL linking',
       '#type' => 'textfield',
-      '#description' => t('A URL linking for this field.  You can add a static url (https://www.ncbi.nim.nih.gov) or a dynamic field (organism/[genus]/[species]'),
+      '#description' => t('A URL linking for this field. You can add a static url (https://www.ncbi.nim.nih.gov) or a dynamic field (organism/[genus]/[species]'),
       '#default_value' => $settings["url"],
 
     ];
@@ -254,7 +253,7 @@ function table_search_interface_building_form($form, &$form_state) {
     '#value' => t('Submit'),
   ];
 
-  return ($form);
+  return $form;
 }
 
 /**
@@ -353,9 +352,7 @@ function table_search_interface_building_form_submit($form, &$form_state) {
  * set checkbox default values for table_search_interface_building_form
  */
 function tripal_elasticsearch_form_table_search_interface_building_form_alter(
-  &$form,
-  &$form_state,
-  $form_id
+  &$form, &$form_state, $form_id
 ) {
   if (!isset($form['manage_block']['index_fields'])) {
     return;

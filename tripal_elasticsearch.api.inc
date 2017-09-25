@@ -372,10 +372,22 @@ function get_table_search_result_table($search_results, $index_name, $total) {
     //		$field_url_pairs[$field] = preg_replace('/\[(.+)\]/U', '\$${1}', $url);
   }
 
-  $rows = $search_results;
   $filtered_results = array_filter($field_url_pairs, function ($item) {
     return !empty($item);
   });
+
+  $rows = [];
+  foreach ($search_results as $result) {
+    $row = [];
+    foreach ($result as $key => $value) {
+      if(!isset($titles[$key])) {
+        continue;
+      }
+      $row[$key] = $value;
+    }
+
+    $rows[] = $row;
+  }
 
   // Add links to search results.
   if (!empty($filtered_results)) {
@@ -412,6 +424,10 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   $i = 0;
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
+      if(!isset($titles[$key])) {
+        continue;
+      }
+
       $title = $titles[$key];
 
       $header = [
