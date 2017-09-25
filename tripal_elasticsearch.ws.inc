@@ -117,7 +117,12 @@ function tripal_elasticsearch_api_v1_local_search() {
   }
 
   return ESResponse::success(array_merge($results, [
-    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/' . $terms),
+    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/'.$category, [
+        'query' => [
+          'search_box' => $terms,
+          'category' => $category
+        ],
+      ]),
   ]));
 }
 
@@ -134,7 +139,7 @@ function tripal_elasticsearch_api_v1_categories() {
     [
       'label' => 'Organism',
       'table' => 'chado.organism',
-    ]
+    ],
   ]);
 }
 
