@@ -383,9 +383,7 @@ class ESInstance {
    * @param array $field_mapping_types
    * @param int $queue_count
    */
-  public function populateIndex(
-    $type, $index_table, $index_name, $index_type, $field_mapping_types, $queue_count
-  ) {
+  public function populateIndex($type, $index_table, $index_name, $index_type, $field_mapping_types, $queue_count) {
     // Get row count of selected table.
     $row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
     // Get total number of offsets (offset interval is 1000)
@@ -447,7 +445,7 @@ class ESInstance {
       'total' => $total,
       'page' => $current_page + 1,
       'pages' => ceil($total / $per_page),
-      'pager' => theme('pager', ['quantity', $total])
+      'pager' => theme('pager', ['quantity', $total]),
     ];
   }
 

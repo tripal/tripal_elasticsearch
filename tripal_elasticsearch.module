@@ -407,11 +407,8 @@ function tripal_elasticsearch_block_view($delta = '') {
         $block['subject'] = '';
         $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
-        if (isset($_GET['q'])) {
-          $path = explode('/', $_GET['q']);
-          if ($path[0] == 'tripal_elasticsearch' && $path[1] == 'search_website') {
-            $block['content'] = get_website_search_results_category_list($keyword);
-          }
+        if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
+          $block['content'] = get_website_search_results_category_list($keyword);
         }
         break;
     }
@@ -605,23 +602,7 @@ function tripal_elasticsearch_node_update($node) {
  * Implements hook_node_insert()
  */
 function tripal_elasticsearch_node_insert($node) {
-  $item = new stdClass();
-
-  $item->index_name = 'website';
-  $item->index_type = 'website';
-  $item->website_or_table = 'website';
-  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
-  $item->field_mapping_types = [
-    'nid' => 'integer',
-    'type' => 'string',
-    'title' => 'string',
-    'content' => 'string',
-  ];
-
-  // randomly assign the updated node to a cron queue
-  $id = rand(1, 10);
-  $cron_queue = DrupalQueue::get('elasticsearch_queue_' . $id);
-  $cron_queue->createItem($item);
+  tripal_elasticsearch_node_update($node);
 }
 
 /**
@@ -635,6 +616,62 @@ function tripal_elasticsearch_node_delete($node) {
     watchdog('tripal_elasticsearch', $message);
   } catch (\Exception $e) {
     $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
+    watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+  }
+}
+
+/**
+ * @implements hook_entity_update()
+ * @param $entity
+ * @param $entity_type
+ */
+function tripal_elasticsearch_entity_update($entity, $entity_type) {
+  $item = new stdClass();
+
+  $item->index_name = 'entities';
+  $item->index_type = 'entities';
+  $item->website_or_table = 'entities';
+  $item->sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
+              FROM tripal_entity
+              JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
+              WHERE tripal_entity.id={$entity->id}";
+
+  $item->field_mapping_types = [
+    'entity_id' => 'integer',
+    'bundle_label' => 'string',
+    'title' => 'string',
+    'content' => 'string',
+  ];
+
+  // randomly assign the updated node to a cron queue
+  $id = rand(1, 10);
+  $cron_queue = DrupalQueue::get('elasticsearch_queue_' . $id);
+  $cron_queue->createItem($item);
+}
+
+/**
+ * @implements hook_entity_insert()
+ * @param $entity
+ * @param $entity_type
+ */
+function tripal_elasticsearch_entity_insert($entity, $entity_type) {
+  tripal_elasticsearch_entity_update($entity, $entity_type);
+}
+
+
+/**
+ * @implements hook_entity_deleted()
+ * @param $entity
+ * @param $entity_type
+ */
+function tripal_elasticsearch_entity_delete($entity, $type) {
+  try {
+    $es = new ESInstance();
+    $es->deleteEntry('entities', 'entities', $entity->id);
+    $message = 'Removed document ' . $entity->id . 'from index "entities"';
+    watchdog('tripal_elasticsearch', $message, WATCHDOG_INFO);
+  } catch (\Exception $e) {
+    $message = $e->getMessage() . ' Failed to delete indexed entity ' . $entity->id;
     watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
   }
 }
