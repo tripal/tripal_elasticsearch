@@ -84,7 +84,7 @@
       }.bind(this));
     },
 
-    getCategories: function() {
+    getCategories: function () {
 
     },
 
@@ -170,6 +170,9 @@
           this.state.sitesCount++;
           block.find('.elastic-result-block-content').html(data.markup);
           block.find('.elastic-result-block-count').html((data.count || 0) + ' total results');
+
+          var event = $.Event('elasticsearch.completed');
+          $(document).trigger(event, {remote: remote});
         }.bind(this)).catch(function (error) {
           console.log(error);
           //block.slideUp();

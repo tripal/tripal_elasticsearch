@@ -152,15 +152,9 @@ function tripal_elasticsearch_api_v1_categories() {
  * @return mixed
  */
 function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
-
   $form['options'] = [
     '#type' => 'fieldset',
-    '#attributes' => ['class' => ['container-inline']],
-  ];
-
-  $form['options']['label'] = [
-    '#type' => 'markup',
-    '#markup' => '<p><label>' . t('Enter Search Terms') . '</label></p>',
+    '#attributes' => ['class' => ['container-inline', 'es-cross-site-search-form']],
   ];
 
   $form['options']['category'] = [
