@@ -148,13 +148,13 @@ function tripal_elasticsearch_menu() {
   ];
 
   // Cross site search page
-  $items['elasticsearch/cross-site'] = [
-    'title' => t('Cross Site Search'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_elasticsearch_cross_site_search_form'],
-    'access arguments' => ['access content'],
-    'type' => MENU_NORMAL_ITEM,
-  ];
+  //$items['elasticsearch/cross-site'] = [
+  //  'title' => t('Cross Site Search'),
+  //  'page callback' => 'drupal_get_form',
+  //  'page arguments' => ['tripal_elasticsearch_cross_site_search_form'],
+  //  'access arguments' => ['access content'],
+  //  'type' => MENU_NORMAL_ITEM,
+  //];
 
   // Tripal Elasticsearch API Endpoints
 
@@ -333,6 +333,13 @@ function tripal_elasticsearch_block_info() {
     'page' => "tripal_elasticsearch/search_website\ntripal_elasticsearch/search_website/*",
   ];
 
+  $blocks['cross_site_search_block'] = [
+    'info' => t('Tripal Elasticsearch cross site search form'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'cache' => DRUPAL_NO_CACHE,
+    'page' => "elasticsearch/cross-site",
+  ];
+
   // Define blocks for table search forms.
   $sql = "SELECT index_name FROM {tripal_elasticsearch}";
   $index_names = db_query($sql)->fetchCol('index_name');
@@ -357,6 +364,43 @@ function tripal_elasticsearch_build_download_url() {
   return url('tripal_elasticsearch/download/results', $query);
 }
 
+function tripal_elasticsearch_generate_block($delta) {
+  $block = [];
+
+  $index_name = preg_replace('/^(tes_)/', '', $delta);
+
+  // Use index name obtained from block name and query the database.
+  $sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
+  $result = db_query($sql, [':index_name' => $index_name])->fetchCol('index_name');
+
+  // If query result is not empty, display the block.
+  if (!empty($result)) {
+    $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
+
+    $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
+    if (isset($_GET['op'])) {
+      drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
+      $search_results = tripal_elasticsearch_paginate(10);
+      $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
+      $page_number = $search_results['page'];
+      $total_pages = ceil($search_results['total'] / 10);
+
+      $page['download'] = [
+        '#markup' => '<p>' . '<a href="' . tripal_elasticsearch_build_download_url() . '" target="_blank">Download all results in csv format</a>' . '</p>',
+      ];
+      $page['count'] = [
+        '#markup' => "<div style='font-weight: bold; margin: 10px 0'>" . "<p style='float: right'>Showing page {$page_number} out of {$total_pages} pages.</p>" . "<p>Found {$search_results['total']} results.</p>" . "</div>",
+      ];
+      $page['results'] = [
+        '#markup' => $markup,
+      ];
+    }
+    $block['content'] = $page;
+  }
+
+  return $block;
+}
+
 /**
  * Implements hook_block_view().
  *
@@ -364,54 +408,29 @@ function tripal_elasticsearch_build_download_url() {
  */
 function tripal_elasticsearch_block_view($delta = '') {
   $block = [];
+
   // Get index name from table search block name.
   if (preg_match('/^(tes_)/', $delta)) {
-    $index_name = preg_replace('/^(tes_)/', '', $delta);
-
-    // Use index name obtained from block name and query the database.
-    $sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-    $result = db_query($sql, [':index_name' => $index_name])->fetchCol('index_name');
-
-    // If query result is not empty, display the block.
-    if (!empty($result)) {
-      $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
-
-      $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
-      if (isset($_GET['op'])) {
-        drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
-        $search_results = tripal_elasticsearch_paginate(10);
-        $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
-        $page_number = $search_results['page'];
-        $total_pages = ceil($search_results['total'] / 10);
-
-        $page['download'] = [
-          '#markup' => '<p>' . '<a href="' . tripal_elasticsearch_build_download_url() . '" target="_blank">Download all results in csv format</a>' . '</p>',
-        ];
-        $page['count'] = [
-          '#markup' => "<div style='font-weight: bold; margin: 10px 0'>" . "<p style='float: right'>Showing page {$page_number} out of {$total_pages} pages.</p>" . "<p>Found {$search_results['total']} results.</p>" . "</div>",
-        ];
-        $page['results'] = [
-          '#markup' => $markup,
-        ];
-      }
-      $block['content'] = $page;
-    }
+    return tripal_elasticsearch_generate_block($delta);
   }
-  else {
-    switch ($delta) {
-      case 'elasticsearch_website_search_box':
-        $block['subject'] = '';
-        $block['content'] = drupal_get_form('website_search_box_form');
-        break;
-      case 'website_search_category':
-        $block['subject'] = '';
-        $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
-        if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
-          $block['content'] = get_website_search_results_category_list($keyword);
-        }
-        break;
-    }
+  switch ($delta) {
+    case 'elasticsearch_website_search_box':
+      $block['subject'] = '';
+      $block['content'] = drupal_get_form('website_search_box_form');
+      break;
+    case 'website_search_category':
+      $block['subject'] = '';
+      $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
+
+      if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
+        $block['content'] = get_website_search_results_category_list($keyword);
+      }
+      break;
+    case 'cross_site_search_block':
+      $block['subject'] = '';
+      $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
+      break;
   }
 
   return $block;
@@ -632,8 +651,11 @@ function tripal_elasticsearch_node_delete($node) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_update($entity, $entity_type) {
-  $item = new stdClass();
+  if (strstr($entity_type, 'Tripal') === FALSE) {
+    return;
+  }
 
+  $item = new stdClass();
   $item->index_name = 'entities';
   $item->index_type = 'entities';
   $item->website_or_table = 'entities';
