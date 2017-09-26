@@ -94,6 +94,8 @@
      * method).
      */
     setupSearchPage: function () {
+      $('input[name="search_term"]').attr('maxlength', null);
+
       $('#tripal-elasticsearch-search-button').click(function (e) {
         e.preventDefault();
         var form     = {};
@@ -176,7 +178,6 @@
         }.bind(this)).catch(function (error) {
           console.log(error);
           this.state.emptySites.push({block: block, remote: remote});
-          this.updateStats();
         }.bind(this)).then(this.updateStats.bind(this));
       }.bind(this));
     },
