@@ -608,7 +608,7 @@ function tripal_elasticsearch_node_update($node) {
   $item->index_name = 'website';
   $item->index_type = 'website';
   $item->website_or_table = 'website';
-  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
+  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid AND status=1";
   $item->field_mapping_types = [
     'nid' => 'integer',
     'type' => 'string',
@@ -662,7 +662,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   $item->sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              WHERE tripal_entity.id={$entity->id}";
+              WHERE tripal_entity.id={$entity->id} AND status=1";
 
   $item->field_mapping_types = [
     'entity_id' => 'integer',

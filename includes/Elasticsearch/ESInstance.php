@@ -401,13 +401,13 @@ class ESInstance {
 
       // Use the first field to sort the table
       if ($type == 'website') {
-        $sql = "SELECT nid, title, type FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
+        $sql = "SELECT nid, title, type FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET WHERE status=1";
       }
       elseif ($type == 'entities') {
         $sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              ORDER BY title ASC LIMIT $k OFFSET $OFFSET";
+              ORDER BY title ASC LIMIT $k OFFSET $OFFSET WHERE status=1";
       }
       else {
         $sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
