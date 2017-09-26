@@ -17,7 +17,7 @@
 
       this.axios   = window.axios.create({
         baseURL: '/elasticsearch/api/v1',
-        timeout: 20000,
+        timeout: 10000,
         headers: {
           'Accept'          : 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
