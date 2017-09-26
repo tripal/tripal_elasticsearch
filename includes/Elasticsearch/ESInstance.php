@@ -432,7 +432,8 @@ class ESInstance {
    */
   public function paginate($per_page) {
     $total = $this->count();
-    $current_page = pager_default_initialize(min($total, 10 * 100000), $per_page);
+    $total = min($total, 10 * 100000);
+    $current_page = pager_default_initialize($total, $per_page);
 
     // Set the offset.
     $this->searchParams['from'] = $per_page * $current_page;
