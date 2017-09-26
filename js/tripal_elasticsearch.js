@@ -224,6 +224,10 @@
     readHistory: function () {
       if (window.history) {
         var state = window.history.state;
+        if (!state) {
+          return;
+        }
+
         if (state.terms) {
           $('#tripal-elasticsearch-search-field').val(state.terms);
         }
