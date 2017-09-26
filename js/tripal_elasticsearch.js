@@ -175,7 +175,8 @@
           $(document).trigger(event, {remote: remote});
         }.bind(this)).catch(function (error) {
           console.log(error);
-          block.slideUp();
+          this.state.emptySites.push({block: block, remote: remote});
+          this.updateStats();
         }.bind(this)).then(this.updateStats.bind(this));
       }.bind(this));
     },
