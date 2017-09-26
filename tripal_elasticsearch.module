@@ -649,7 +649,7 @@ function tripal_elasticsearch_node_delete($node) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_update($entity, $entity_type) {
-  if (strstr($entity_type, 'Tripal') === FALSE) {
+  if ($entity_type === 'TripalEntity') {
     return;
   }
 
@@ -698,7 +698,7 @@ function tripal_elasticsearch_entity_insert($entity, $entity_type) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_delete($entity, $type) {
-  if (strstr($type, 'Tripal') === FALSE) {
+  if ($type === 'TripalEntity') {
     return;
   }
 

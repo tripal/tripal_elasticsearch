@@ -318,7 +318,10 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
         $row = '<h3><a href="' . $base_url . '/bio_data/' . $item->entity_id . '">' . $item->title . '</a></h3>';
       }
     }
-    $row .= '<p>' . $item->highlight . '</p>';
+
+    if (property_exists($item, 'highlight')) {
+      $row .= '<p>' . $item->highlight . '</p>';
+    }
 
     $rows[] = [$row];
   }
