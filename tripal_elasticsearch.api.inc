@@ -216,29 +216,23 @@ function build_search_query_from_field_content_pairs(array $field_content_pairs,
 function get_website_search_results_category_list($keyword) {
   try {
     $es = new ESInstance();
+    $indices = $es->getIndices();
+    $types = $es->getAllCategories();
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_WARNING', $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
     return '';
   }
 
-  $node_types = [];
-  $entity_types = [];
   $index_name = [];
-  $indices = $es->getIndices();
 
   if (in_array('website', $indices)) {
-    // Get all node types from node table.
-    $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchCol('type');
     $index_name[] = 'website';
   }
 
   if (in_array('entities', $indices)) {
-    $entity_types = db_query("SELECT DISTINCT(label) FROM {tripal_bundle}")->fetchCol('label');
     $index_name[] = 'entities';
   }
-
-  $types = array_merge($node_types, $entity_types);
 
   // Save search results count to an associative array with node types as keys.
   $search_website_count_by_category = [];
@@ -380,7 +374,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   foreach ($search_results as $result) {
     $row = [];
     foreach ($result as $key => $value) {
-      if(!isset($titles[$key])) {
+      if (!isset($titles[$key])) {
         continue;
       }
       $row[$key] = $value;
@@ -424,7 +418,7 @@ function get_table_search_result_table($search_results, $index_name, $total) {
   $i = 0;
   if (!empty($search_results)) {
     foreach ($search_results[0] as $key => $value) {
-      if(!isset($titles[$key])) {
+      if (!isset($titles[$key])) {
         continue;
       }
 

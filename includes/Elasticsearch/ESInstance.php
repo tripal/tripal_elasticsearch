@@ -460,6 +460,35 @@ class ESInstance {
   }
 
   /**
+   * Get all available categories.
+   *
+   * @return array
+   */
+  public function getAllCategories($version = NULL) {
+    $node_types = [];
+    $entity_types = [];
+    $index_name = [];
+    $indices = $this->getIndices();
+
+    if (in_array('website', $indices) && ($version === NULL || $version === 2)) {
+      // Get all node types from the node table.
+      $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchCol('type');
+      $index_name[] = 'website';
+    }
+
+    if (in_array('entities', $indices) && ($version === NULL || $version === 3)) {
+      // Get all tripal entity types from the tripal_bundle table.
+      $entity_types = db_query("SELECT DISTINCT(label) FROM {tripal_bundle}")->fetchCol('label');
+      $index_name[] = 'entities';
+    }
+
+    $types =  array_merge($node_types, $entity_types);
+    sort($types);
+
+    return $types;
+  }
+
+  /**
    * Return settings for a particular index
    *
    * @return array
