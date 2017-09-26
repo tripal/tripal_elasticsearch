@@ -147,17 +147,9 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
-  // Cross site search page
-  //$items['elasticsearch/cross-site'] = [
-  //  'title' => t('Cross Site Search'),
-  //  'page callback' => 'drupal_get_form',
-  //  'page arguments' => ['tripal_elasticsearch_cross_site_search_form'],
-  //  'access arguments' => ['access content'],
-  //  'type' => MENU_NORMAL_ITEM,
-  //];
-
   // Tripal Elasticsearch API Endpoints
-
+  // ----------------------------------
+  
   $items['elasticsearch/api/v1/status'] = [
     'title' => t('Status'),
     'page callback' => 'tripal_elasticsearch_api_v1_status',
