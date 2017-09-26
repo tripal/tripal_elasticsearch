@@ -147,17 +147,9 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
-  // Cross site search page
-  //$items['elasticsearch/cross-site'] = [
-  //  'title' => t('Cross Site Search'),
-  //  'page callback' => 'drupal_get_form',
-  //  'page arguments' => ['tripal_elasticsearch_cross_site_search_form'],
-  //  'access arguments' => ['access content'],
-  //  'type' => MENU_NORMAL_ITEM,
-  //];
-
   // Tripal Elasticsearch API Endpoints
-
+  // ----------------------------------
+  
   $items['elasticsearch/api/v1/status'] = [
     'title' => t('Status'),
     'page callback' => 'tripal_elasticsearch_api_v1_status',
@@ -605,10 +597,16 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 function tripal_elasticsearch_node_update($node) {
   $item = new stdClass();
 
+  // Delete entity if it's status changed
+  if ($node->status === 0) {
+    tripal_elasticsearch_node_delete($node);
+    return;
+  }
+
   $item->index_name = 'website';
   $item->index_type = 'website';
   $item->website_or_table = 'website';
-  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid";
+  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid AND status=1";
   $item->field_mapping_types = [
     'nid' => 'integer',
     'type' => 'string',
@@ -655,6 +653,12 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
+  // Delete entity if it's status changed
+  if ($entity->status === 0) {
+    tripal_elasticsearch_entity_delete($entity, $entity_type);
+    return;
+  }
+
   $item = new stdClass();
   $item->index_name = 'entities';
   $item->index_type = 'entities';
@@ -662,7 +666,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   $item->sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              WHERE tripal_entity.id={$entity->id}";
+              WHERE tripal_entity.id={$entity->id} AND status=1";
 
   $item->field_mapping_types = [
     'entity_id' => 'integer',
@@ -694,6 +698,10 @@ function tripal_elasticsearch_entity_insert($entity, $entity_type) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_delete($entity, $type) {
+  if (strstr($type, 'Tripal') === FALSE) {
+    return;
+  }
+
   try {
     $es = new ESInstance();
     $es->deleteEntry('entities', 'entities', $entity->id);
