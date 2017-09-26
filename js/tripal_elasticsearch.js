@@ -96,6 +96,8 @@
     setupSearchPage: function () {
       $('input[name="search_term"]').attr('maxlength', null);
 
+      this.readHistory();
+
       $('#tripal-elasticsearch-search-button').click(function (e) {
         e.preventDefault();
         var form     = {};
@@ -103,6 +105,8 @@
 
         form.terms    = $('#tripal-elasticsearch-search-field').val();
         form.category = category === 'Any Type' ? null : category;
+
+        this.pushHistory(form);
         this.sendSearchRequest(form);
       }.bind(this));
     },
@@ -209,6 +213,45 @@
       block.append(content);
 
       return block;
+    },
+
+    pushHistory: function (state) {
+      if (window.history) {
+        window.history.pushState(state, window.document.title, this._url(state));
+      }
+    },
+
+    readHistory: function () {
+      if (window.history) {
+        var state = window.history.state;
+        if (state.terms) {
+          $('#tripal-elasticsearch-search-field').val(state.terms);
+        }
+
+        if (state.category) {
+          $('#tripal-elasticsearch-search-category').val(state.category);
+        }
+
+        if (state.category || state.terms) {
+          var form = {
+            category: state.category || null,
+            terms   : state.terms
+          };
+          this.sendSearchRequest(form);
+        }
+      }
+    },
+
+    _url: function (state) {
+      var url = '?';
+      Object.keys(state).map(function (key, index) {
+        if (index > 0) {
+          url += '&';
+        }
+        url += key + '=' + state[key];
+      });
+
+      return window.location.pathname + url;
     }
   };
 }(jQuery));
