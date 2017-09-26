@@ -605,6 +605,12 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
 function tripal_elasticsearch_node_update($node) {
   $item = new stdClass();
 
+  // Delete entity if it's status changed
+  if ($node->status === 0) {
+    tripal_elasticsearch_node_delete($node);
+    return;
+  }
+
   $item->index_name = 'website';
   $item->index_type = 'website';
   $item->website_or_table = 'website';
@@ -655,6 +661,12 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
+  // Delete entity if it's status changed
+  if ($entity->status === 0) {
+    tripal_elasticsearch_entity_delete($entity, $entity_type);
+    return;
+  }
+
   $item = new stdClass();
   $item->index_name = 'entities';
   $item->index_type = 'entities';
@@ -694,6 +706,10 @@ function tripal_elasticsearch_entity_insert($entity, $entity_type) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_delete($entity, $type) {
+  if (strstr($type, 'Tripal') === FALSE) {
+    return;
+  }
+
   try {
     $es = new ESInstance();
     $es->deleteEntry('entities', 'entities', $entity->id);
