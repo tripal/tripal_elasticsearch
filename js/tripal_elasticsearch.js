@@ -145,6 +145,10 @@
       block.append(resultsBlock);
       block.append(this.state.footerBlock);
 
+      if (!form.terms && form.category) {
+        form.terms = '*';
+      }
+
       this.remotes.map(function (remote) {
         var block = this.createSiteBlock(remote);
         resultsBlock.append(block);
