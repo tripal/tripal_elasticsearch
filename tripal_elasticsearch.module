@@ -692,7 +692,7 @@ function tripal_elasticsearch_entity_insert($entity, $entity_type) {
 }
 
 /**
- * @implements hook_entity_deleted()
+ * @implements hook_entity_delete()
  *
  * @param $entity
  * @param $entity_type

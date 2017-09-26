@@ -117,10 +117,10 @@ function tripal_elasticsearch_api_v1_local_search() {
   }
 
   return ESResponse::success(array_merge($results, [
-    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/'.$category, [
+    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/' . $category, [
         'query' => [
           'search_box' => $terms,
-          'category' => $category
+          'category' => $category,
         ],
       ]),
   ]));
@@ -154,20 +154,28 @@ function tripal_elasticsearch_api_v1_categories() {
 function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   $form['options'] = [
     '#type' => 'fieldset',
-    '#attributes' => ['class' => ['container-inline', 'es-cross-site-search-form']],
+    '#attributes' => [
+      'class' => [
+        'container-inline',
+        'es-cross-site-search-form',
+      ],
+    ],
   ];
+
+  $default_category = ['Any Type' => 'Any Type'];
+  try {
+    $es = new ESInstance();
+    $categories = drupal_map_assoc($es->getAllCategories());
+  } catch (Exception $exception) {
+    $categories = [];
+  }
 
   $form['options']['category'] = [
     '#type' => 'select',
     '#attributes' => [
       'id' => 'tripal-elasticsearch-search-category',
     ],
-    '#options' => [
-      'Any Type' => 'Any Type',
-      'Organism' => 'Organism',
-      'Gene' => 'Gene',
-      'mRNA' => 'mRNA',
-    ],
+    '#options' => array_merge($default_category, $categories),
     '#default_value' => 'Any Type',
     '#required' => TRUE,
   ];
