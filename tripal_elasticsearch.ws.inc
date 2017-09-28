@@ -37,6 +37,41 @@ function tripal_elasticsearch_api_v1_status() {
 }
 
 /**
+ * Allow https/http connections to communicate.
+ *
+ * @param $remote_id
+ *
+ * @return bool
+ */
+function tripal_elasticsearch_api_v1_remote_status($remote_id) {
+  $remote_id = abs(intval(trim($remote_id)));
+
+  if (!is_int($remote_id)) {
+    return ESResponse::error([
+      'remote_id' => ['Invalid remote server id'],
+    ]);
+  }
+
+  // Get the remote host url
+  $host = db_query('SELECT url FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_id])->fetchObject();
+  if (!$host) {
+    return ESResponse::error([
+      'remote_id' => ['Remote server record does not exist'],
+    ]);
+  }
+
+  $url = trim(trim($host->url), '/') . '/elasticsearch/api/v1/status';
+
+  try {
+    $response = ESRequest::get($url);
+  } catch (Exception $exception) {
+    return ESResponse::error($exception->getMessage(), 500);
+  }
+
+  return ESResponse::success($response->data);
+}
+
+/**
  * Send a search request to the given host and return rendered results.
  *
  * @param $remote_host_id
