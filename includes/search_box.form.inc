@@ -29,6 +29,12 @@ function website_search_box_form($form, &$form_state) {
     '#default_value' => $default,
   ];
 
+  if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
+    $form['container']['search_box']['#attributes'] = [
+      'autofocus' => 'autofocus',
+    ];
+  }
+
   $form['container']['submit'] = [
     '#type' => 'submit',
     '#value' => t('Search'),

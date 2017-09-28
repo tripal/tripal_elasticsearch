@@ -51,8 +51,7 @@
      */
     getStatus: function () {
       this.remotes.map(function (remote) {
-        this.axios.defaults.baseURL = '';
-        this.axios.get(remote.url + '/elasticsearch/api/v1/status').then(function (response) {
+        this.axios.get('/remote/status/' + remote.id).then(function (response) {
           var data = response.data.data;
 
           if (typeof data.status === 'undefined') {
