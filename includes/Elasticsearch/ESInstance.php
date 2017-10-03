@@ -200,9 +200,7 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams(
-    $index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []
-  ) {
+  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -482,7 +480,7 @@ class ESInstance {
       $index_name[] = 'entities';
     }
 
-    $types =  array_merge($node_types, $entity_types);
+    $types = array_merge($node_types, $entity_types);
     sort($types);
 
     return $types;
@@ -550,5 +548,25 @@ class ESInstance {
       'count' => $count,
       'results' => $results,
     ];
+  }
+
+  public function deleteAllRecords($index_name, $type = null) {
+    if (empty($index_name)) {
+      throw new Exception('Please provide an index name when deleting records from an index');
+    }
+
+    if($type === null) {
+      $type = $index_name;
+    }
+
+    $this->client->deleteByQuery([
+      'index' => $index_name,
+      'type' => $type,
+      'body' => [
+        'query' => [
+          'match_all' => (object)[],
+        ],
+      ],
+    ]);
   }
 }

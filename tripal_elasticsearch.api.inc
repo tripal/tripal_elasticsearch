@@ -183,6 +183,7 @@ function tripal_elasticsearch_get_page_content_by_id($id, $base_url, $title, $is
   // merge multiple spaces into one
   return preg_replace('!\s+!', ' ', $page_html);
 }
+
 /**
  * Build search query from field content pairs.
  */
