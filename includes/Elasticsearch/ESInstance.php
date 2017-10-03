@@ -354,6 +354,8 @@ class ESInstance {
    *                entry.
    * @param array $body Array of record data to index. Must match index
    *                    structure.
+   *
+   * @return array
    */
   public function createEntry($index, $type, $id, $body) {
     $params = [
@@ -367,6 +369,46 @@ class ESInstance {
     }
 
     return $this->client->index($params);
+  }
+
+  /**
+   * Index multiple entries at once.
+   *
+   * @param string $index index name
+   * @param array $entries Array of entries of the form
+   *              [
+   *                [ // Start of entry 1
+   *                  'field1' => 'value for field1',
+   *                  'field2' => 'value for field 2'
+   *                ],
+   *                [ // Start of entry 2
+   *                  'field1' => 'another value',
+   *                  'field2' => 'some other value'
+   *                ]
+   *              ]
+   * @param string $type
+   *
+   * @return array
+   */
+  public function bulkIndex($index, array $entries, $type = NULL) {
+    $params = ['body' => []];
+
+    if ($type === NULL) {
+      $type = $index;
+    }
+
+    foreach ($entries as $entry) {
+      $params['body'][] = [
+        'index' => [
+          '_index' => $index,
+          '_type' => $type,
+        ],
+      ];
+
+      $params['body'][] = $entry;
+    }
+
+    return $this->client->bulk($params);
   }
 
   /**
@@ -487,33 +529,27 @@ class ESInstance {
   }
 
   /**
-   * Return settings for a particular index
+   * Return settings for a particular index.
+   *
+   * @param $index
    *
    * @return array
    */
   public function getIndexSettings($index) {
     $params = ['index' => $index];
-    return ($this->client->indices()->getSettings($params));
+    return $this->client->indices()->getSettings($params);
   }
 
   /**
-   * Update Index settings.
-   * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_index_management_operations.html#_put_settings_api
-   * Note that the index to update is in the settings array.
+   * Get the mappings for a particular index.
    *
-   * @param $settings
+   * @param $index
    *
-   * @return mixed
+   * @return array
    */
-
-  /**Get the mappings for a particular index
-   *
-   * https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_index_management_operations.html#_get_mappings_api
-   */
-
   public function getIndexMappings($index) {
     $params = ['index' => $index];
-    return ($this->client->indices()->getMapping($params));
+    return $this->client->indices()->getMapping($params);
   }
 
   /*
@@ -550,12 +586,20 @@ class ESInstance {
     ];
   }
 
-  public function deleteAllRecords($index_name, $type = null) {
+  /**
+   * Delete all records in an index.
+   *
+   * @param string $index_name
+   * @param null|string $type
+   *
+   * @throws \Exception
+   */
+  public function deleteAllRecords($index_name, $type = NULL) {
     if (empty($index_name)) {
       throw new Exception('Please provide an index name when deleting records from an index');
     }
 
-    if($type === null) {
+    if ($type === NULL) {
       $type = $index_name;
     }
 
@@ -564,7 +608,7 @@ class ESInstance {
       'type' => $type,
       'body' => [
         'query' => [
-          'match_all' => (object)[],
+          'match_all' => (object) [],
         ],
       ],
     ]);
