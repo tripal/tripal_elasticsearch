@@ -17,13 +17,13 @@ php composer.phar require "elasticsearch/elasticsearch:~5.0"
 For more details, go to https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_quickstart.html.
 
 # Connecting to Elasticsearch Servers
-The Tripal Elasticsearch module allows connections to local and remote servers.  Your local connection is the server for your own site: you will be able to manage your indices and the details of this cluster.  Note that your Elasticsearch server need not be hosted alongside your Tripal site: local means that is the service that indexes and searches your **this Tripal site**.  Remote connections allow you to connect to other websites and include their search results on your own.  Remote services are managed on their respective sites.
+The Tripal Elasticsearch module allows connections to local and remote servers.  Your local connection is the server for your own site: you will be able to manage your indices and the details of this cluster.  Note that your Elasticsearch server need not be hosted alongside your Tripal site: local means that is the service that indexes and searches **your Tripal site**.  Remote connections allow you to connect to other websites and include their search results on your Tripal site.  Remote services are managed on their respective sites.
 
 ## Connect to your local Elastic cluster
 
 Go to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch` and 
 enter the host and port of your elastic cluster.  Make sure that the Server Type radio button is set to **local**. For example, the image below shows that
-the Elastic is running on the same host as the Tripal site, and the port is 9203.
+the Elastic server is running on the same host as the Tripal site, and the port is 9203.
 
 ![connect to elastic](images/elastic_search_connect.png)
 
@@ -38,6 +38,11 @@ To add a new remote Elasticsearch server, select the Remote Server Type radio bu
 After connecting a remote server, it will be displayed in the remote server health table (example below).  If the connection is successful, the Status column will be green/Active and you can include this remote connection in your search interface.  If the status remains Red, ensure that you have the correct URL, and that your firewall is not blocking connections.  You may also edit and delete your remote servers using this table.
 
 ![remote server health](images/remote_server.png)
+
+## Activating Cross Site Search
+To enable cross site search, you'll need to enable the `Tripal Elasticsearch cross site search form` block and configure it to display on a page of your choice. Normally, this block should be placed in `Main Content` region. To make sure the block doesn't show up on all of your site's pages, you should configure it to display only in a specific page. See image below for an example where the block wil show up only on `/elasticsearch/cross-site`:
+
+![Block Config](https://github.com/tripal/tripal_elasticsearch/blob/master/images/Screen%20Shot%202017-10-04%20at%205.13.59%20PM.png?raw=true)
 
 # Indexing
 
