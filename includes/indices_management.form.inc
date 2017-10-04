@@ -56,7 +56,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   ];
 
   if (!in_array('website', $indices)) {
-    $index_types['nodes'] = 'Website Nodes';
+    $index_types['website'] = 'Website Nodes';
   }
 
   if (!in_array('entities', $indices)) {
@@ -69,7 +69,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#title' => t('Index type'),
     '#description' => t('If you already have a website-wide node or tripal entities index, it must be edited or deleted in the table below.  Website Tripal entities are available for Tripal version 3 only.'),
     '#options' => $index_types,
-    '#default_value' => isset($index_types['nodes']) ? 'nodes' : 'database',
+    '#default_value' => isset($index_types['website']) ? 'website' : 'database',
     '#attributes' => (in_array('website', $indices) && in_array('entities', $indices)) ? ['disabled' => 'disabled'] : ['enabled' => 'enabled'],
     //Disable if there is already a node and entity index.
   ];
@@ -129,7 +129,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#states' => [
       'invisible' => [
         ':input[name="website_or_table"]' => [
-          ['value' => 'nodes'],
+          ['value' => 'website'],
           ['value' => 'entities'],
         ],
       ],
@@ -203,7 +203,7 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   // validate base url if it is website indexing
   $type = $form_state['values']['website_or_table'];
-  if ($type == 'nodes' || $type == 'entities') {
+  if ($type == 'website' || $type == 'entities') {
     global $base_url;
     // Define a variable to store website base url.
     variable_set('website_base_url', $base_url);
@@ -252,7 +252,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   $queue_number = $form_state['values']['queue_number'];
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
-  if ($website_or_table === 'nodes') {
+  if ($website_or_table === 'website') {
     // indexing website: has default index settings.
     $exposed = $form_state['values']['index_table'];
     $index_name = 'website';
@@ -483,7 +483,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   $exposed = FALSE;
   //Get table name from index name.
   if ($index_name == 'website') {
-    $website_or_table = "nodes";
+    $website_or_table = "website";
     $form['table_name'] = [
       '#type' => 'value',
       '#value' => 'website',
@@ -675,7 +675,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $queue_number = $form_state['values']['queue_number'];
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
-  if ($website_or_table === 'nodes') {
+  if ($website_or_table === 'website') {
     // indexing website: has default index settings.
     $exposed = $form_state['values']['exposed'];
     $index_name = 'website';
