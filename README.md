@@ -1,10 +1,14 @@
+#Tripal Elasticsearch
+
+The Tripal Elasticsearch module allows you to easily manage the indexing and display of Elasticsearch on your Tripal website.  It also easily enables Cross-Site Querying, allowing you to connect to other Tripal sites and provide additional search results to your users.
+
 # Requirements
 * Elasticsearch
 * Elasticsearch-PHP library
 
 ## Install Elasticsearch
 
-Please refer to this (page](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html) to install Elasticsearch.
+Please refer to this [page](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html) to install Elasticsearch.
 
 ## Install Elasticsearch-PHP library
 * Create a folder named `elasticsearch-php` within your drupal 'sites/all/libraries' directory.
@@ -16,34 +20,61 @@ php composer.phar require "elasticsearch/elasticsearch:~5.0"
 
 For more details, go to https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_quickstart.html.
 
-# Connect to Elastic cluster
+# Connecting to Elasticsearch Servers
+The Tripal Elasticsearch module allows connections to local and remote servers.  Your local connection is the server for your own site: you will be able to manage your indices and the details of this cluster.  Note that your Elasticsearch server need not be hosted alongside your Tripal site: local means that is the service that indexes and searches **your Tripal site**.  Remote connections allow you to connect to other websites and include their search results on your Tripal site.  Remote services are managed on their respective sites.
+
+## Connect to your local Elastic cluster
 
 Go to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch` and 
-enter the host and port of your elastic cluster. For example, the image below shows that
-the Elastic is running on the same host as the Tripal site, and the port is 9203.
+enter the host and port of your elastic cluster.  Make sure that the Server Type radio button is set to **local**. For example, the image below shows that
+the Elastic server is running on the same host as the Tripal site, and the port is 9203.
 
+![connect to elastic](images/elastic_search_connect.png)
 
-![connect to elastic](images/elasticsearch_connection.png)
+### Local Elasticsearch Server Health
+
+This table provides feedback on the health of your connected local Elasticsearch Server.  If your connection is succesful, the Status column will be Green. For more information on the returned statistics, please see [the Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/_cluster_health.html).
+
+## Connect to a remote server
+
+To add a new remote Elasticsearch server, select the Remote Server Type radio button,  fill out the server URL, Label, and Description, and press the Save Remote Host button. 
+
+After connecting a remote server, it will be displayed in the remote server health table (example below).  If the connection is successful, the Status column will be green/Active and you can include this remote connection in your search interface.  If the status remains Red, ensure that you have the correct URL, and that your firewall is not blocking connections.  You may also edit and delete your remote servers using this table.
+
+![remote server health](images/remote_server.png)
+
+## Activating Cross Site Search
+To enable cross site search, you'll need to enable the `Tripal Elasticsearch cross site search form` block and configure it to display on a page of your choice. Normally, this block should be placed in `Main Content` region. To make sure the block doesn't show up on all of your site's pages, you should configure it to display only in a specific page. See image below for an example where the block wil show up only on `/elasticsearch/cross-site`:
+
+![Block Config](https://github.com/tripal/tripal_elasticsearch/blob/master/images/Screen%20Shot%202017-10-04%20at%205.13.59%20PM.png?raw=true)
 
 # Indexing
 
-Indexing interface: `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices_management`
+Once a local Elasticsearch server is connected, you will need to index data so that it is searchable. The index management interface is located at: `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices_management`
 
+Please note that that the indices of remote Elasticsearch servers cannot be created or edited.
 
-## Indexing website
+## Creating a new Index
 
-With website indexing, you need to:
+You can create a new index by clocking on the create Index tab, or navigating to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices_management/create`.  
 
-* select a number of cron queues
-* select `website`
-* enter website base url.
+For all index types, you need to:
+
+* select a number of cron queues to utilize for the indexing job.
+* select an index type.
+* Decide if the index will be exposed to Cross-Site Search.
+
+#### CRON queues
 
 You can select up to 10 cron queues. Jobs in cron queues can be executed in parallel. For example, if you
-have 1000 pages to index and you select cron queues, 1000 indexing records will be generated and evenly 
+have 1000 pages to index and you select 5 cron queues, 1000 indexing records will be generated and evenly 
 distributed to the 5 cron queues. Then you will be able to set up 5 threads for parallel indexing.
 
-## Indexing database tables
+#### Index types
 
+There are three types of indices: Website nodes, Website entities, and Database tables.  The website-wide indices are intended to index all Tripal 2 or Tripal 3 content (and any other content on your site of that type), respectively, and cannot be configured beyond Token settings. Database table indices can be customized by indexing and displaying specific fields.
+
+## Indexing database tables
 
 The Tripal Elasticsearch module allows you to index any tables from the public and chado schema.
 You can index all fields or a subset of fields from a table. You can select mapping types for each fields. 
@@ -89,24 +120,27 @@ crontab -e
 
 # Build search blocks
 
-After your database tables get indexed, you can build a search interface for them.
+After your database tables get indexed, you can build a search interface for them.  Note that search blocks for node and entities are configured automatically and cannot be customized.  
 You can choose to expose all table fields or a subset of fields for searching.
 
 The admin page for building search blocks is at `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/search_form_management`.
 
 ![search block](images/build-search-block.png)
 
-The module also provides an admin page for altering search interfaces.
+You can configure the settings for each field in the search block.  Expanding the field's dropdown menu will allow you to change the title, description, field type, weight, and URL link.
 
 ![alter search interface](images/alter-search-block.png)
 
-# Link search results to pages
+## URL links
 
-The search results can be used to build URLs and link the results to particular pages 
-through the admin page `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/search_form_management/link_results_to_pages`. 
-For example:
+The URL link region of each field will let you configure URL links for that field. Linked fields can be static `(https://www.ncbi.nim.nih.gov)` or dynamic `(organism/[genus]/[species])`.
 
-![link results](images/link-results-to-page.png)
+## Field types
+
+The field type available to users in the search form. `textfield` indicates a text input box. `select` indicates a dropdown menu box. If this field contains more than 50 unique values in the database table, only the `textfield` will be available.
+
+If you choose a `select` field type, you must provide **key|value pairs** to build the dropdown box.  The keys should be the true values in your database table, and the values can be anything that you want to show to your users. key|value pairs must be placed within brackets.  For example, `[key|value]`.
+
 
 # Create, update and delete pages
 
