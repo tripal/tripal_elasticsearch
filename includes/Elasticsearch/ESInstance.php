@@ -441,7 +441,7 @@ class ESInstance {
 
       // Use the first field to sort the table
       if ($type == 'website') {
-        $sql = "SELECT nid, title, type FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET WHERE status=1";
+        $sql = "SELECT nid, title, type FROM $index_table WHERE status=1 ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
       }
       elseif ($type == 'entities') {
         $sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
