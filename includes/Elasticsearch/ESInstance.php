@@ -567,7 +567,6 @@ class ESInstance {
 
     if (in_array('website', $indices)) {
       $index_name[] = 'website';
-      $index_name[] = 'website';
     }
 
     if (in_array('entities', $indices)) {
