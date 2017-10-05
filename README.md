@@ -1,10 +1,14 @@
+#Tripal Elasticsearch
+
+The Tripal Elasticsearch module allows you to easily manage the indexing and display of Elasticsearch on your Tripal website.  It also easily enables Cross-Site Querying, allowing you to connect to other Tripal sites and provide additional search results to your users.
+
 # Requirements
 * Elasticsearch
 * Elasticsearch-PHP library
 
 ## Install Elasticsearch
 
-Please refer to this (page](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html) to install Elasticsearch.
+Please refer to this [page](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html) to install Elasticsearch.
 
 ## Install Elasticsearch-PHP library
 * Create a folder named `elasticsearch-php` within your drupal 'sites/all/libraries' directory.
