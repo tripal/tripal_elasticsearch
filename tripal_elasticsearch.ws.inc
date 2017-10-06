@@ -147,7 +147,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
 
   try {
     $es = new ESInstance();
-    $results = (array)$es->searchAllIndices($terms, $size, $category);
+    $results = [];//$es->searchAllIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return ESResponse::error($exception->getMessage(), 500);
   }
