@@ -12,15 +12,24 @@ class ESResponse {
    *
    * @param mixed $data Array or string of response data.
    *
-   * @return bool
+   * @return bool|array|object
    */
-  public static function success($data) {
+  public static function success($data, $print = TRUE) {
     static::setHeaders(200);
 
-    print json_encode([
-      'data' => $data,
-      'error' => FALSE,
-    ]);
+    if ($print) {
+      print json_encode([
+        'data' => $data,
+        'error' => FALSE,
+      ]);
+    }
+    else {
+      // Convert to object and return
+      return json_decode(json_encode([
+        'data' => $data,
+        'error' => FALSE,
+      ]));
+    }
 
     return TRUE;
   }

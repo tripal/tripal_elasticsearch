@@ -752,7 +752,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   $base_url = variable_get('website_base_url');
 
-  $cron_url = $base_url . '/admin/config/system/cron';
+  $cron_url = l($base_url . '/admin/config/system/cron', 'admin/config/system/cron');
 
   drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at ". $cron_url);
 
