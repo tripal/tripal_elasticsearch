@@ -96,7 +96,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
   }
   else {
     $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_host_id])->fetchObject();
-    $url = trim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
+    $url = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
 
     try {
       $response = ESRequest::get($url, [
@@ -152,7 +152,7 @@ function tripal_elasticsearch_api_v1_local_search() {
   }
 
   return ESResponse::success(array_merge($results, [
-    'url' => trim($base_url, '/') . '/' . url('tripal_elasticsearch/search_website/' . $category, [
+    'url' => rtrim($base_url, '/') . url('tripal_elasticsearch/search_website/' . $category, [
         'query' => [
           'search_box' => $terms,
           'category' => $category,
@@ -256,12 +256,12 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
 /**
  * Mock the local server as a remote server for AJAX to work.
  *
- * @return array
+ * @return object
  */
 function tripal_elasticsearch_get_local_server_entry() {
   global $base_url;
 
-  return [
+  return (object) [
     'id' => 0,
     'label' => variable_get('site_name', 'Drupal'),
     'description' => '',
