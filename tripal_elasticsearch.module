@@ -177,7 +177,7 @@ function tripal_elasticsearch_menu() {
     'title' => t('Local Search'),
     'page callback' => 'tripal_elasticsearch_api_v1_local_search',
     'access arguments' => ['access content'],
-    'page arguments' => [4],
+    //'page arguments' => [4],
     'type' => MENU_CALLBACK,
   ];
 
