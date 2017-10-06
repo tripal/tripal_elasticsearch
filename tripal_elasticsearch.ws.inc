@@ -90,26 +90,26 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     $size = abs(intval($_GET['size']));
   }
 
-  //if ($remote_host_id === 0) {
-  //  $response = tripal_elasticsearch_api_v1_local_search(false);
-  //  $host = tripal_elasticsearch_get_local_server_entry();
-  //}
-  //else {
-  //  $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_host_id])->fetchObject();
-  //  $url = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
-  //
-  //  try {
-  //    $response = ESRequest::get($url, [
-  //      'terms' => $_GET['terms'],
-  //      'category' => $_GET['category'] ?: '',
-  //      'size' => $size,
-  //    ]);
-  //  } catch (Exception $exception) {
-  //    return ESResponse::error($exception->getMessage(), 500);
-  //  }
-  //}
+  if ($remote_host_id === 0) {
+    $response = tripal_elasticsearch_api_v1_local_search(FALSE);
+    $host = tripal_elasticsearch_get_local_server_entry();
+  }
+  else {
+    $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_host_id])->fetchObject();
+    $url = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
 
-  $markup = '';// get_website_search_result_table($response->data->results, FALSE, $host->url);
+    try {
+      //$response = ESRequest::get($url, [
+      //  'terms' => $_GET['terms'],
+      //  'category' => $_GET['category'] ?: '',
+      //  'size' => $size,
+      //]);
+    } catch (Exception $exception) {
+      return ESResponse::error($exception->getMessage(), 500);
+    }
+  }
+
+  $markup = get_website_search_result_table($response->data->results, FALSE, $host->url);
 
   // Render results into fields and send them back
   return ESResponse::success([
@@ -127,7 +127,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
  * @param bool $http Whether this is an http request or an internal
  *                    request. (true for http)
  */
-function tripal_elasticsearch_api_v1_local_search($http = true) {
+function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   global $base_url;
 
   // Validate the request
