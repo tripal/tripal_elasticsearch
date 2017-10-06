@@ -657,7 +657,7 @@ function tripal_elasticsearch_node_delete($node) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_update($entity, $entity_type) {
-  if ($entity_type !== 'TripalEntity') {
+  if ($entity_type !== 'TripalEntity' || !isset($entity->id)) {
     return;
   }
 
@@ -672,9 +672,9 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   $item->index_type = 'entities';
   $item->website_or_table = 'entities';
   $item->sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
-              FROM tripal_entity
-              JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              WHERE tripal_entity.id={$entity->id} AND status=1";
+                FROM {tripal_entity}
+                JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
+                WHERE tripal_entity.id={$entity->id} AND status=1";
 
   $item->field_mapping_types = [
     'entity_id' => 'integer',

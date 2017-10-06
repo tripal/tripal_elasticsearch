@@ -90,23 +90,23 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     $size = abs(intval($_GET['size']));
   }
 
-  if ($remote_host_id !== 0) {
-    $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_host_id])->fetchObject();
+  if ($remote_host_id === 0) {
+    $response = tripal_elasticsearch_api_v1_local_search();
+    $host = tripal_elasticsearch_get_local_server_entry();
   }
   else {
-    $host = (object) tripal_elasticsearch_get_local_server_entry();
-  }
+    $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_host_id])->fetchObject();
+    $url = trim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
 
-  $url = trim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
-
-  try {
-    $response = ESRequest::get($url, [
-      'terms' => $_GET['terms'],
-      'category' => $_GET['category'] ?: '',
-      'size' => $size,
-    ]);
-  } catch (Exception $exception) {
-    return ESResponse::error($exception->getMessage(), 500);
+    try {
+      $response = ESRequest::get($url, [
+        'terms' => $_GET['terms'],
+        'category' => $_GET['category'] ?: '',
+        'size' => $size,
+      ]);
+    } catch (Exception $exception) {
+      return ESResponse::error($exception->getMessage(), 500);
+    }
   }
 
   $markup = get_website_search_result_table($response->data->results, FALSE, $host->url);
@@ -158,7 +158,7 @@ function tripal_elasticsearch_api_v1_local_search() {
           'category' => $category,
         ],
       ]),
-  ]));
+  ]), false);
 }
 
 function tripal_elasticsearch_api_v1_categories() {
