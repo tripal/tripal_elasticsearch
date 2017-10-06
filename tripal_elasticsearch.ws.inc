@@ -91,7 +91,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
   }
 
   if ($remote_host_id === 0) {
-    $response = tripal_elasticsearch_api_v1_local_search(true);
+    $response = tripal_elasticsearch_api_v1_local_search(false);
     $host = tripal_elasticsearch_get_local_server_entry();
   }
   else {
@@ -124,9 +124,10 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
  * This method is normally called by other sites looking for
  * results from our site.
  *
- * @param bool $local Whether this is an internal request or an http request.
+ * @param bool $http Whether this is an http request or an internal
+ *                    request. (true for http)
  */
-function tripal_elasticsearch_api_v1_local_search($local = true) {
+function tripal_elasticsearch_api_v1_local_search($http = true) {
   global $base_url;
 
   // Validate the request
@@ -158,7 +159,7 @@ function tripal_elasticsearch_api_v1_local_search($local = true) {
           'category' => $category,
         ],
       ]),
-  ]), $local);
+  ]), $http);
 }
 
 function tripal_elasticsearch_api_v1_categories() {
