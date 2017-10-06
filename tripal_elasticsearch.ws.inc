@@ -109,7 +109,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     }
   }
 
-  $markup = get_website_search_result_table($response->data->results, FALSE, $host->url);
+  $markup = '';// get_website_search_result_table($response->data->results, FALSE, $host->url);
 
   // Render results into fields and send them back
   return ESResponse::success([
