@@ -99,11 +99,11 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     $url = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
 
     try {
-      //$response = ESRequest::get($url, [
-      //  'terms' => $_GET['terms'],
-      //  'category' => $_GET['category'] ?: '',
-      //  'size' => $size,
-      //]);
+      $response = ESRequest::get($url, [
+        'terms' => $_GET['terms'],
+        'category' => $_GET['category'] ?: '',
+        'size' => $size,
+      ]);
     } catch (Exception $exception) {
       return ESResponse::error($exception->getMessage(), 500);
     }
@@ -147,7 +147,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
 
   try {
     $es = new ESInstance();
-    $results = $es->searchAllIndices($terms, $size, $category);
+    $results = (array)$es->searchAllIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return ESResponse::error($exception->getMessage(), 500);
   }
