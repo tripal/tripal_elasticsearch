@@ -128,38 +128,38 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
  *                    request. (true for http)
  */
 function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
-  //global $base_url;
-  //
-  //// Validate the request
-  //$terms = isset($_GET['terms']) ? $_GET['terms'] : '';
-  //$size = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
-  //$category = isset($_GET['category']) ? $_GET['category'] : NULL;
-  //
-  //if ($size !== 0 && $size > 20) {
-  //  return ESResponse::error([
-  //    'size' => ['Please provide a valid size between 1 and 20'],
-  //  ]);
-  //}
-  //
-  //if ($size === 0) {
-  //  $size = 5;
-  //}
-  //
-  //try {
-  //  $es = new ESInstance();
-  //  $results = [];//$es->searchAllIndices($terms, $size, $category);
-  //} catch (Exception $exception) {
-  //  return ESResponse::error($exception->getMessage(), 500);
-  //}
-  //
-  //return ESResponse::success(array_merge($results, [
-  //  'url' => rtrim($base_url, '/') . url('tripal_elasticsearch/search_website/' . $category, [
-  //      'query' => [
-  //        'search_box' => $terms,
-  //        'category' => $category,
-  //      ],
-  //    ]),
-  //]), $http);
+  global $base_url;
+
+  // Validate the request
+  $terms = isset($_GET['terms']) ? $_GET['terms'] : '';
+  $size = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
+  $category = isset($_GET['category']) ? $_GET['category'] : NULL;
+
+  if ($size !== 0 && $size > 20) {
+    return ESResponse::error([
+      'size' => ['Please provide a valid size between 1 and 20'],
+    ]);
+  }
+
+  if ($size === 0) {
+    $size = 5;
+  }
+
+  try {
+    $es = new ESInstance();
+    $results = [];//$es->searchAllIndices($terms, $size, $category);
+  } catch (Exception $exception) {
+    return ESResponse::error($exception->getMessage(), 500);
+  }
+
+  return ESResponse::success(array_merge($results, [
+    'url' => rtrim($base_url, '/') . url('tripal_elasticsearch/search_website/' . $category, [
+        'query' => [
+          'search_box' => $terms,
+          'category' => $category,
+        ],
+      ]),
+  ]), $http);
 }
 
 function tripal_elasticsearch_api_v1_categories() {
