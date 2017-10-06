@@ -146,12 +146,12 @@ function tripal_elasticsearch_api_v1_local_search() {
 
   try {
     $es = new ESInstance();
-    $results = $es->searchAllIndices($terms, $size, $category);
+    //$results = $es->searchAllIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return ESResponse::error($exception->getMessage(), 500);
   }
 
-  return ESResponse::success(array_merge($results, [
+  return ESResponse::success(array_merge([], [
     'url' => rtrim($base_url, '/') . url('tripal_elasticsearch/search_website/' . $category, [
         'query' => [
           'search_box' => $terms,
