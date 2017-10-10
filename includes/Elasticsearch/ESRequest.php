@@ -108,6 +108,10 @@ class ESRequest {
 
     $result = curl_exec($curl);
 
+    if($result === false) {
+      throw new Exception(curl_error($curl));
+    }
+
     curl_close($curl);
 
     return json_decode($result);
