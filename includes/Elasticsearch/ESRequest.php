@@ -68,6 +68,8 @@ class ESRequest {
    * @return mixed
    */
   public static function send($method, $url, $data = NULL) {
+    global $conf;
+
     if (!empty(static::$base_url)) {
       $url = static::$base_url . $url;
     }
@@ -99,6 +101,10 @@ class ESRequest {
 
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+
+    if(isset($conf['environment']) && in_array($conf['environment'], ['development', 'test', 'debug'])) {
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    }
 
     $result = curl_exec($curl);
 
