@@ -62,6 +62,10 @@ class ESQueue {
     $completed = 0;
 
     foreach ($queues as $queue) {
+      if ($queue->total === $queue->completed) {
+        continue;
+      }
+
       $last_run = new DateTime();
       $last_run->setTimestamp($queue->last_run_at);
 
@@ -72,7 +76,7 @@ class ESQueue {
         'total' => $queue->total,
         'completed' => $queue->completed,
         'remaining' => $queue->total - $queue->completed,
-        'percent' => number_format(($queue->completed / $queue->total) * 100, 2),
+        'percent' => number_format(($queue->completed / ($queue->total ?: 1)) * 100, 2),
         'last_run_at' => $last_run,
       ];
     }

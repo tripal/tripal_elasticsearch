@@ -31,6 +31,13 @@ class NodesIndexJob extends ESJob {
   public $total;
 
   /**
+   * Number of items to bulk index.
+   *
+   * @var int
+   */
+  public $chunk = 10;
+
+  /**
    * NodesIndexJob constructor.
    *
    * @param int $node_id

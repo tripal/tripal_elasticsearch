@@ -31,6 +31,13 @@ class EntitiesIndexJob extends ESJob {
   public $total;
 
   /**
+   * Number of items to bulk index.
+   *
+   * @var int
+   */
+  public $chunk = 10;
+
+  /**
    * Constructor.
    *
    * @param int $entity_id Provide a specific entity id to index a single

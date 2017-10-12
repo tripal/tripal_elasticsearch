@@ -11,6 +11,13 @@ abstract class ESJob {
   public $type = 'index';
 
   /**
+   * Number of items to index in bulk.
+   *
+   * @var int
+   */
+  public $chunk = 500;
+
+  /**
    * SQL limit.
    *
    * @var int

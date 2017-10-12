@@ -847,7 +847,7 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
 
   $content .= '<h3>Overall Progress</h3>';
 
-  if ($data->percent >= 100) {
+  if ($data->remaining === 0) {
     $content .= '<p>All items have been indexed. 0 Items remaining</p>';
   }
   else {
@@ -857,17 +857,19 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
     ]);
   }
 
-  foreach ($data->queues as $queue => $progress) {
-    $content .= '<h3>' . $queue . '</h3>';
+  if (count($data->queues) > 1) {
+    foreach ($data->queues as $queue => $progress) {
+      $content .= '<h3>' . $queue . '</h3>';
 
-    if ($progress->percent >= 100) {
-      $content .= '<p>All items have been indexed. 0 Items remaining</p>';
-    }
-    else {
-      $content .= theme_progress_bar([
-        'percent' => $progress->percent,
-        'message' => $progress->remaining . ' Items remaining',
-      ]);
+      if ($progress->remaining === 0) {
+        $content .= '<p>All items have been indexed. 0 Items remaining</p>';
+      }
+      else {
+        $content .= theme_progress_bar([
+          'percent' => $progress->percent,
+          'message' => $progress->remaining . ' Items remaining',
+        ]);
+      }
     }
   }
 
@@ -883,5 +885,5 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
  */
 function tripal_elasticsearch_get_progress() {
   // Prevents rendering the entire page.
-  echo tripal_elasticsearch_progress_page(TRUE);
+  print tripal_elasticsearch_progress_page(TRUE);
 }

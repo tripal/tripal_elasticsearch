@@ -46,7 +46,7 @@ class DispatcherJob extends ESJob {
    * Start dispatching jobs.
    */
   public function handle() {
-    $chunk = 500;
+    $chunk = $this->job->chunk;
 
     for ($offset = 0; $offset < $this->total; ($offset + $chunk < $this->total) ? ($offset += $chunk) : ($offset += $this->total - $offset)) {
       $this->job->offset($offset)->limit($chunk)->dispatch();
