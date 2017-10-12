@@ -40,7 +40,7 @@ class ESDaemon extends DrushDaemon {
       'cron-run',                 // Run the cron
       [$name],                    // Arguments
       [],                         // No Options
-      ['fork' => TRUE]            // This tells drush to spawn a new process.
+      ['fork' => FALSE]            // This tells drush to spawn a new process.
     );
   }
 }
