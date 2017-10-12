@@ -225,21 +225,8 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
  * @param $form_state
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
-  // Build Elasticsearch index settings.
   //Create the new index
-  $website_or_table = $form_state['values']['website_or_table'];
-  $exposed = $form_state['values']['exposed'];
-
-  if ($website_or_table === 'database') {//get custom settings from form
-    // indexing a table: has customized index settings
-    $index_name = $form_state['values']['index_name'];
-    $index_table = $form_state['values']['table_name'];
-    $tokenizer = $form_state['values']['index_settings']['tokenizer'];
-    $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
-    $field_mapping_types = array_filter($form_state['values']['table_fields']);
-  }
-
-  tripal_elasticsearch_create_index($website_or_table, $exposed, $index_name, $index_table, $tokenizer, $token_filters, $field_mapping_types);
+  tripal_elasticsearch_create_index($form_state['values']);
 }
 
 /**
@@ -571,26 +558,13 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   // Delete the existing index in ES
   tripal_elasticsarch_delete_index($index);
-
-  //Create the new index
-  $website_or_table = $form_state['values']['website_or_table'];
-  $exposed = $form_state['values']['exposed'];
-
-  if ($website_or_table === 'database') {//get custom settings from form
-    // indexing a table: has customized index settings
-    $index_name = $form_state['values']['index_name'];
-    $index_table = $form_state['values']['table_name'];
-    $tokenizer = $form_state['values']['index_settings']['tokenizer'];
-    $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
-    $field_mapping_types = array_filter($form_state['values']['table_fields']);
-  }
-
-tripal_elasticsearch_create_index($website_or_table, $exposed, $index_name, $index_table, $tokenizer, $token_filters, $field_mapping_types);
+  //create the new index
+  tripal_elasticsearch_create_index($form_state['values']);
 }
 
 /**
  * Index Deletion Confirmation Form.
- *
+ *s
  * @param $form
  * @param $form_state
  * @param $index_name
@@ -622,7 +596,6 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
 
   tripal_elasticsearch_delete_index($index);
-
 }
 
 /**
@@ -681,6 +654,7 @@ function tripal_elasticsearch_get_progress() {
 }
 
 /** Creates an index.  Used by the create and edit index functions.
+ *
  * @param $index_type
  * @param $exposed
  * @param $index_name
@@ -691,14 +665,17 @@ function tripal_elasticsearch_get_progress() {
  */
 
 function tripal_elasticsearch_create_index(
-  $index_type,
-  $exposed,
-  $index_name,
-  $index_table,
-  $tokenizer,
-  $token_filters,
-  $field_mapping_types
+  //$index_type,
+  //$exposed,
+  //$index_name,
+  //$index_table,
+  //$tokenizer,
+  //$token_filters,
+  //$field_mapping_types
+  &$values
 ) {
+  $index_type = $values['website_or_table'];
+  $exposed = $values['exposed'];
 
   // populate settings for website or entities.  If custom, we'll require these
   if ($index_type === 'website') {
@@ -732,7 +709,13 @@ function tripal_elasticsearch_create_index(
       'content' => 'string',
     ];
   }
-  else { //checks and defults for custom index type
+  else { //checks and defaults for custom index type
+    $index_name = $values['index_name'];
+    $index_table = $values['table_name'];
+    $tokenizer = $values['index_settings']['tokenizer'];
+    $token_filters = array_filter($values['index_settings']['token_filters']);
+    $field_mapping_types = array_filter($values['table_fields']);
+
     if (!$index_name) {
       form_set_error('Error: No index name supplied for custom index');
       return;
@@ -799,9 +782,10 @@ function tripal_elasticsearch_create_index(
 }
 
 /**Deletes an index from elasticsearch and from the db
+ *
  * @param $index
  */
-function tripal_elasticsarch_delete_index($index){
+function tripal_elasticsarch_delete_index($index) {
   // Find the index and delete it from ES
   try {
     $es = new ESInstance();
