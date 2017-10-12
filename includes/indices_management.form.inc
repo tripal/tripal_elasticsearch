@@ -596,6 +596,8 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
 
   tripal_elasticsearch_delete_index($index);
+  drupal_set_message('Index "' . $index . '" deleted successfully.');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
 /**
@@ -790,7 +792,4 @@ function tripal_elasticsarch_delete_index($index) {
     drupal_set_message("$index could not be deleted from the database.", 'error');
     return;
   }
-
-  drupal_set_message('Index "' . $index . '" deleted successfully.');
-  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
