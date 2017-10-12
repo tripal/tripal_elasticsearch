@@ -249,7 +249,6 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
  * @param $form_state
  */
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
-  $queue_number = $form_state['values']['queue_number'];
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
   if ($website_or_table === 'website') {
@@ -257,7 +256,6 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     $exposed = $form_state['values']['index_table'];
     $index_name = 'website';
     $index_table = 'node';
-    $index_type = 'website';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -275,7 +273,6 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     // $index_name = $form_state['values']['index_name'];
     $index_name = 'entities';
     $index_table = 'tripal_entity';
-    $index_type = 'entities';
     $exposed = $form_state['values']['index_table'];
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
@@ -294,7 +291,6 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     $index_name = $form_state['values']['index_name'];
     $index_table = $form_state['values']['index_table'];
     $exposed = $form_state['values']['exposed'];
-    $index_type = $index_table;
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
     $field_mapping_types = array_filter($form_state['values']['table_fields']);
@@ -319,15 +315,31 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     return;
   }
 
+  // Dispatch jobs to populate the index
+  switch ($website_or_table) {
+    case 'website':
+      $job = new NodesIndexJob();
+      break;
+    case 'entities':
+      $job = new EntitiesIndexJob();
+      break;
+    default:
+      $fields = array_keys($field_mapping_types);
+      $job = new TableIndexJob($index_name, $index_table, $fields);
+  }
+
+  $dispatcher = new DispatcherJob($job);
+  $dispatcher->dispatch();
+
   // Populate the index
-  $es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
+  //$es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
 
   $form_state['rebuild'] = TRUE;
 
   $base_url = variable_get('website_base_url');
 
   $cron_url = $base_url . '/admin/config/system/cron';
-  drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at ". $cron_url);
+  drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at " . $cron_url);
 
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
@@ -338,7 +350,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
  * @param $form
  * @param $form_state
  *
- * @return mixed
+ * @return mixed|null
  */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   try {
@@ -349,7 +361,7 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
-    return;
+    return NULL;
   }
 
   $existing_indices = [];
@@ -370,8 +382,7 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   $form['indices'] = [
     '#type' => 'checkboxes',
     '#title' => t('Existing indices'),
-    '#description' => t('DELETE indexed DATA FROM Eleasticsearch. Please make sure you know 
-												what the DATA IS. This process can NOT be undone.'),
+    '#description' => t('delete indexed data from Eleasticsearch. Please make sure you know what the data is. This process can NOT be undone.'),
     '#options' => $existing_indices,
   ];
 
@@ -436,7 +447,6 @@ function tripal_elasticsearch_indices_list_page() {
 
   $rows = [];
   foreach ($indices as $index) {
-
     if ($index === 'entities') {
       $table = 'Indexes Tripal Entities';
     }
@@ -676,7 +686,6 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   //TODO:  THIS CODE IS VERY REDUNDANT WITH CREATE SUBMIT.  REFACTOR.
 
-  $queue_number = $form_state['values']['queue_number'];
   // Build Elasticsearch index settings.
   $website_or_table = $form_state['values']['website_or_table'];
   if ($website_or_table === 'website') {
@@ -684,7 +693,6 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     $exposed = $form_state['values']['exposed'];
     $index_name = 'website';
     $index_table = 'node';
-    $index_type = 'website';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -701,7 +709,6 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     $exposed = $form_state['values']['exposed'];
     $index_name = 'entities';
     $index_table = 'tripal_entity';
-    $index_type = 'entities';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
@@ -718,7 +725,6 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     // indexing a table: has customized index settings
     $index_name = $form_state['values']['index_name'];
     $index_table = $form_state['values']['table_name'];
-    $index_type = $index_table;
     $exposed = $form_state['values']['exposed'];
     $tokenizer = $form_state['values']['index_settings']['tokenizer'];
     $token_filters = array_filter($form_state['values']['index_settings']['token_filters']);
@@ -745,8 +751,24 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
     return;
   }
 
+  // Dispatch jobs to populate the index
+  switch ($website_or_table) {
+    case 'website':
+      $job = new NodesIndexJob();
+      break;
+    case 'entities':
+      $job = new EntitiesIndexJob();
+      break;
+    default:
+      $fields = array_keys($field_mapping_types);
+      $job = new TableIndexJob($index_name, $index_table, $fields);
+  }
+
+  $dispatcher = new DispatcherJob($job);
+  $dispatcher->dispatch();
+
   // Populate the index
-  $es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
+  //$es->populateIndex($website_or_table, $index_table, $index_name, $index_type, $field_mapping_types, $queue_number);
 
   $form_state['rebuild'] = TRUE;
 
@@ -754,7 +776,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   $cron_url = l($base_url . '/admin/config/system/cron', 'admin/config/system/cron');
 
-  drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at ". $cron_url);
+  drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at " . $cron_url);
 
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
@@ -768,9 +790,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm(
-  $form, &$form_state, $index_name
-) {
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
@@ -809,4 +829,59 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
 
   drupal_set_message('Index "' . $index . '" deleted successfully.');
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+}
+
+/**
+ * Admin Progress Tracker Page
+ */
+function tripal_elasticsearch_progress_page($callback = FALSE) {
+  $content = '';
+  if (!$callback) {
+    drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch_progress_tracker.js');
+    $content .= '<div id="progress-report-page">';
+  }
+
+  $content .= '<h1>Indexing Progress Tracker</h1>';
+
+  $data = ESQueue::progress();
+
+  $content .= '<h3>Overall Progress</h3>';
+
+  if ($data->percent >= 100) {
+    $content .= '<p>All items have been indexed. 0 Items remaining</p>';
+  }
+  else {
+    $content .= theme_progress_bar([
+      'percent' => $data->percent,
+      'message' => $data->remaining . ' Items remaining',
+    ]);
+  }
+
+  foreach ($data->queues as $queue => $progress) {
+    $content .= '<h3>' . $queue . '</h3>';
+
+    if ($progress->percent >= 100) {
+      $content .= '<p>All items have been indexed. 0 Items remaining</p>';
+    }
+    else {
+      $content .= theme_progress_bar([
+        'percent' => $progress->percent,
+        'message' => $progress->remaining . ' Items remaining',
+      ]);
+    }
+  }
+
+  if (!$callback) {
+    $content .= '</div>';
+  }
+
+  return $content;
+}
+
+/**
+ * Get progress page without header or footer html.
+ */
+function tripal_elasticsearch_get_progress() {
+  // Prevents rendering the entire page.
+  echo tripal_elasticsearch_progress_page(TRUE);
 }

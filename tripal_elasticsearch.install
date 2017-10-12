@@ -105,6 +105,7 @@ function tripal_elasticsearch_update_7203() {
           'length' => '255',
         ],
       ],
+      'primary key' => ['id'],
     ];
     db_create_table('tripal_elasticsearch_indices', $tripal_elasticsearch_indices);
   }
@@ -175,5 +176,48 @@ function tripal_elasticsearch_update_7204() {
       'default' => 0,
     ];
     db_add_field('tripal_elasticsearch_indices', 'exposed', $spec);
+  }
+}
+
+/**
+ * Create the tripal_elasticsearch_queues table to track queue progress.
+ */
+function tripal_elasticsearch_update_7205() {
+  if (!db_table_exists('tripal_elasticsearch_queues')) {
+    $tripal_elasticsearch_queues = [
+      'description' => 'Store elasticsearch queue information',
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'index_name' => [
+          'type' => 'varchar',
+          'length' => '255',
+          'not null' => TRUE,
+        ],
+        'total' => [
+          'type' => 'int',
+          'default' => 0,
+          'not null' => TRUE,
+        ],
+        'completed' => [
+          'type' => 'int',
+          'default' => 0,
+          'not null' => TRUE,
+        ],
+        'last_run_at' => [
+          'type' => 'int',
+          'not null' => TRUE,
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'index_name_index' => ['index_name']
+      ]
+    ];
+
+    db_create_table('tripal_elasticsearch_queues', $tripal_elasticsearch_queues);
   }
 }

@@ -5,14 +5,14 @@
  * A module that implements elasticsearch API.
  */
 
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESInstance.php';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESResponse.php';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/Elasticsearch/ESRequest.php';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.ws.inc';
+
+// Auto discover and include jobs and ES classes.
+tripal_elasticsearch_auto_discover_classes();
 
 /**
  * Implements hook_init().
@@ -33,9 +33,6 @@ function tripal_elasticsearch_init() {
       drupal_set_message(t('The Elasticsearch-PHP library loading failed!'), 'warning');
     }
   }
-
-  // set elasticsearch host variable if it doesn't exist.
-  variable_get('elasticsearch_host', 'http://localhost:9200');
 }
 
 /**
@@ -52,6 +49,7 @@ function tripal_elasticsearch_menu() {
     'file' => 'includes/elasticsearch_connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
   ];
+
   $items[$admin_url_base . '/elasticsearch_connection'] = [
     'title' => 'Elasticsearch Connection',
     'access arguments' => ['administer tripal elasticsearch'],
@@ -78,6 +76,24 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/elasticsearch_connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+  ];
+
+  $items[$admin_url_base . '/progress'] = [
+    'title' => 'Progress Tracker',
+    'page callback' => 'tripal_elasticsearch_progress_page',
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/indices_management.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_LOCAL_TASK,
+  ];
+
+  $items[$admin_url_base . '/progress/all'] = [
+    'title' => 'Progress Tracker',
+    'page callback' => 'tripal_elasticsearch_get_progress',
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/indices_management.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
   ];
 
   $items[$admin_url_base . '/indices_management'] = [
@@ -149,7 +165,7 @@ function tripal_elasticsearch_menu() {
 
   // Tripal Elasticsearch API Endpoints
   // ----------------------------------
-  
+
   $items['elasticsearch/api/v1/status'] = [
     'title' => t('Status'),
     'page callback' => 'tripal_elasticsearch_api_v1_status',
@@ -228,12 +244,20 @@ function tripal_elasticsearch_cron_queue_info() {
   // Define N = 10 cron queues
   $queues = [];
   $queue_number = 10;
+
   for ($n = 1; $n <= $queue_number; $n++) {
     $queues['elasticsearch_queue_' . $n] = [
-      'worker callback' => 'tripal_elasticsearch_cron_queue_worker_callback',
+      'worker callback' => 'ESQueue::run',
       'time' => 60 * 2,
     ];
   }
+
+  $queues['elasticsearch_dispatcher'] = [
+    'worker callback' => 'ESQueue::run',
+    // Let worker take as much time required to dispatch all jobs
+    'time' => 60 * 20,
+  ];
+
   return $queues;
 }
 
@@ -428,6 +452,7 @@ function tripal_elasticsearch_block_view($delta = '') {
       }
       break;
     case 'cross_site_search_block':
+      dpm((new ESInstance())->getIndices());
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
       break;
@@ -603,6 +628,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
  * Implements hook_node_update().
  */
 function tripal_elasticsearch_node_update($node) {
+  return;
   $item = new stdClass();
 
   // Delete entity if it's status changed
@@ -639,6 +665,7 @@ function tripal_elasticsearch_node_insert($node) {
  * Implements hook_node_delete().
  */
 function tripal_elasticsearch_node_delete($node) {
+  return;
   try {
     $es = new ESInstance();
     $es->deleteEntry('website', 'website', $node->id);
@@ -657,6 +684,7 @@ function tripal_elasticsearch_node_delete($node) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_update($entity, $entity_type) {
+  return;
   if ($entity_type !== 'TripalEntity' || !isset($entity->id)) {
     return;
   }
@@ -824,5 +852,20 @@ function tripal_elasticsearch_table_search_download() {
     }
 
     file_transfer($temp_file, ['Content-Type' => 'text/csv; utf-8']);
+  }
+}
+
+/**
+ * Auto discover and include ES classes and Jobs.
+ */
+function tripal_elasticsearch_auto_discover_classes() {
+  $path = drupal_get_path('module', 'tripal_elasticsearch');
+
+  foreach (glob("{$path}/includes/Elasticsearch/*.php", GLOB_NOSORT) as $file) {
+    require $file;
+  }
+
+  foreach (glob("{$path}/includes/Jobs/*.php", GLOB_NOSORT) as $file) {
+    require $file;
   }
 }
