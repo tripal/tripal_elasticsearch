@@ -565,6 +565,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 /**
  * Index Deletion Confirmation Form.
  *s
+ *
  * @param $form
  * @param $form_state
  * @param $index_name
@@ -655,13 +656,7 @@ function tripal_elasticsearch_get_progress() {
 
 /** Creates an index.  Used by the create and edit index functions.
  *
- * @param $index_type
- * @param $exposed
- * @param $index_name
- * @param $index_table
- * @param $tokenizer
- * @param $token_filters
- * @param $field_mapping_types
+ * @param $values
  */
 
 function tripal_elasticsearch_create_index(
@@ -677,7 +672,7 @@ function tripal_elasticsearch_create_index(
   $index_type = $values['website_or_table'];
   $exposed = $values['exposed'];
 
-  // populate settings for website or entities.  If custom, we'll require these
+  // populate settings for website or entities.
   if ($index_type === 'website') {
     // indexing website: has default index settings.
     $index_name = 'website';
@@ -766,18 +761,12 @@ function tripal_elasticsearch_create_index(
       $fields = array_keys($field_mapping_types);
       $job = new TableIndexJob($index_name, $index_table, $fields);
   }
-
   $dispatcher = new DispatcherJob($job);
   $dispatcher->dispatch();
-
   $form_state['rebuild'] = TRUE;
-
   $base_url = variable_get('website_base_url');
-
   $cron_url = l($base_url . '/admin/config/system/cron', 'admin/config/system/cron');
-
   drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at " . $cron_url);
-
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
