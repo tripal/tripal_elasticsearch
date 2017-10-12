@@ -253,7 +253,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   $website_or_table = $form_state['values']['website_or_table'];
   if ($website_or_table === 'website') {
     // indexing website: has default index settings.
-    $exposed = $form_state['values']['index_table'];
+    $exposed = $form_state['values']['exposed'];
     $index_name = 'website';
     $index_table = 'node';
     $tokenizer = 'standard';
@@ -273,7 +273,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
     // $index_name = $form_state['values']['index_name'];
     $index_name = 'entities';
     $index_table = 'tripal_entity';
-    $exposed = $form_state['values']['index_table'];
+    $exposed = $form_state['values']['exposed'];
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
       'standard',
