@@ -193,7 +193,6 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  */
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $type = $form_state['values']['website_or_table'];
-  dpm($type);
   if ($type == "database") {
     // Index name validation.
     $index_name = $form_state['values']['index_name'];
