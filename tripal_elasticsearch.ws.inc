@@ -65,7 +65,7 @@ function tripal_elasticsearch_api_v1_remote_status($remote_id) {
   try {
     $response = ESRequest::get($url);
   } catch (Exception $exception) {
-    return ESResponse::error($exception->getMessage(), 500);
+    return ESResponse::error(['server' => $exception->getMessage()], 500);
   }
 
   return ESResponse::success($response->data);
@@ -101,11 +101,11 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     try {
       $response = ESRequest::get($url, [
         'terms' => $_GET['terms'],
-        'category' => $_GET['category'] ?: '',
+        'category' => isset($_GET['category']) ? $_GET['category'] : '',
         'size' => $size,
       ]);
     } catch (Exception $exception) {
-      return ESResponse::error($exception->getMessage(), 500);
+      return ESResponse::error(['server' => $exception->getMessage()], 500);
     }
   }
 
@@ -125,7 +125,9 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
  * results from our site.
  *
  * @param bool $http Whether this is an http request or an internal
- *                    request. (true for http)
+ *                    request. (TRUE for http)
+ *                   Set this option to FALSE to retrieve an object instead
+ *                    of printing a JSON string.
  */
 function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   global $base_url;

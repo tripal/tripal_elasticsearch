@@ -447,7 +447,8 @@ class ESInstance {
         $sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              ORDER BY title ASC LIMIT $k OFFSET $OFFSET WHERE status=1";
+              WHERE status=1
+              ORDER BY title ASC LIMIT $k OFFSET $OFFSET ";
       }
       else {
         $sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
