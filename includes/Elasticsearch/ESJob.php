@@ -32,6 +32,13 @@ abstract class ESJob {
   protected $offset = NULL;
 
   /**
+   * Automatically set by ESQueue
+   *
+   * @var string
+   */
+  public $queue_name;
+
+  /**
    * Runs the job.
    * This function must be defined by extending classes.
    */

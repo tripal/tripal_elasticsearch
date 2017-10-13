@@ -221,3 +221,16 @@ function tripal_elasticsearch_update_7205() {
     db_create_table('tripal_elasticsearch_queues', $tripal_elasticsearch_queues);
   }
 }
+
+function tripal_elasticsearch_update_7206() {
+  if (!db_field_exists('tripal_elasticsearch_queue', 'queue_id')) {
+    $spec = [
+      'type' => 'int',
+      'size' => 'big',
+      'description' => "Foreign key to es queue",
+      'not null' => TRUE,
+      'default' => 0,
+    ];
+    db_add_field('tripal_elasticsearch_queue', 'queue_id', $spec);
+  }
+}

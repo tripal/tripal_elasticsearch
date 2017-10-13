@@ -1,7 +1,9 @@
 <?php
 
 class ESDaemon extends DrushDaemon {
-  protected $loop_interval = 5;
+
+  protected $loop_interval = 20;
+
   /**
    * Find and run queues.
    *
@@ -34,12 +36,14 @@ class ESDaemon extends DrushDaemon {
     // We use drush_invoke_process() to fork the daemon safely to run
     // multiple jobs concurrently. We can't use the PHP-daemon built
     // in functionality such as workers & tasks b/c they copy the
-    // entire enviro. resulting in mutliple processes using the same
+    // entire environment. resulting in multiple processes using the same
     // database connection (which causes errors).
     drush_invoke_process('@self', // Obviously run on the current site.
       'cron-run',                 // Run the cron
       [$name],                    // Arguments
-      [],                         // No Options
+      [
+        'options' => 'thread=' . (rand() % 10 + 1),
+      ],                         // No Options
       ['fork' => FALSE]            // This tells drush to spawn a new process.
     );
   }

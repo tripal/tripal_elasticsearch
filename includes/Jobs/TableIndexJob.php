@@ -64,11 +64,22 @@ class TableIndexJob extends ESJob {
     $this->total = count($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $records);
+      $es->bulkIndex($this->index, $records, $this->table);
     }
     elseif ($this->total > 0) {
       $es->createEntry($this->index, $this->table, FALSE, $records[0]);
     }
+
+    $sql = "
+    SELECT F.uniquename,
+           F.feature_id,
+           BLAST.hit_description,
+           CVT.cvterm_id
+            FROM chado.feature F
+            FULL OUTER JOIN chado.blast_hit_data BLAST ON F.feature_id = BLAST.feature_id
+            FULL OUTER JOIN chado.feature_cvterm CVT ON F.feature_id = CVT.feature_id
+            WHERE BLAST.hit_description IS NOT NULL OR CVT.cvterm_id IS NOT NULL
+            ";
   }
 
   /**

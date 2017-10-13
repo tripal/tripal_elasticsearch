@@ -28,14 +28,14 @@ class NodesIndexJob extends ESJob {
    *
    * @var int
    */
-  public $total;
+  protected $total;
 
   /**
    * Number of items to bulk index.
    *
    * @var int
    */
-  public $chunk = 10;
+  public $chunk = 5;
 
   /**
    * NodesIndexJob constructor.
@@ -56,12 +56,13 @@ class NodesIndexJob extends ESJob {
     $this->total = count($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $this->loadContent($records));
+      $es->bulkIndex($this->index, $this->loadContent($records), $this->index, 'nid');
     }
     else {
       if ($this->total > 0) {
         $record = $this->loadContent($records)[0];
-        $es->createEntry($this->index, $this->index, FALSE, $record[0]);
+
+        $es->createEntry($this->index, $this->index, $record->nid, $record);
       }
     }
   }
@@ -73,18 +74,28 @@ class NodesIndexJob extends ESJob {
    *
    * @return array
    */
-  protected function loadContent(array $records) {
-    return array_map(function ($record) {
-      $node = node_load($record->nid);
-      $view = node_view($node, 'full');
-      $content = render($view);
-      return (object) [
+  protected function loadContent($records) {
+    global $base_url;
+    $all = [];
+    $this->total = 0;
+
+    foreach ($records as $record) {
+      $this->total++;
+
+      $content = @file_get_contents("{$base_url}/node/{$record->nid}");
+
+      if ($content === FALSE) {
+        continue;
+      }
+
+      $all[] = (object) [
         'nid' => $record->nid,
         'title' => $record->title,
         'type' => $record->type,
         'content' => $this->cleanHTML($content),
       ];
-    }, $records);
+    }
+    return $all;
   }
 
   /**

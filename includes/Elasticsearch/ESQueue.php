@@ -105,6 +105,7 @@ class ESQueue {
       $queue_name = $queue->getMinQueue();
     }
 
+    $job->queue_name = $queue_name;
     return DrupalQueue::get($queue_name)->createItem($job);
   }
 
@@ -118,6 +119,7 @@ class ESQueue {
   public static function run($job) {
     if ($job instanceof ESJob) {
       $job->handle();
+      variable_set($job->queue_name . '_lock', FALSE);
       static::updateProgress($job->type, $job->total());
       return;
     }

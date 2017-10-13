@@ -692,7 +692,6 @@ function tripal_elasticsearch_node_insert($node) {
  * Implements hook_node_delete().
  */
 function tripal_elasticsearch_node_delete($node) {
-  return;
   try {
     $es = new ESInstance();
     $es->deleteEntry('website', 'website', $node->id);

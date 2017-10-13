@@ -35,11 +35,6 @@ class DispatcherJob extends ESJob {
    */
   public function __construct($job) {
     $this->job = $job;
-
-    $this->total = $this->job->count();
-
-    // Nothing to index. Terminate
-    return ESQueue::initProgress($this->job->type, $this->total);
   }
 
   /**
@@ -47,6 +42,9 @@ class DispatcherJob extends ESJob {
    */
   public function handle() {
     $chunk = $this->job->chunk;
+    $this->total = $this->job->count();
+
+    ESQueue::initProgress($this->job->type, $this->total);
 
     for ($offset = 0; $offset < $this->total; ($offset + $chunk < $this->total) ? ($offset += $chunk) : ($offset += $this->total - $offset)) {
       $this->job->offset($offset)->limit($chunk)->dispatch();

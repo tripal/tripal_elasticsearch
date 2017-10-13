@@ -28,14 +28,14 @@ class EntitiesIndexJob extends ESJob {
    *
    * @var int
    */
-  public $total;
+  protected $total;
 
   /**
    * Number of items to bulk index.
    *
    * @var int
    */
-  public $chunk = 10;
+  public $chunk = 100;
 
   /**
    * Constructor.
@@ -54,16 +54,14 @@ class EntitiesIndexJob extends ESJob {
   public function handle() {
     $es = new ESInstance();
     $records = $this->get();
-    $this->total = count($records);
-
     $records = $this->loadContent($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $records);
+      $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
     }
     else {
       if ($this->total > 0) {
-        $es->createEntry($this->index, $this->index, FALSE, $records[0]);
+        $es->createEntry($this->index, $this->index, $records[0]->entity_id, $records[0]);
       }
     }
   }
@@ -76,17 +74,27 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
-    return array_map(function ($record) {
-      $entity = entity_load('TripalEntity', [$record->entity_id]);
-      $view = entity_view('TripalEntity', $entity, 'full');
-      $content = render($view);
-      return (object) [
+    global $base_url;
+    $all = [];
+    $this->total = 0;
+
+    foreach ($records as $record) {
+      $this->total++;
+
+      $content = @file_get_contents("{$base_url}/bio_data/{$record->entity_id}");
+
+      if ($content === FALSE) {
+        continue;
+      }
+
+      $all[] = (object) [
         'entity_id' => $record->entity_id,
         'title' => $record->title,
         'bundle_label' => $record->bundle_label,
         'content' => $this->cleanHTML($content),
       ];
-    }, $records);
+    }
+    return $all;
   }
 
   /**
@@ -155,6 +163,7 @@ class EntitiesIndexJob extends ESJob {
 
   /**
    * Get a single entity record from the DB.
+   *
    * @return array
    */
   protected function getSingleEntity() {
