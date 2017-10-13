@@ -480,6 +480,8 @@ function tripal_elasticsearch_block_view($delta = '') {
       }
       break;
     case 'cross_site_search_block':
+      $job = new GeneSearchIndexJob();
+      dpm($job->handle());
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
       break;

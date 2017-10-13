@@ -37,6 +37,10 @@ class GeneSearchIndexJob extends ESJob {
    */
   protected $total;
 
+  protected $offset = 650;
+
+  protected $limit = 1;
+
   /**
    * GeneSearchIndexJob constructor.
    *
@@ -54,7 +58,7 @@ class GeneSearchIndexJob extends ESJob {
   public function handle() {
     $records = $this->get();
     $this->total = count($records);
-
+    return $records;
     $es = new ESInstance();
     if ($this->total > 1) {
       $es->bulkIndex($this->index, $records);
@@ -70,13 +74,20 @@ class GeneSearchIndexJob extends ESJob {
    * @return mixed
    */
   protected function get() {
-    $records = db_query('SELECT uniquename, feature_id FROM chado.feature ORDER BY feature_id ASC OFFSET :offset LIMIT :limit', [
+    $query = 'SELECT F.uniquename, F.feature_id, O.genus, O.species, O.common_name
+                FROM chado.feature F
+                INNER JOIN chado.organism O ON F.organism_id = O.organism_id
+                ORDER BY feature_id ASC OFFSET :offset LIMIT :limit';
+
+    $records = db_query($query, [
       ':offset' => $this->offset,
       ':limit' => $this->limit,
     ])->fetchAll();
 
-    // Eager load all blast hit descriptions and feature annotations
-    $this->loadData($records);
+    if (count($records) > 0) {
+      // Eager load all blast hit descriptions and feature annotations
+      $this->loadData($records);
+    }
 
     return $records;
   }
