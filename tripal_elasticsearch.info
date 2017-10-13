@@ -9,4 +9,5 @@ dependencies[] = libraries
 dependencies[] = queue_ui
 dependencies[] = ultimate_cron
 
+
 stylesheets[all][] = css/tripal_elasticsearch.css
