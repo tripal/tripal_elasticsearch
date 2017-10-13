@@ -124,7 +124,7 @@ class GeneSearchIndexJob extends ESJob {
    * @return array
    */
   protected function loadBlastData($keys) {
-    $records = db_query('SELECT hit_description, hit_accession FROM chado.blast_hit_data WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
+    $records = db_query('SELECT feature_id, hit_description, hit_accession FROM chado.blast_hit_data WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
 
     $indexed = [];
     foreach ($records as $record) {
