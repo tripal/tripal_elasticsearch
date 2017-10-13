@@ -37,9 +37,9 @@ class GeneSearchIndexJob extends ESJob {
    */
   protected $total;
 
-  protected $offset = 650;
+  protected $offset = 17050;
 
-  protected $limit = 1;
+  protected $limit = 10;
 
   /**
    * GeneSearchIndexJob constructor.
