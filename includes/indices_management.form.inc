@@ -600,76 +600,12 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
-/**
- * Admin Progress Tracker Page
- */
-function tripal_elasticsearch_progress_page($callback = FALSE) {
-  $content = '';
-  if (!$callback) {
-    drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch_progress_tracker.js');
-    $content .= '<div id="progress-report-page">';
-  }
-
-  $content .= '<h1>Indexing Progress Tracker</h1>';
-
-  $data = ESQueue::progress();
-
-  $content .= '<h3>Overall Progress</h3>';
-
-  if ($data->percent >= 100) {
-    $content .= '<p>All items have been indexed. 0 Items remaining</p>';
-  }
-  else {
-    $content .= theme_progress_bar([
-      'percent' => $data->percent,
-      'message' => $data->remaining . ' Items remaining',
-    ]);
-  }
-
-  foreach ($data->queues as $queue => $progress) {
-    $content .= '<h3>' . $queue . '</h3>';
-
-    if ($progress->percent >= 100) {
-      $content .= '<p>All items have been indexed. 0 Items remaining</p>';
-    }
-    else {
-      $content .= theme_progress_bar([
-        'percent' => $progress->percent,
-        'message' => $progress->remaining . ' Items remaining',
-      ]);
-    }
-  }
-
-  if (!$callback) {
-    $content .= '</div>';
-  }
-
-  return $content;
-}
-
-/**
- * Get progress page without header or footer html.
- */
-function tripal_elasticsearch_get_progress() {
-  // Prevents rendering the entire page.
-  echo tripal_elasticsearch_progress_page(TRUE);
-}
-
 /** Creates an index.  Used by the create and edit index functions.
  *
  * @param $values
  */
 
-function tripal_elasticsearch_create_index(
-  //$index_type,
-  //$exposed,
-  //$index_name,
-  //$index_table,
-  //$tokenizer,
-  //$token_filters,
-  //$field_mapping_types
-  &$values
-) {
+function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['website_or_table'];
   $exposed = $values['exposed'];
 
