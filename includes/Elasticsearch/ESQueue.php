@@ -62,6 +62,10 @@ class ESQueue {
     $completed = 0;
 
     foreach ($queues as $queue) {
+      if ($queue->total === $queue->completed) {
+        continue;
+      }
+
       $last_run = new DateTime();
       $last_run->setTimestamp($queue->last_run_at);
 
@@ -72,7 +76,7 @@ class ESQueue {
         'total' => $queue->total,
         'completed' => $queue->completed,
         'remaining' => $queue->total - $queue->completed,
-        'percent' => number_format(($queue->completed / $queue->total) * 100, 2),
+        'percent' => number_format(($queue->completed / ($queue->total ?: 1)) * 100, 2),
         'last_run_at' => $last_run,
       ];
     }
@@ -101,6 +105,7 @@ class ESQueue {
       $queue_name = $queue->getMinQueue();
     }
 
+    $job->queue_name = $queue_name;
     return DrupalQueue::get($queue_name)->createItem($job);
   }
 
@@ -114,6 +119,7 @@ class ESQueue {
   public static function run($job) {
     if ($job instanceof ESJob) {
       $job->handle();
+      variable_set($job->queue_name . '_lock', FALSE);
       static::updateProgress($job->type, $job->total());
       return;
     }

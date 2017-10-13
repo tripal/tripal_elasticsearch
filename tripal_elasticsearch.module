@@ -238,6 +238,34 @@ function tripal_elasticsearch_libraries_info() {
 }
 
 /**
+ * Implements hook_daemon_api_info().
+ * Registers our Daemon with the Daemon API
+ */
+function tripal_elasticsearch_daemon_api_info() {
+  $daemon = [];
+
+  // This is an example daemon which just sleeps for random amounts of time.
+  $daemon['elasticsearch'] = [
+    // The machine name of the daemon (same as key above).
+    'machine_name' => 'elasticsearch',
+    // A human-readable name for your daemon.
+    'name' => 'Elasticsearch Daemon',
+    // This module (ie: the module implementing the daemon).
+    'module' => 'tripal_elasticsearch',
+    // The class extending DrushDaemon and implementing your daemon-specific
+    // functionality. This class should be in a [classname].inc file in your
+    // modules base directory.
+    'class' => 'ESDaemon',
+    // OPTIONAL: Define this if your module doesn't follow the rule mentioned
+    // in the above comment. The name and path to the file containing the
+    // daemon class assuming your module folder as the root.
+    'class_file' => 'includes/ESDaemon.inc',
+  ];
+
+  return $daemon;
+}
+
+/**
  * Implements hook_cron_queue_info().
  */
 function tripal_elasticsearch_cron_queue_info() {
@@ -452,7 +480,6 @@ function tripal_elasticsearch_block_view($delta = '') {
       }
       break;
     case 'cross_site_search_block':
-      dpm((new ESInstance())->getIndices());
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
       break;
@@ -665,7 +692,6 @@ function tripal_elasticsearch_node_insert($node) {
  * Implements hook_node_delete().
  */
 function tripal_elasticsearch_node_delete($node) {
-  return;
   try {
     $es = new ESInstance();
     $es->deleteEntry('website', 'website', $node->id);

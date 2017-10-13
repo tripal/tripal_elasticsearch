@@ -11,6 +11,13 @@ abstract class ESJob {
   public $type = 'index';
 
   /**
+   * Number of items to index in bulk.
+   *
+   * @var int
+   */
+  public $chunk = 500;
+
+  /**
    * SQL limit.
    *
    * @var int
@@ -23,6 +30,13 @@ abstract class ESJob {
    * @var int
    */
   protected $offset = NULL;
+
+  /**
+   * Automatically set by ESQueue
+   *
+   * @var string
+   */
+  public $queue_name;
 
   /**
    * Runs the job.

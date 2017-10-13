@@ -387,10 +387,11 @@ class ESInstance {
    *                ]
    *              ]
    * @param string $type
+   * @param string $id_key The object key to get the id value
    *
    * @return array
    */
-  public function bulkIndex($index, array $entries, $type = NULL) {
+  public function bulkIndex($index, array $entries, $type = NULL, $id_key = NULL) {
     $params = ['body' => []];
 
     if ($type === NULL) {
@@ -398,11 +399,17 @@ class ESInstance {
     }
 
     foreach ($entries as $entry) {
+      $index = [
+        '_index' => $index,
+        '_type' => $type,
+      ];
+
+      if ($id_key !== NULL) {
+        $index['_id'] = $entry->{$id_key};
+      }
+
       $params['body'][] = [
-        'index' => [
-          '_index' => $index,
-          '_type' => $type,
-        ],
+        'index' => [$index],
       ];
 
       $params['body'][] = $entry;
