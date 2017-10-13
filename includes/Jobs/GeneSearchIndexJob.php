@@ -37,10 +37,6 @@ class GeneSearchIndexJob extends ESJob {
    */
   protected $total;
 
-  protected $offset = 17050;
-
-  protected $limit = 10;
-
   /**
    * GeneSearchIndexJob constructor.
    *
@@ -58,7 +54,7 @@ class GeneSearchIndexJob extends ESJob {
   public function handle() {
     $records = $this->get();
     $this->total = count($records);
-    return $records;
+
     $es = new ESInstance();
     if ($this->total > 1) {
       $es->bulkIndex($this->index, $records);
