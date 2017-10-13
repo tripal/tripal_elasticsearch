@@ -775,7 +775,7 @@ function tripal_elasticsearch_create_index(
  *
  * @param $index
  */
-function tripal_elasticsarch_delete_index($index) {
+function tripal_elasticsearch_delete_index($index) {
   // Find the index and delete it from ES
   try {
     $es = new ESInstance();
