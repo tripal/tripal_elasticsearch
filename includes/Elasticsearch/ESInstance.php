@@ -413,7 +413,6 @@ class ESInstance {
       ];
 
       $params['body'][] = $entry;
-      break;
     }
 
     return $this->client->bulk($params);
