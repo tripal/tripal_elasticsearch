@@ -280,7 +280,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
     'count' => $count,
     'url' => $base_url,
     'markup' => theme('table', [
-      'header' => $count > 0 ? array_keys($rows[0]) : [],
+      'header' => $count > 0 ? array_keys($search_results[0]) : [],
       'rows' => $rows,
     ]),
   ], $http);
