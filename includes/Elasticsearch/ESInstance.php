@@ -569,7 +569,7 @@ class ESInstance {
      *
      * @return array
      */
-  public function searchAllIndices($terms, $size, $category = NULL) {
+  public function searchWebIndices($terms, $size, $category = NULL) {
     $index_name = [];
 
     $indices = $this->getIndices();
@@ -592,6 +592,13 @@ class ESInstance {
       'count' => $count,
       'results' => $results,
     ];
+  }
+
+  public function getIndexFields($index) {
+    $mapping = $this->client->indices()->getMapping();
+    $fields = isset($mapping[$index]) ? $mapping[$index]['mappings']['_default_']['properties'] : [];
+
+    return array_keys($fields);
   }
 
   /**

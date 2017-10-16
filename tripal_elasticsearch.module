@@ -9,6 +9,7 @@ require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsear
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/gene_search.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.ws.inc';
 
 // Auto discover and include jobs and ES classes.
@@ -204,6 +205,22 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
+  $items['elasticsearch/api/v1/%/local-search'] = [
+    'title' => t('Search'),
+    'page callback' => 'tripal_elasticsearch_api_v1_table_index_local_search',
+    'access arguments' => ['access content'],
+    'page arguments' => [3],
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['elasticsearch/api/v1/%/search/%'] = [
+    'title' => t('Search'),
+    'page callback' => 'tripal_elasticsearch_api_v1_table_index_search',
+    'access arguments' => ['access content'],
+    'page arguments' => [3, 5],
+    'type' => MENU_CALLBACK,
+  ];
+
   return $items;
 }
 
@@ -392,6 +409,13 @@ function tripal_elasticsearch_block_info() {
     'page' => "elasticsearch/cross-site",
   ];
 
+  $blocks['elasticsearch_gene_search_block'] = [
+    'info' => t('Tripal Elasticsearch gene search form'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'cache' => DRUPAL_NO_CACHE,
+    'page' => "elasticsearch/gene-search",
+  ];
+
   // Define blocks for table search forms.
   $sql = "SELECT index_name FROM {tripal_elasticsearch}";
   $index_names = db_query($sql)->fetchCol('index_name');
@@ -482,6 +506,10 @@ function tripal_elasticsearch_block_view($delta = '') {
     case 'cross_site_search_block':
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
+      break;
+    case 'elasticsearch_gene_search_block':
+      $block['subject'] = '';
+      $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form');
       break;
   }
 
@@ -655,30 +683,14 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
  * Implements hook_node_update().
  */
 function tripal_elasticsearch_node_update($node) {
-  return;
-  $item = new stdClass();
-
   // Delete entity if it's status changed
   if ($node->status === 0) {
     tripal_elasticsearch_node_delete($node);
     return;
   }
 
-  $item->index_name = 'website';
-  $item->index_type = 'website';
-  $item->website_or_table = 'website';
-  $item->sql = "SELECT nid,title,type FROM {node} WHERE nid = $node->nid AND status=1";
-  $item->field_mapping_types = [
-    'nid' => 'integer',
-    'type' => 'string',
-    'title' => 'string',
-    'content' => 'string',
-  ];
-
-  // randomly assign the updated node to a cron queue
-  $id = rand(1, 10);
-  $cron_queue = DrupalQueue::get('elasticsearch_queue_' . $id);
-  $cron_queue->createItem($item);
+  $job = new NodesIndexJob($node->nid);
+  $job->dispatch();
 }
 
 /**
@@ -710,7 +722,6 @@ function tripal_elasticsearch_node_delete($node) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_update($entity, $entity_type) {
-  return;
   if ($entity_type !== 'TripalEntity' || !isset($entity->id)) {
     return;
   }
@@ -721,26 +732,8 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
-  $item = new stdClass();
-  $item->index_name = 'entities';
-  $item->index_type = 'entities';
-  $item->website_or_table = 'entities';
-  $item->sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
-                FROM {tripal_entity}
-                JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-                WHERE tripal_entity.id={$entity->id} AND status=1";
-
-  $item->field_mapping_types = [
-    'entity_id' => 'integer',
-    'bundle_label' => 'string',
-    'title' => 'string',
-    'content' => 'string',
-  ];
-
-  // randomly assign the updated node to a cron queue
-  $id = rand(1, 10);
-  $cron_queue = DrupalQueue::get('elasticsearch_queue_' . $id);
-  $cron_queue->createItem($item);
+  $job = new EntitiesIndexJob($entity->id);
+  $job->dispatch();
 }
 
 /**
