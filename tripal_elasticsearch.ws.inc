@@ -266,9 +266,10 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   foreach ($search_results as $row) {
     $fields = [];
     foreach ($row as $entry) {
-      if(is_array($entry)) {
-        $fields[] = implode('<br>', $entry);
-      } else {
+      if (is_array($entry)) {
+        $fields[] = elasticsearch_recursive_implode('<br>', $entry);
+      }
+      else {
         $fields[] = $entry;
       }
     }
@@ -284,6 +285,20 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
       'rows' => $rows,
     ]),
   ], $http);
+}
+
+function elasticsearch_recursive_implode($glue, $array) {
+  $string = '';
+  foreach ($array as $item) {
+    if (is_array($item)) {
+      $string .= $glue . elasticsearch_recursive_implode($glue, $item);
+    }
+    else {
+      $string .= $glue . $item;
+    }
+  }
+
+  return trim($string, $glue);
 }
 
 /**
