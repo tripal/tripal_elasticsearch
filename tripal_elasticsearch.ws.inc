@@ -262,13 +262,26 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   $count = $results->count();
   $search_results = $results->search();
 
+  $rows = [];
+  foreach ($search_results as $row) {
+    $fields = [];
+    foreach ($row as $entry) {
+      if(is_array($entry)) {
+        $fields[] = implode('<br>', $entry);
+      } else {
+        $fields[] = $entry;
+      }
+    }
+    $rows[] = $fields;
+  }
+
   global $base_url;
   return ESResponse::success([
     'count' => $count,
     'url' => $base_url,
     'markup' => theme('table', [
-      'header' => $count > 0 ? array_keys($search_results[0]) : [],
-      'rows' => $search_results,
+      'header' => $count > 0 ? array_keys($rows[0]) : [],
+      'rows' => $rows,
     ]),
   ], $http);
 }
