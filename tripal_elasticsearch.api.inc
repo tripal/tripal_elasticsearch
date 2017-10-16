@@ -78,7 +78,7 @@ function get_chado_table_list() {
 /**
  * This function takes a table name and return all the column names
  */
-function get_column_list($table_name) {
+function tripal_elasticsearch_get_column_list($table_name) {
 
   // Detect which schema the table belongs to. If it has prefix 'chado.', it is
   // the chado schema, otherwise it is from the public schema.
@@ -102,7 +102,7 @@ function get_column_list($table_name) {
  * This function return an array containing a list of table names from the
  * public and chado schema.
  */
-function get_table_list() {
+function tripal_elasticsearch_get_table_list() {
   $sql_public_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'public') ORDER BY table_name";
   $sql_chado_table_list = "SELECT table_name FROM information_schema.tables WHERE (table_schema = 'chado') ORDER BY table_name";
   $public_table_results = db_query($sql_public_table_list)->fetchAll();

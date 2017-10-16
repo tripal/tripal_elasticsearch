@@ -29,7 +29,7 @@ class TableIndexJob extends ESJob {
    *
    * @var string
    */
-  protected $index;
+  public $index;
 
   /**
    * Columns in specified table to index.

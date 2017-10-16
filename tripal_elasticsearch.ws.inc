@@ -149,7 +149,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
 
   try {
     $es = new ESInstance();
-    $results = $es->searchAllIndices($terms, $size, $category);
+    $results = $es->searchWebIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return ESResponse::error($exception->getMessage(), 500);
   }
@@ -164,6 +164,120 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   ]), $http);
 }
 
+/**
+ * Perform a table index search.
+ *
+ * @param $index_name
+ * @param $remote_host_id
+ *
+ * @return array|bool|object
+ */
+function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_host_id) {
+  $remote_id = intval($remote_host_id);
+  $terms = isset($_GET['annotations']) ? $_GET['annotations'] : '';
+
+  if (empty($terms)) {
+    return ESResponse::error([
+      'search_terms' => ['Please provide a search term'],
+    ]);
+  }
+
+  if ($remote_id === 0) {
+    try {
+      $response = tripal_elasticsearch_api_v1_table_index_local_search($index_name, FALSE);
+      $results = $response->data;
+    } catch (Exception $exception) {
+      return ESResponse::error([
+        'results' => [$exception->getMessage()],
+      ]);
+    }
+  }
+  else {
+    $host = db_query('SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id', [':id' => $remote_id])->fetchObject();
+
+    if (!$host) {
+      return ESResponse::error([
+        'remote_id' => ['Invalid remote host provided.'],
+      ]);
+    }
+
+    $url = trim($host->url, '/') . 'elasticsearch/' . $index_name . '/local-search';
+    try {
+      $results = ESRequest::get($url);
+    } catch (Exception $exception) {
+      return ESResponse::error([
+        'remote_id' => [
+          'The host returned an invalid response',
+          $exception->getMessage(),
+        ],
+      ]);
+    }
+  }
+
+  if (!$results) {
+    return ESResponse::error([
+      'results' => [
+        'Elasticsearch error. Could not perform search.',
+      ],
+    ]);
+  }
+
+  return ESResponse::success($results);
+}
+
+/**
+ * Perform a local table index search.
+ *
+ * @param $index_name
+ * @param bool $http
+ *
+ * @return array|bool|object
+ * @throws \Exception
+ */
+function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http = TRUE) {
+  try {
+    $es = new ESInstance();
+    $fields = $es->getIndexFields($index_name);
+    $field_content_pairs = [];
+
+    foreach ($fields as $field) {
+      if (isset($_GET[$field])) {
+        $field_content_pairs[$field] = $_GET[$field];
+      }
+    }
+
+    $query = build_search_query_from_field_content_pairs($field_content_pairs);
+    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2]);
+  } catch (Exception $exception) {
+    if ($http) {
+      return ESResponse::error([
+        'results' => [$exception->getMessage()],
+      ]);
+    }
+    else {
+      throw $exception;
+    }
+  }
+
+  $count = $results->count();
+  $search_results = $results->search();
+
+  global $base_url;
+  return ESResponse::success([
+    'count' => $count,
+    'url' => $base_url,
+    'markup' => theme('table', [
+      'header' => $count > 0 ? array_keys($search_results[0]) : [],
+      'rows' => $search_results,
+    ]),
+  ], $http);
+}
+
+/**
+ * Get local categories.
+ *
+ * @return array|bool|object
+ */
 function tripal_elasticsearch_api_v1_categories() {
   return ESResponse::success([
     [
@@ -241,12 +355,16 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
     '#markup' => '<div id="tripal-elasticsearch-results-block"></div>',
   ];
 
+  $form['#atached']['js'][] = [
+    'data' => drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/axios.min.js'),
+    'type' => 'file',
+  ];
+
   $remotes = db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
 
   // Add local server as the first remote
   array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
 
-  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/axios.min.js');
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
   drupal_add_js([
     'remotes' => $remotes,

@@ -56,11 +56,11 @@ class GeneSearchIndexJob extends ESJob {
     $this->total = count($records);
 
     $es = new ESInstance();
-    if ($this->total > 1) {
-      $es->bulkIndex($this->index, $records);
-    }
-    elseif ($this->total > 0) {
-      $es->createEntry($this->index, $this->table, FALSE, $records[0]);
+
+    // Can't use bulk indexing since we are using array data
+    // type (ES error not our fault)
+    foreach ($records as $record) {
+      $es->createEntry($this->index, $this->table, FALSE, $record);
     }
   }
 
@@ -70,13 +70,24 @@ class GeneSearchIndexJob extends ESJob {
    * @return mixed
    */
   protected function get() {
-    $records = db_query('SELECT uniquename, feature_id FROM chado.feature ORDER BY feature_id ASC OFFSET :offset LIMIT :limit', [
+    $query = 'SELECT F.uniquename,
+                     F.feature_id,
+                     O.genus AS organism_genus,
+                     O.species AS organism_species,
+                     O.common_name AS organism_common_name
+                FROM chado.feature F
+                INNER JOIN chado.organism O ON F.organism_id = O.organism_id
+                ORDER BY feature_id ASC OFFSET :offset LIMIT :limit';
+
+    $records = db_query($query, [
       ':offset' => $this->offset,
       ':limit' => $this->limit,
     ])->fetchAll();
 
-    // Eager load all blast hit descriptions and feature annotations
-    $this->loadData($records);
+    if (count($records) > 0) {
+      // Eager load all blast hit descriptions and feature annotations
+      $this->loadData($records);
+    }
 
     return $records;
   }
@@ -100,8 +111,8 @@ class GeneSearchIndexJob extends ESJob {
 
     // Attach data to records
     foreach ($records as $key => $record) {
-      $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : [];
-      $records[$key]->blast_hit = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : [];
+      $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : '';
+      $records[$key]->blast_hit_descriptions = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : '';
     }
   }
 
@@ -113,7 +124,7 @@ class GeneSearchIndexJob extends ESJob {
    * @return array
    */
   protected function loadBlastData($keys) {
-    $records = db_query('SELECT hit_description, hit_accession FROM chado.blast_hit_data WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
+    $records = db_query('SELECT feature_id, hit_description, hit_accession FROM chado.blast_hit_data WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
 
     $indexed = [];
     foreach ($records as $record) {

@@ -41,6 +41,9 @@ function table_search_interface_building_form($form, &$form_state) {
   if (isset($existing_indices['entities'])) {
     unset($existing_indices['entities']);
   }
+  if (isset($existing_indices['gene_search_index'])) {
+    unset($existing_indices['gene_search_index']);
+  }
 
   if (count($existing_indices) == 0) {
     $form['markup'] = [
@@ -108,11 +111,13 @@ function table_search_interface_building_form($form, &$form_state) {
   // if the block already exists get info for it.
 
   $start_check = [];// which fields should be selected at the start in index_fields checkbox?
+  $existing_links = [];
+  $recast_blocks = [];
+  $recast_links = [];
 
   if (!empty($index_name) && $block_exists) {
     $sql = "SELECT * FROM {tripal_elasticsearch} WHERE index_name = :index_name";
     $existing_block = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchAll();
-    $recast_blocks = [];
     foreach ($existing_block as $key => $existing_settings) {
       $field_name = $existing_settings->index_field;
       $recast_blocks[$field_name] = $existing_settings;

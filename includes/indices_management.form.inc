@@ -33,17 +33,18 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   ];
 
   // Cron queue numbers
-  $form['queue_number'] = [
+  /*$form['queue_number'] = [
     '#type' => 'select',
     '#title' => t('Number of cron queues'),
     '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
                          queues that will be used for indexing jobs. Use more queues if your server has higher capacity
                          for multi-thread processes.'),
     '#options' => drupal_map_assoc(range(1, 10)),
-  ];
+  ];*/
 
   $index_types = [
     'database' => 'Database Table',
+    'gene_search' => 'Gene Search',
   ];
 
   if (!in_array('website', $indices)) {
@@ -55,13 +56,13 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   }
 
   // Index website or a database table
-  $form['website_or_table'] = [
+  $form['index_type'] = [
     '#type' => 'select',
     '#title' => t('Index type'),
-    '#description' => t('If you already have a website-wide node or tripal entities index, it must be edited or deleted in the table below.  Website Tripal entities are available for Tripal version 3 only.'),
+    '#description' => t('If you already have a website-wide node or tripal entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'),
     '#options' => $index_types,
     '#default_value' => isset($index_types['website']) ? 'website' : 'database',
-    '#attributes' => (in_array('website', $indices) && in_array('entities', $indices)) ? ['disabled' => 'disabled'] : ['enabled' => 'enabled'],
+    //'#attributes' => (in_array('website', $indices) && in_array('entities', $indices)) ? ['disabled' => 'disabled'] : ['enabled' => 'enabled'],
     //Disable if there is already a node and entity index.
   ];
 
@@ -73,7 +74,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     // This field is only visible to table indexing.
     '#states' => [
       'visible' => [
-        ':input[name="website_or_table"]' => ['value' => 'database'],
+        ':input[name="index_type"]' => ['value' => 'database'],
       ],
     ],
     '#size' => 25,
@@ -88,10 +89,9 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#states' => [
-      'invisible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+      'visible' => [
+        ':input[name="index_type"]' => [
+          ['value' => 'database'],
         ],
       ],
     ],
@@ -116,12 +116,11 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   $form['index_table'] = [
     '#type' => 'select',
     '#title' => t('Select a table and fields to index'),
-    '#options' => array_merge(['' => 'Select a table'], drupal_map_assoc(get_table_list())),
+    '#options' => array_merge(['' => 'Select a table'], drupal_map_assoc(tripal_elasticsearch_get_table_list())),
     '#states' => [
-      'invisible' => [
-        ':input[name="website_or_table"]' => [
-          ['value' => 'website'],
-          ['value' => 'entities'],
+      'visible' => [
+        ':input[name="index_type"]' => [
+          ['value' => 'database'],
         ],
       ],
     ],
@@ -132,11 +131,13 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   ];
 
   $table_name = isset($form_state['values']['index_table']) ? $form_state['values']['index_table'] : '';
+  $columns = tripal_elasticsearch_get_column_list($table_name);
+
   $form['table_fields'] = [
     '#type' => 'fieldset',
     '#title' => t('Select fields to index'),
     '#tree' => TRUE,
-    '#options' => drupal_map_assoc(get_column_list($table_name)),
+    '#options' => drupal_map_assoc($columns),
     '#states' => [
       'invisible' => [
         ':input[name="index_table"]' => ['value' => ''],
@@ -146,7 +147,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#suffix' => '</div>',
   ];
 
-  foreach (get_column_list($table_name) as $field) {
+  foreach ($columns as $field) {
     $form['table_fields'][$field] = [
       '#type' => 'select',
       '#title' => t('Field name: ' . $field),
@@ -192,7 +193,7 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  * @param $form_state
  */
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
-  $type = $form_state['values']['website_or_table'];
+  $type = $form_state['values']['index_type'];
   if ($type == "database") {
     // Index name validation.
     $index_name = $form_state['values']['index_name'];
@@ -317,7 +318,7 @@ function tripal_elasticsearch_indices_list_page() {
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
-    return;
+    return '';
   }
 
   // Get table indices
@@ -375,31 +376,29 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
 
   $form = [];
   $exposed = FALSE;
   //Get table name from index name.
   if ($index_name == 'website') {
-    $website_or_table = "website";
+    $index_type = "website";
+    $table_name = 'node';
     $form['table_name'] = [
       '#type' => 'value',
       '#value' => 'website',
     ];
   }
   elseif ($index_name == 'entities') {
-    $website_or_table = "entities";
+    $index_type = "entities";
+    $table_name = 'tripal_entity';
     $form['table_name'] = [
       '#type' => 'value',
       '#value' => 'entities',
     ];
   }
   else {
-    $website_or_table = "table";
+    $index_type = "table";
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
     $result = db_query($sql, [':index_name' => $index_name])->fetch();
     $table_name = $result->table_name;
@@ -417,12 +416,12 @@ function tripal_elasticsearch_index_edit_confirm(
     '#type' => 'value',
     '#value' => $index_name,
   ];
-  $form['website_or_table'] = [
+  $form['index_type'] = [
     '#type' => 'value',
-    '#value' => $website_or_table,
+    '#value' => $index_type,
   ];
 
-  //get existing index settings and mappings.
+  // Get existing index settings and mappings.
   //TODO: what about default tables?
   try {
     $es = new ESInstance();
@@ -437,13 +436,13 @@ function tripal_elasticsearch_index_edit_confirm(
 
   $preset_mappings = [];
 
-  if ($website_or_table == 'table') {
+  if ($index_type == 'table') {
     if (array_key_exists($table_name, $index_mappings[$index_name]["mappings"])) {
       $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
     }
   }
 
-  if (!$preset_mappings && $website_or_table == "table") {
+  if (!$preset_mappings && $index_type == "table") {
     // there is no dbtable mapping settings yet.  Cron still needs to run!
     drupal_set_message("The index $index_name has no database mapping.  Please make sure that your CRON job to create the index has finished running.", 'error');
   }
@@ -512,6 +511,7 @@ function tripal_elasticsearch_index_edit_confirm(
     return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
   }
 
+  $columns = tripal_elasticsearch_get_column_list($table_name);
   $form['table_fields'] = [
     '#type' => 'fieldset',
     '#title' => t('Select fields to index'),
@@ -522,11 +522,11 @@ function tripal_elasticsearch_index_edit_confirm(
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#options' => drupal_map_assoc(get_column_list($table_name)),
+    '#options' => drupal_map_assoc($columns),
 
   ];
 
-  foreach (get_column_list($table_name) as $field) {
+  foreach ($columns as $field) {
     $preset = '';
     if ($preset_mappings && array_key_exists($field, $preset_mappings)) {
       $preset = $preset_mappings[$field]["type"];
@@ -556,7 +556,8 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
 
   // Delete the existing index in ES
-  tripal_elasticsarch_delete_index($index);
+  tripal_elasticsearch_delete_index($index);
+
   //create the new index
   tripal_elasticsearch_create_index($form_state['values']);
 }
@@ -571,11 +572,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
@@ -606,8 +603,8 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  */
 
 function tripal_elasticsearch_create_index(&$values) {
-  $index_type = $values['website_or_table'];
-  $exposed = $values['exposed'];
+  $index_type = $values['index_type'];
+  $exposed = $values['exposed'] ? 1 : 0;
 
   // populate settings for website or entities.
   if ($index_type === 'website') {
@@ -641,6 +638,24 @@ function tripal_elasticsearch_create_index(&$values) {
       'content' => 'string',
     ];
   }
+  elseif ($index_type === 'gene_search') {
+    $index_name = 'gene_search_index';
+    $index_table = 'chado.feature';
+    $tokenizer = 'standard';
+    $token_filters = drupal_map_assoc([
+      'standard',
+      'lowercase',
+    ]);
+    $field_mapping_types = [
+      'uniquename' => 'string',
+      'feature_id' => 'integer',
+      'organism_genus' => 'string',
+      'organism_species' => 'string',
+      'organism_common_name' => 'string',
+      'annotations' => 'string',
+      'blast_hit_descriptions' => 'string',
+    ];
+  }
   else { //checks and defaults for custom index type
     $index_name = $values['index_name'];
     $index_table = $values['table_name'];
@@ -655,7 +670,8 @@ function tripal_elasticsearch_create_index(&$values) {
     if (!$field_mapping_types) {
       form_set_error('No field mapping types supplied for custom index');
     }
-    if (!$tokenizer) {//use standard tokenizer and token filters if none supplied
+    if (!$tokenizer) {
+      // Use standard tokenizer and token filters if none supplied
       $tokenizer = 'standard';
     }
     if (!$token_filters) {
@@ -679,7 +695,7 @@ function tripal_elasticsearch_create_index(&$values) {
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-      ->createIndex();
+       ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -694,16 +710,22 @@ function tripal_elasticsearch_create_index(&$values) {
     case 'entities':
       $job = new EntitiesIndexJob();
       break;
+    case 'gene_search':
+      $job = new GeneSearchIndexJob($index_name);
+      break;
     default:
       $fields = array_keys($field_mapping_types);
       $job = new TableIndexJob($index_name, $index_table, $fields);
   }
   $dispatcher = new DispatcherJob($job);
   $dispatcher->dispatch();
+
   $form_state['rebuild'] = TRUE;
+
   $base_url = variable_get('website_base_url');
   $cron_url = l($base_url . '/admin/config/system/cron', 'admin/config/system/cron');
-  drupal_set_message("The indexing job for $index_name has been submitted to your CRON queue.  You can view the status of your CRON jobs at " . $cron_url);
+
+  drupal_set_message("The indexing job for {$index_name} has been submitted to your CRON queue.  You can view the status of your CRON jobs at {$cron_url}");
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
@@ -729,6 +751,9 @@ function tripal_elasticsearch_delete_index($index) {
     return;
   }
 
+  // Delete any progress indicator
+  db_query('DELETE FROM {tripal_elasticsearch_queues} WHERE index_name=:index_name', [':index_name' => $index]);
+
   drupal_set_message('Index "' . $index . '" deleted successfully.');
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
@@ -750,12 +775,12 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
   $content .= '<h3>Overall Progress</h3>';
 
   if ($data->remaining === 0) {
-    $content .= '<p>All items have been indexed. 0 Items remaining</p>';
+    $content .= '<p>All items have been indexed. 0 Items remaining.</p>';
   }
   else {
     $content .= theme_progress_bar([
       'percent' => $data->percent,
-      'message' => $data->remaining . ' Items remaining',
+      'message' => $data->remaining . ' Items remaining. ' . $data->time . ' seconds elapsed.',
     ]);
   }
 
@@ -769,7 +794,7 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
       else {
         $content .= theme_progress_bar([
           'percent' => $progress->percent,
-          'message' => $progress->remaining . ' Items remaining',
+          'message' => $progress->remaining . ' Items remaining. ' . $progress->time . ' seconds passed',
         ]);
       }
     }
@@ -788,5 +813,4 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
 function tripal_elasticsearch_get_progress() {
   // Prevents rendering the entire page.
   print tripal_elasticsearch_progress_page(TRUE);
-
 }

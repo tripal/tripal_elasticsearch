@@ -14,7 +14,7 @@ class NodesIndexJob extends ESJob {
    *
    * @var string
    */
-  protected $index = 'website';
+  public $index = 'website';
 
   /**
    * Node id.
@@ -58,12 +58,10 @@ class NodesIndexJob extends ESJob {
     if ($this->total > 1) {
       $es->bulkIndex($this->index, $this->loadContent($records), $this->index, 'nid');
     }
-    else {
-      if ($this->total > 0) {
-        $record = $this->loadContent($records)[0];
+    elseif ($this->total > 0) {
+      $record = $this->loadContent($records)[0];
 
-        $es->createEntry($this->index, $this->index, $record->nid, $record);
-      }
+      $es->createEntry($this->index, $this->index, $record->nid, $record);
     }
   }
 
