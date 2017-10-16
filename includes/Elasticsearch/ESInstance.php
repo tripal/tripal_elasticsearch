@@ -399,17 +399,17 @@ class ESInstance {
     }
 
     foreach ($entries as $entry) {
-      $index = [
+      $request = [
         '_index' => $index,
         '_type' => $type,
       ];
 
       if ($id_key !== NULL) {
-        $index['_id'] = $entry->{$id_key};
+        $request['_id'] = $entry->{$id_key};
       }
 
       $params['body'][] = [
-        'index' => [$index],
+        'index' => $request,
       ];
 
       $params['body'][] = $entry;
