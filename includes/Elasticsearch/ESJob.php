@@ -3,6 +3,13 @@
 abstract class ESJob {
 
   /**
+   * Holds the index name.
+   *
+   * @var string
+   */
+  public $index = 'index';
+
+  /**
    * Job type.
    * Best option is to add the index type.
    *

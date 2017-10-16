@@ -54,12 +54,14 @@ class ESQueue {
    * @return object
    */
   public static function progress() {
-    $query = 'SELECT index_name, total, completed, last_run_at FROM {' . self::COUNTER_TABLE . '}';
+    $query = 'SELECT type, total, completed, last_run_at, started_at FROM {' . self::COUNTER_TABLE . '}';
     $queues = db_query($query)->fetchAll();
 
     $progress = [];
     $total = 0;
     $completed = 0;
+    $progress_last_run_at = 0;
+    $progress_started_at = time();
 
     foreach ($queues as $queue) {
       if ($queue->total === $queue->completed) {
@@ -69,15 +71,23 @@ class ESQueue {
       $last_run = new DateTime();
       $last_run->setTimestamp($queue->last_run_at);
 
+      $started_at = new DateTime();
+      $started_at->setTimestamp($queue->started_at);
+
+      $progress_last_run_at = max($progress_last_run_at, $queue->last_run_at);
+      $progress_started_at = min($progress_started_at, $queue->started_at);
+
       $total += $queue->total;
       $completed += $queue->completed;
 
-      $progress[$queue->index_name] = (object) [
+      $progress[$queue->type] = (object) [
         'total' => $queue->total,
         'completed' => $queue->completed,
         'remaining' => $queue->total - $queue->completed,
         'percent' => number_format(($queue->completed / ($queue->total ?: 1)) * 100, 2),
         'last_run_at' => $last_run,
+        'started_at' => $started_at,
+        'time' => $queue->last_run_at - $queue->started_at,
       ];
     }
 
@@ -87,6 +97,7 @@ class ESQueue {
       'completed' => $completed,
       'remaining' => $total - $completed,
       'percent' => number_format(($completed / ($total ?: 1)) * 100, 2),
+      'time' => count($progress) > 0 ? $progress_last_run_at - $progress_started_at : 0,
     ];
   }
 
@@ -119,8 +130,7 @@ class ESQueue {
   public static function run($job) {
     if ($job instanceof ESJob) {
       $job->handle();
-      variable_set($job->queue_name . '_lock', FALSE);
-      static::updateProgress($job->type, $job->total());
+      static::updateProgress($job->index, $job->total());
       return;
     }
 
@@ -130,54 +140,59 @@ class ESQueue {
   /**
    * Initialize the progress tracker for a specific type.
    *
-   * @param string $type the index type.
+   * @param string $type The label of the index.
+   * @param string $index_name Name of the index.
    * @param int $total the total number of records going to the queue (not
    *                    number of jobs).
    *
    * @return DatabaseStatementInterface
    */
-  public static function initProgress($type, $total = 1) {
+  public static function initProgress($type, $index_name, $total = 1) {
     $counter_table = self::COUNTER_TABLE;
-    $query = 'SELECT index_name, total, completed FROM {' . $counter_table . '} WHERE index_name=:type';
-    $queue = db_query($query, [':type' => $type])->fetchObject();
+    $query = 'SELECT total, completed FROM {' . $counter_table . '} WHERE index_name=:index_name';
+    $queue = db_query($query, [':index_name' => $index_name])->fetchObject();
 
     // If type already exists
     if ($queue) {
       // Reset progress
-      return db_query('UPDATE {' . $counter_table . '} SET total=:total, last_run_at=:time, completed=:completed  WHERE index_name=:type', [
+      return db_query('UPDATE {' . $counter_table . '} SET type:type, total=:total, last_run_at=:time, completed=:completed, started_at=:started_at  WHERE index_name=:index_name', [
         ':type' => $type,
+        ':index_name' => $index_name,
         ':total' => $total,
         ':completed' => 0,
         ':time' => time(),
+        ':started_at' => time(),
       ]);
     }
 
-    // Initialize a new progress report for type
-    return db_query('INSERT INTO {' . $counter_table . '} (index_name, total, completed, last_run_at) VALUES (:type, :total, 0, :time)', [
+    // Initialize a new progress report for index name
+    return db_query('INSERT INTO {' . $counter_table . '} (index_name, type, total, completed, last_run_at, started_at) VALUES (:index_name, :type, :total, 0, :last_run_at, :started_at)', [
       ':type' => $type,
+      ':index_name' => $index_name,
       ':total' => $total,
-      ':time' => time(),
+      ':last_run_at' => time(),
+      ':started_at' => time(),
     ]);
   }
 
   /**
    * Update the number of items in the counter.
    *
-   * @param string $type the index type.
+   * @param string $index_name the index name.
    * @param int $by the number to decrement by.
    *
    * @return DatabaseStatementInterface|boolean
    */
-  public static function updateProgress($type, $by = 1) {
+  public static function updateProgress($index_name, $by = 1) {
     $counter_table = self::COUNTER_TABLE;
-    $query = 'SELECT index_name, completed FROM {' . $counter_table . '} WHERE index_name=:type';
-    $queue = db_query($query, [':type' => $type])->fetchObject();
+    $query = 'SELECT type, completed FROM {' . $counter_table . '} WHERE index_name=:index_name';
+    $queue = db_query($query, [':index_name' => $index_name])->fetchObject();
 
     if ($queue) {
-      return db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:time  WHERE index_name=:type', [
-        ':type' => $type,
+      return db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at  WHERE index_name=:index_name', [
+        ':index_name' => $index_name,
         ':completed' => $queue->completed + $by,
-        ':time' => time(),
+        ':last_run_at' => time(),
       ]);
     }
 

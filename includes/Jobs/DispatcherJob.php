@@ -44,7 +44,7 @@ class DispatcherJob extends ESJob {
     $chunk = $this->job->chunk;
     $this->total = $this->job->count();
 
-    ESQueue::initProgress($this->job->type, $this->total);
+    ESQueue::initProgress($this->job->type, $this->job->index, $this->total);
 
     for ($offset = 0; $offset < $this->total; ($offset + $chunk < $this->total) ? ($offset += $chunk) : ($offset += $this->total - $offset)) {
       $this->job->offset($offset)->limit($chunk)->dispatch();

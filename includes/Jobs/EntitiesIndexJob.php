@@ -14,7 +14,7 @@ class EntitiesIndexJob extends ESJob {
    *
    * @var string
    */
-  protected $index = 'entities';
+  public $index = 'entities';
 
   /**
    * Entity id.

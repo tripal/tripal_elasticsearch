@@ -14,7 +14,7 @@ class NodesIndexJob extends ESJob {
    *
    * @var string
    */
-  protected $index = 'website';
+  public $index = 'website';
 
   /**
    * Node id.
