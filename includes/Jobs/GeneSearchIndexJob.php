@@ -53,7 +53,6 @@ class GeneSearchIndexJob extends ESJob {
    */
   public function handle() {
     $records = $this->get();
-    $this->total = count($records);
 
     $es = new ESInstance();
 
@@ -84,7 +83,9 @@ class GeneSearchIndexJob extends ESJob {
       ':limit' => $this->limit,
     ])->fetchAll();
 
-    if (count($records) > 0) {
+    $this->total = count($records);
+
+    if ($this->total > 0) {
       // Eager load all blast hit descriptions and feature annotations
       $this->loadData($records);
     }
@@ -109,10 +110,26 @@ class GeneSearchIndexJob extends ESJob {
     // Load annotations
     $annotations = $this->loadAnnotations($primary_keys);
 
+    // Load urls
+    $urls = $this->loadUrlPaths($primary_keys);
+
     // Attach data to records
     foreach ($records as $key => $record) {
+      // Get only features that have annotations or blast hit descriptions
+      if (!isset($annotations[$record->feature_id]) && !isset($blast_results[$record->feature_id])) {
+        unset($records[$key]);
+        continue;
+      }
+
+      // Remove any features that we can't link to
+      if (!isset($urls[$record->feature_id]) || empty($urls[$record->feature_id])) {
+        unset($records[$key]);
+        continue;
+      }
+
       $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : '';
       $records[$key]->blast_hit_descriptions = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : '';
+      $records[$key]->url = isset($urls[$record->feature_id]) ? $urls[$record->feature_id] : NULL;
     }
   }
 
@@ -161,6 +178,40 @@ class GeneSearchIndexJob extends ESJob {
         $record->cv_name,
         $record->accession,
       ];
+    }
+
+    return $indexed;
+  }
+
+  /**
+   * Load urls of each feature's node or entity.
+   *
+   * @param $keys
+   *
+   * @return array
+   */
+  protected function loadUrlPaths($keys) {
+    $indexed = [];
+
+    $chado_feature = db_table_exists('chado_feature');
+
+    foreach ($keys as $id) {
+      $url = NULL;
+      if (function_exists('tripal_get_chado_entity_id')) {
+        $eid = tripal_get_chado_entity_id('feature', $id);
+        if ($eid !== NULL) {
+          $url = 'bio_data/' . $id;
+        }
+      }
+
+      if (empty($url) && $chado_feature) {
+        $nid = db_query('SELECT nid FROM chado_feature WHERE feature_id=:id', [':id' => $id])->fetchField();
+        if ($nid) {
+          $url = "node/{$nid}";
+        }
+      }
+
+      $indexed[$id] = $url;
     }
 
     return $indexed;

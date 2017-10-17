@@ -82,6 +82,22 @@ function tripal_elasticsearch_schema() {
 }
 
 /**
+ * updates
+ */
+function tripal_elasticsearch_update_7200() {
+}
+/**
+ * updates
+ */
+function tripal_elasticsearch_update_7201() {
+}
+/**
+ * updates
+ */
+function tripal_elasticsearch_update_7202() {
+}
+
+/**
  * create tripal_elasticsearch_indices table to store indices information.
  */
 function tripal_elasticsearch_update_7203() {

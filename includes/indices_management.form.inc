@@ -780,7 +780,7 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
   else {
     $content .= theme_progress_bar([
       'percent' => $data->percent,
-      'message' => $data->remaining . ' Items remaining. ' . $data->time . ' seconds elapsed.',
+      'message' => 'Indexing '.$data->total. ' items. ' . $data->remaining . ' Items remaining. ' . $data->time . ' seconds elapsed.',
     ]);
   }
 
