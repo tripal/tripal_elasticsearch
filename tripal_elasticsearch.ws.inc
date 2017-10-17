@@ -193,7 +193,7 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
       ]);
     }
 
-    $url = trim($host->url, '/') . '/elasticsearch/api/v1/' . $index_name . '/local-search';
+    $url = trim($host->url, '/') . '/elasticsearch/api/v1/index-search/' . $index_name;
     try {
       $results = ESRequest::get($url, $_GET);
     } catch (Exception $exception) {

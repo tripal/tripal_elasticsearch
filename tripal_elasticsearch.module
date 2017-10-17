@@ -205,7 +205,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-  $items['elasticsearch/api/v1/%/local-search'] = [
+  $items['elasticsearch/api/v1/index-search/%'] = [
     'title' => t('Search'),
     'page callback' => 'tripal_elasticsearch_api_v1_table_index_local_search',
     'access arguments' => ['access content'],
