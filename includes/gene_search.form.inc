@@ -122,14 +122,6 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     ],
   ];
 
-  $queries[] = [
-    "constant_score" => [
-      "filter" => [
-        "exists" => ["field" => "url"],
-      ],
-    ],
-  ];
-
   $query = [
     "bool" => [
       "must" => $queries,
