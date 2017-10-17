@@ -150,14 +150,15 @@ class ESInstance {
    * Build table search params.
    * USe this method if not searching the website or entities indices.
    *
-   * @param $index
-   * @param $type
-   * @param $query
-   * @param array $offset
+   * @param string $index Index name
+   * @param string $type Index type
+   * @param array $query ES query array
+   * @param array $offset [int from, int size]
+   * @param boolean $highlight Whether to highlight fields
    *
    * @return $this
    */
-  public function setTableSearchParams($index, $type, $query, $offset = []) {
+  public function setTableSearchParams($index, $type, $query, $offset = [], $highlight = FALSE) {
     $params = [];
     $params['index'] = $index;
     $params['type'] = $type;
@@ -182,6 +183,20 @@ class ESInstance {
     }
     $params['from'] = $offset[0];
     $params['size'] = $offset[1];
+
+    if ($highlight) {
+      $params['body']['highlight'] = [
+        "fields" => [],
+      ];
+
+      $fields = $this->getIndexFields($index);
+      foreach ($fields as $field) {
+        $params['body']['highlight']['fields'][$field] = [
+          'pre_tags' => ['<em>', '<strong>'],
+          'post_tags' => ['</em>', '<strong>'],
+        ];
+      }
+    }
 
     $this->searchParams = $params;
 
@@ -266,9 +281,13 @@ class ESInstance {
     $results = [];
     foreach ($hits['hits']['hits'] as $hit) {
       if (isset($hit['highlight'])) {
-        $highlight = implode('......', $hit['highlight']['content']);
+        $highlight = '';
+        foreach ($hit['highlight'] as $content) {
+          $highlight .= implode('...', $content);
+        }
         $hit['_source']['highlight'] = $highlight;
       }
+
       $results[] = $hit['_source'];
     }
 
@@ -392,6 +411,10 @@ class ESInstance {
    * @return array
    */
   public function bulkIndex($index, array $entries, $type = NULL, $id_key = NULL) {
+    if (count($entries) === 0) {
+      return [];
+    }
+
     $params = ['body' => []];
 
     if ($type === NULL) {

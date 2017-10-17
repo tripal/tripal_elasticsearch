@@ -15,9 +15,9 @@ class ESResponse {
    * @return bool|array|object
    */
   public static function success($data, $print = TRUE) {
-    static::setHeaders(200);
-
     if ($print) {
+      static::setHeaders(200);
+
       print json_encode([
         'data' => $data,
         'error' => FALSE,

@@ -173,19 +173,11 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
  * @return array|bool|object
  */
 function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_host_id) {
-  $remote_id = intval($remote_host_id);
-  $terms = isset($_GET['annotations']) ? $_GET['annotations'] : '';
-
-  if (empty($terms)) {
-    return ESResponse::error([
-      'search_terms' => ['Please provide a search term'],
-    ]);
-  }
+  $remote_id = abs(intval(trim($remote_host_id)));
 
   if ($remote_id === 0) {
     try {
-      $response = tripal_elasticsearch_api_v1_table_index_local_search($index_name, FALSE);
-      $results = $response->data;
+      $results = tripal_elasticsearch_api_v1_table_index_local_search($index_name, FALSE);
     } catch (Exception $exception) {
       return ESResponse::error([
         'results' => [$exception->getMessage()],
@@ -197,13 +189,17 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
 
     if (!$host) {
       return ESResponse::error([
-        'remote_id' => ['Invalid remote host provided.'],
+        'remote_id' => ['Invalid remote host provided. ID: ' . $remote_id],
       ]);
     }
 
-    $url = trim($host->url, '/') . 'elasticsearch/' . $index_name . '/local-search';
+    $url = trim($host->url, '/') . '/elasticsearch/api/v1/index-search/' . $index_name;
     try {
-      $results = ESRequest::get($url);
+      $data = $_GET;
+      if (isset($data['q'])) {
+        unset($data['q']);
+      }
+      $results = ESRequest::get($url, $data);
     } catch (Exception $exception) {
       return ESResponse::error([
         'remote_id' => [
@@ -214,15 +210,12 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
     }
   }
 
-  if (!$results) {
-    return ESResponse::error([
-      'results' => [
-        'Elasticsearch error. Could not perform search.',
-      ],
-    ]);
-  }
-
-  return ESResponse::success($results);
+  $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name);
+  return ESResponse::success([
+    'url' => $results->data->url,
+    'markup' => $markup,
+    'count' => $results->data->count,
+  ]);
 }
 
 /**
@@ -246,8 +239,14 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
       }
     }
 
-    $query = build_search_query_from_field_content_pairs($field_content_pairs);
-    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2]);
+    if (function_exists('tripal_elasticsearch_' . $index_name . '_query_mapper')) {
+      $query = call_user_func('tripal_elasticsearch_' . $index_name . '_query_mapper', $_GET);
+    }
+    else {
+      $query = build_search_query_from_field_content_pairs($field_content_pairs);
+    }
+
+    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], TRUE);
   } catch (Exception $exception) {
     if ($http) {
       return ESResponse::error([
@@ -261,6 +260,27 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
 
   $count = $results->count();
   $search_results = $results->search();
+
+  global $base_url;
+  return ESResponse::success([
+    'count' => $count,
+    'url' => $base_url,
+    'results' => $search_results,
+  ], $http);
+}
+
+/**
+ * Results formatter.
+ *
+ * @param $search_results
+ * @param null $index_name
+ *
+ * @return mixed|string
+ */
+function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL) {
+  if ($index_name !== NULL && function_exists('tripal_elasticsearch_' . $index_name . '_results_formatter')) {
+    return call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results);
+  }
 
   $rows = [];
   foreach ($search_results as $row) {
@@ -276,15 +296,10 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
     $rows[] = $fields;
   }
 
-  global $base_url;
-  return ESResponse::success([
-    'count' => $count,
-    'url' => $base_url,
-    'markup' => theme('table', [
-      'header' => $count > 0 ? array_keys($search_results[0]) : [],
-      'rows' => $rows,
-    ]),
-  ], $http);
+  return theme('table', [
+    'header' => isset($search_results[0]) ? array_keys($search_results[0]) : [],
+    'rows' => $rows,
+  ]);
 }
 
 function elasticsearch_recursive_implode($glue, $array) {
