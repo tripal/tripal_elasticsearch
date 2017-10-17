@@ -37,6 +37,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
     '#type' => 'select',
     '#attributes' => [
       'id' => 'tripal-elasticsearch-search-category',
+      'style' => 'max-width: 250px;'
     ],
     '#options' => array_merge($default_organism, drupal_map_assoc($organisms)),
     '#default_value' => 'Any Organism',
@@ -45,7 +46,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
 
   $form['options']['search_term'] = [
     '#type' => 'textfield',
-    '#size' => '50',
+    '#size' => '150',
     '#attributes' => [
       'placeholder' => t('E,g. Kinase or IPR020405'),
       'id' => 'tripal-elasticsearch-search-field',
