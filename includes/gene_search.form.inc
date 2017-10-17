@@ -46,7 +46,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
 
   $form['options']['search_term'] = [
     '#type' => 'textfield',
-    '#size' => '150',
+    '#size' => '50',
     '#attributes' => [
       'placeholder' => t('E,g. Kinase or IPR020405'),
       'id' => 'tripal-elasticsearch-search-field',
