@@ -200,7 +200,7 @@ class GeneSearchIndexJob extends ESJob {
       if (function_exists('tripal_get_chado_entity_id')) {
         $eid = tripal_get_chado_entity_id('feature', $id);
         if ($eid !== NULL) {
-          $url = 'bio_data/' . $id;
+          $url = 'bio_data/' . $eid;
         }
       }
 

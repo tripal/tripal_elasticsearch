@@ -136,7 +136,7 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
   $rows = [];
   foreach ($search_results as $result) {
     $rows[] = [
-      $result['uniquename'],
+      l($result['uniquename'], $result['url']),
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['blast_hit_descriptions']) . '</div>',
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['annotations']) . '</div>',
     ];
