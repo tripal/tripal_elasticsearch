@@ -173,12 +173,11 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
  * @return array|bool|object
  */
 function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_host_id) {
-  $remote_id = intval($remote_host_id);
+  $remote_id = abs(intval(trim($remote_host_id)));
 
   if ($remote_id === 0) {
     try {
-      $response = tripal_elasticsearch_api_v1_table_index_local_search($index_name, FALSE);
-      $results = $response->data;
+      $results = tripal_elasticsearch_api_v1_table_index_local_search($index_name, FALSE);
     } catch (Exception $exception) {
       return ESResponse::error([
         'results' => [$exception->getMessage()],
@@ -207,15 +206,13 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
     }
   }
 
-  if (!$results) {
-    return ESResponse::error([
-      'results' => [
-        'Elasticsearch error. Could not perform search.',
-      ],
-    ]);
-  }
 
-  return ESResponse::success($results);
+  $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name);
+  return ESResponse::success([
+    'url' => $results->data->url,
+    'markup' => $markup,
+    'count' => $results->data->count,
+  ]);
 }
 
 /**
@@ -261,24 +258,27 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   $count = $results->count();
   $search_results = $results->search();
 
-  if (function_exists('tripal_elasticsearch_' . $index_name . '_results_formatter')) {
-    $markup = call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results);
-  }
-  else {
-    $markup = tripal_elasticsearch_results_formatter($search_results);
-  }
-
   global $base_url;
   return ESResponse::success([
     'count' => $count,
     'url' => $base_url,
-    'markup' => $markup,
-    'query' => $query,
-    'raw_results' => $search_results,
+    'results' => $search_results,
   ], $http);
 }
 
-function tripal_elasticsearch_results_formatter($search_results) {
+/**
+ * Results formatter.
+ *
+ * @param $search_results
+ * @param null $index_name
+ *
+ * @return mixed|string
+ */
+function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL) {
+  if ($index_name !== NULL && function_exists('tripal_elasticsearch_' . $index_name . '_results_formatter')) {
+    return call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results);
+  }
+
   $rows = [];
   foreach ($search_results as $row) {
     $fields = [];
