@@ -98,7 +98,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
 function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   $queries = [];
 
-  $organism = $arguments['organism'];
+  $organism = isset($arguments['organism']) ? $arguments['organism'] : NULL;
   if (!empty($organism)) {
     $organism = explode(' ', $organism);
     $genus = array_shift($organism);
@@ -113,14 +113,16 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     ];
   }
 
-  $queries[] = [
-    'query_string' => [
-      'query' => $arguments['search_term'],
-      'fields' => [
-        '_all',
+  if (isset($arguments['search_term'])) {
+    $queries[] = [
+      'query_string' => [
+        'query' => $arguments['search_term'],
+        'fields' => [
+          '_all',
+        ],
       ],
-    ],
-  ];
+    ];
+  }
 
   $query = [
     "bool" => [
@@ -135,7 +137,7 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
   $header = ['Gene Identifier', 'Blast Hit Descriptions', 'Annotations'];
   $rows = [];
   foreach ($search_results as $result) {
-    $result = (array)$result;
+    $result = (array) $result;
     $rows[] = [
       l($result['uniquename'], $result['url']),
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['blast_hit_descriptions']) . '</div>',

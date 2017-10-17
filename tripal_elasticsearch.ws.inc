@@ -193,9 +193,9 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
       ]);
     }
 
-    $url = trim($host->url, '/') . 'elasticsearch/' . $index_name . '/local-search';
+    $url = trim($host->url, '/') . '/elasticsearch/api/v1/' . $index_name . '/local-search';
     try {
-      $results = ESRequest::get($url);
+      $results = ESRequest::get($url, $_GET);
     } catch (Exception $exception) {
       return ESResponse::error([
         'remote_id' => [
@@ -206,9 +206,10 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
     }
   }
 
-
   $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name);
   return ESResponse::success([
+    'raw' => $results,
+    'remote_url' => isset($url) ? $url : '',
     'url' => $results->data->url,
     'markup' => $markup,
     'count' => $results->data->count,
