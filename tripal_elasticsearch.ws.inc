@@ -176,6 +176,7 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
   $remote_id = abs(intval(trim($remote_host_id)));
 
   if ($remote_id === 0) {
+    $host = tripal_elasticsearch_get_local_server_entry();
     try {
       $results = tripal_elasticsearch_api_v1_table_index_local_search($index_name, FALSE);
     } catch (Exception $exception) {
@@ -210,7 +211,7 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
     }
   }
 
-  $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name);
+  $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name, $host);
   return ESResponse::success([
     'url' => $results->data->url,
     'markup' => $markup,
@@ -277,9 +278,9 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
  *
  * @return mixed|string
  */
-function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL) {
+function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL, $host = null) {
   if ($index_name !== NULL && function_exists('tripal_elasticsearch_' . $index_name . '_results_formatter')) {
-    return call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results);
+    return call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results, $host);
   }
 
   $rows = [];

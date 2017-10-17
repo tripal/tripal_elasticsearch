@@ -133,13 +133,13 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   return $query;
 }
 
-function tripal_elasticsearch_gene_search_index_results_formatter($search_results) {
+function tripal_elasticsearch_gene_search_index_results_formatter($search_results, $host = NULL) {
   $header = ['Gene Identifier', 'Blast Hit Descriptions', 'Annotations'];
   $rows = [];
   foreach ($search_results as $result) {
     $result = (array) $result;
     $rows[] = [
-      l($result['uniquename'], $result['url']),
+      $host ? "<a href='{$host->url}/{$result['url']}'>{$result['uniquename']}</a>" : l($result['uniquename'], $result['url']),
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['blast_hit_descriptions']) . '</div>',
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['annotations']) . '</div>',
     ];
