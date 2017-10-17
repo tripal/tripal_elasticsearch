@@ -174,13 +174,6 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
  */
 function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_host_id) {
   $remote_id = intval($remote_host_id);
-  $terms = isset($_GET['annotations']) ? $_GET['annotations'] : '';
-
-  if (empty($terms)) {
-    return ESResponse::error([
-      'search_terms' => ['Please provide a search term'],
-    ]);
-  }
 
   if ($remote_id === 0) {
     try {
@@ -246,8 +239,14 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
       }
     }
 
-    $query = build_search_query_from_field_content_pairs($field_content_pairs);
-    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2]);
+    if (function_exists('tripal_elasticsearch_' . $index_name . '_query_mapper')) {
+      $query = call_user_func('tripal_elasticsearch_' . $index_name . '_query_mapper', $_GET);
+    }
+    else {
+      $query = build_search_query_from_field_content_pairs($field_content_pairs);
+    }
+
+    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], true);
   } catch (Exception $exception) {
     if ($http) {
       return ESResponse::error([
@@ -284,6 +283,8 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
       'header' => $count > 0 ? array_keys($search_results[0]) : [],
       'rows' => $rows,
     ]),
+    'query' => $query,
+    'raw_results' => $search_results,
   ], $http);
 }
 

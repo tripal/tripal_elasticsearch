@@ -37,7 +37,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
     '#type' => 'select',
     '#attributes' => [
       'id' => 'tripal-elasticsearch-search-category',
-      'style' => 'max-width: 250px;'
+      'style' => 'max-width: 250px;',
     ],
     '#options' => array_merge($default_organism, drupal_map_assoc($organisms)),
     '#default_value' => 'Any Organism',
@@ -82,16 +82,51 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
     'action' => 'setupTableIndexPage',
     'index' => 'gene_search_index',
     // Optional form fields to index fields mapper
-    'field_mapper' => [
-      'organism_common_name' => 'organism',
-      'organism_genus' => 'organism',
-      'organism_species' => 'organism',
-      'uniquename' => 'search_term',
-      'annotations' => 'search_term',
-      'blast_hit_descriptions' => 'search_term',
-    ],
+    //'field_mapper' => [
+    //  'organism_genus' => 'organism',
+    //  'organism_species' => 'organism',
+    //  'uniquename' => 'search_term',
+    //  'annotations' => 'search_term',
+    //  'blast_hit_descriptions' => 'search_term',
+    //],
   ], 'setting');
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
 
   return $form;
+}
+
+function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
+  $queries = [];
+
+  $organism = $arguments['organism'];
+  if (!empty($organism)) {
+    $organism = explode(' ', $organism);
+    $genus = array_shift($organism);
+    $species = array_shift($organism);
+
+    $queries[] = [
+      'query_string' => [
+        'fields' => ['organism_genus', 'organism_species'],
+        "query" => "$genus $species",
+        "default_operator" => "OR",
+      ],
+    ];
+  }
+
+  $queries[] = [
+    'query_string' => [
+      'query' => $arguments['search_term'],
+      'fields' => [
+        '_all',
+      ],
+    ],
+  ];
+
+  $query = [
+    "bool" => [
+      "must" => $queries,
+    ],
+  ];
+
+  return $query;
 }
