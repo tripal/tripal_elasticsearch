@@ -111,11 +111,11 @@ crontab -e
 * Add jobs to the file (Check [here](http://www.nncron.ru/help/EN/working/cron-format.htm) for more details on the cron job format):
 
 ```
-*/5 * * * * drush cron-run queue_elastic_queue_1 --options=thread=2 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elastic_queue_2 --options=thread=3 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elastic_queue_3 --options=thread=4 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elastic_queue_4 --options=thread=5 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elastic_queue_5 --options=thread=5 --root=/path/to/your/drupal/root
+*/5 * * * * drush cron-run queue_elasticsearch_queue_1 --options=thread=2 --root=/path/to/your/drupal/root
+*/5 * * * * drush cron-run queue_elasticsearch_queue_2 --options=thread=3 --root=/path/to/your/drupal/root
+*/5 * * * * drush cron-run queue_elasticsearch_queue_3 --options=thread=4 --root=/path/to/your/drupal/root
+*/5 * * * * drush cron-run queue_elasticsearch_queue_4 --options=thread=5 --root=/path/to/your/drupal/root
+*/5 * * * * drush cron-run queue_elasticsearch_queue_5 --options=thread=5 --root=/path/to/your/drupal/root
 ```
 
 # Build search blocks
