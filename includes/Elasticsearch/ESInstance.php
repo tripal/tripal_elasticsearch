@@ -186,14 +186,16 @@ class ESInstance {
 
     if ($highlight) {
       $params['body']['highlight'] = [
-        'require_field_match' => TRUE,
-        "fields" => [
-          "_all" => [
-            "pre_tags" => ["<em>", "<strong>"],
-            "post_tags" => ["</em>", "</strong>"],
-          ],
-        ],
+        "fields" => [],
       ];
+
+      $fields = $this->getIndexFields($index);
+      foreach ($fields as $field) {
+        $params['body']['highlight']['fields'][$field] = [
+          'pre_tags' => ['<em>', '<strong>'],
+          'post_tags' => ['</em>', '<strong>'],
+        ];
+      }
     }
 
     $this->searchParams = $params;
@@ -279,9 +281,13 @@ class ESInstance {
     $results = [];
     foreach ($hits['hits']['hits'] as $hit) {
       if (isset($hit['highlight'])) {
-        $highlight = implode('......', $hit['highlight']['content']);
+        $highlight = '';
+        foreach ($hit['highlight'] as $content) {
+          $highlight .= implode('...', $content);
+        }
         $hit['_source']['highlight'] = $highlight;
       }
+
       $results[] = $hit['_source'];
     }
 

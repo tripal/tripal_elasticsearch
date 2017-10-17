@@ -246,7 +246,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
       $query = build_search_query_from_field_content_pairs($field_content_pairs);
     }
 
-    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], true);
+    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], TRUE);
   } catch (Exception $exception) {
     if ($http) {
       return ESResponse::error([
@@ -261,6 +261,24 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   $count = $results->count();
   $search_results = $results->search();
 
+  if (function_exists('tripal_elasticsearch_' . $index_name . '_results_formatter')) {
+    $markup = call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results);
+  }
+  else {
+    $markup = tripal_elasticsearch_results_formatter($search_results);
+  }
+
+  global $base_url;
+  return ESResponse::success([
+    'count' => $count,
+    'url' => $base_url,
+    'markup' => $markup,
+    'query' => $query,
+    'raw_results' => $search_results,
+  ], $http);
+}
+
+function tripal_elasticsearch_results_formatter($search_results) {
   $rows = [];
   foreach ($search_results as $row) {
     $fields = [];
@@ -275,17 +293,10 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
     $rows[] = $fields;
   }
 
-  global $base_url;
-  return ESResponse::success([
-    'count' => $count,
-    'url' => $base_url,
-    'markup' => theme('table', [
-      'header' => $count > 0 ? array_keys($search_results[0]) : [],
-      'rows' => $rows,
-    ]),
-    'query' => $query,
-    'raw_results' => $search_results,
-  ], $http);
+  return theme('table', [
+    'header' => isset($search_results[0]) ? array_keys($search_results[0]) : [],
+    'rows' => $rows,
+  ]);
 }
 
 function elasticsearch_recursive_implode($glue, $array) {

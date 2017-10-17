@@ -130,3 +130,20 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
 
   return $query;
 }
+
+function tripal_elasticsearch_gene_search_index_results_formatter($search_results) {
+  $header = ['Gene Identifier', 'Blast Hit Descriptions', 'Annotations'];
+  $rows = [];
+  foreach ($search_results as $result) {
+    $rows[] = [
+      $result['uniquename'],
+      '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['blast_hit_descriptions']) . '</div>',
+      '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['annotations']) . '</div>',
+    ];
+  }
+
+  return theme('table', [
+    'header' => $header,
+    'rows' => $rows,
+  ]);
+}
