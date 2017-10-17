@@ -189,13 +189,17 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
 
     if (!$host) {
       return ESResponse::error([
-        'remote_id' => ['Invalid remote host provided.'],
+        'remote_id' => ['Invalid remote host provided. ID: ' . $remote_id],
       ]);
     }
 
     $url = trim($host->url, '/') . '/elasticsearch/api/v1/index-search/' . $index_name;
     try {
-      $results = ESRequest::get($url, $_GET);
+      $data = $_GET;
+      if (isset($data['q'])) {
+        unset($data['q']);
+      }
+      $results = ESRequest::get($url, $data);
     } catch (Exception $exception) {
       return ESResponse::error([
         'remote_id' => [
@@ -208,8 +212,6 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
 
   $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name);
   return ESResponse::success([
-    'raw' => $results,
-    'remote_url' => isset($url) ? $url : '',
     'url' => $results->data->url,
     'markup' => $markup,
     'count' => $results->data->count,
