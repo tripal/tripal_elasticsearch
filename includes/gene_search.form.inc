@@ -22,20 +22,23 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
     ],
   ];
 
-  $default_category = ['' => 'Any Organism'];
-  try {
-    $es = new ESInstance();
-    $categories = drupal_map_assoc($es->getAllCategories());
-  } catch (Exception $exception) {
-    $categories = [];
-  }
+  $default_organism = ['' => 'Any Organism'];
+  $organism_list = chado_query('SELECT genus, species, common_name FROM {organism}')->fetchAll();
+  $organisms = array_map(function ($organism) {
+    $name = "{$organism->genus} {$organism->species}";
+    if (!empty($organism->common_name)) {
+      $name .= " ({$organism->common_name})";
+    }
+
+    return $name;
+  }, $organism_list);
 
   $form['options']['organism'] = [
     '#type' => 'select',
     '#attributes' => [
       'id' => 'tripal-elasticsearch-search-category',
     ],
-    '#options' => array_merge($default_category, $categories),
+    '#options' => array_merge($default_organism, drupal_map_assoc($organisms)),
     '#default_value' => 'Any Organism',
     '#required' => TRUE,
   ];
@@ -84,8 +87,8 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
       'organism_species' => 'organism',
       'uniquename' => 'search_term',
       'annotations' => 'search_term',
-      'blast_hit_descriptions' => 'search_term'
-    ]
+      'blast_hit_descriptions' => 'search_term',
+    ],
   ], 'setting');
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
 
