@@ -32,25 +32,17 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   <b>Database table</b> indices can be customized by indexing and displaying specific fields. </p><p>Please note that that the indices of remote Elasticsearch servers cannot be created or edited.</p>',
   ];
 
-  // Cron queue numbers
-  /*$form['queue_number'] = [
-    '#type' => 'select',
-    '#title' => t('Number of cron queues'),
-    '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
-                         queues that will be used for indexing jobs. Use more queues if your server has higher capacity
-                         for multi-thread processes.'),
-    '#options' => drupal_map_assoc(range(1, 10)),
-  ];*/
-
   $index_types = [
     'database' => 'Database Table',
-    'gene_search' => 'Gene Search',
   ];
 
+  //Only one of each index type below is allowed.
   if (!in_array('website', $indices)) {
     $index_types['website'] = 'Website Nodes';
   }
-
+  if (!in_array('gene_search_index', $indices)) {
+    $index_types['gene_search'] = 'Gene Search';
+  }
   if (!in_array('entities', $indices)) {
     $index_types['entities'] = 'Website Tripal Entities';
   }
@@ -62,8 +54,6 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#description' => t('If you already have a website-wide node or tripal entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'),
     '#options' => $index_types,
     '#default_value' => isset($index_types['website']) ? 'website' : 'database',
-    //'#attributes' => (in_array('website', $indices) && in_array('entities', $indices)) ? ['disabled' => 'disabled'] : ['enabled' => 'enabled'],
-    //Disable if there is already a node and entity index.
   ];
 
   $form['index_name'] = [
@@ -212,7 +202,13 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
  */
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $type = $form_state['values']['index_type'];
+  $url = $form_state['values']['url'];
+  //TODO: check validity of URL instead of checking if it exists
   if ($type == "database") {
+    // URLs are required for database and gene_search
+    if (!$url) {
+      form_set_error('url', t('Please provide a valid url'));
+    }
     // Index name validation.
     $index_name = $form_state['values']['index_name'];
     if (strlen($index_name) > 28) {
@@ -232,6 +228,11 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     $table_fields = array_filter($form_state['values']['table_fields']);
     if (empty($table_fields)) {
       form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
+    }
+  }
+  if ($type == "gene_search_index") {
+    if (!$url) {
+      form_set_error('url', t('Please provide a valid url'));
     }
   }
 }
@@ -394,10 +395,15 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
+function tripal_elasticsearch_index_edit_confirm(
+  $form,
+  &$form_state,
+  $index_name
+) {
 
   $form = [];
   $exposed = FALSE;
+  $url = null;
   //Get table name from index name.
   if ($index_name == 'website') {
     $index_type = "website";
@@ -415,6 +421,14 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
       '#value' => 'entities',
     ];
   }
+  elseif ($index_name == 'gene_search_index') {
+    $index_type = "gene_search";
+    $table_name = 'tripal_entity';
+    $form['table_name'] = [
+      '#type' => 'value',
+      '#value' => 'chado.feature',
+    ];
+  }
   else {
     $index_type = "table";
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
@@ -429,6 +443,8 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
   $result = db_query($sql, [':index_name' => $index_name])->fetch();
   $exposed = $result ? $result->exposed : 0;
+  dpm($result);
+  $url = $result ? $result->url : null;
 
   $form['index_name'] = [
     '#type' => 'value',
@@ -476,19 +492,19 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     }
   }
 
+  //Snapshot the settings that require indexing so we can figure out if we need to re-index
+
+  $previous_values = ['index_settings' => $index_settings, ];
+
+  $form['previous_values'] = [
+    '#type' => 'values',
+    '#value' => $previous_values,
+  ];
+
   $form['instructions'] = [
     '#type' => 'markup',
     '#markup' => '<h1>Edit Index: ' . $index_name . '</h1>
 <p>This form will allow you to edit the tokenizer settings and field settings for the index <b>' . $index_name . '.</b>  Please note that changing settings will automatically rebuild the index.</p>',
-  ];
-
-  $form['queue_number'] = [
-    '#type' => 'select',
-    '#title' => t('Number of cron queues'),
-    '#description' => t('10 queues have been pre-defined for indexing jobs. This number determines the number of
-                         queues that will be used for indexing jobs. Use more queues if your server has higher capacity
-                         for multi-thread processes.'),
-    '#options' => drupal_map_assoc(range(1, 10)),
   ];
 
   // Elasticsearch index settings
@@ -523,7 +539,25 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
 
   ];
 
-  if ($index_name == 'website' || $index_name == 'entities') {
+
+  // url should be set for exposed genes and data tables only
+  if ($index_type == "gene_search" || $index_type == "table") {
+    $form['url'] = [
+      '#type' => 'textfield',
+      '#title' => 'Results URL Path',
+      '#description' => t('In order for other sites to link back to your results page, you must specify a path where the form for this index can be reached.'),
+      '#attributes' => [
+        'placeholder' => 'E.g, elasticsearch/index-name',
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="exposed"]' => ['value' => 1],//TODO: This doesnt update
+        ],
+      ],
+    ];
+  }
+
+  if ($index_name == 'website' || $index_name == 'entities' || $index_name == 'gene_search_index') {
     $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
 
     return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
@@ -590,7 +624,11 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
+function tripal_elasticsearch_index_delete_confirm(
+  $form,
+  &$form_state,
+  $index_name
+) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
@@ -707,14 +745,15 @@ function tripal_elasticsearch_create_index(&$values) {
     ':exposed' => $exposed,
     ':url' => $url,
   ];
+  dpm($insert);
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)', $insert);
 
   // Create the index.
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-       ->createIndex();
+      ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
