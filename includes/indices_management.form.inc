@@ -156,6 +156,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#default_value' => FALSE,
   ];
 
+
   $form['url'] = [
     '#type' => 'textfield',
     '#title' => 'Results URL Path',
@@ -169,7 +170,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
           ['value' => 'database'],
           ['value' => 'gene_search'],
         ],
-        ':input[name="exposed"]' => ['value' => 1],
+        ':input[name="exposed"]' => ['checked' => TRUE],
       ],
     ],
   ];
@@ -551,7 +552,7 @@ function tripal_elasticsearch_index_edit_confirm(
       ],
       '#states' => [
         'visible' => [
-          ':input[name="exposed"]' => ['value' => 1],//TODO: This doesnt update
+          ':input[name="exposed"]' => ['checked' => TRUE],
         ],
       ],
     ];
