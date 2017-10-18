@@ -745,8 +745,9 @@ function tripal_elasticsearch_create_index(&$values) {
     ':exposed' => $exposed,
     ':url' => $url,
   ];
+  dpm($insert);
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)', $insert);
 
   // Create the index.
   try {
