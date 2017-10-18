@@ -278,7 +278,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
  *
  * @return mixed|string
  */
-function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL, $host = null) {
+function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL, $host = NULL) {
   if ($index_name !== NULL && function_exists('tripal_elasticsearch_' . $index_name . '_results_formatter')) {
     return call_user_func('tripal_elasticsearch_' . $index_name . '_results_formatter', $search_results, $host);
   }
@@ -303,6 +303,14 @@ function tripal_elasticsearch_results_formatter($search_results, $index_name = N
   ]);
 }
 
+/**
+ * Recursively implode an array.
+ *
+ * @param $glue
+ * @param $array
+ *
+ * @return string
+ */
 function elasticsearch_recursive_implode($glue, $array) {
   $string = '';
   foreach ($array as $item) {
@@ -314,7 +322,7 @@ function elasticsearch_recursive_implode($glue, $array) {
     }
   }
 
-  return trim($string, $glue);
+  return ltrim($string, $glue);
 }
 
 /**
