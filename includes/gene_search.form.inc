@@ -136,10 +136,20 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
 function tripal_elasticsearch_gene_search_index_results_formatter($search_results, $host = NULL) {
   $header = ['Gene Identifier', 'Blast Hit Descriptions', 'Annotations'];
   $rows = [];
+  if ($host) {
+    $base_url = trim($host->url, '/');
+  }
   foreach ($search_results as $result) {
+    if ($host) {
+      $url = "<a href='{$base_url}/{$result['url']}'>{$result['uniquename']}</a>";
+    }
+    else {
+      $url = l($result['uniquename'], $result['url']);
+    }
+
     $result = (array) $result;
     $rows[] = [
-      $host ? "<a href='{$host->url}/{$result['url']}'>{$result['uniquename']}</a>" : l($result['uniquename'], $result['url']),
+      $url,
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['blast_hit_descriptions']) . '</div>',
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['annotations']) . '</div>',
     ];

@@ -82,6 +82,15 @@ function tripal_elasticsearch_schema() {
 }
 
 /**
+ * Load
+ */
+function tripal_elasticsearch_install() {
+  // This function is here only to tell drupal to load all enabled modules
+  // before performing any updates
+  // Its content is null on purpose
+}
+
+/**
  * updates
  */
 function tripal_elasticsearch_update_7200() {
@@ -233,5 +242,19 @@ function tripal_elasticsearch_update_7207() {
       'not null' => FALSE,
     ];
     db_add_field('tripal_elasticsearch_queues', 'started_at', $spec);
+  }
+}
+
+/**
+ * Add url field to tripal_elasticsearch_indices table.
+ */
+function tripal_elasticsearch_update_7208() {
+  if (!db_field_exists('tripal_elasticsearch_indices', 'url')) {
+    $spec = [
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => FALSE,
+    ];
+    db_add_field('tripal_elasticsearch_indices', 'url', $spec);
   }
 }

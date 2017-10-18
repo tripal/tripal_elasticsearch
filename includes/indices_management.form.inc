@@ -166,6 +166,24 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     '#default_value' => FALSE,
   ];
 
+  $form['url'] = [
+    '#type' => 'textfield',
+    '#title' => 'Results URL Path',
+    '#description' => t('In order for other sites to link back to your results page, you must specify a path where the form for this index can be reached.'),
+    '#attributes' => [
+      'placeholder' => 'E.g, elasticsearch/index-name',
+    ],
+    '#states' => [
+      'visible' => [
+        ':input[name="index_type"]' => [
+          ['value' => 'database'],
+          ['value' => 'gene_search'],
+        ],
+        ':input[name="exposed"]' => ['value' => 1],
+      ],
+    ],
+  ];
+
   $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Create New Index'),
@@ -601,10 +619,10 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  *
  * @param $values
  */
-
 function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
+  $url = $values['url'];
 
   // populate settings for website or entities.
   if ($index_type === 'website') {
@@ -687,6 +705,7 @@ function tripal_elasticsearch_create_index(&$values) {
     ':index_name' => $index_name,
     ':table_name' => $index_table,
     ':exposed' => $exposed,
+    ':url' => $url,
   ];
 
   db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed) VALUES (:index_name, :table_name, :exposed)', $insert);
@@ -780,7 +799,7 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
   else {
     $content .= theme_progress_bar([
       'percent' => $data->percent,
-      'message' => 'Indexing '.$data->total. ' items. ' . $data->remaining . ' Items remaining. ' . $data->time . ' seconds elapsed.',
+      'message' => 'Indexing ' . $data->total . ' items. ' . $data->remaining . ' Items remaining. ' . $data->time . ' seconds elapsed.',
     ]);
   }
 
