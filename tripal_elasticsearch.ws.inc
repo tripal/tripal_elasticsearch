@@ -214,6 +214,7 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
   $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name, $host);
   return ESResponse::success([
     'url' => $results->data->url,
+    'raw' => $results->data->raw,
     'markup' => $markup,
     'count' => $results->data->count,
   ]);
@@ -262,10 +263,16 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   $count = $results->count();
   $search_results = $results->search();
 
+  // Get the url for the index
+  $url = db_query('SELECT url FROM {tripal_elasticsearch_indices} WHERE index_name=:index LIMIT 1', [
+    ':index' => $index_name,
+  ])->fetchField();
+
   global $base_url;
   return ESResponse::success([
     'count' => $count,
-    'url' => $base_url,
+    'url' => $url ? $base_url . '/' . $url : $base_url,
+    'raw' => $url,
     'results' => $search_results,
   ], $http);
 }
@@ -312,7 +319,7 @@ function tripal_elasticsearch_results_formatter($search_results, $index_name = N
  * @return string
  */
 function elasticsearch_recursive_implode($glue, $array) {
-  if(!is_array($array)) {
+  if (!is_array($array)) {
     return $array;
   }
 
