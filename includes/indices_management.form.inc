@@ -615,7 +615,7 @@ function tripal_elasticsearch_index_edit_confirm(
 }
 
 /**
- * Submit editing for index.
+ * Submit editing for index.  Reindex if index settings are changed or for custom data tables.  Only update the table for minor changes.
  *
  * @param $form
  * @param $form_state
@@ -911,7 +911,7 @@ function tripal_elasticsearch_get_progress() {
 
 /**
  * Updates ephemeral settings for an index when rebuilding the index is not
- * necessary (URL, exposure).
+ * necessary (URL, expose).
  */
 function tripal_elasticsearch_update_index_table(
   &$values
