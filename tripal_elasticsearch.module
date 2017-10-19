@@ -410,7 +410,14 @@ function tripal_elasticsearch_block_info() {
   ];
 
   $blocks['elasticsearch_gene_search_block'] = [
-    'info' => t('Tripal Elasticsearch gene search form'),
+    'info' => t('Tripal Elasticsearch cross site gene search form'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'cache' => DRUPAL_NO_CACHE,
+    'page' => "elasticsearch/cross-site-gene-search",
+  ];
+
+  $blocks['es_local_gene_search_block'] = [
+    'info' => t('Tripal Elasticsearch local gene search form'),
     'visibility' => BLOCK_VISIBILITY_LISTED,
     'cache' => DRUPAL_NO_CACHE,
     'page' => "elasticsearch/gene-search",
@@ -509,7 +516,11 @@ function tripal_elasticsearch_block_view($delta = '') {
       break;
     case 'elasticsearch_gene_search_block':
       $block['subject'] = '';
-      $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form');
+      $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form', FALSE);
+      break;
+    case 'es_local_gene_search_block':
+      $block['subject'] = '';
+      $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form', TRUE);
       break;
   }
 

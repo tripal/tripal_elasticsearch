@@ -10,7 +10,7 @@
               });
         }
 
-        $('#tripal-elastic-search-results-table tr td').each(function () {
+        $('#tripal-elastic-search-results-table tr td, .es-squish').each(function () {
           var text = $(this).html();
           var array = text.split('<br>');
 
