@@ -274,7 +274,6 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   return ESResponse::success([
     'count' => $count,
     'url' => $url ? url($base_url . '/' . $url, ['query' => $query]) : $base_url,
-    'raw' => $url,
     'results' => $search_results,
   ], $http);
 }
