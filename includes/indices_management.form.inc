@@ -169,7 +169,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
           ['value' => 'database'],
           ['value' => 'gene_search'],
         ],
-        ':input[name="exposed"]' => ['value' => 1],
+        ':input[name="exposed"]' => ['checked' => TRUE],
       ],
     ],
   ];
@@ -203,10 +203,11 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $type = $form_state['values']['index_type'];
   $url = $form_state['values']['url'];
+  $exposed = $form_state['values']['exposed'];
   //TODO: check validity of URL instead of checking if it exists
   if ($type == "database") {
-    // URLs are required for database and gene_search
-    if (!$url) {
+    // URLs are required for database and gene_search.  but only if they are exposed!
+    if (!$url && $exposed) {
       form_set_error('url', t('Please provide a valid url'));
     }
     // Index name validation.
@@ -231,7 +232,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     }
   }
   if ($type == "gene_search_index") {
-    if (!$url) {
+    if (!$url && $exposed) {
       form_set_error('url', t('Please provide a valid url'));
     }
   }
@@ -403,7 +404,7 @@ function tripal_elasticsearch_index_edit_confirm(
 
   $form = [];
   $exposed = FALSE;
-  $url = null;
+  $url = NULL;
   //Get table name from index name.
   if ($index_name == 'website') {
     $index_type = "website";
@@ -443,8 +444,7 @@ function tripal_elasticsearch_index_edit_confirm(
   $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
   $result = db_query($sql, [':index_name' => $index_name])->fetch();
   $exposed = $result ? $result->exposed : 0;
-  dpm($result);
-  $url = $result ? $result->url : null;
+  $url = $result ? $result->url : NULL;
 
   $form['index_name'] = [
     '#type' => 'value',
@@ -493,12 +493,28 @@ function tripal_elasticsearch_index_edit_confirm(
   }
 
   //Snapshot the settings that require indexing so we can figure out if we need to re-index
+  //need to build it the same way the options are built so they match
 
-  $previous_values = ['index_settings' => $index_settings, ];
+  $previous_token_filters = get_token_filter_options();
+  $previous_token_filters = array_map(function ($value) {
+    return 0;
+  }, $previous_token_filters); //empty the array values
+  foreach ($index_settings["token_filters"] as $setting) {
+    $previous_token_filters[$setting] = $setting;
+  }
 
+  $previous_index_settings = [
+    'tokenizer' => $index_settings["tokenizer"],//tokenizer is just a string
+    'token_filters' => $previous_token_filters,
+  ];
+  //TODO: DEAL WITH FIELDS
+  //store modified values in array so we can check against them upon submission
   $form['previous_values'] = [
-    '#type' => 'values',
-    '#value' => $previous_values,
+    '#type' => 'value',
+    '#value' => [
+      'index_settings' => $previous_index_settings,
+      'index_name' => $index_name,
+    ],
   ];
 
   $form['instructions'] = [
@@ -539,7 +555,6 @@ function tripal_elasticsearch_index_edit_confirm(
 
   ];
 
-
   // url should be set for exposed genes and data tables only
   if ($index_type == "gene_search" || $index_type == "table") {
     $form['url'] = [
@@ -549,9 +564,10 @@ function tripal_elasticsearch_index_edit_confirm(
       '#attributes' => [
         'placeholder' => 'E.g, elasticsearch/index-name',
       ],
+      '#default_value' => $url,
       '#states' => [
         'visible' => [
-          ':input[name="exposed"]' => ['value' => 1],//TODO: This doesnt update
+          ':input[name="exposed"]' => ['checked' => TRUE],
         ],
       ],
     ];
@@ -599,13 +615,28 @@ function tripal_elasticsearch_index_edit_confirm(
 }
 
 /**
- * Submit editing for index.
+ * Submit editing for index.  Reindex if index settings are changed or for custom data tables.  Only update the table for minor changes.
  *
  * @param $form
  * @param $form_state
  */
 function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
+  $type = $form_state['values']['index_type'];
+  //check if index settings or name has change
+
+  $previous_values = $form_state['values']['previous_values'];
+  $previous_index_settings = ($previous_values['index_settings']);
+  $new_index_settings = ($form_state['values']['index_settings']);
+
+  //delete/create for custom tables since the field settings might have changed.
+  if ($form_state['values']['index_name'] == $previous_values['index_name'] && !array_diff($previous_index_settings, $new_index_settings) && $type != 'table') {
+    //No need to delete the index, just need to update the table.
+    tripal_elasticsearch_update_index_table($form_state['values']);
+    drupal_set_message("Your index has been updated.  Re-indexing is not necessary.");
+    drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+    return;
+  }
 
   // Delete the existing index in ES
   tripal_elasticsearch_delete_index($index);
@@ -660,7 +691,9 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
 function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
-  $url = $values['url'];
+  if (isset($values['url'])) {
+    $url = $values['url'];
+  }
 
   // populate settings for website or entities.
   if ($index_type === 'website') {
@@ -745,7 +778,6 @@ function tripal_elasticsearch_create_index(&$values) {
     ':exposed' => $exposed,
     ':url' => $url,
   ];
-  dpm($insert);
 
   db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)', $insert);
 
@@ -801,8 +833,15 @@ function tripal_elasticsearch_delete_index($index) {
     return;
   }
 
-  // Find the index and delete it from the DB
+  // Find the index and delete it from the DB.  this db is for the search blocks
   $result = db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name", [':index_name' => $index]);
+
+  if (!$result) {
+    drupal_set_message("$index could not be deleted from the database.", 'error');
+    return;
+  }
+  //now delete the table info
+  $result = db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name", [':index_name' => $index]);
 
   if (!$result) {
     drupal_set_message("$index could not be deleted from the database.", 'error');
@@ -811,9 +850,6 @@ function tripal_elasticsearch_delete_index($index) {
 
   // Delete any progress indicator
   db_query('DELETE FROM {tripal_elasticsearch_queues} WHERE index_name=:index_name', [':index_name' => $index]);
-
-  drupal_set_message('Index "' . $index . '" deleted successfully.');
-  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
 /**
@@ -871,4 +907,28 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
 function tripal_elasticsearch_get_progress() {
   // Prevents rendering the entire page.
   print tripal_elasticsearch_progress_page(TRUE);
+}
+
+/**
+ * Updates ephemeral settings for an index when rebuilding the index is not
+ * necessary (URL, expose).
+ */
+function tripal_elasticsearch_update_index_table(
+  &$values
+) {
+  $index_name = $values['index_name'];
+  $index_table = $values['index_table'];
+  $exposed = $values['exposed'] ? 1 : 0;
+  $url = $values['url'];
+
+  try {
+    db_update('tripal_elasticsearch_indices')->fields([
+      'table_name' => $index_table,
+      'exposed' => $exposed,
+      'url' => $url,
+    ])->condition('table_name', $index_table)->execute();
+    drupal_set_message(t('Index \'' . $index_name . '\' has been updated.'));
+  } catch (Exception $e) {
+    drupal_set_message("could not edit index");
+  }
 }
