@@ -622,31 +622,34 @@ function tripal_elasticsearch_index_edit_confirm(
 function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
   $type = $form_state['values']['index_type'];
-  //check if index settings or name has change
 
+  // Check if index settings or name has change
   $previous_values = $form_state['values']['previous_values'];
-  $previous_index_settings = ($previous_values['index_settings']);
-  $new_index_settings = ($form_state['values']['index_settings']);
+  $previous_index_settings = $previous_values['index_settings'];
+  $new_index_settings = $form_state['values']['index_settings'];
 
-  //delete/create for custom tables since the field settings might have changed.
-  if ($form_state['values']['index_name'] == $previous_values['index_name'] && !array_diff($previous_index_settings, $new_index_settings) && $type != 'table') {
-    //No need to delete the index, just need to update the table.
-    tripal_elasticsearch_update_index_table($form_state['values']);
-    drupal_set_message("Your index has been updated.  Re-indexing is not necessary.");
-    drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
-    return;
+  // Delete/Create for custom tables since the field settings might have changed.
+  if ($index == $previous_values['index_name'] && $previous_index_settings['tokenizer'] && $new_index_settings['tokenizer']) {
+    if (empty(array_diff($previous_index_settings['token_filters'], $new_index_settings['token_filters']))) {
+      if ($type != 'table') {
+        // No need to delete the index, just need to update the table.
+        tripal_elasticsearch_update_index_table($form_state['values']);
+        drupal_set_message("Your index has been updated. Re-indexing is not necessary.");
+        drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+        return;
+      }
+    }
   }
 
   // Delete the existing index in ES
   tripal_elasticsearch_delete_index($index);
 
-  //create the new index
+  // Create the new index
   tripal_elasticsearch_create_index($form_state['values']);
 }
 
 /**
  * Index Deletion Confirmation Form.
- *s
  *
  * @param $form
  * @param $form_state
@@ -654,9 +657,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm(
-  $form, &$form_state, $index_name
-) {
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
@@ -914,11 +915,9 @@ function tripal_elasticsearch_get_progress() {
  * Updates ephemeral settings for an index when rebuilding the index is not
  * necessary (URL, expose).
  */
-function tripal_elasticsearch_update_index_table(
-  &$values
-) {
+function tripal_elasticsearch_update_index_table(&$values) {
   $index_name = $values['index_name'];
-  $index_table = $values['index_table'];
+  $index_table = $values['table_name'];
   $exposed = $values['exposed'] ? 1 : 0;
   $url = $values['url'];
 

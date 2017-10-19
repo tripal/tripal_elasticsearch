@@ -95,6 +95,13 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
   return $form;
 }
 
+/**
+ * Map arguments to ES query.
+ *
+ * @param array $arguments Usually $_GET request variable
+ *
+ * @return array
+ */
 function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   $queries = [];
 
