@@ -140,6 +140,7 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
     $base_url = trim($host->url, '/');
   }
   foreach ($search_results as $result) {
+    $result = (array) $result;
     if ($host) {
       $url = "<a href='{$base_url}/{$result['url']}'>{$result['uniquename']}</a>";
     }
