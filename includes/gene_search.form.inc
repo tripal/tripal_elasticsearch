@@ -121,9 +121,12 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   }
 
   if (isset($arguments['search_term'])) {
+
+    $search_term = str_replace(':', ' AND ', $arguments['search_term']);
+    
     $queries[] = [
       'query_string' => [
-        'query' => $arguments['search_term'],
+        'query' => $search_term,
         'fields' => [
           '_all',
         ],
@@ -200,14 +203,14 @@ function tripal_elasticsearch_gene_search_index_results() {
   $formatted = tripal_elasticsearch_gene_search_index_results_formatter($results['results']);
 
   $content = '<div style="margin-bottom: 22px">';
-  $content .= '<strong>'.$results['total'].' results found</strong>';
-  $content .= '<strong style="float: right">Page '.$results['page'].' - '.$results['pages'].'</strong>';
+  $content .= '<strong>' . $results['total'] . ' results found</strong>';
+  $content .= '<strong style="float: right">Page ' . $results['page'] . ' - ' . $results['pages'] . '</strong>';
   $content .= '</div>';
   $content .= $formatted;
   $content .= $results['pager'];
 
   // Add the necessary JS
-  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/table_search_results_datatable.js');
+  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
 
   return $content;
 }
