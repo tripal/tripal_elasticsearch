@@ -269,9 +269,11 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
   ])->fetchField();
 
   global $base_url;
+  $query = $_GET;
+  unset($query['q']);
   return ESResponse::success([
     'count' => $count,
-    'url' => $url ? $base_url . '/' . $url : $base_url,
+    'url' => $url ? url($base_url . '/' . $url, ['query' => $query]) : $base_url,
     'raw' => $url,
     'results' => $search_results,
   ], $http);
