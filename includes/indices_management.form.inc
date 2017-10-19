@@ -203,10 +203,11 @@ function tripal_elasticsearch_table_fields_ajax_callback($form, &$form_state) {
 function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $type = $form_state['values']['index_type'];
   $url = $form_state['values']['url'];
+  $exposed = $form_state['values']['exposed'];
   //TODO: check validity of URL instead of checking if it exists
   if ($type == "database") {
-    // URLs are required for database and gene_search
-    if (!$url) {
+    // URLs are required for database and gene_search.  but only if they are exposed!
+    if (!$url && $exposed) {
       form_set_error('url', t('Please provide a valid url'));
     }
     // Index name validation.
@@ -231,7 +232,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     }
   }
   if ($type == "gene_search_index") {
-    if (!$url) {
+    if (!$url && $exposed) {
       form_set_error('url', t('Please provide a valid url'));
     }
   }
@@ -621,19 +622,19 @@ function tripal_elasticsearch_index_edit_confirm(
  */
 function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
   $index = $form_state['values']['index_name'];
-
+  $type = $form_state['values']['index_type'];
   //check if index settings or name has change
 
   $previous_values = $form_state['values']['previous_values'];
   $previous_index_settings = ($previous_values['index_settings']);
   $new_index_settings = ($form_state['values']['index_settings']);
 
-  if ($form_state['values']['index_name'] == $previous_values['index_name'] && !array_diff($previous_index_settings, $new_index_settings)) {
+  //delete/create for custom tables since the field settings might have changed.
+  if ($form_state['values']['index_name'] == $previous_values['index_name'] && !array_diff($previous_index_settings, $new_index_settings) && $type != 'table') {
     //No need to delete the index, just need to update the table.
     tripal_elasticsearch_update_index_table($form_state['values']);
     drupal_set_message("Your index has been updated.  Re-indexing is not necessary.");
     drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
-
     return;
   }
 
@@ -688,7 +689,6 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  * @param $values
  */
 function tripal_elasticsearch_create_index(&$values) {
-  dpm("we creating yo");
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
   if (isset($values['url'])) {
