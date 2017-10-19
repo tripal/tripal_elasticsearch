@@ -443,7 +443,6 @@ function tripal_elasticsearch_index_edit_confirm(
   $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
   $result = db_query($sql, [':index_name' => $index_name])->fetch();
   $exposed = $result ? $result->exposed : 0;
-  dpm($result);
   $url = $result ? $result->url : null;
 
   $form['index_name'] = [
@@ -745,7 +744,6 @@ function tripal_elasticsearch_create_index(&$values) {
     ':exposed' => $exposed,
     ':url' => $url,
   ];
-  dpm($insert);
 
   db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)', $insert);
 
