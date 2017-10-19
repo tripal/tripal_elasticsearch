@@ -255,6 +255,11 @@
       }
     },
 
+    /**
+     * Setup table index search page.
+     *
+     * @type action
+     */
     setupTableIndexPage: function () {
       // Get page settings
       var index        = this.settings.index;
@@ -263,6 +268,9 @@
 
       // Set global variables
       this.searchURL = index + '/search';
+
+      // Perform search if form is not empty
+      this.initHistory(mapper);
 
       // Set up listeners
       $(formSelector).on('submit', function (event) {
@@ -278,6 +286,34 @@
       }.bind(this));
     },
 
+    /**
+     * Read and activate browser history.
+     *
+     * @param mapper
+     */
+    initHistory: function (mapper) {
+      var formSelector = '#cross-site-search-form';
+      var data         = this.mapForm(this.formToObject($(formSelector)), mapper);
+      var has_values   = false;
+      Object.keys(data).map(function (element) {
+        if (typeof data[element] === 'string') {
+          if (data[element].length > 0) {
+            has_values = true;
+          }
+        }
+      });
+
+      if (has_values) {
+        this.tableSearch(data);
+      }
+    },
+
+    /**
+     * Convert form data to object.
+     *
+     * @param form
+     * @return {{}}
+     */
     formToObject: function (form) {
       var formData = form.serializeArray();
       var data     = {};
@@ -291,8 +327,29 @@
       return data;
     },
 
+    /**
+     * Remove default drupal form values and map each form element to user
+     * provided mapper settings.
+     *
+     * @param formData
+     * @param mapper
+     * @return {*}
+     */
     mapForm: function (formData, mapper) {
       var mapperKeys = Object.keys(mapper);
+
+      // Remove drupal default form content
+      if (formData.form_id) {
+        delete formData.form_id;
+      }
+
+      if (formData.form_build_id) {
+        delete formData.form_build_id;
+      }
+
+      if (formData.form_token) {
+        delete formData.form_token;
+      }
 
       if (mapperKeys.length === 0) {
         return formData;
@@ -306,6 +363,11 @@
       return mappedData;
     },
 
+    /**
+     * Perform ajax calls to each remote site and render results.
+     *
+     * @param data
+     */
     tableSearch: function (data) {
       this.resetState();
       var block        = $('#tripal-elasticsearch-results-block');
@@ -354,6 +416,11 @@
       }.bind(this));
     },
 
+    /**
+     * Squish long content.
+     *
+     * @private
+     */
     _squish: function () {
       var text  = $(this).html();
       var array = text.split('<br>');
@@ -389,6 +456,13 @@
       }
     },
 
+    /**
+     * Serialize objects to URL query strings.
+     *
+     * @param data
+     * @return {string}
+     * @private
+     */
     _serialize: function (data) {
       var serialized = '';
 
@@ -403,6 +477,13 @@
       return serialized;
     },
 
+    /**
+     * Get a full url from the state.
+     *
+     * @param state
+     * @return {string}
+     * @private
+     */
     _url: function (state) {
       var url = '?';
       url += this._serialize(state);
