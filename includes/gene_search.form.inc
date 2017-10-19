@@ -9,7 +9,7 @@
  * @param $form
  * @param $form_state
  */
-function tripal_elasticsearch_gene_search_form($form, &$form_state) {
+function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRUE) {
   $form['#attributes']['id'] = 'cross-site-search-form';
 
   $form['options'] = [
@@ -40,7 +40,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
       'style' => 'max-width: 250px;',
     ],
     '#options' => array_merge($default_organism, drupal_map_assoc($organisms)),
-    '#default_value' => 'Any Organism',
+    '#default_value' => isset($_GET['organism']) ? $_GET['organism'] : '',
     '#required' => TRUE,
   ];
 
@@ -52,6 +52,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
       'id' => 'tripal-elasticsearch-search-field',
     ],
     '#required' => TRUE,
+    '#default_value' => isset($_GET['search_term']) ? $_GET['search_term'] : '',
   ];
 
   $form['options']['search_button'] = [
@@ -62,35 +63,33 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state) {
     ],
   ];
 
-  $form['results_block'] = [
-    '#type' => 'markup',
-    '#markup' => '<div id="tripal-elasticsearch-results-block"></div>',
-  ];
+  if (!$local) {
+    $form['results_block'] = [
+      '#type' => 'markup',
+      '#markup' => '<div id="tripal-elasticsearch-results-block"></div>',
+    ];
 
-  $form['#atached']['js'][] = [
-    'data' => drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/axios.min.js'),
-    'type' => 'file',
-  ];
+    drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/axios.min.js');
+    $remotes = db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
+    // Add local server as the first remote
+    array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
+    drupal_add_js([
+      'remotes' => $remotes,
+      'action' => 'setupTableIndexPage',
+      'index' => 'gene_search_index',
+    ], 'setting');
+    drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
+  }
+  else {
+    if (!empty($_GET['search_term']) || !empty($_GET['organism'])) {
+      $form['results'] = [
+        '#type' => 'markup',
+        '#markup' => tripal_elasticsearch_gene_search_index_results(),
+      ];
+    }
+  }
 
-  $remotes = db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
-
-  // Add local server as the first remote
-  array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
-
-  drupal_add_js([
-    'remotes' => $remotes,
-    'action' => 'setupTableIndexPage',
-    'index' => 'gene_search_index',
-    // Optional form fields to index fields mapper
-    //'field_mapper' => [
-    //  'organism_genus' => 'organism',
-    //  'organism_species' => 'organism',
-    //  'uniquename' => 'search_term',
-    //  'annotations' => 'search_term',
-    //  'blast_hit_descriptions' => 'search_term',
-    //],
-  ], 'setting');
-  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
+  $form['#method'] = 'get';
 
   return $form;
 }
@@ -133,6 +132,14 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   return $query;
 }
 
+/**
+ * Format the results.
+ *
+ * @param array $search_results
+ * @param string $host
+ *
+ * @return string
+ */
 function tripal_elasticsearch_gene_search_index_results_formatter($search_results, $host = NULL) {
   $header = ['Gene Identifier', 'Blast Hit Descriptions', 'Annotations'];
   $rows = [];
@@ -160,4 +167,39 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
     'header' => $header,
     'rows' => $rows,
   ]);
+}
+
+/**
+ * Get gene search results.
+ *
+ * @return string
+ */
+function tripal_elasticsearch_gene_search_index_results() {
+  if (empty($_GET['search_term']) && empty($_GET['organism'])) {
+    return '';
+  }
+
+  try {
+    $es = new ESInstance();
+  } catch (Exception $exception) {
+    drupal_set_message($exception->getMessage(), 'error');
+    return '';
+  }
+
+  $query = tripal_elasticsearch_gene_search_index_query_mapper($_GET);
+  $results = $es->setTableSearchParams('gene_search_index', '', $query)
+                ->paginate(15);
+  $formatted = tripal_elasticsearch_gene_search_index_results_formatter($results['results']);
+
+  $content = '<div style="margin-bottom: 22px">';
+  $content .= '<strong>'.$results['total'].' results found</strong>';
+  $content .= '<strong style="float: right">Page '.$results['page'].' - '.$results['pages'].'</strong>';
+  $content .= '</div>';
+  $content .= $formatted;
+  $content .= $results['pager'];
+
+  // Add the necessary JS
+  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch').'/js/table_search_results_datatable.js');
+
+  return $content;
 }

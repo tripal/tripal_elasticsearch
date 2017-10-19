@@ -74,7 +74,7 @@ class NodesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
-    global $base_url;
+    $base_url = variable_get('es_base_url', '');
     $all = [];
 
     foreach ($records as $record) {

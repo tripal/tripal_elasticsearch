@@ -397,9 +397,7 @@ function tripal_elasticsearch_indices_list_page() {
  * @return mixed
  */
 function tripal_elasticsearch_index_edit_confirm(
-  $form,
-  &$form_state,
-  $index_name
+  $form, &$form_state, $index_name
 ) {
 
   $form = [];
@@ -444,11 +442,10 @@ function tripal_elasticsearch_index_edit_confirm(
   $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
   $result = db_query($sql, [':index_name' => $index_name])->fetch();
   $exposed = $result ? $result->exposed : 0;
-  $url = $result ? $result->url : null;
-
+  $url = $result ? $result->url : NULL;
 
   $form['index_name'] = [
-    '#type' => 'value', 
+    '#type' => 'value',
     '#value' => $index_name,
   ];
   $form['index_type'] = [
@@ -616,7 +613,8 @@ function tripal_elasticsearch_index_edit_confirm(
 }
 
 /**
- * Submit editing for index.  Reindex if index settings are changed or for custom data tables.  Only update the table for minor changes.
+ * Submit editing for index.  Reindex if index settings are changed or for
+ * custom data tables.  Only update the table for minor changes.
  *
  * @param $form
  * @param $form_state
@@ -657,9 +655,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  * @return mixed
  */
 function tripal_elasticsearch_index_delete_confirm(
-  $form,
-  &$form_state,
-  $index_name
+  $form, &$form_state, $index_name
 ) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
@@ -690,6 +686,10 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  * @param $values
  */
 function tripal_elasticsearch_create_index(&$values) {
+  // Add the base url to the database so the Daemon get access to it
+  global $base_url;
+  variable_set('es_base_url', $base_url);
+
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
   if (isset($values['url'])) {
@@ -786,7 +786,7 @@ function tripal_elasticsearch_create_index(&$values) {
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-      ->createIndex();
+       ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());

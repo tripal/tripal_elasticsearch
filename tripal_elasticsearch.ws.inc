@@ -312,6 +312,10 @@ function tripal_elasticsearch_results_formatter($search_results, $index_name = N
  * @return string
  */
 function elasticsearch_recursive_implode($glue, $array) {
+  if(!is_array($array)) {
+    return $array;
+  }
+
   $string = '';
   foreach ($array as $item) {
     if (is_array($item)) {
