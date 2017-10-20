@@ -74,11 +74,12 @@ class NodesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
-    $base_url = variable_get('es_base_url', '');
+    global $base_url;
+    $url = variable_get('es_base_url', $base_url);
     $all = [];
 
     foreach ($records as $record) {
-      $content = file_get_contents("{$base_url}/node/{$record->nid}");
+      $content = file_get_contents("{$url}/node/{$record->nid}");
 
       if ($content === FALSE) {
         continue;
