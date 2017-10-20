@@ -74,14 +74,15 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
-    $base_url = variable_get('es_base_url', '');
+    global $base_url;
+    $url = variable_get('es_base_url', $base_url);
     $all = [];
     $this->total = 0;
 
     foreach ($records as $record) {
       $this->total++;
 
-      $content = file_get_contents("{$base_url}/bio_data/{$record->entity_id}");
+      $content = file_get_contents("{$url}/bio_data/{$record->entity_id}");
 
       if ($content === FALSE) {
         continue;

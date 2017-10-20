@@ -51,7 +51,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
       'placeholder' => t('E,g. Kinase or IPR020405'),
       'id' => 'tripal-elasticsearch-search-field',
     ],
-    '#description' => '<small>Examples: <a href="?search_term=Heat+Shock">Heat Shock</a>, <a href="?search_term=IPR020405">IPR020405</a>, <a href="?search_term=GO:0016049">GO:0016049</a>, etc.</small>',
+    '#description' => '<small>Examples: <a href="?search_term=Heat+Shock">Heat Shock</a>, <a href="?search_term=IPR020575">IPR020575</a>, <a href="?search_term=GO:0016049">GO:0016049</a>, etc.</small>',
     '#required' => TRUE,
     '#default_value' => isset($_GET['search_term']) ? $_GET['search_term'] : '',
   ];
