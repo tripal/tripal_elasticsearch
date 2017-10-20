@@ -33,7 +33,7 @@ Go to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsea
 enter the host and port of your elastic cluster.  Make sure that the Server Type radio button is set to **local**. For example, the image below shows that
 the Elastic server is running on the same host as the Tripal site, and the port is 9203.
 
-![connect to elastic](images/elastic_search_connect.png)
+![connect to elastic](../images/elastic_search_connect.png)
 
 #### Local Elasticsearch Server Health
 
@@ -45,4 +45,4 @@ To add a new remote Elasticsearch server, select the Remote Server Type radio bu
 
 After connecting a remote server, it will be displayed in the remote server health table (example below).  If the connection is successful, the Status column will be green/Active and you can include this remote connection in your search interface.  If the status remains Red, ensure that you have the correct URL, and that your firewall is not blocking connections.  You may also edit and delete your remote servers using this table.
 
-![remote server health](images/remote_server.png)
+![remote server health](../images/remote_server.png)
