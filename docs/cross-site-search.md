@@ -1,6 +1,6 @@
 # Cross Site Searching
 Tripal Elasticsearch provides an API that allows multiple sites to communicate with each other and share search results.
-See example below of two sites returning results to a single page.
+See the example below of a site returning results from multiple sites to a single page.
 
 ![Cross Site Example](../images/cross-site-example.png)
 
@@ -10,8 +10,8 @@ Cross site search is currently available for default indices only (website nodes
 ### Website Nodes and Entities
 
 To enable cross site search, you'll need to enable the `Tripal Elasticsearch cross site search form` block and configure
-it to display on a page of your choice. Normally, this block should be placed in `Main Content` region. To make sure
-the block doesn't show up on all of your site's pages, you should configure it to display only in a specific page. See
+it to display on a page of your choice. Normally, this block should be placed in the `Main Content` region. To make sure
+the block doesn't show up on all of your site's pages, you should configure it to display only in a specific page. See the
 image below for an example where the block wil show up only on `/elasticsearch/cross-site`:
 
 ![Block Config](../images/cross-site-url.png)

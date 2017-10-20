@@ -6,15 +6,15 @@ The website index is a preconfigured index that is responsible for Drupal nodes 
 It also comes with a preset form that can be used in place of the drupal default search block.
 
 To start using this index, navigate to `Admin -> Tripal -> Extensions -> Tripal Elasticsearch -> Indices Management -> Create Index` 
-and choose "Website Nodes" from the dropdown list then submit the form after filling the rest of the fields.
+and choose "Website Nodes" from the dropdown list, and complete & submit the form.
 
 You can monitor the progress of the indexing job using the progress tracker.
 
-Next, you'll need to activate the `Tripal Elasticsearch website search box` block. Learn more about [Drupal Blocks](https://www.drupal.org/docs/8/core/modules/block/overview)
+Next, you'll need to activate the `Tripal Elasticsearch website search box` block. Learn more about [Drupal Blocks](https://www.drupal.org/docs/8/core/modules/block/overview).
 
 ## Tripal 3 Entities Index
 Tripal Elasticsearch also provides a default index for Tripal 3 entities. To activate the index, follow the same procedure
-as the website nodes index above.
+as the website nodes index above, selecting "Entities" from the dropdown list when creating the index.
 
 ### Create, Update and Delete Pages
 

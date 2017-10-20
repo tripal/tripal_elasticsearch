@@ -9,7 +9,7 @@ Tripal Elasticsearch Documentation
 - **Indexing**
 	- [Default Indices](default-indices.md) (includes website and gene search indices)
 	- [Building Custom Indices](custom-indices.md)
-- [Building Search Form](forms.md)
+- [Building Search Forms](forms.md)
 - [Cross Site Searching](cross-site-search.md)
 - [Elasticsearch Daemon](daemon.md) *COMING SOON*
 

@@ -1,5 +1,5 @@
 # Building Custom Search Forms
-After your database tables get indexed, you can build a search interface for them.  Note that search blocks for node and entities are configured automatically and cannot be customized.  
+After your database tables get indexed, you can build a search interface for them.  Note that search blocks for node, entities, and genes are configured automatically and cannot be customized.  
 You can choose to expose all table fields or a subset of fields for searching.
 
 The admin page for building search blocks is at `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/search_form_management`.

@@ -8,12 +8,15 @@ these concepts, we recommend you select `standard` for tokenizer and `standard` 
 
 ![database indexing](../images/database-table-index.png) 
 
-## Creating a new Index
+## Creating a new custom Index
 
-You can create a new index by clocking on the create Index tab, or navigating to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices_management/create`.  
+You can create a new index by clicking on the create Index tab, or navigating to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices_management/create`.  
 
-For all index types, you need to:
+For a custom index, you will need to:
 
-* select a number of cron queues to utilize for the indexing job.
-* select an index type.
+* select the database table index type.
+* Enter a unique name for the index.
+* Specify Index settings for the Tokenizer and Token Filter (or leave the defaults)
 * Decide if the index will be exposed to Cross-Site Search.
+* Select a table.
+* Select at least one field from the table to index.

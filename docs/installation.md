@@ -1,6 +1,6 @@
 # Installation
 
-After installing Elasticsearch and the Elasticsearch PHP library as highlighted in the Prerequisites section, you are ready to install Tripal Elasticsearch Drupal module.
+After installing Elasticsearch and the Elasticsearch PHP library as described in the Prerequisites section, you are ready to install the Tripal Elasticsearch Drupal module.
 
 This module can be installed using one of the following methods.
 
@@ -25,7 +25,7 @@ drush en tripal_elasticsearch -y && drush updatedb
 To learn more about installing Drupal modules, please visit the [Drupal documentation](https://www.drupal.org/node/895232).
 
 ## Connecting to Elasticsearch Servers
-The Tripal Elasticsearch module allows connections to local and remote servers.  Your local connection is the server for your own site: you will be able to manage your indices and the details of this cluster.  Note that your Elasticsearch server need not be hosted alongside your Tripal site: local means that is the service that indexes and searches **your Tripal site**.  Remote connections allow you to connect to other websites and include their search results on your Tripal site.  Remote services are managed on their respective sites.
+The Tripal Elasticsearch module allows connections to local and remote servers.  Your local connection is the server for your own site: you will be able to manage your indices and the details of this cluster.  Note that your Elasticsearch server need not be hosted alongside your Tripal site: local means that service indexes and searches **your Tripal site**.  Remote connections allow you to connect to other websites and include their search results on your Tripal site.  Remote services are managed on their respective sites.
 
 ### Connect to your local Elastic cluster
 
