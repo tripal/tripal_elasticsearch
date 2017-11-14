@@ -57,8 +57,8 @@ class ESInstance {
     libraries_load('elasticsearch-php');
 
     $this->client = Elasticsearch\ClientBuilder::create()
-                                               ->setHosts($host)
-                                               ->build();
+      ->setHosts($host)
+      ->build();
   }
 
   /**
@@ -72,14 +72,20 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = []) {
+  public function setWebsiteSearchParams(
+    $search_terms,
+    $node_type = '',
+    $index = 'website',
+    $index_type = '',
+    $offset = []
+  ) {
     $queries = [];
 
     $queries[] = [
       "query_string" => [
         "default_field" => "content",
         "query" => $search_terms,
-        "default_operator" => "OR",
+        "default_operator" => "AND",
       ],
     ];
 
@@ -215,7 +221,14 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
+  public function setIndexParams(
+    $index_name,
+    $shards = 5,
+    $replicas = 0,
+    $tokenizer = 'standard',
+    $token_filters = [],
+    $field_mapping_types = []
+  ) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -343,6 +356,7 @@ class ESInstance {
    */
   public function deleteIndex($index) {
     $params = ['index' => $index];
+
     return $this->client->indices()->delete($params);
   }
 
@@ -568,6 +582,7 @@ class ESInstance {
    */
   public function getIndexSettings($index) {
     $params = ['index' => $index];
+
     return $this->client->indices()->getSettings($params);
   }
 
@@ -580,6 +595,7 @@ class ESInstance {
    */
   public function getIndexMappings($index) {
     $params = ['index' => $index];
+
     return $this->client->indices()->getMapping($params);
   }
 
