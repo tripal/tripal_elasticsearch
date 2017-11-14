@@ -95,11 +95,13 @@ function tripal_elasticsearch_install() {
  */
 function tripal_elasticsearch_update_7200() {
 }
+
 /**
  * updates
  */
 function tripal_elasticsearch_update_7201() {
 }
+
 /**
  * updates
  */
@@ -256,5 +258,24 @@ function tripal_elasticsearch_update_7208() {
       'not null' => FALSE,
     ];
     db_add_field('tripal_elasticsearch_indices', 'url', $spec);
+  }
+}
+
+/**
+ * Add tripal elasticsearch servers table.
+ */
+function tripal_elasticsearch_update_7209() {
+  if (!db_table_exists('tripal_elasticsearch_servers')) {
+    $spec = [
+      'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
+      'fields' => [
+        'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+        'url' => ['type' => 'varchar', 'length' => '255'],
+        'label' => ['type' => 'varchar', 'length' => '255'],
+        'description' => ['type' => 'text'],
+      ],
+      'primary key' => ['id'],
+    ];
+    db_create_table('tripal_elasticsearch_servers', $spec);
   }
 }
