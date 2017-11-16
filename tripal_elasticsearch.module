@@ -442,6 +442,7 @@ function tripal_elasticsearch_block_view($delta = '') {
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
       break;
     case 'elasticsearch_gene_search_block':
+      dpm(tripal_load_entity('TripalEntity', [343]));
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form', FALSE);
       break;
@@ -519,7 +520,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
 
     $per_page = 10;
     $results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
-                  ->paginate($per_page);
+      ->paginate($per_page);
   } catch (\Exception $e) {
     return 'Searching is not available. Please try later.';
   }
@@ -745,7 +746,7 @@ function tripal_elasticsearch_paginate($per_page) {
   try {
     $es = new ESInstance();
     return $es->setTableSearchParams($index_name, $index_type, $query)
-              ->paginate($per_page);
+      ->paginate($per_page);
   } catch (\Exception $e) {
     return [];
   }
@@ -790,7 +791,7 @@ function tripal_elasticsearch_table_search_download() {
   try {
     $es = new ESInstance();
     $count = $es->setTableSearchParams($index_name, $index_type, $query)
-                ->count();
+      ->count();
     $window_range = range(1, ceil($count / 1000));
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR', $exception->getMessage());
@@ -801,7 +802,7 @@ function tripal_elasticsearch_table_search_download() {
     $offset = [1000 * ($window - 1), 1000];
 
     $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
-                 ->search();
+      ->search();
 
     foreach ($result as $row) {
       $line = implode(',', $row) . "\n";
