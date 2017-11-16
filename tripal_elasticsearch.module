@@ -515,6 +515,9 @@ function tripal_elasticsearch_block_view($delta = '') {
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
       break;
     case 'elasticsearch_gene_search_block':
+      $all = tripal_load_entity('TripalEntity', [160], false);
+      dpm($all);
+
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form', FALSE);
       break;

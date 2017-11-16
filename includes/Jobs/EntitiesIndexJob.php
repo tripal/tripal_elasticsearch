@@ -54,10 +54,14 @@ class EntitiesIndexJob extends ESJob {
   public function handle() {
     $es = new ESInstance();
     $records = $this->get();
-    $records = $this->loadContent($records);
 
-    // TODO: use tripal_get_field_types to get fields and check if
-    // TODO: the index() property exists to use it
+    try {
+      $records = $this->loadContent($records);
+    } catch (Exception $exception) {
+      watchdog(WATCHDOG_ERROR, $exception->getMessage());
+      return;
+    }
+
     if ($this->total > 1) {
       $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
     }
@@ -76,6 +80,9 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
+    // TODO: use tripal_get_field_types to get fields and check if
+    // TODO: the index() property exists to use it
+
     global $base_url;
     $url = variable_get('es_base_url', $base_url);
     $all = [];
