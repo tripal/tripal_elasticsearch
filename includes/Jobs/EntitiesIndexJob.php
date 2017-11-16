@@ -124,6 +124,7 @@ class EntitiesIndexJob extends ESJob {
       }
 
       if (empty($content)) {
+        watchdog('tripal_elasticsearch', $entity->title . ' has no content', [$entity], WATCHDOG_WARNING);
         continue;
       }
 
