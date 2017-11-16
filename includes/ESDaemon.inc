@@ -33,6 +33,11 @@ class ESDaemon extends DrushDaemon {
    */
   protected function runQueue($queue_name) {
     $name = 'queue_' . $queue_name;
+    $thread = intval(substr($name, -1));
+    if (!($thread > 0)) {
+      $thread = 1;
+    }
+
     // We use drush_invoke_process() to fork the daemon safely to run
     // multiple jobs concurrently. We can't use the PHP-daemon built
     // in functionality such as workers & tasks b/c they copy the
@@ -42,8 +47,8 @@ class ESDaemon extends DrushDaemon {
       'cron-run',                 // Run the cron
       [$name],                    // Arguments
       [
-        'options' => 'thread=' . (rand() % 10 + 1),
-      ],                         // No Options
+        'options' => 'thread=' . $thread,
+      ],
       ['fork' => FALSE]            // This tells drush to spawn a new process.
     );
   }

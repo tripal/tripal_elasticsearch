@@ -43,7 +43,7 @@ class ESQueue {
    */
   public function __construct() {
     // Generate 10 default queues
-    for ($i = 1; $i <= 10; $i++) {
+    for ($i = 1; $i <= 5; $i++) {
       $this->queues["elasticsearch_queue_{$i}"] = 0;
     }
   }

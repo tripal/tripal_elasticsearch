@@ -286,9 +286,9 @@ function tripal_elasticsearch_daemon_api_info() {
  * Implements hook_cron_queue_info().
  */
 function tripal_elasticsearch_cron_queue_info() {
-  // Define N = 10 cron queues
+  // Define N = 5 cron queues
   $queues = [];
-  $queue_number = 10;
+  $queue_number = 5;
 
   for ($n = 1; $n <= $queue_number; $n++) {
     $queues['elasticsearch_queue_' . $n] = [
@@ -304,79 +304,6 @@ function tripal_elasticsearch_cron_queue_info() {
   ];
 
   return $queues;
-}
-
-/**
- * Define tripal_elasticsearch_cron_queue_worker_callback function
- *
- * @return void
- */
-function tripal_elasticsearch_cron_queue_worker_callback($item) {
-  $index_name = $item->index_name;
-  $index_type = $item->index_type;
-  $sql = $item->sql;
-  $base_url = variable_get('website_base_url');
-  $result = db_query($sql)->fetchAll();
-
-  // Init ES
-  try {
-    $es = new ESInstance();
-  } catch (Exception $exception) {
-    watchdog('tripal_elasticsearch', 'Elasticsearch could not be instantiated');
-    return;
-  }
-
-  if ($item->type == 'entities') {
-    foreach ($result as $record) {
-      $entity_id = $record->entity_id;
-      $entity_title = $record->title;
-      $bundle_label = $record->bundle_label;
-
-      $body = [
-        'entity_id' => $entity_id,
-        'title' => $entity_title,
-        'bundle_label' => $bundle_label,
-        'content' => tripal_elasticsearch_get_page_content_by_id($entity_id, $base_url, $entity_title, FALSE),
-      ];
-
-      try {
-        $es->createEntry($index_name, $index_type, $entity_id, $body);
-      } catch (\Exception $e) {
-        watchdog('tripal_elasticsearch', $e->getMessage(), $severity = WATCHDOG_WARNING);
-      }
-    }
-  }
-  elseif ($item->type == 'website') {
-    // Index website.
-    foreach ($result as $record) {
-      $nid = $record->nid;
-      $node_title = $record->title;
-      $node_type = $record->type;
-
-      $body = [
-        'nid' => $nid,
-        'title' => $node_title,
-        'type' => $node_type,
-        'content' => tripal_elasticsearch_get_page_content_by_id($nid, variable_get('website_base_url'), $node_title, TRUE),
-      ];
-
-      try {
-        $es->createEntry($index_name, $index_type, $nid, $body);
-      } catch (\Exception $e) {
-        watchdog('tripal_elasticsearch', $e->getMessage(), WATCHDOG_WARNING);
-      }
-    }
-  }
-  else {
-    // Index table.
-    foreach ($result as $record) {
-      try {
-        $es->createEntry($index_name, $index_type, FALSE, $record);
-      } catch (\Exception $e) {
-        watchdog('tripal_elasticsearch', $e->getMessage(), WATCHDOG_WARNING);
-      }
-    }
-  }
 }
 
 /**
@@ -515,9 +442,6 @@ function tripal_elasticsearch_block_view($delta = '') {
       $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
       break;
     case 'elasticsearch_gene_search_block':
-      $all = tripal_load_entity('TripalEntity', [160], false);
-      dpm($all);
-
       $block['subject'] = '';
       $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form', FALSE);
       break;
@@ -895,10 +819,10 @@ function tripal_elasticsearch_auto_discover_classes() {
   $path = drupal_get_path('module', 'tripal_elasticsearch');
 
   foreach (glob("{$path}/includes/Elasticsearch/*.php", GLOB_NOSORT) as $file) {
-    require $file;
+    require_once $file;
   }
 
   foreach (glob("{$path}/includes/Jobs/*.php", GLOB_NOSORT) as $file) {
-    require $file;
+    require_once $file;
   }
 }

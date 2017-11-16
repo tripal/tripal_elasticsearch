@@ -347,7 +347,7 @@ function tripal_elasticsearch_indices_list_page() {
   $tables = [];
   foreach ($table_indices as $index) {
     $tables[$index->index_name]["table"] = $index->table_name;
-    $tables[$index->index_name]["exposed"] = $index->exposed;
+    $tables[$index->index_name]["exposed"] = (bool) $index->exposed;
   }
 
   $rows = [];
@@ -396,10 +396,7 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm(
-  $form, &$form_state, $index_name
-) {
-
+function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
   $form = [];
   $exposed = FALSE;
   $url = NULL;
@@ -490,8 +487,8 @@ function tripal_elasticsearch_index_edit_confirm(
     }
   }
 
-  //Snapshot the settings that require indexing so we can figure out if we need to re-index
-  //need to build it the same way the options are built so they match
+  // Snapshot the settings that require indexing so we can figure out if we need
+  // to re-index need to build it the same way the options are built so they match
 
   $previous_token_filters = get_token_filter_options();
   $previous_token_filters = array_map(function ($value) {
@@ -505,6 +502,7 @@ function tripal_elasticsearch_index_edit_confirm(
     'tokenizer' => $index_settings["tokenizer"],//tokenizer is just a string
     'token_filters' => $previous_token_filters,
   ];
+
   //TODO: DEAL WITH FIELDS
   //store modified values in array so we can check against them upon submission
   $form['previous_values'] = [
@@ -517,8 +515,7 @@ function tripal_elasticsearch_index_edit_confirm(
 
   $form['instructions'] = [
     '#type' => 'markup',
-    '#markup' => '<h1>Edit Index: ' . $index_name . '</h1>
-<p>This form will allow you to edit the tokenizer settings and field settings for the index <b>' . $index_name . '.</b>  Please note that changing settings will automatically rebuild the index.</p>',
+    '#markup' => '<h1>Edit Index: ' . $index_name . '</h1><p>This form will allow you to edit the tokenizer settings and field settings for the index <b>' . $index_name . '.</b>  Please note that changing settings will automatically rebuild the index.</p>',
   ];
 
   // Elasticsearch index settings
@@ -773,7 +770,7 @@ function tripal_elasticsearch_create_index(&$values) {
     }
   }
 
-  //insert index record into database for all types.
+  // Insert index record into database for all types.
   $insert = [
     ':index_name' => $index_name,
     ':table_name' => $index_table,
@@ -787,7 +784,7 @@ function tripal_elasticsearch_create_index(&$values) {
   try {
     $es = new ESInstance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
-       ->createIndex();
+      ->createIndex();
   } catch (Exception $exception) {
     form_set_error($exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -821,7 +818,8 @@ function tripal_elasticsearch_create_index(&$values) {
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
-/**Deletes an index from elasticsearch and from the db
+/**
+ * Deletes an index from elasticsearch and from the db
  *
  * @param $index
  */
@@ -839,17 +837,12 @@ function tripal_elasticsearch_delete_index($index) {
   $result = db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name", [':index_name' => $index]);
 
   if (!$result) {
-    drupal_set_message("$index could not be deleted from the database.", 'error');
-    return;
-  }
-  //now delete the table info
-  $result = db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name", [':index_name' => $index]);
-
-  if (!$result) {
-    drupal_set_message("$index could not be deleted from the database.", 'error');
+    // It's not in the DB so there is nothing to delete here.
     return;
   }
 
+  // Now delete the table info
+  db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name", [':index_name' => $index]);
   // Delete any progress indicator
   db_query('DELETE FROM {tripal_elasticsearch_queues} WHERE index_name=:index_name', [':index_name' => $index]);
 }
