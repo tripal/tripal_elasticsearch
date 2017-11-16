@@ -58,7 +58,7 @@ class EntitiesIndexJob extends ESJob {
     try {
       $records = $this->loadContent($records);
     } catch (Exception $exception) {
-      watchdog(WATCHDOG_ERROR, $exception->getMessage());
+      watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
       return;
     }
 
@@ -119,6 +119,9 @@ class EntitiesIndexJob extends ESJob {
           }
         }
       }
+      else {
+        watchdog('tripal_elasticsearch', $entity->title . ' Can\'t be accessed by anonymous users.', [], WATCHDOG_WARNING);
+      }
 
       if (empty($content)) {
         continue;
@@ -158,7 +161,7 @@ class EntitiesIndexJob extends ESJob {
    */
   protected function flatten($array, &$items) {
     if (is_scalar($array)) {
-      $value = trim(strip_tags($array));
+      $value = stripslashes(trim(strip_tags($array)));
       if (!empty($value)) {
         $items[] = $value;
       }
