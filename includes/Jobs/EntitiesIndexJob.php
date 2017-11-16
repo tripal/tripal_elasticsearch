@@ -92,6 +92,7 @@ class EntitiesIndexJob extends ESJob {
       $this->total++;
 
       if (!isset($entities[$record->entity_id])) {
+        watchdog('tripal_elasticsearch', 'Record was not found ' . $record->entity_id, [$record], WATCHDOG_WARNING);
         continue;
       }
 
