@@ -104,12 +104,14 @@ class EntitiesIndexJob extends ESJob {
             if (isset($entity->{$field}['und'])) {
               foreach ($entity->{$field}['und'] as $elements) {
                 if (!isset($elements['value'])) {
+                  watchdog('tripal_elasticsearch', $entity->title . ' has no content', [$entity], WATCHDOG_WARNING);
                   continue;
                 }
 
                 $value = $this->extractValue($elements['value']);
 
                 if (empty($value)) {
+                  watchdog('tripal_elasticsearch', $entity->title . ' has no content', [$entity], WATCHDOG_WARNING);
                   continue;
                 }
 
