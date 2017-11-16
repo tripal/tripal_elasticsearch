@@ -63,8 +63,12 @@ class EntitiesIndexJob extends ESJob {
     }
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
-      watchdog('tripal_elasticsearch', 'Bulk indexed ' . $this->total . ' with ' . count($records) . ' actually have content', [], WATCHDOG_INFO);
+      try {
+        $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
+        watchdog('tripal_elasticsearch', 'Bulk indexed ' . $this->total . ' with ' . count($records) . ' actually have content', [], WATCHDOG_INFO);
+      } catch (Exception $exception) {
+        watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+      }
     }
     else {
       if ($this->total > 0) {
