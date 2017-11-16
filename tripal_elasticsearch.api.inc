@@ -240,7 +240,7 @@ function get_website_search_results_category_list($keyword) {
   foreach ($types as $node_type) {
     try {
       $count = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name))
-                  ->count();
+        ->count();
       if ($count > 0) {
         $search_website_count_by_category[$node_type] = $count;
       }
@@ -318,6 +318,13 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
       if ($base_url) {
         $row = '<h3><a href="' . $base_url . '/bio_data/' . $item->entity_id . '">' . $item->title . '</a></h3>';
       }
+    }
+
+    if (property_exists($item, 'bundle_label')) {
+      $row .= '<div>Type: <i>' . $item->bundle_label . '</i></div>';
+    }
+    elseif (property_exists($item, 'type')) {
+      $row .= '<div>Type: <i>' . $item->type . '</i></div>';
     }
 
     if (property_exists($item, 'highlight')) {

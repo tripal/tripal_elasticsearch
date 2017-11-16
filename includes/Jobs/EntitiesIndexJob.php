@@ -80,59 +80,96 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
-    // TODO: use tripal_get_field_types to get fields and check if
-    // TODO: the index() property exists to use it
-
-    global $base_url;
-    $url = variable_get('es_base_url', $base_url);
     $all = [];
     $this->total = 0;
+
+    $ids = array_map(function ($record) {
+      return $record->entity_id;
+    }, $records);
+    $entities = tripal_load_entity('TripalEntity', $ids);
 
     foreach ($records as $record) {
       $this->total++;
 
-      $content = @file_get_contents("{$url}/bio_data/{$record->entity_id}");
+      if (!isset($entities[$record->entity_id])) {
+        continue;
+      }
 
-      if ($content === FALSE) {
+      $entity = $entities[$record->entity_id];
+      $content = [];
+      if (tripal_entity_access('view', $entity)) {
+        $fields = field_info_instances($entity->type, $entity->bundle);
+        foreach ($fields as $field => $value) {
+          if (property_exists($entity, $field)) {
+            if (isset($entity->{$field}['und'])) {
+              foreach ($entity->{$field}['und'] as $elements) {
+                if (!isset($elements['value'])) {
+                  continue;
+                }
+
+                $value = $this->extractValue($elements['value']);
+
+                if (empty($value)) {
+                  continue;
+                }
+
+                $content[] = $value;
+              }
+            }
+          }
+        }
+      }
+
+      if (empty($content)) {
         continue;
       }
 
       $all[] = (object) [
-        'entity_id' => $record->entity_id,
-        'title' => $record->title,
+        'entity_id' => $entity->id,
+        'title' => $entity->title,
         'bundle_label' => $record->bundle_label,
-        'content' => $this->cleanHTML($content),
+        'content' => array_filter($content),
       ];
     }
+
     return $all;
   }
 
   /**
-   * Clean up html content.
+   * Extract the value of each field.
    *
-   * @param $content
+   * @param $element
    *
-   * @return string
+   * @return array
    */
-  protected function cleanHTML($content) {
-    $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . ".*" . preg_quote('</pre>');
-    $page_html = preg_replace("!" . $pattern_1 . "!sU", ' ', $content);
-    // remove query sequences
-    $pattern_2 = preg_quote('<pre>Query') . ".*" . preg_quote('</pre>');
-    $page_html = preg_replace("!" . $pattern_2 . "!sU", ' ', $page_html);
-    // remove blast alignments if tripal_analysis_blast is installed
-    $pattern_3 = preg_quote('<pre class="blast_align">') . ".*" . preg_quote('</pre>');
-    $page_html = preg_replace("!" . $pattern_3 . "!sU", ' ', $page_html);
-    // add one space to html tags to avoid words concatenated after stripping html tags
-    $page_html = str_replace('<', ' <', $page_html);
-    // Remove the head tag and its contents
-    $page_html = preg_replace('/<head\b[^>]*>.*<\/head>/isU', "", $page_html);
-    // remove scripts
-    $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
-    // remove css styles
-    $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
+  protected function extractValue($element) {
+    $items = [];
+    $this->flatten($element, $items);
 
-    return strip_tags($page_html);
+    // Remove repeated elements
+    return array_unique($items);
+  }
+
+  /**
+   * Recursively flattens the field's value.
+   *
+   * @param $array
+   * @param $items
+   */
+  protected function flatten($array, &$items) {
+    if (is_scalar($array)) {
+      $value = trim(strip_tags($array));
+      if (!empty($value)) {
+        $items[] = $value;
+      }
+      return;
+    }
+
+    if (is_array($array)) {
+      foreach ($array as $b) {
+        $this->flatten($b, $items);
+      }
+    }
   }
 
   /**
