@@ -54,6 +54,12 @@ abstract class ESJob {
   /**
    * Get the total count of available records.
    *
+   * Define this method such that it returns all available records
+   * even if it is not going to be handled by this job. This method
+   * is called at the start of bulk indexing job by the dispatcher
+   * to determine the number of available records and set the limit
+   * and offset of each job.
+   *
    * @return int
    */
   public function count() {

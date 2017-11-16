@@ -56,6 +56,8 @@ class EntitiesIndexJob extends ESJob {
     $records = $this->get();
     $records = $this->loadContent($records);
 
+    // TODO: use tripal_get_field_types to get fields and check if
+    // TODO: the index() property exists to use it
     if ($this->total > 1) {
       $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
     }
@@ -82,7 +84,7 @@ class EntitiesIndexJob extends ESJob {
     foreach ($records as $record) {
       $this->total++;
 
-      $content = file_get_contents("{$url}/bio_data/{$record->entity_id}");
+      $content = @file_get_contents("{$url}/bio_data/{$record->entity_id}");
 
       if ($content === FALSE) {
         continue;
@@ -116,9 +118,11 @@ class EntitiesIndexJob extends ESJob {
     $page_html = preg_replace("!" . $pattern_3 . "!sU", ' ', $page_html);
     // add one space to html tags to avoid words concatenated after stripping html tags
     $page_html = str_replace('<', ' <', $page_html);
-    // remove generated jQuery script
+    // Remove the head tag and its contents
+    $page_html = preg_replace('/<head\b[^>]*>.*<\/head>/isU', "", $page_html);
+    // remove scripts
     $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
-    // remove css stuff
+    // remove css styles
     $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
 
     return strip_tags($page_html);
@@ -178,7 +182,7 @@ class EntitiesIndexJob extends ESJob {
   }
 
   /**
-   * Get total number of items in job.
+   * Get total number of items in a job.
    *
    * @return int
    */
@@ -187,7 +191,7 @@ class EntitiesIndexJob extends ESJob {
   }
 
   /**
-   * Count the number of available entity.
+   * Count the total number of available entities.
    * Used for progress reporting by the DispatcherJob.
    *
    * @return int
