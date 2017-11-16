@@ -64,6 +64,7 @@ class EntitiesIndexJob extends ESJob {
 
     if ($this->total > 1) {
       $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
+      watchdog('tripal_elasticsearch', 'Bulk indexed ' . $this->total . ' with ' . count($records) . ' actually have content', [], WATCHDOG_INFO);
     }
     else {
       if ($this->total > 0) {
@@ -133,7 +134,7 @@ class EntitiesIndexJob extends ESJob {
         'entity_id' => $entity->id,
         'title' => $entity->title,
         'bundle_label' => $record->bundle_label,
-        'content' => array_filter($content),
+        'content' => $content,
       ];
     }
 
