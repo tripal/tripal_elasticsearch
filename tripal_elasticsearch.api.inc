@@ -127,63 +127,6 @@ function _remove_special_chars($keyword) {
 }
 
 /**
- * Get node content by node id.
- */
-function get_node_content_by_nid($nid, $base_url, $node_title) {
-  $page_html = file_get_contents($base_url . "/node/" . $nid);
-  // remove raw sequences
-  $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_1 . "!sU", ' ', $page_html);
-  // remove query sequences
-  $pattern_2 = preg_quote('<pre>Query') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_2 . "!sU", ' ', $page_html);
-  // remove blast alignments if tripal_analysis_blast is installed
-  $pattern_3 = preg_quote('<pre class="blast_align">') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_3 . "!sU", ' ', $page_html);
-  // add one space to html tags to avoid words concatenated after stripping html tags
-  $page_html = str_replace('<', ' <', $page_html);
-  // remove generated jQuery script
-  $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
-  // remove css stuff
-  $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
-  // make page title searchable
-  $page_html = $node_title . ' ' . strip_tags($page_html);
-  // merge multiple spaces into one
-  return preg_replace('!\s+!', ' ', $page_html);
-}
-
-/**
- * Get node content by node id.
- */
-function tripal_elasticsearch_get_page_content_by_id($id, $base_url, $title, $is_node = TRUE) {
-  if ($is_node) {
-    $page_html = file_get_contents($base_url . "/node/" . $id);
-  }
-  else {
-    $page_html = file_get_contents($base_url . "/bio_data/" . $id);
-  }
-  // remove raw sequences
-  $pattern_1 = preg_quote('<pre class="tripal_feature-sequence">') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_1 . "!sU", ' ', $page_html);
-  // remove query sequences
-  $pattern_2 = preg_quote('<pre>Query') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_2 . "!sU", ' ', $page_html);
-  // remove blast alignments if tripal_analysis_blast is installed
-  $pattern_3 = preg_quote('<pre class="blast_align">') . ".*" . preg_quote('</pre>');
-  $page_html = preg_replace("!" . $pattern_3 . "!sU", ' ', $page_html);
-  // add one space to html tags to avoid words concatenated after stripping html tags
-  $page_html = str_replace('<', ' <', $page_html);
-  // remove generated jQuery script
-  $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
-  // remove css stuff
-  $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
-  // make page title searchable
-  $page_html = $title . ' ' . strip_tags($page_html);
-  // merge multiple spaces into one
-  return preg_replace('!\s+!', ' ', $page_html);
-}
-
-/**
  * Build search query from field content pairs.
  */
 function build_search_query_from_field_content_pairs(array $field_content_pairs, $query_method = 'query_string') {

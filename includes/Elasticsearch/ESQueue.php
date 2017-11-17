@@ -3,11 +3,11 @@
 class ESQueue {
 
   /**
-   * Name of the counter table.
+   * Name of the queue progress table.
    *
    * @var string
    */
-  const COUNTER_TABLE = 'tripal_elasticsearch_queues';
+  const QUEUE_TABLE = 'tripal_elasticsearch_queues';
 
   /**
    * Available ES queues.
@@ -54,7 +54,7 @@ class ESQueue {
    * @return object
    */
   public static function progress() {
-    $query = 'SELECT type, total, completed, last_run_at, started_at FROM {' . self::COUNTER_TABLE . '}';
+    $query = 'SELECT type, total, completed, last_run_at, started_at FROM {' . self::QUEUE_TABLE . '}';
     $queues = db_query($query)->fetchAll();
 
     $progress = [];
@@ -148,14 +148,14 @@ class ESQueue {
    * @return DatabaseStatementInterface
    */
   public static function initProgress($type, $index_name, $total = 1) {
-    $counter_table = self::COUNTER_TABLE;
+    $counter_table = self::QUEUE_TABLE;
     $query = 'SELECT total, completed FROM {' . $counter_table . '} WHERE index_name=:index_name';
     $queue = db_query($query, [':index_name' => $index_name])->fetchObject();
 
     // If type already exists
     if ($queue) {
       // Reset progress
-      return db_query('UPDATE {' . $counter_table . '} SET type:type, total=:total, last_run_at=:time, completed=:completed, started_at=:started_at  WHERE index_name=:index_name', [
+      return db_query('UPDATE {' . $counter_table . '} SET type:type, total=:total, last_run_at=:time, completed=:completed, started_at=:started_at WHERE index_name=:index_name', [
         ':type' => $type,
         ':index_name' => $index_name,
         ':total' => $total,
@@ -184,12 +184,12 @@ class ESQueue {
    * @return DatabaseStatementInterface|boolean
    */
   public static function updateProgress($index_name, $by = 1) {
-    $counter_table = self::COUNTER_TABLE;
+    $counter_table = self::QUEUE_TABLE;
     $query = 'SELECT type, completed FROM {' . $counter_table . '} WHERE index_name=:index_name';
     $queue = db_query($query, [':index_name' => $index_name])->fetchObject();
 
     if ($queue) {
-      return db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at  WHERE index_name=:index_name', [
+      return db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at WHERE index_name=:index_name', [
         ':index_name' => $index_name,
         ':completed' => $queue->completed + $by,
         ':last_run_at' => time(),

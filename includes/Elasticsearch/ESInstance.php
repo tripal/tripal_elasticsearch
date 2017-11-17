@@ -90,7 +90,7 @@ class ESInstance {
         $queries[1]['query_string'] = [
           "default_field" => "type",
           "query" => $node_type,
-          "default_operator" => "OR",
+          "default_operator" => "AND",
         ];
       }
 
@@ -98,7 +98,7 @@ class ESInstance {
         $queries[1]['query_string'] = [
           "default_field" => "bundle_label",
           "query" => $node_type,
-          "default_operator" => "OR",
+          "default_operator" => "AND",
         ];
       }
 
@@ -106,7 +106,7 @@ class ESInstance {
         $queries[1]['query_string'] = [
           "fields" => ["type", "bundle_label"],
           "query" => $node_type, // Gene or mRNA (feature,Gene)
-          "default_operator" => "OR",
+          "default_operator" => "AND",
         ];
       }
     }
