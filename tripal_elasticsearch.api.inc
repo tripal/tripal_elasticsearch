@@ -123,8 +123,7 @@ function tripal_elasticsearch_get_table_list() {
  * Escape special characters for elasticsearch
  */
 function _remove_special_chars($keyword) {
-  //	$keyword = str_replace('"', '\"', $keyword);
-  return $keyword;
+  return stripslashes($keyword);
 }
 
 /**

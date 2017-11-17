@@ -54,21 +54,10 @@ class EntitiesIndexJob extends ESJob {
   public function handle() {
     $es = new ESInstance();
     $records = $this->get();
-
-    try {
-      $records = $this->loadContent($records);
-    } catch (Exception $exception) {
-      watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
-      return;
-    }
+    $records = $this->loadContent($records);
 
     if ($this->total > 1) {
-      try {
-        $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
-        watchdog('tripal_elasticsearch', 'Bulk indexed ' . $this->total . ' with ' . count($records) . ' actually have content', [], WATCHDOG_INFO);
-      } catch (Exception $exception) {
-        watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
-      }
+      $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
     }
     else {
       if ($this->total > 0) {
@@ -97,7 +86,6 @@ class EntitiesIndexJob extends ESJob {
       $this->total++;
 
       if (!isset($entities[$record->entity_id])) {
-        watchdog('tripal_elasticsearch', 'Record was not found ' . $record->entity_id, [$record], WATCHDOG_WARNING);
         continue;
       }
 
@@ -106,31 +94,25 @@ class EntitiesIndexJob extends ESJob {
       if (tripal_entity_access('view', $entity)) {
         $fields = field_info_instances($entity->type, $entity->bundle);
         foreach ($fields as $field => $value) {
-          if (property_exists($entity, $field)) {
-            if (isset($entity->{$field}['und'])) {
-              foreach ($entity->{$field}['und'] as $elements) {
-                if (!isset($elements['value'])) {
-                  continue;
-                }
-
-                $value = $this->extractValue($elements['value']);
-
-                if (empty($value)) {
-                  continue;
-                }
-
-                $content[] = $value;
+          if (property_exists($entity, $field) && isset($entity->{$field}['und'])) {
+            foreach ($entity->{$field}['und'] as $elements) {
+              if (!isset($elements['value'])) {
+                continue;
               }
+
+              $value = $this->extractValue($elements['value']);
+
+              if (empty($value)) {
+                continue;
+              }
+
+              $content[] = $value;
             }
           }
         }
       }
-      else {
-        watchdog('tripal_elasticsearch', $entity->title . ' Can\'t be accessed by anonymous users.', [], WATCHDOG_WARNING);
-      }
 
       if (empty($content)) {
-        watchdog('tripal_elasticsearch', $entity->title . ' has no content', [$entity], WATCHDOG_WARNING);
         continue;
       }
 
@@ -145,68 +127,72 @@ class EntitiesIndexJob extends ESJob {
     return $all;
   }
 
-  /**
-   * Extract the value of each field.
-   *
-   * @param $element
-   *
-   * @return array
-   */
-  protected function extractValue($element) {
-    $items = [];
-    $this->flatten($element, $items);
+/**
+ * Extract the value of each field.
+ *
+ * @param $element
+ *
+ * @return array
+ */
+protected
+function extractValue($element) {
+  $items = [];
+  $this->flatten($element, $items);
 
-    // Remove repeated elements
-    return array_unique($items);
+  // Remove repeated elements
+  return array_unique($items);
+}
+
+/**
+ * Recursively flattens the field's value.
+ *
+ * @param $array
+ * @param $items
+ */
+protected
+function flatten($array, &$items) {
+  if (is_scalar($array)) {
+    $value = stripslashes(trim(strip_tags($array)));
+    if (!empty($value)) {
+      $items[] = $value;
+    }
+    return;
   }
 
-  /**
-   * Recursively flattens the field's value.
-   *
-   * @param $array
-   * @param $items
-   */
-  protected function flatten($array, &$items) {
-    if (is_scalar($array)) {
-      $value = stripslashes(trim(strip_tags($array)));
-      if (!empty($value)) {
-        $items[] = $value;
-      }
-      return;
-    }
-
-    if (is_array($array)) {
-      foreach ($array as $b) {
-        $this->flatten($b, $items);
-      }
+  if (is_array($array)) {
+    foreach ($array as $b) {
+      $this->flatten($b, $items);
     }
   }
+}
 
-  /**
-   * Get records to index.
-   *
-   * @return mixed
-   * @throws \Exception
-   */
-  protected function get() {
-    if ($this->id !== NULL) {
-      return $this->getSingleEntity();
-    }
-
-    if ($this->limit === NULL || $this->offset === NULL) {
-      throw new Exception('EntitiesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.');
-    }
-
-    return $this->getMultipleEntities();
+/**
+ * Get records to index.
+ *
+ * @return mixed
+ * @throws \Exception
+ */
+protected
+function get() {
+  if ($this->id !== NULL) {
+    return $this->getSingleEntity();
   }
 
-  /**
-   * Process multiple entities from the DB.
-   *
-   * @return array
-   */
-  protected function getMultipleEntities() {
-    $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
+  if ($this->limit === NULL || $this->offset === NULL) {
+    throw new Exception('EntitiesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.');
+  }
+
+  return $this->getMultipleEntities();
+}
+
+/**
+ * Process multiple entities from the DB.
+ *
+ * @return array
+ */
+protected
+function getMultipleEntities() {
+  $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
               WHERE status=1
@@ -214,43 +200,46 @@ class EntitiesIndexJob extends ESJob {
               OFFSET :offset
               LIMIT :limit';
 
-    return db_query($query, [
-      ':limit' => $this->limit,
-      ':offset' => $this->offset,
-    ])->fetchAll();
-  }
+  return db_query($query, [
+    ':limit' => $this->limit,
+    ':offset' => $this->offset,
+  ])->fetchAll();
+}
 
-  /**
-   * Get a single entity record from the DB.
-   *
-   * @return array
-   */
-  protected function getSingleEntity() {
-    $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
+/**
+ * Get a single entity record from the DB.
+ *
+ * @return array
+ */
+protected
+function getSingleEntity() {
+  $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
               WHERE status=1 AND tripal_entity.id = :id
               ORDER BY  tripal_entity.id DESC';
 
-    return db_query($query, [':id' => $this->id])->fetchAll();
-  }
+  return db_query($query, [':id' => $this->id])->fetchAll();
+}
 
-  /**
-   * Get total number of items in a job.
-   *
-   * @return int
-   */
-  public function total() {
-    return $this->total;
-  }
+/**
+ * Get total number of items in a job.
+ *
+ * @return int
+ */
+public
+function total() {
+  return $this->total;
+}
 
-  /**
-   * Count the total number of available entities.
-   * Used for progress reporting by the DispatcherJob.
-   *
-   * @return int
-   */
-  public function count() {
-    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1')->fetchField();
-  }
+/**
+ * Count the total number of available entities.
+ * Used for progress reporting by the DispatcherJob.
+ *
+ * @return int
+ */
+public
+function count() {
+  return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1')->fetchField();
+}
 }

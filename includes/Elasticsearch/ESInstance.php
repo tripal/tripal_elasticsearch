@@ -72,19 +72,13 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setWebsiteSearchParams(
-    $search_terms,
-    $node_type = '',
-    $index = 'website',
-    $index_type = '',
-    $offset = []
-  ) {
+  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = []) {
     $queries = [];
 
     $queries[] = [
       "query_string" => [
         "default_field" => "content",
-        "query" => $search_terms,
+        "query" => stripslashes($search_terms),
         "default_operator" => "AND",
       ],
     ];
@@ -221,14 +215,7 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams(
-    $index_name,
-    $shards = 5,
-    $replicas = 0,
-    $tokenizer = 'standard',
-    $token_filters = [],
-    $field_mapping_types = []
-  ) {
+  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
     $analysis = [
       'analyzer' => [
         $index_name => [
