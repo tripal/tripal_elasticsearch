@@ -37,7 +37,7 @@ function drush_tripal_elasticsearch_generate_fields_cache() {
     tripal_load_entity('TripalEntity', $ids);
 
     $progress = $offset === 0 ? '0%' : (($offset / $total) * 100) . '%';
-    $elapsed = $time - time();
+    $elapsed = time() - $time;
     $unit = 'seconds';
     if ($elapsed > 60) {
       $elapsed /= 60;
