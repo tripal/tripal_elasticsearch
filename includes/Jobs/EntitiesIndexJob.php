@@ -35,7 +35,7 @@ class EntitiesIndexJob extends ESJob {
    *
    * @var int
    */
-  public $chunk = 100;
+  public $chunk = 10;
 
   /**
    * Constructor.
