@@ -26,6 +26,7 @@ function drush_tripal_elasticsearch_generate_fields_cache() {
   error_reporting(0);
   print "Generating fields cache\n";
   $offset = 0;
+  $time = time();
   $total = db_query('select count(id) from tripal_entity')->fetchField();
   while ($records = db_query('select id from tripal_entity order by id asc offset :offset limit 50', [':offset' => $offset])->fetchAll()) {
     $ids = [];
@@ -36,7 +37,24 @@ function drush_tripal_elasticsearch_generate_fields_cache() {
     tripal_load_entity('TripalEntity', $ids);
 
     $progress = $offset === 0 ? '0%' : (($offset / $total) * 100) . '%';
-    print $progress . "\n";
+    $elapsed = $time - time();
+    $unit = 'seconds';
+    if ($elapsed > 60) {
+      $elapsed /= 60;
+      $unit = 'minutes';
+
+      if ($elapsed > 60) {
+        $elapsed /= 60;
+        $unit = 'hours';
+
+        if ($elapsed > 24) {
+          $elapsed /= 24;
+          $unit = 'days';
+        }
+      }
+    }
+
+    print $progress . " Time elapsed: $elapsed $unit\n";
     $offset += 50;
   }
 
