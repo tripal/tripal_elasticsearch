@@ -127,72 +127,68 @@ class EntitiesIndexJob extends ESJob {
     return $all;
   }
 
-/**
- * Extract the value of each field.
- *
- * @param $element
- *
- * @return array
- */
-protected
-function extractValue($element) {
-  $items = [];
-  $this->flatten($element, $items);
+  /**
+   * Extract the value of each field.
+   *
+   * @param $element
+   *
+   * @return array
+   */
+  protected function extractValue($element) {
+    $items = [];
+    $this->flatten($element, $items);
 
-  // Remove repeated elements
-  return array_unique($items);
-}
+    // Remove repeated elements
+    return array_unique($items);
+  }
 
-/**
- * Recursively flattens the field's value.
- *
- * @param $array
- * @param $items
- */
-protected
-function flatten($array, &$items) {
-  if (is_scalar($array)) {
-    $value = stripslashes(trim(strip_tags($array)));
-    if (!empty($value)) {
-      $items[] = $value;
+  /**
+   * Recursively flattens the field's value.
+   *
+   * @param $array
+   * @param $items
+   */
+  protected function flatten($array, &$items) {
+    if (is_scalar($array)) {
+      $value = stripslashes(trim(strip_tags($array)));
+      if (!empty($value)) {
+        $items[] = $value;
+      }
+      return;
     }
-    return;
-  }
 
-  if (is_array($array)) {
-    foreach ($array as $b) {
-      $this->flatten($b, $items);
+    if (is_array($array)) {
+      foreach ($array as $b) {
+        $this->flatten($b, $items);
+      }
     }
   }
-}
 
-/**
- * Get records to index.
- *
- * @return mixed
- * @throws \Exception
- */
-protected
-function get() {
-  if ($this->id !== NULL) {
-    return $this->getSingleEntity();
+  /**
+   * Get records to index.
+   *
+   * @return mixed
+   * @throws \Exception
+   */
+  protected function get() {
+    if ($this->id !== NULL) {
+      return $this->getSingleEntity();
+    }
+
+    if ($this->limit === NULL || $this->offset === NULL) {
+      throw new Exception('EntitiesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.');
+    }
+
+    return $this->getMultipleEntities();
   }
 
-  if ($this->limit === NULL || $this->offset === NULL) {
-    throw new Exception('EntitiesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.');
-  }
-
-  return $this->getMultipleEntities();
-}
-
-/**
- * Process multiple entities from the DB.
- *
- * @return array
- */
-protected
-function getMultipleEntities() {
-  $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
+  /**
+   * Process multiple entities from the DB.
+   *
+   * @return array
+   */
+  protected function getMultipleEntities() {
+    $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
               WHERE status=1
@@ -200,46 +196,43 @@ function getMultipleEntities() {
               OFFSET :offset
               LIMIT :limit';
 
-  return db_query($query, [
-    ':limit' => $this->limit,
-    ':offset' => $this->offset,
-  ])->fetchAll();
-}
+    return db_query($query, [
+      ':limit' => $this->limit,
+      ':offset' => $this->offset,
+    ])->fetchAll();
+  }
 
-/**
- * Get a single entity record from the DB.
- *
- * @return array
- */
-protected
-function getSingleEntity() {
-  $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
+  /**
+   * Get a single entity record from the DB.
+   *
+   * @return array
+   */
+  protected function getSingleEntity() {
+    $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
               WHERE status=1 AND tripal_entity.id = :id
               ORDER BY  tripal_entity.id DESC';
 
-  return db_query($query, [':id' => $this->id])->fetchAll();
-}
+    return db_query($query, [':id' => $this->id])->fetchAll();
+  }
 
-/**
- * Get total number of items in a job.
- *
- * @return int
- */
-public
-function total() {
-  return $this->total;
-}
+  /**
+   * Get total number of items in a job.
+   *
+   * @return int
+   */
+  public function total() {
+    return $this->total;
+  }
 
-/**
- * Count the total number of available entities.
- * Used for progress reporting by the DispatcherJob.
- *
- * @return int
- */
-public
-function count() {
-  return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1')->fetchField();
-}
+  /**
+   * Count the total number of available entities.
+   * Used for progress reporting by the DispatcherJob.
+   *
+   * @return int
+   */
+  public function count() {
+    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1')->fetchField();
+  }
 }

@@ -21,7 +21,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
-    return;
+    return $form;
   }
 
   $form['instructions'] = [
