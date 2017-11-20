@@ -36,7 +36,8 @@ function drush_tripal_elasticsearch_generate_fields_cache() {
 
     tripal_load_entity('TripalEntity', $ids);
 
-    $progress = $offset === 0 ? '0%' : (($offset / $total) * 100) . '%';
+    $offset += 10;
+    $progress = (($offset / $total) * 100) . '%';
     $elapsed = time() - $time;
     $unit = 'seconds';
     if ($elapsed > 60) {
@@ -55,7 +56,6 @@ function drush_tripal_elasticsearch_generate_fields_cache() {
     }
 
     print $progress . " Time elapsed: $elapsed $unit\n";
-    $offset += 50;
   }
 
   print "Fields cache for entities has been reset.\n";
