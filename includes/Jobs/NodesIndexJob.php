@@ -74,14 +74,29 @@ class NodesIndexJob extends ESJob {
    * @return array
    */
   protected function loadContent($records) {
-    global $base_url;
-    $url = variable_get('es_base_url', $base_url);
     $all = [];
 
-    foreach ($records as $record) {
-      $content = @file_get_contents("{$url}/node/{$record->nid}");
+    $nids = array_map(function ($record) {
+      return $record->nid;
+    }, $records);
 
-      if ($content === FALSE) {
+    $nodes = node_load_multiple($nids);
+
+    foreach ($records as $record) {
+      if (!isset($nodes[$record->nid])) {
+        continue;
+      }
+      $node = $nodes[$record->nid];
+
+      $modules = module_implements('node_view');
+      foreach ($modules as $module) {
+        module_invoke($module, 'node_view', $node, 'full', NULL);
+      }
+
+      $view = node_view($node, 'full');
+      $content = render($view);
+
+      if (empty($content)) {
         continue;
       }
 
