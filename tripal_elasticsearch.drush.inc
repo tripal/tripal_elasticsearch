@@ -28,7 +28,7 @@ function drush_tripal_elasticsearch_generate_fields_cache() {
   $offset = 0;
   $time = time();
   $total = db_query('select count(id) from tripal_entity')->fetchField();
-  while ($records = db_query('select id from tripal_entity order by id asc offset :offset limit 50', [':offset' => $offset])->fetchAll()) {
+  while ($records = db_query('select id from tripal_entity order by id desc offset :offset limit 10', [':offset' => $offset])->fetchAll()) {
     $ids = [];
     foreach ($records as $record) {
       $ids[] = $record->id;
