@@ -440,16 +440,19 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
         else {
           $table_name = $table_name[0];
         }
+
+        db_query("INSERT INTO tripal_elasticsearch_indices (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')", [
+          ':index_name' => $index_name,
+          ':table_name' => $table_name
+        ]);
+        $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
       } catch (Exception $exception) {
         drupal_set_message($exception->getMessage(), 'error');
         return [];
       }
-      $result = new stdClass();
-      $result->table_name = $index_name;
     }
-    else {
-      $table_name = $result->table_name;
-    }
+
+    $table_name = $result->table_name;
     $form['table_name'] = [
       '#type' => 'value',
       '#value' => $table_name,
