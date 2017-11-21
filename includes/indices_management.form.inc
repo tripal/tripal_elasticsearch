@@ -430,6 +430,11 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
     $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
     if(!$result) {
+      try {
+        $es = new ESInstance();
+        $mappings = $es->getIndexMappings($index_name);
+        dpm($mappings);
+      } catch (Exception $exception) {}
       $result = new stdClass();
       $result->table_name = $index_name;
     }
@@ -455,7 +460,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   ];
 
   // Get existing index settings and mappings.
-  //TODO: what about default tables?
+  // TODO: what about default tables?
   try {
     $es = new ESInstance();
     $index_settings = $es->getIndexSettings($index_name);
@@ -477,7 +482,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
 
   if (!$preset_mappings && $index_type == "table") {
     // there is no dbtable mapping settings yet.  Cron still needs to run!
-    drupal_set_message("The index $index_name has no database mapping.  Please make sure that your CRON job to create the index has finished running.", 'error');
+    drupal_set_message("The index $index_name has no database mapping. Please make sure that your CRON job has finished running.", 'warning');
   }
 
   $index_settings = ["tokenizer" => "standard", "token_filters" => ""];
