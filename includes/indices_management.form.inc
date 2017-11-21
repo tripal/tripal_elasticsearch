@@ -428,7 +428,11 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   else {
     $index_type = "table";
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
-    $result = db_query($sql, [':index_name' => $index_name])->fetch();
+    $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
+    if(!$result) {
+      $result = new stdClass();
+      $result->table_name = $index_name;
+    }
     $table_name = $result->table_name;
     $form['table_name'] = [
       '#type' => 'value',
@@ -437,7 +441,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   }
   // need to query ALL types for exposed setting.
   $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
-  $result = db_query($sql, [':index_name' => $index_name])->fetch();
+  $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
   $exposed = $result ? $result->exposed : 0;
   $url = $result ? $result->url : NULL;
 
@@ -458,7 +462,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     $index_mappings = $es->getIndexMappings($index_name);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
-    return;
+    return [];
   }
 
   $preset_token_settings = $index_settings[$index_name]["settings"]["index"]["analysis"]["analyzer"][$index_name];
@@ -541,16 +545,16 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     '#options' => get_token_filter_options(),
     '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : [],
   ];
-  // if this is website nodes or entities, return here.
+
+  // If this is website nodes or entities, return here.
   $form['exposed'] = [
     '#type' => 'checkbox',
     '#title' => t('Expose Index to Cross-Site Search'),
     '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
     '#default_value' => $exposed == 1 ? TRUE : FALSE,
-
   ];
 
-  // url should be set for exposed genes and data tables only
+  // URL should be set for exposed genes and data tables only
   if ($index_type == "gene_search" || $index_type == "table") {
     $form['url'] = [
       '#type' => 'textfield',
@@ -586,7 +590,6 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#options' => drupal_map_assoc($columns),
-
   ];
 
   foreach ($columns as $field) {
@@ -694,9 +697,9 @@ function tripal_elasticsearch_create_index(&$values) {
     $url = $values['url'];
   }
 
-  // populate settings for website or entities.
+  // Populate settings for website or entities.
   if ($index_type === 'website') {
-    // indexing website: has default index settings.
+    // Indexing website: has default index settings.
     $index_name = 'website';
     $index_table = 'node';
     $tokenizer = 'standard';
