@@ -429,16 +429,27 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     $index_type = "table";
     $sql = "SELECT DISTINCT * FROM {tripal_elasticsearch_indices} WHERE index_name =:index_name";
     $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
-    if(!$result) {
+    if (!$result) {
       try {
         $es = new ESInstance();
         $mappings = $es->getIndexMappings($index_name);
-        dpm($mappings);
-      } catch (Exception $exception) {}
+        $table_name = array_keys($mappings);
+        if (count($table_name) > 1) {
+          $table_name = $table_name[1];
+        }
+        else {
+          $table_name = $table_name[0];
+        }
+      } catch (Exception $exception) {
+        drupal_set_message($exception->getMessage(), 'error');
+        return [];
+      }
       $result = new stdClass();
       $result->table_name = $index_name;
     }
-    $table_name = $result->table_name;
+    else {
+      $table_name = $result->table_name;
+    }
     $form['table_name'] = [
       '#type' => 'value',
       '#value' => $table_name,
