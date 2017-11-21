@@ -49,7 +49,7 @@ class ESDaemon extends DrushDaemon {
       [
         'options' => 'thread=' . $thread,
       ],
-      ['fork' => FALSE]            // This tells drush to spawn a new process.
+      ['fork' => TRUE]            // This tells drush to spawn a new process.
     );
   }
 }
