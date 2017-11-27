@@ -94,7 +94,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   $form['index_settings']['tokenizer'] = [
     '#type' => 'select',
     '#title' => t('Tokenizer'),
-    '#options' => get_tokenizer_options(),
+    '#options' => tripal_elasticsearch_get_tokenizer_options(),
   ];
   $form['index_settings']['token_filters'] = [
     '#type' => 'checkboxes',
@@ -567,7 +567,7 @@ function tripal_elasticsearch_index_edit_confirm(
   $form['index_settings']['tokenizer'] = [
     '#type' => 'select',
     '#title' => t('Tokenizer'),
-    '#options' => get_tokenizer_options(),
+    '#options' => tripal_elasticsearch_get_tokenizer_options(),
     '#default_value' => $index_settings["tokenizer"],
   ];
 
@@ -781,7 +781,7 @@ function tripal_elasticsearch_create_index(&$values) {
   }
   else { //checks and defaults for custom index type
     $index_name = $values['index_name'];
-    $index_table = $values['table_name'];
+    $index_table = isset($values['index_table']) ? $values['index_table'] : NULL;
     $tokenizer = $values['index_settings']['tokenizer'];
     $token_filters = array_filter($values['index_settings']['token_filters']);
     $field_mapping_types = array_filter($values['table_fields']);
