@@ -898,9 +898,10 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
     $content .= '<p>All items have been indexed. 0 Items remaining.</p>';
   }
   else {
+    $etr = tripal_elasticsearch_compute_ETR($data->total, $data->completed, $data->time);
     $content .= theme_progress_bar([
       'percent' => $data->percent,
-      'message' => 'Indexing ' . $data->total . ' items. ' . $data->remaining . ' Items remaining. ' . $data->time . ' seconds elapsed.',
+      'message' => 'Indexing ' . $data->completed . '/' . $data->total . ' items. Estimated time remaining: ' . $etr,
     ]);
   }
 
@@ -912,9 +913,10 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
         $content .= '<p>All items have been indexed. 0 Items remaining</p>';
       }
       else {
+        $etr = tripal_elasticsearch_compute_ETR($progress->total, $progress->completed, $progress->time);
         $content .= theme_progress_bar([
           'percent' => $progress->percent,
-          'message' => $progress->remaining . ' Items remaining. ' . $progress->time . ' seconds passed',
+          'message' => $progress->remaining . ' Items remaining. Estimated time remaining: ' . $etr,
         ]);
       }
     }
@@ -955,4 +957,27 @@ function tripal_elasticsearch_update_index_table(&$values) {
   } catch (Exception $e) {
     drupal_set_message("could not edit index");
   }
+}
+
+function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
+  $percent = ($completed / ($total ?: 1)) * 100;
+  $remaining = ($time * 100) / $percent;
+  $unit = 'seconds';
+
+  if ($remaining > 60) {
+    $unit = 'minutes';
+    $remaining /= 60;
+
+    if ($remaining > 60) {
+      $unit = 'hours';
+      $remaining /= 60;
+
+      if ($remaining > 24) {
+        $unit = 'days';
+        $remaining /= 24;
+      }
+    }
+  }
+
+  return number_format($remaining, 2) . " {$unit}";
 }
