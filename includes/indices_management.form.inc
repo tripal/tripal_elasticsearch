@@ -44,7 +44,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     $index_types['gene_search'] = 'Gene Search';
   }
   if (!in_array('entities', $indices)) {
-    $index_types['entities'] = 'Website Tripal Entities';
+    $index_types['entities'] = 'Tripal Entities';
   }
 
   // Index website or a database table

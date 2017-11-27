@@ -53,7 +53,7 @@ function tripal_elasticsearch_menu() {
   ];
 
   $items[$admin_url_base . '/elasticsearch_connection'] = [
-    'title' => 'Elasticsearch Connection',
+    'title' => 'Connection',
     'access arguments' => ['administer tripal elasticsearch'],
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
@@ -81,7 +81,7 @@ function tripal_elasticsearch_menu() {
   ];
 
   $items[$admin_url_base . '/progress'] = [
-    'title' => 'Progress Tracker',
+    'title' => 'Progress',
     'page callback' => 'tripal_elasticsearch_progress_page',
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
@@ -90,7 +90,7 @@ function tripal_elasticsearch_menu() {
   ];
 
   $items[$admin_url_base . '/progress/all'] = [
-    'title' => 'Progress Tracker',
+    'title' => 'Progress',
     'page callback' => 'tripal_elasticsearch_get_progress',
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
@@ -108,7 +108,7 @@ function tripal_elasticsearch_menu() {
   ];
 
   $items[$admin_url_base . '/indices_management'] = [
-    'title' => 'Indices Management',
+    'title' => 'Indices',
     'page callback' => 'tripal_elasticsearch_indices_list_page',
     //'page arguments' => ['tripal_elasticsearch_indexing_form'],
     'access arguments' => ['administer tripal elasticsearch'],
@@ -164,7 +164,7 @@ function tripal_elasticsearch_menu() {
   ];
 
   $items[$admin_url_base . '/search_form_management'] = [
-    'title' => 'Search Form Management',
+    'title' => 'Search Forms',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['table_search_interface_building_form'],
     'access arguments' => ['administer tripal elasticsearch'],
