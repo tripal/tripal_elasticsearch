@@ -171,9 +171,16 @@ class EntitiesIndexJob extends ESJob{
    * @return array
    */
   protected function getPriorityList($fields) {
-    $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority=:priority', [
-      ':priority' => $this->priority_round,
-    ])->fetchAll();
+    if ($this->priority_round < 2) {
+      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority=:priority', [
+        ':priority' => 1,
+      ])->fetchAll();
+    }
+    else {
+      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority != :priority', [
+        ':priority' => 1,
+      ])->fetchAll();
+    }
 
     $indexed = [];
 
@@ -188,6 +195,15 @@ class EntitiesIndexJob extends ESJob{
     foreach ($fields as $field => $data) {
       $id = $data['field_id'];
       if (isset($indexed[$id])) {
+        if ($indexed[$id] > 0) {
+          $return['names'][] = $field;
+          $return['ids'][] = $id;
+        }
+      }
+      elseif ($this->priority_round === 2) {
+        // Assume the field is new and a priority setting has not yet been
+        // saved for it so automatically consider it low priority and add
+        // it to the list.
         $return['names'][] = $field;
         $return['ids'][] = $id;
       }

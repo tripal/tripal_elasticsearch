@@ -7,7 +7,7 @@ function tripal_elasticsearch_escape($value = '') {
 /**
  * Define several arrays for elasticsearch indexing settings
  */
-function get_character_filter_options() {
+function tripal_elasticsearch_get_character_filter_options() {
   return drupal_map_assoc([
     'html_strip',
     'mapping',
@@ -15,7 +15,7 @@ function get_character_filter_options() {
   ]);
 }
 
-function get_tokenizer_options() {
+function tripal_elasticsearch_get_tokenizer_options() {
   return drupal_map_assoc([
     'standard',
     'letter',
