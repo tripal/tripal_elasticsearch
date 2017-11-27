@@ -204,14 +204,15 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $type = $form_state['values']['index_type'];
   $url = $form_state['values']['url'];
   $exposed = $form_state['values']['exposed'];
-  //TODO: check validity of URL instead of checking if it exists
-  if ($type == "database") {
+  $index_name = $form_state['values']['index_name'];
+
+  // TODO: check validity of URL instead of checking if it exists
+  if ($type === "database") {
     // URLs are required for database and gene_search.  but only if they are exposed!
     if (!$url && $exposed) {
       form_set_error('url', t('Please provide a valid url'));
     }
     // Index name validation.
-    $index_name = $form_state['values']['index_name'];
     if (strlen($index_name) > 28) {
       form_set_error('index_name', t('String length cannot be greater than 28.'));
     }
@@ -221,7 +222,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     }
     // 'website' is reserved for website indexing and search, use a different name
     // as index name for table search.
-    if ($index_name == 'website') {
+    if ($index_name === 'website') {
       form_set_error('index_name', t('"website" is reserved for the website nodes index. Please
 					use a different name.'));
     }
@@ -231,9 +232,17 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
       form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
     }
   }
-  if ($type == "gene_search_index") {
+  elseif ($type === "gene_search_index") {
     if (!$url && $exposed) {
       form_set_error('url', t('Please provide a valid url'));
+    }
+  }
+  else {
+    if ($type === 'entities') {
+      $count = db_query('SELECT COUNT(id) FROM {tripal_elasticsearch_priority}')->fetchField();
+      if (intval($count) === 0) {
+        form_set_error(0, t('Please configure and submit ') . l('the tuning form', 'admin/tripal/extension/tripal_elasticsearch/tuning') . t(' before creating the entities index.'));
+      }
     }
   }
 }
