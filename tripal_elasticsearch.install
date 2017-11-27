@@ -78,6 +78,50 @@ function tripal_elasticsearch_schema() {
     'primary key' => ['id'],
   ];
 
+  $schema['tripal_elasticsearch_queues'] = [
+    'description' => 'Store elasticsearch queue information',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'index_name' => [
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ],
+      'total' => [
+        'type' => 'int',
+        'default' => 0,
+        'not null' => TRUE,
+      ],
+      'completed' => [
+        'type' => 'int',
+        'default' => 0,
+        'not null' => TRUE,
+      ],
+      'last_run_at' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'index_name_index' => ['index_name'],
+    ],
+  ];
+
+  $schema['tripal_elasticsearch_priority'] = [
+    'description' => t('Stores TripalEntity field priority settings.'),
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'field_id' => ['type' => 'int', 'not null' => TRUE],
+      'priority' => ['type' => 'int', 'not null' => TRUE],
+    ],
+    'primary key' => ['id'],
+  ];
+
   return $schema;
 }
 
@@ -88,6 +132,12 @@ function tripal_elasticsearch_install() {
   // This function is here only to tell drupal to load all enabled modules
   // before performing any updates
   // Its content is null on purpose
+}
+
+/**
+ * updates
+ */
+function tripal_elasticsearch_update_7100() {
 }
 
 /**
@@ -277,5 +327,23 @@ function tripal_elasticsearch_update_7209() {
       'primary key' => ['id'],
     ];
     db_create_table('tripal_elasticsearch_servers', $spec);
+  }
+}
+
+/**
+ * Create tripal elasticsearch priority table.
+ */
+function tripal_elasticsearch_update_7210() {
+  if (!db_table_exists('tripal_elasticsearch_priority')) {
+    $spec = [
+      'description' => t('Stores TripalEntity field priority settings.'),
+      'fields' => [
+        'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+        'field_id' => ['type' => 'int'],
+        'priority' => ['type' => 'int'],
+      ],
+      'primary key' => ['id'],
+    ];
+    db_create_table('tripal_elasticsearch_priority', $spec);
   }
 }

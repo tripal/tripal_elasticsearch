@@ -13,12 +13,11 @@
  * @return mixed
  */
 function elasticsearch_connection_form($form, &$form_state) {
+  $instructions = '<h1>Add Elasticsearch Servers</h1>';
+  $instructions .= '<p>This administrative page allows you to add or manage local and remote Elasticsearch server connections.  To configure an Elasticsearch server for your site, please see <a href="https://github.com/tripal/tripal_elasticsearch"> the Readme documentation for this module</a>.</p>';
   $form['instructions'] = [
     '#type' => 'markup',
-    '#markup' => '<h1>Add Elasticsearch Servers</h1>
-<p>This administrative page allows you to add or manage local and remote Elasticsearch server connections.  To configure an Elasticsearch server for your site, please see <a href="https://github.com/tripal/tripal_elasticsearch"> the Readme documentation for this module</a>.</p>
-
-',
+    '#markup' => $instructions,
   ];
 
   $form['server_type'] = [
@@ -48,7 +47,7 @@ function elasticsearch_connection_form($form, &$form_state) {
     '#description' => t('URL and port of an Elasticsearch server. Examples: http://localhost:9200 or http://127.0.0.1:9200'),
     '#default_value' => variable_get('elasticsearch_host'),
     '#attributes' => [
-      'placeholder' => 'http://localhost:9200',
+      'placeholder' => 'Example: http://localhost:9200',
     ],
   ];
 
@@ -67,7 +66,7 @@ function elasticsearch_connection_form($form, &$form_state) {
     '#title' => 'Server URL',
     '#description' => t('URL of a Tripal site that has Tripal Elasticsearch enabled.'),
     '#attributes' => [
-      'placeholder' => 'http://example.com',
+      'placeholder' => 'Example: http://example.com',
     ],
   ];
 
