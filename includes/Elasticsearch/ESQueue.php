@@ -54,7 +54,14 @@ class ESQueue{
    * @return object
    */
   public static function progress() {
-    $query = 'SELECT type, total, completed, last_run_at, started_at FROM {' . self::QUEUE_TABLE . '} ORDER BY type ASC';
+    $query = 'SELECT index_name,
+                    SUM(total) AS total,
+                    SUM(completed) AS completed,
+                    MAX(last_run_at) AS last_run_at,
+                    MIN(started_at) AS started_at
+                    FROM {' . self::QUEUE_TABLE . '}
+                    GROUP BY index_name
+                    ORDER BY index_name ASC';
     $queues = db_query($query)->fetchAll();
 
     $progress = [];
@@ -80,7 +87,7 @@ class ESQueue{
       $total += $queue->total;
       $completed += $queue->completed;
 
-      $progress[$queue->type] = (object) [
+      $progress[$queue->index_name] = (object) [
         'total' => $queue->total,
         'completed' => $queue->completed,
         'remaining' => $queue->total - $queue->completed,

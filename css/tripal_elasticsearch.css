@@ -32,7 +32,9 @@
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
   text-align: center;
-  background-color: #f7f7f7}
+  background-color: #f7f7f7 }
 .elastic-stats-block {
   padding: 10px 0 20px 0;
   font-weight: bold; }
+.elasticsearch-search-input {
+  margin-top: 0 !important; }
