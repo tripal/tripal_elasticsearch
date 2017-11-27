@@ -1,13 +1,13 @@
 <?php
 
-class EntitiesIndexJob extends ESJob {
+class EntitiesIndexJob extends ESJob{
 
   /**
    * Job type to show in progress report.
    *
    * @var string
    */
-  public $type = 'Tripal 3 Entities';
+  public $type;
 
   /**
    * Index name.
@@ -15,6 +15,21 @@ class EntitiesIndexJob extends ESJob {
    * @var string
    */
   public $index = 'entities';
+
+  /**
+   * Specify the field priority round.
+   *
+   * @var int
+   */
+  public $priority_round = 1;
+
+  /**
+   * Tripal Entity bundle name.
+   * E.g, bio_data_1, bio_data_2, etc.
+   *
+   * @var string
+   */
+  public $bundle;
 
   /**
    * Entity id.
@@ -35,16 +50,28 @@ class EntitiesIndexJob extends ESJob {
    *
    * @var int
    */
-  public $chunk = 10;
+  public $chunk = 100;
+
+  /**
+   * Elasticsearch instance.
+   *
+   * @var \ESInstance
+   */
+  protected $es;
 
   /**
    * Constructor.
    *
+   * @param int $bundle_type Which bundle type to process
    * @param int $entity_id Provide a specific entity id to index a single
    *   entity.
+   * @param int $round
    */
-  public function __construct($entity_id = NULL) {
+  public function __construct($bundle, $entity_id = NULL, $round = 1) {
     $this->id = $entity_id;
+    $this->bundle = $bundle;
+    $this->type = 'Tripal 3 Entities: ' . $bundle . '. Priority Round: ' . ($round === 1 ? 'High' : 'Low');
+    $this->priority_round = $round;
   }
 
   /**
@@ -52,17 +79,20 @@ class EntitiesIndexJob extends ESJob {
    * Bulk index all entries if there are more than one.
    */
   public function handle() {
-    $es = new ESInstance();
+    $this->es = new ESInstance();
     $records = $this->get();
     $records = $this->loadContent($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $records, $this->index, 'entity_id');
-    }
-    else {
-      if ($this->total > 0) {
-        $es->createEntry($this->index, $this->index, $records[0]->entity_id, $records[0]);
+      if ($this->priority_round === 1) {
+        $this->es->bulkIndex($this->index, $records, $this->index, 'entity_id');
       }
+      else {
+        $this->es->bulkUpdate($this->index, $records, $this->index, 'entity_id');
+      }
+    }
+    elseif (count($records) > 0) {
+      $this->es->createEntry($this->index, $this->index, $records[0]->entity_id, $records[0]);
     }
   }
 
@@ -77,11 +107,15 @@ class EntitiesIndexJob extends ESJob {
     $all = [];
     $this->total = 0;
 
+    // Load entities and applicable fields
     $ids = array_map(function ($record) {
       return $record->entity_id;
     }, $records);
-    $entities = tripal_load_entity('TripalEntity', $ids);
+    $fields = field_info_instances('TripalEntity', $this->bundle);
 
+    // Load priority list
+    $priority = $this->getPriorityList($fields);
+    $entities = tripal_load_entity('TripalEntity', $ids, FALSE, $priority['ids']);
     foreach ($records as $record) {
       $this->total++;
 
@@ -92,8 +126,7 @@ class EntitiesIndexJob extends ESJob {
       $entity = $entities[$record->entity_id];
       $content = [];
       if (tripal_entity_access('view', $entity)) {
-        $fields = field_info_instances($entity->type, $entity->bundle);
-        foreach ($fields as $field => $value) {
+        foreach ($priority['names'] as $field) {
           if (property_exists($entity, $field) && isset($entity->{$field}['und'])) {
             foreach ($entity->{$field}['und'] as $elements) {
               if (!isset($elements['value'])) {
@@ -116,6 +149,11 @@ class EntitiesIndexJob extends ESJob {
         continue;
       }
 
+      $prev_entity = $this->es->getRecord('entities', 'entities', $entity->id);
+      if ($prev_entity['found']) {
+        $content = array_merge($content, $prev_entity['_source']['content']);
+      }
+
       $all[] = (object) [
         'entity_id' => $entity->id,
         'title' => $entity->title,
@@ -125,6 +163,37 @@ class EntitiesIndexJob extends ESJob {
     }
 
     return $all;
+  }
+
+  /**
+   * Get a list of priority settings.
+   *
+   * @return array
+   */
+  protected function getPriorityList($fields) {
+    $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority=:priority', [
+      ':priority' => $this->priority_round,
+    ])->fetchAll();
+
+    $indexed = [];
+
+    foreach ($results as $result) {
+      $indexed[$result->field_id] = $result->priority;
+    }
+
+    $return = [
+      'ids' => [],
+      'names' => [],
+    ];
+    foreach ($fields as $field => $data) {
+      $id = $data['field_id'];
+      if (isset($indexed[$id])) {
+        $return['names'][] = $field;
+        $return['ids'][] = $id;
+      }
+    }
+
+    return $return;
   }
 
   /**
@@ -191,12 +260,13 @@ class EntitiesIndexJob extends ESJob {
     $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              WHERE status=1
+              WHERE status=1 AND bundle=:bundle
               ORDER BY tripal_entity.id DESC
               OFFSET :offset
               LIMIT :limit';
 
     return db_query($query, [
+      ':bundle' => $this->bundle,
       ':limit' => $this->limit,
       ':offset' => $this->offset,
     ])->fetchAll();
@@ -233,6 +303,45 @@ class EntitiesIndexJob extends ESJob {
    * @return int
    */
   public function count() {
-    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1')->fetchField();
+    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1 AND bundle=:bundle', [':bundle' => $this->bundle])->fetchField();
+  }
+
+  /**
+   *
+   */
+  public static function generateDispatcherJobs($round = 1) {
+    // Foreach bundle type, create a dispatcher job.
+    $bundles = db_query('SELECT name FROM {tripal_bundle}')->fetchAll();
+    foreach ($bundles as $bundle) {
+      $job = new EntitiesIndexJob($bundle->name, NULL, $round);
+      $dispatcher = new DispatcherJob($job);
+      $dispatcher->dispatch();
+    }
+  }
+
+  /**
+   * Tells the ESQueue class whether this job implements
+   * priority queues.
+   *
+   * @return bool
+   */
+  public function hasRounds() {
+    return TRUE;
+  }
+
+  /**
+   * Creates the next priority round.
+   *
+   * @return bool
+   */
+  public function createNextRound() {
+    if ($this->priority_round >= 2) {
+      return FALSE;
+    }
+
+    $job = new EntitiesIndexJob($this->bundle, NULL, $this->priority_round + 1);
+    $dispatcher = new DispatcherJob($job);
+    $dispatcher->dispatch();
+    return TRUE;
   }
 }

@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance {
+class ESInstance{
 
   /**
    * Elasticsearch client.
@@ -72,7 +72,13 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = []) {
+  public function setWebsiteSearchParams(
+    $search_terms,
+    $node_type = '',
+    $index = 'website',
+    $index_type = '',
+    $offset = []
+  ) {
     $queries = [];
 
     $queries[] = [
@@ -89,7 +95,7 @@ class ESInstance {
       if (in_array('website', $indices)) {
         $queries[1]['query_string'] = [
           "default_field" => "type",
-          "query" => '"'.$node_type.'"',
+          "query" => '"' . $node_type . '"',
           "default_operator" => "AND",
         ];
       }
@@ -97,7 +103,7 @@ class ESInstance {
       if (in_array('entities', $indices)) {
         $queries[1]['query_string'] = [
           "default_field" => "bundle_label",
-          "query" => '"'.$node_type.'"',
+          "query" => '"' . $node_type . '"',
           "default_operator" => "AND",
         ];
       }
@@ -105,7 +111,7 @@ class ESInstance {
       if (in_array('entities', $indices) && in_array('website', $indices)) {
         $queries[1]['query_string'] = [
           "fields" => ["type", "bundle_label"],
-          "query" => '"'.$node_type.'"', // Gene or mRNA (feature,Gene)
+          "query" => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
           "default_operator" => "AND",
         ];
       }
@@ -158,7 +164,13 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setTableSearchParams($index, $type, $query, $offset = [], $highlight = FALSE) {
+  public function setTableSearchParams(
+    $index,
+    $type,
+    $query,
+    $offset = [],
+    $highlight = FALSE
+  ) {
     $params = [];
     $params['index'] = $index;
     $params['type'] = $type;
@@ -215,7 +227,14 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
+  public function setIndexParams(
+    $index_name,
+    $shards = 5,
+    $replicas = 0,
+    $tokenizer = 'standard',
+    $token_filters = [],
+    $field_mapping_types = []
+  ) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -394,7 +413,32 @@ class ESInstance {
   /**
    * Index multiple entries at once.
    *
-   * @param string $index index name
+   * @param string $index Index name
+   * @param array $entries Array of entries
+   * @param string $type Index type
+   * @param string $id_key The object key to get the id value
+   *
+   * @return array
+   */
+  public function bulkIndex($index, $entries, $type = NULL, $id_key = NULL) {
+    return $this->bulk('index', $index, $entries, $type, $id_key);
+  }
+
+  /**
+   * @param string $index Index name
+   * @param array $entries Array of entries
+   * @param string $type Index type
+   * @param string $id_key The object key to get the id value
+   *
+   * @return array
+   */
+  public function bulkUpdate($index, $entries, $type = NULL, $id_key = NULL) {
+    return $this->bulk('update', $index, $entries, $type, $id_key);
+  }
+
+  /**
+   * @param string $operation
+   * @param string $index
    * @param array $entries Array of entries of the form
    *              [
    *                [ // Start of entry 1
@@ -407,11 +451,17 @@ class ESInstance {
    *                ]
    *              ]
    * @param string $type
-   * @param string $id_key The object key to get the id value
+   * @param string $id_key
    *
    * @return array
    */
-  public function bulkIndex($index, array $entries, $type = NULL, $id_key = NULL) {
+  public function bulk(
+    $operation,
+    $index,
+    $entries,
+    $type = NULL,
+    $id_key = NULL
+  ) {
     if (count($entries) === 0) {
       return [];
     }
@@ -433,10 +483,17 @@ class ESInstance {
       }
 
       $params['body'][] = [
-        'index' => $request,
+        $operation => $request,
       ];
 
-      $params['body'][] = $entry;
+      switch ($operation) {
+        case 'index':
+          $params['body'][] = $entry;
+          break;
+        case 'update':
+          $params['body'][] = ['doc' => $entry];
+          break;
+      }
     }
 
     return $this->client->bulk($params);
@@ -454,7 +511,14 @@ class ESInstance {
    * @param array $field_mapping_types
    * @param int $queue_count
    */
-  public function populateIndex($type, $index_table, $index_name, $index_type, $field_mapping_types, $queue_count) {
+  public function populateIndex(
+    $type,
+    $index_table,
+    $index_name,
+    $index_type,
+    $field_mapping_types,
+    $queue_count
+  ) {
     // Get row count of selected table.
     $row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
     // Get total number of offsets (offset interval is 1000)
@@ -652,5 +716,25 @@ class ESInstance {
         ],
       ],
     ]);
+  }
+
+  /**
+   * Get a single record.
+   *
+   * @param $index
+   * @param $id
+   *
+   * @return array
+   */
+  public function getRecord($index, $type, $id) {
+    try {
+      return $this->client->get([
+        'index' => $index,
+        'type' => $type,
+        'id' => $id,
+      ]);
+    } catch (Exception $exception) {
+      return ['found' => FALSE];
+    }
   }
 }

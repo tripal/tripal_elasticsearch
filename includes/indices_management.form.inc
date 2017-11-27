@@ -36,7 +36,7 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
     'database' => 'Database Table',
   ];
 
-  //Only one of each index type below is allowed.
+  // Only one of each index type below is allowed.
   if (!in_array('website', $indices)) {
     $index_types['website'] = 'Website Nodes';
   }
@@ -396,7 +396,11 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
+function tripal_elasticsearch_index_edit_confirm(
+  $form,
+  &$form_state,
+  $index_name
+) {
   $form = [];
   $exposed = FALSE;
   $url = NULL;
@@ -443,7 +447,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
 
         db_query("INSERT INTO tripal_elasticsearch_indices (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')", [
           ':index_name' => $index_name,
-          ':table_name' => $table_name
+          ':table_name' => $table_name,
         ]);
         $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
       } catch (Exception $exception) {
@@ -676,7 +680,11 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
+function tripal_elasticsearch_index_delete_confirm(
+  $form,
+  &$form_state,
+  $index_name
+) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
@@ -706,10 +714,6 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  * @param $values
  */
 function tripal_elasticsearch_create_index(&$values) {
-  // Add the base url to the database so the Daemon get access to it
-  global $base_url;
-  variable_set('es_base_url', $base_url);
-
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
   if (isset($values['url'])) {
@@ -818,20 +822,25 @@ function tripal_elasticsearch_create_index(&$values) {
     case 'website':
       $job = new NodesIndexJob();
       break;
-    case 'entities':
-      $job = new EntitiesIndexJob();
-      break;
     case 'gene_search':
       $job = new GeneSearchIndexJob($index_name);
+      break;
+    case 'entities':
       break;
     default:
       $fields = array_keys($field_mapping_types);
       $job = new TableIndexJob($index_name, $index_table, $fields);
   }
-  $dispatcher = new DispatcherJob($job);
-  $dispatcher->dispatch();
 
-  $form_state['rebuild'] = TRUE;
+  // All jobs other than entities can be dispatched directly.
+  // Tripal entities must be dispatched by bundle type.
+  if ($index_type === 'entities') {
+    EntitiesIndexJob::generateDispatcherJobs();
+  }
+  else {
+    $dispatcher = new DispatcherJob($job);
+    $dispatcher->dispatch();
+  }
 
   $base_url = variable_get('website_base_url');
   $cron_url = l($base_url . '/admin/config/system/cron', 'admin/config/system/cron');

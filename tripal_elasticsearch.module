@@ -11,6 +11,7 @@ require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_bo
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/gene_search.form.inc';
 require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.ws.inc';
+require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/tuning.form.inc';
 
 // Auto discover and include jobs and ES classes.
 tripal_elasticsearch_auto_discover_classes();
@@ -97,6 +98,15 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
+  $items[$admin_url_base . '/tuning'] = [
+    'title' => 'Tuning',
+    'description' => t('Tuning'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_elasticsearch_tuning_form'],
+    'access arguments' => ['administer tripal elasticsearch'],
+    'type' => MENU_LOCAL_TASK,
+  ];
+
   $items[$admin_url_base . '/indices_management'] = [
     'title' => 'Indices Management',
     'page callback' => 'tripal_elasticsearch_indices_list_page',
@@ -164,8 +174,38 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
-  // Tripal Elasticsearch API Endpoints
-  // ----------------------------------
+  // USER PATHS
+  //-----------
+
+  // Page to display website search results for all node types.
+  $items['tripal_elasticsearch/search_website'] = [
+    'title' => t('Search results'),
+    'page callback' => 'tripal_elasticsearch_web_search_results_page_callback',
+    'access callback' => TRUE,
+  ];
+
+  $items['tripal_elasticsearch/search_website/%'] = [
+    'title' => t('Search results'),
+    'page callback' => 'tripal_elasticsearch_web_search_results_page_callback',
+    'page arguments' => [2],
+    'access callback' => TRUE,
+  ];
+
+  // Page to display table search result.
+  $items['tripal_elasticsearch/search_table'] = [
+    'title' => '',
+    'page callback' => 'tripal_elasticsearch_table_search_page_callback',
+    'access callback' => user_access('access content'),
+  ];
+
+  $items['tripal_elasticsearch/download/results'] = [
+    'page callback' => 'tripal_elasticsearch_table_search_download',
+    'access callback' => user_access('access content'),
+    'type' => MENU_CALLBACK,
+  ];
+
+  // API Endpoints
+  // -------------
 
   $items['elasticsearch/api/v1/status'] = [
     'title' => t('Status'),
@@ -455,45 +495,12 @@ function tripal_elasticsearch_block_view($delta = '') {
 }
 
 /**
- * Implements hook_menu_alter().
- */
-function tripal_elasticsearch_menu_alter(&$items) {
-  // Page to display website search results for all node types.
-  $items['tripal_elasticsearch/search_website'] = [
-    'title' => t('Search results'),
-    'page callback' => 'tripal_elasticsearch_web_search_results_page_callback',
-    'access callback' => TRUE,
-  ];
-
-  $items['tripal_elasticsearch/search_website/%'] = [
-    'title' => t('Search results'),
-    'page callback' => 'tripal_elasticsearch_web_search_results_page_callback',
-    'page arguments' => [2],
-    'access callback' => TRUE,
-  ];
-
-  // Page to display table search result.
-  $items['tripal_elasticsearch/search_table'] = [
-    'title' => '',
-    'page callback' => 'tripal_elasticsearch_table_search_page_callback',
-    'access callback' => user_access('access content'),
-  ];
-
-  $items['tripal_elasticsearch/download/results'] = [
-    'page callback' => 'tripal_elasticsearch_table_search_download',
-    'access callback' => user_access('access content'),
-    'type' => MENU_CALLBACK,
-  ];
-
-  return $items;
-}
-
-/**
  * tripal_elasticsearch_search_results_category_page_callback
  *
  * @param string $node_type Category name
  */
-function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
+function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
+) {
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
   if (empty($keyword)) {
@@ -548,7 +555,11 @@ function tripal_elasticsearch_table_search_page_callback() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
+function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(
+  &$form,
+  &$form_state,
+  $form_id
+) {
   if (!isset($form_state['values']['op'])) {
     return;
   }
@@ -670,7 +681,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
-  $job = new EntitiesIndexJob($entity->id);
+  $job = new EntitiesIndexJob('any', $entity->id);
   $job->dispatch();
 }
 

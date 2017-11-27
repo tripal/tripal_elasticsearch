@@ -1,6 +1,6 @@
 <?php
 
-class ESQueue {
+class ESQueue{
 
   /**
    * Name of the queue progress table.
@@ -130,7 +130,10 @@ class ESQueue {
   public static function run($job) {
     if ($job instanceof ESJob) {
       $job->handle();
-      static::updateProgress($job->index, $job->total());
+      $remaining = static::updateProgress($job->type, $job->total());
+      if ($remaining === 0 && $job->hasRounds()) {
+        $job->createNextRound();
+      }
       return;
     }
 
@@ -149,8 +152,8 @@ class ESQueue {
    */
   public static function initProgress($type, $index_name, $total = 1) {
     $counter_table = self::QUEUE_TABLE;
-    $query = 'SELECT total, completed FROM {' . $counter_table . '} WHERE index_name=:index_name';
-    $queue = db_query($query, [':index_name' => $index_name])->fetchObject();
+    $query = 'SELECT total, completed FROM {' . $counter_table . '} WHERE type=:type';
+    $queue = db_query($query, [':type' => $type])->fetchObject();
 
     // If type already exists
     if ($queue) {
@@ -183,17 +186,19 @@ class ESQueue {
    *
    * @return DatabaseStatementInterface|boolean
    */
-  public static function updateProgress($index_name, $by = 1) {
+  public static function updateProgress($type, $by = 1) {
     $counter_table = self::QUEUE_TABLE;
-    $query = 'SELECT type, completed FROM {' . $counter_table . '} WHERE index_name=:index_name';
-    $queue = db_query($query, [':index_name' => $index_name])->fetchObject();
+    $query = 'SELECT type, completed, total FROM {' . $counter_table . '} WHERE type=:type';
+    $queue = db_query($query, [':type' => $type])->fetchObject();
 
     if ($queue) {
-      return db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at WHERE index_name=:index_name', [
-        ':index_name' => $index_name,
+      db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at WHERE type=:type', [
+        ':type' => $type,
         ':completed' => $queue->completed + $by,
         ':last_run_at' => time(),
       ]);
+
+      return $queue->total - ($queue->completed + $by);
     }
 
     return FALSE;

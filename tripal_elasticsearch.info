@@ -4,10 +4,9 @@ core = 7.x
 package = Tripal Extensions
 files[] = tripal_elasticsearch.module
 configuration = admin/tripal/extension/tripal_elasticsearch
-
+version=7.x-2.0
 dependencies[] = libraries
 dependencies[] = queue_ui
 dependencies[] = ultimate_cron
-
 
 stylesheets[all][] = css/tripal_elasticsearch.css

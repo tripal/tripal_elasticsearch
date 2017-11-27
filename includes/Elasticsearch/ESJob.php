@@ -1,6 +1,6 @@
 <?php
 
-abstract class ESJob {
+abstract class ESJob{
 
   /**
    * Holds the index name.
@@ -107,5 +107,24 @@ abstract class ESJob {
    */
   public function dispatch($queue_name = NULL) {
     ESQueue::dispatch($this, $queue_name);
+  }
+
+  /**
+   * Tells the ESQueue class whether that this job implements
+   * priority rounds.
+   *
+   * @return bool
+   */
+  public function hasRounds() {
+    return FALSE;
+  }
+
+  /**
+   * Creates and dispatches the next round.
+   *
+   * @return bool TRUE on created or FALSE on done.
+   */
+  public function createNextRound() {
+    return FALSE;
   }
 }
