@@ -60,7 +60,7 @@ class ESQueue{
                     MAX(last_run_at) AS last_run_at,
                     MIN(started_at) AS started_at
                     FROM {' . self::QUEUE_TABLE . '}
-                    GROUP BY index_name
+                    GROUP BY index_name, priority
                     ORDER BY index_name ASC';
     $queues = db_query($query)->fetchAll();
 
@@ -136,11 +136,19 @@ class ESQueue{
    */
   public static function run($job) {
     if ($job instanceof ESJob) {
-      $job->handle();
-      $remaining = static::updateProgress($job->type, $job->total());
+      try {
+        $job->handle();
+        $total = $job->total();
+      } catch (Exception $exception) {
+        watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+        $total = $job->chunk ?: 1;
+      }
+
+      $remaining = static::updateProgress($job->type, $total);
       if ($remaining === 0 && $job->hasRounds()) {
         $job->createNextRound();
       }
+
       return;
     }
 

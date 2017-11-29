@@ -655,7 +655,7 @@ function tripal_elasticsearch_node_insert($node) {
 function tripal_elasticsearch_node_delete($node) {
   try {
     $es = new ESInstance();
-    $es->deleteEntry('website', 'website', $node->id);
+    $es->deleteEntry('website', 'website', $node->nid);
     $message = 'Removed document ' . $node->nid . 'from index "website"';
     watchdog('tripal_elasticsearch', $message);
   } catch (\Exception $e) {
