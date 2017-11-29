@@ -127,4 +127,13 @@ abstract class ESJob{
   public function createNextRound() {
     return FALSE;
   }
+
+  /**
+   * Specifies which round this job is running.
+   *
+   * @return int
+   */
+  public function currentRound() {
+    return 1;
+  }
 }

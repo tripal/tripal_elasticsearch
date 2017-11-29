@@ -135,33 +135,9 @@ function tripal_elasticsearch_install() {
 }
 
 /**
- * updates
- */
-function tripal_elasticsearch_update_7100() {
-}
-
-/**
- * updates
- */
-function tripal_elasticsearch_update_7200() {
-}
-
-/**
- * updates
- */
-function tripal_elasticsearch_update_7201() {
-}
-
-/**
- * updates
- */
-function tripal_elasticsearch_update_7202() {
-}
-
-/**
  * create tripal_elasticsearch_indices table to store indices information.
  */
-function tripal_elasticsearch_update_7203() {
+function tripal_elasticsearch_update_7200() {
 
   if (!db_table_exists('tripal_elasticsearch_indices')) {
     // Create new table
@@ -213,7 +189,7 @@ function tripal_elasticsearch_update_7203() {
  * Add field to tripal_elasticsearch_indices table to indicate whether an index
  * is exposed via elasticsearch or not
  */
-function tripal_elasticsearch_update_7204() {
+function tripal_elasticsearch_update_7201() {
   if (!db_field_exists('tripal_elasticsearch_indices', 'exposed')) {
 
     $spec = [
@@ -230,7 +206,7 @@ function tripal_elasticsearch_update_7204() {
 /**
  * Create the tripal_elasticsearch_queues table to track queue progress.
  */
-function tripal_elasticsearch_update_7205() {
+function tripal_elasticsearch_update_7202() {
   if (!db_table_exists('tripal_elasticsearch_queues')) {
     $tripal_elasticsearch_queues = [
       'description' => 'Store elasticsearch queue information',
@@ -273,7 +249,7 @@ function tripal_elasticsearch_update_7205() {
 /**
  * Add type field to tripal_elasticsearch_queues table.
  */
-function tripal_elasticsearch_update_7206() {
+function tripal_elasticsearch_update_7203() {
   if (!db_field_exists('tripal_elasticsearch_queues', 'type')) {
     $spec = [
       'type' => 'varchar',
@@ -287,7 +263,7 @@ function tripal_elasticsearch_update_7206() {
 /**
  * Add started_at field to tripal_elasticsearch_queues table.
  */
-function tripal_elasticsearch_update_7207() {
+function tripal_elasticsearch_update_7204() {
   if (!db_field_exists('tripal_elasticsearch_queues', 'started_at')) {
     $spec = [
       'type' => 'int',
@@ -300,7 +276,7 @@ function tripal_elasticsearch_update_7207() {
 /**
  * Add url field to tripal_elasticsearch_indices table.
  */
-function tripal_elasticsearch_update_7208() {
+function tripal_elasticsearch_update_7205() {
   if (!db_field_exists('tripal_elasticsearch_indices', 'url')) {
     $spec = [
       'type' => 'varchar',
@@ -314,7 +290,7 @@ function tripal_elasticsearch_update_7208() {
 /**
  * Add tripal elasticsearch servers table.
  */
-function tripal_elasticsearch_update_7209() {
+function tripal_elasticsearch_update_7206() {
   if (!db_table_exists('tripal_elasticsearch_servers')) {
     $spec = [
       'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
@@ -333,7 +309,7 @@ function tripal_elasticsearch_update_7209() {
 /**
  * Create tripal elasticsearch priority table.
  */
-function tripal_elasticsearch_update_7210() {
+function tripal_elasticsearch_update_7207() {
   if (!db_table_exists('tripal_elasticsearch_priority')) {
     $spec = [
       'description' => t('Stores TripalEntity field priority settings.'),
@@ -345,5 +321,19 @@ function tripal_elasticsearch_update_7210() {
       'primary key' => ['id'],
     ];
     db_create_table('tripal_elasticsearch_priority', $spec);
+  }
+}
+
+/**
+ * Add priority field to tripal_elasticsearch_queues table.
+ */
+function tripal_elasticsearch_update_7208() {
+  if (!db_field_exists('tripal_elasticsearch_queues', 'priority')) {
+    $spec = [
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 1,
+    ];
+    db_add_field('tripal_elasticsearch_queues', 'priority', $spec);
   }
 }

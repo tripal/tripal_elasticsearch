@@ -99,7 +99,7 @@ class EntitiesIndexJob extends ESJob{
   /**
    * Load entity content.
    *
-   * @param $records
+   * @param array $records Entities from tripal_entity table.
    *
    * @return array
    */
@@ -171,8 +171,44 @@ class EntitiesIndexJob extends ESJob{
    * @return array
    */
   protected function getPriorityList($fields) {
+    if ($this->id !== NULL) {
+      return $this->getAllFields($fields);
+    }
+
+    return $this->prioritizeFields($fields);
+  }
+
+  /**
+   * Index all fields.
+   *
+   * @param array $fields
+   *
+   * @return array
+   */
+  protected function getAllFields($fields) {
+    $return = [
+      'names' => [],
+      'ids' => [],
+    ];
+
+    foreach ($fields as $field => $data) {
+      $return['names'] = $field;
+      $return['ids'] = $data['field_id'];
+    }
+
+    return $return;
+  }
+
+  /**
+   * Get a list of fields for the current priority round only.
+   *
+   * @param array $fields field_
+   *
+   * @return array
+   */
+  protected function prioritizeFields($fields) {
     if ($this->priority_round < 2) {
-      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority=:priority', [
+      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority = :priority', [
         ':priority' => 1,
       ])->fetchAll();
     }
@@ -192,6 +228,7 @@ class EntitiesIndexJob extends ESJob{
       'ids' => [],
       'names' => [],
     ];
+
     foreach ($fields as $field => $data) {
       $id = $data['field_id'];
       if (isset($indexed[$id])) {
@@ -323,13 +360,15 @@ class EntitiesIndexJob extends ESJob{
   }
 
   /**
+   * A method to quickly create and dispatch indexing jobs.
    *
+   * @param int $round Priority round (1 or 2)
    */
   public static function generateDispatcherJobs($round = 1) {
     // Foreach bundle type, create a dispatcher job.
     $bundles = db_query('SELECT name FROM {tripal_bundle}')->fetchAll();
     foreach ($bundles as $bundle) {
-      $job = new EntitiesIndexJob($bundle->name, NULL, $round);
+      $job = new EntitiesIndexJob($bundle->name, NULL, $round === 1 ? 1 : 2);
       $dispatcher = new DispatcherJob($job);
       $dispatcher->dispatch();
     }
@@ -343,6 +382,15 @@ class EntitiesIndexJob extends ESJob{
    */
   public function hasRounds() {
     return TRUE;
+  }
+
+  /**
+   * Inform progress tracker of current round.
+   *
+   * @return int
+   */
+  public function currentRound() {
+    return $this->priority_round === 1 ? 1 : 2;
   }
 
   /**
