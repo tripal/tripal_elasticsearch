@@ -811,8 +811,13 @@ function tripal_elasticsearch_table_search_download() {
   foreach ($window_range as $window) {
     $offset = [1000 * ($window - 1), 1000];
 
-    $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
-      ->search();
+    try {
+      $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
+        ->search();
+    } catch (Exception $exception) {
+      drupal_set_message($exception->getMessage(), 'error');
+      return;
+    }
 
     foreach ($result as $row) {
       $line = implode(',', $row) . "\n";

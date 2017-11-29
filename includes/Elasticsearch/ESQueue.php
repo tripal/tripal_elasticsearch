@@ -55,6 +55,7 @@ class ESQueue{
    */
   public static function progress() {
     $query = 'SELECT index_name,
+                    priority,
                     SUM(total) AS total,
                     SUM(completed) AS completed,
                     MAX(last_run_at) AS last_run_at,
@@ -86,8 +87,8 @@ class ESQueue{
 
       $total += $queue->total;
       $completed += $queue->completed;
-
-      $progress[$queue->index_name] = (object) [
+      $round_name = ' Round: ' . ($queue->priority === 1 ? 'High' : 'Low');
+      $progress[$queue->index_name . $round_name] = (object) [
         'total' => $queue->total,
         'completed' => $queue->completed,
         'remaining' => $queue->total - $queue->completed,
@@ -165,15 +166,19 @@ class ESQueue{
    *
    * @return DatabaseStatementInterface
    */
-  public static function initProgress($type, $index_name, $total = 1) {
+  public static function initProgress(
+    $type,
+    $index_name,
+    $total = 1,
+    $priority = 1
+  ) {
     $counter_table = self::QUEUE_TABLE;
     $query = 'SELECT total, completed FROM {' . $counter_table . '} WHERE type=:type';
     $queue = db_query($query, [':type' => $type])->fetchObject();
 
-    // If type already exists
+    // If type already exists, reset progress
     if ($queue) {
-      // Reset progress
-      return db_query('UPDATE {' . $counter_table . '} SET type:type, total=:total, last_run_at=:time, completed=:completed, started_at=:started_at WHERE index_name=:index_name', [
+      return db_query('UPDATE {' . $counter_table . '} SET total=:total, last_run_at=:time, completed=:completed, started_at=:started_at WHERE type=:type', [
         ':type' => $type,
         ':index_name' => $index_name,
         ':total' => $total,
@@ -184,12 +189,13 @@ class ESQueue{
     }
 
     // Initialize a new progress report for index name
-    return db_query('INSERT INTO {' . $counter_table . '} (index_name, type, total, completed, last_run_at, started_at) VALUES (:index_name, :type, :total, 0, :last_run_at, :started_at)', [
+    return db_query('INSERT INTO {' . $counter_table . '} (index_name, type, total, completed, last_run_at, started_at, priority) VALUES (:index_name, :type, :total, 0, :last_run_at, :started_at, :priority)', [
       ':type' => $type,
       ':index_name' => $index_name,
       ':total' => $total,
       ':last_run_at' => time(),
       ':started_at' => time(),
+      ':priority' => $priority,
     ]);
   }
 
