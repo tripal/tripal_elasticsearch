@@ -206,7 +206,7 @@ function tripal_elasticsearch_gene_search_index_results() {
   $content .= '<strong>' . $results['total'] . ' results found</strong>';
   $content .= '<strong style="float: right">Page ' . $results['page'] . ' - ' . $results['pages'] . '</strong>';
   $content .= '</div>';
-  $content .= l('Download results in CSV format', tripal_elasticsearch_build_download_url());
+  $content .= '<a href="'.tripal_elasticsearch_build_download_url().'">Download results in CSV format</a>';
   $content .= $formatted;
   $content .= $results['pager'];
 
