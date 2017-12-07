@@ -500,66 +500,6 @@ class ESInstance{
   }
 
   /**
-   * Populate an index with entries.
-   * This methods pulls all the data from the database and create queue jobs
-   * to get populated in the background.
-   *
-   * @param $type
-   * @param string $index_table
-   * @param string $index_name
-   * @param string $index_type
-   * @param array $field_mapping_types
-   * @param int $queue_count
-   */
-  public function populateIndex(
-    $type,
-    $index_table,
-    $index_name,
-    $index_type,
-    $field_mapping_types,
-    $queue_count
-  ) {
-    // Get row count of selected table.
-    $row_count = db_query("SELECT COUNT(*) FROM {$index_table}")->fetchAssoc()['count'];
-    // Get total number of offsets (offset interval is 1000)
-    $k = 1000;
-    $total_offsets = intval($row_count / $k);
-    // Separate table fields with comma
-    $comma_separated_fields = implode(',', array_keys($field_mapping_types));
-    $order_by_field = array_keys($field_mapping_types)[0];
-    foreach (range(0, $total_offsets) as $offset) {
-      $id = $offset % $queue_count + 1;
-      $cron_queue_id = 'elasticsearch_queue_' . $id;
-      $cron_queue = DrupalQueue::get($cron_queue_id);
-      $OFFSET = $k * $offset;
-      $item = new stdClass();
-
-      // Use the first field to sort the table
-      if ($type == 'website') {
-        $sql = "SELECT nid, title, type FROM $index_table WHERE status=1 ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
-      }
-      elseif ($type == 'entities') {
-        $sql = "SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
-              FROM tripal_entity
-              JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
-              WHERE status=1
-              ORDER BY title ASC LIMIT $k OFFSET $OFFSET ";
-      }
-      else {
-        $sql = "SELECT $comma_separated_fields FROM $index_table ORDER BY $order_by_field LIMIT $k OFFSET $OFFSET";
-      }
-
-      $item->index_name = $index_name;
-      $item->index_type = $index_type;
-      $item->type = $type;
-      $item->field_mapping_types = $field_mapping_types;
-      $item->sql = $sql;
-
-      $cron_queue->createItem($item);
-    }
-  }
-
-  /**
    * Paginate search results.
    *
    * @param $per_page
@@ -650,14 +590,14 @@ class ESInstance{
     return $this->client->indices()->getMapping($params);
   }
 
-  /*
-     * Returns results from all indices.
-     *
-     * @param $terms
-     * @param $size
-     *
-     * @return array
-     */
+  /**
+   * Returns results from all indices.
+   *
+   * @param $terms
+   * @param $size
+   *
+   * @return array
+   */
   public function searchWebIndices($terms, $size, $category = NULL) {
     $index_name = [];
 
@@ -683,6 +623,13 @@ class ESInstance{
     ];
   }
 
+  /**
+   * Get index fields.
+   *
+   * @param $index
+   *
+   * @return array
+   */
   public function getIndexFields($index) {
     $mapping = $this->client->indices()->getMapping();
     $fields = isset($mapping[$index]) ? $mapping[$index]['mappings']['_default_']['properties'] : [];

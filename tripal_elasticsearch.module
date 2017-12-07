@@ -204,6 +204,12 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
+  $items['tripal_elasticsearch/gene_search/download'] = [
+    'page callback' => 'tripal_elasticsearch_gene_search_download',
+    'access callback' => user_access('access content'),
+    'type' => MENU_CALLBACK,
+  ];
+
   // API Endpoints
   // -------------
 
@@ -811,8 +817,13 @@ function tripal_elasticsearch_table_search_download() {
   foreach ($window_range as $window) {
     $offset = [1000 * ($window - 1), 1000];
 
-    $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
-      ->search();
+    try {
+      $result = $es->setTableSearchParams($index_name, $index_type, $query, $offset)
+        ->search();
+    } catch (Exception $exception) {
+      drupal_set_message($exception->getMessage(), 'error');
+      return;
+    }
 
     foreach ($result as $row) {
       $line = implode(',', $row) . "\n";
