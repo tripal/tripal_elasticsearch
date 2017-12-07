@@ -970,7 +970,7 @@ function tripal_elasticsearch_update_index_table(&$values) {
 
 function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
   $percent = ($completed / ($total ?: 1)) * 100;
-  $remaining = ($time * 100) / $percent;
+  $remaining = $percent !== 0 ? ($time * 100) / $percent : 0;
   $unit = 'seconds';
 
   if ($remaining > 60) {
