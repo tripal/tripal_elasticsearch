@@ -126,19 +126,24 @@ function tripal_elasticsearch_schema() {
 }
 
 /**
- * Load
+ *  Run updates on install
  */
 function tripal_elasticsearch_install() {
-  // This function is here only to tell drupal to load all enabled modules
-  // before performing any updates
-  // Its content is null on purpose
+  tripal_elasticsearch_update_7200();
+  tripal_elasticsearch_update_7201();
+  tripal_elasticsearch_update_7202();
+  tripal_elasticsearch_update_7203();
+  tripal_elasticsearch_update_7204();
+  tripal_elasticsearch_update_7205();
+  tripal_elasticsearch_update_7206();
+  tripal_elasticsearch_update_7207();
+  tripal_elasticsearch_update_7208();
 }
 
 /**
  * create tripal_elasticsearch_indices table to store indices information.
  */
 function tripal_elasticsearch_update_7200() {
-
   if (!db_table_exists('tripal_elasticsearch_indices')) {
     // Create new table
     $tripal_elasticsearch_indices = [
