@@ -968,9 +968,18 @@ function tripal_elasticsearch_update_index_table(&$values) {
   }
 }
 
+/**
+ * Compute Estimated Time Remaining.
+ *
+ * @param $total
+ * @param $completed
+ * @param $time
+ *
+ * @return string
+ */
 function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
   $percent = ($completed / ($total ?: 1)) * 100;
-  $remaining = $percent !== 0 ? ($time * 100) / $percent : 0;
+  $remaining = ($time * 100) / ($percent ?: 1);
   $unit = 'seconds';
 
   if ($remaining > 60) {
