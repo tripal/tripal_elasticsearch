@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance{
+class ESInstance {
 
   /**
    * Elasticsearch client.

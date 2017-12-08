@@ -1,6 +1,6 @@
 <?php
 
-class EntitiesIndexJob extends ESJob{
+class EntitiesIndexJob extends ESJob {
 
   /**
    * Job type to show in progress report.
@@ -60,6 +60,13 @@ class EntitiesIndexJob extends ESJob{
   protected $es;
 
   /**
+   * Should bulk update.
+   *
+   * @var bool
+   */
+  protected $shouldUpdate = FALSE;
+
+  /**
    * Constructor.
    *
    * @param int $bundle_type Which bundle type to process
@@ -84,11 +91,16 @@ class EntitiesIndexJob extends ESJob{
     $records = $this->loadContent($records);
 
     if ($this->total > 1) {
-      if ($this->priority_round === 1) {
+      if (!$this->shouldUpdate) {
         $this->es->bulkIndex($this->index, $records, $this->index, 'entity_id');
       }
       else {
         $this->es->bulkUpdate($this->index, $records, $this->index, 'entity_id');
+
+        //        foreach ($records as $record) {
+        //            $this->es->deleteEntry($this->index, $this->index, $record->entity_id);
+        //            $this->es->createEntry($this->index, $this->index, $record->entity_id, $record);
+        //        }
       }
     }
     elseif (count($records) > 0) {
@@ -151,7 +163,8 @@ class EntitiesIndexJob extends ESJob{
 
       $prev_entity = $this->es->getRecord('entities', 'entities', $entity->id);
       if ($prev_entity['found']) {
-        $content = array_merge($content, $prev_entity['_source']['content']);
+        $this->shouldUpdate = TRUE;
+        $content = array_merge($prev_entity['_source']['content'], $content);
       }
 
       $all[] = (object) [
@@ -213,9 +226,7 @@ class EntitiesIndexJob extends ESJob{
       ])->fetchAll();
     }
     else {
-      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority != :priority', [
-        ':priority' => 1,
-      ])->fetchAll();
+      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority}')->fetchAll();
     }
 
     $indexed = [];
@@ -231,13 +242,11 @@ class EntitiesIndexJob extends ESJob{
 
     foreach ($fields as $field => $data) {
       $id = $data['field_id'];
-      if (isset($indexed[$id])) {
-        if ($indexed[$id] > 0) {
-          $return['names'][] = $field;
-          $return['ids'][] = $id;
-        }
+      if (isset($indexed[$id]) && $indexed[$id] == $this->priority_round) {
+        $return['names'][] = $field;
+        $return['ids'][] = $id;
       }
-      elseif ($this->priority_round === 2) {
+      elseif (!isset($indexed[$id]) && $this->priority_round > 1) {
         // Assume the field is new and a priority setting has not yet been
         // saved for it so automatically consider it low priority and add
         // it to the list.
@@ -260,8 +269,18 @@ class EntitiesIndexJob extends ESJob{
     $items = [];
     $this->flatten($element, $items);
 
-    // Remove repeated elements
-    return array_unique($items);
+    // Make sure arrays don't get turned into objects when encoding with JSON
+    $total = [];
+    foreach ($items as $item) {
+      if (is_array($item)) {
+        $total[] = array_values($item);
+      }
+      else {
+        $total[] = $item;
+      }
+    }
+
+    return $total;
   }
 
   /**
