@@ -534,6 +534,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
     $results = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name), '')
       ->paginate($per_page);
   } catch (\Exception $e) {
+    tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $e->getMessage());
     return 'Searching is not available. Please try later.';
   }
 
