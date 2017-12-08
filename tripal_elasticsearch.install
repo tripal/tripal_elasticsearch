@@ -126,6 +126,26 @@ function tripal_elasticsearch_schema() {
 }
 
 /**
+ * Uninstall
+ */
+function tripal_elasticsearch_uninstall() {
+  // Get the schema
+  $schema = tripal_elasticsearch_schema();
+
+  // Auto drop anything in the schema
+  foreach ($schema as $table => $fields) {
+    if(db_table_exists($table)) {
+      db_drop_table($table);
+    }
+  }
+
+  // Drop tables that are created in the update functions
+  if(db_table_exists('tripal_elasticsearch_indices')) {
+    db_drop_table('tripal_elasticsearch_indices');
+  }
+}
+
+/**
  *  Run updates on install
  */
 function tripal_elasticsearch_install() {

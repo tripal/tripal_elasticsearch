@@ -62,7 +62,7 @@ class ESQueue{
                     MIN(started_at) AS started_at
                     FROM {' . self::QUEUE_TABLE . '}
                     GROUP BY index_name, priority
-                    ORDER BY index_name ASC';
+                    ORDER BY index_name ASC, priority ASC';
     $queues = db_query($query)->fetchAll();
 
     $progress = [];
@@ -72,9 +72,9 @@ class ESQueue{
     $progress_started_at = time();
 
     foreach ($queues as $queue) {
-      if ($queue->total === $queue->completed) {
-        continue;
-      }
+//      if ($queue->total === $queue->completed) {
+//        continue;
+//      }
 
       $last_run = new DateTime();
       $last_run->setTimestamp($queue->last_run_at);
@@ -87,7 +87,7 @@ class ESQueue{
 
       $total += $queue->total;
       $completed += $queue->completed;
-      $round_name = ' Round: ' . ($queue->priority === 1 ? 'High' : 'Low');
+      $round_name = ' Round: ' . (intval($queue->priority) === 1 ? 'High' : 'Low');
       $progress[$queue->index_name . $round_name] = (object) [
         'total' => $queue->total,
         'completed' => $queue->completed,
@@ -96,6 +96,7 @@ class ESQueue{
         'last_run_at' => $last_run,
         'started_at' => $started_at,
         'time' => $queue->last_run_at - $queue->started_at,
+        'priority' => $queue->priority
       ];
     }
 
@@ -180,7 +181,6 @@ class ESQueue{
     if ($queue) {
       return db_query('UPDATE {' . $counter_table . '} SET total=:total, last_run_at=:time, completed=:completed, started_at=:started_at WHERE type=:type', [
         ':type' => $type,
-        ':index_name' => $index_name,
         ':total' => $total,
         ':completed' => 0,
         ':time' => time(),

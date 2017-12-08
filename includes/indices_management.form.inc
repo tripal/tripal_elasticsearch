@@ -901,6 +901,10 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
 
   $data = ESQueue::progress();
 
+  if(!$callback) {
+    dpm($data);
+  }
+
   $content .= '<h3>Overall Progress</h3>';
 
   if ($data->remaining === 0) {
@@ -954,7 +958,7 @@ function tripal_elasticsearch_update_index_table(&$values) {
   $index_name = $values['index_name'];
   $index_table = $values['table_name'];
   $exposed = $values['exposed'] ? 1 : 0;
-  $url = $values['url'];
+  $url = isset($values['url']) ? $values['url'] : '';
 
   try {
     db_update('tripal_elasticsearch_indices')->fields([
