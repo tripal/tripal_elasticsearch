@@ -901,10 +901,6 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
 
   $data = ESQueue::progress();
 
-  if(!$callback) {
-    dpm($data);
-  }
-
   $content .= '<h3>Overall Progress</h3>';
 
   if ($data->remaining === 0) {
