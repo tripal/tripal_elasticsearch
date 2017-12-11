@@ -145,7 +145,10 @@ class NodesIndexJob extends ESJob {
    */
   protected function get() {
     if ($this->id !== NULL) {
-      $query = 'SELECT nid, title, type FROM {node} WHERE status=1 AND nid=:id';
+      $query = 'SELECT nid, title, node_type.name AS type
+                  FROM {node} 
+                  JOIN {node_type} ON node_type.type = node.type
+                  WHERE status=1 AND nid=:id';
       return db_query($query, [':id' => $this->id])->fetchAll();
     }
 
@@ -153,7 +156,13 @@ class NodesIndexJob extends ESJob {
       throw new Exception('NodesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.');
     }
 
-    $query = 'SELECT nid, title, type FROM {node} WHERE status=1 ORDER BY nid DESC LIMIT :limit OFFSET :offset';
+    $query = 'SELECT nid, title, node_type.name AS type
+                FROM {node}
+                JOIN {node_type} ON node_type.type = node.type
+                WHERE status=1
+                ORDER BY nid DESC
+                LIMIT :limit 
+                OFFSET :offset';
     return db_query($query, [
       ':limit' => $this->limit,
       ':offset' => $this->offset,
