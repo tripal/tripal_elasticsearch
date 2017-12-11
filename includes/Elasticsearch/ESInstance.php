@@ -61,6 +61,14 @@ class ESInstance {
       ->build();
   }
 
+  protected function sanitizeQuery($query) {
+    $query = stripslashes($query);
+    $query = str_replace('\\', ' ', $query);
+    $query = str_replace('+', ' ', $query);
+    $query = str_replace('-', ' ', $query);
+    return str_replace(':', '\\:', $query);
+  }
+
   /**
    * Build a search query for the website and entities indices.
    *
@@ -84,7 +92,7 @@ class ESInstance {
     $queries[] = [
       "query_string" => [
         "default_field" => "content",
-        "query" => stripslashes($search_terms),
+        "query" => $this->sanitizeQuery($search_terms),
         "default_operator" => "AND",
       ],
     ];

@@ -96,11 +96,6 @@ class EntitiesIndexJob extends ESJob {
       }
       else {
         $this->es->bulkUpdate($this->index, $records, $this->index, 'entity_id');
-
-        //        foreach ($records as $record) {
-        //            $this->es->deleteEntry($this->index, $this->index, $record->entity_id);
-        //            $this->es->createEntry($this->index, $this->index, $record->entity_id, $record);
-        //        }
       }
     }
     elseif (count($records) > 0) {
@@ -123,6 +118,7 @@ class EntitiesIndexJob extends ESJob {
     $ids = array_map(function ($record) {
       return $record->entity_id;
     }, $records);
+
     $fields = field_info_instances('TripalEntity', $this->bundle);
 
     // Load priority list
@@ -184,9 +180,9 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function getPriorityList($fields) {
-    if ($this->id !== NULL) {
-      return $this->getAllFields($fields);
-    }
+//    if ($this->id !== NULL) {
+//      return $this->getAllFields($fields);
+//    }
 
     return $this->prioritizeFields($fields);
   }

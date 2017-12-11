@@ -5,13 +5,13 @@
  * A module that implements elasticsearch API.
  */
 
-require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.api.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_form_management.form.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/search_box.form.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/indices_management.form.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/gene_search.form.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/tripal_elasticsearch.ws.inc';
-require drupal_get_path('module', 'tripal_elasticsearch') . '/includes/tuning.form.inc';
+require 'tripal_elasticsearch.api.inc';
+require 'includes/search_form_management.form.inc';
+require 'includes/search_box.form.inc';
+require 'includes/indices_management.form.inc';
+require 'includes/gene_search.form.inc';
+require 'tripal_elasticsearch.ws.inc';
+require 'includes/tuning.form.inc';
 
 // Auto discover and include jobs and ES classes.
 tripal_elasticsearch_auto_discover_classes();
@@ -639,6 +639,16 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
  * Implements hook_node_update().
  */
 function tripal_elasticsearch_node_update($node) {
+  try {
+    $es = new ESInstance();
+    $indices = $es->getIndices();
+    if(!in_array('website', $indices)) {
+      return;
+    }
+  } catch (Exception $exception) {
+    watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+  }
+
   // Delete entity if it's status changed
   if ($node->status === 0) {
     tripal_elasticsearch_node_delete($node);
@@ -682,13 +692,23 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
+  try {
+    $es = new ESInstance();
+    $indices = $es->getIndices();
+    if(!in_array('entities', $indices)) {
+      return;
+    }
+  } catch (Exception $exception) {
+    watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+  }
+
   // Delete entity if it's status changed
   if ($entity->status === 0) {
     tripal_elasticsearch_entity_delete($entity, $entity_type);
     return;
   }
 
-  $job = new EntitiesIndexJob('any', $entity->id);
+  $job = new EntitiesIndexJob($entity->bundle, $entity->id);
   $job->dispatch();
 }
 
@@ -699,6 +719,16 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
  * @param $entity_type
  */
 function tripal_elasticsearch_entity_insert($entity, $entity_type) {
+  tripal_elasticsearch_entity_update($entity, $entity_type);
+}
+
+/**
+ * If an entity created, index it.
+ *
+ * @param $entity
+ * @param $entity_type
+ */
+function tripal_elasticsearch_entity_create($entity, $entity_type) {
   tripal_elasticsearch_entity_update($entity, $entity_type);
 }
 
