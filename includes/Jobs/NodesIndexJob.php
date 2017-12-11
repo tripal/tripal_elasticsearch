@@ -87,7 +87,14 @@ class NodesIndexJob extends ESJob {
       if (!isset($nodes[$record->nid])) {
         continue;
       }
+
       $node = $nodes[$record->nid];
+
+      if(!node_access('view', $node)) {
+        // Anonymous user is not allowed to access this node
+        // so don't index it
+        continue;
+      }
 
       $modules = module_implements('node_view');
       foreach ($modules as $module) {
