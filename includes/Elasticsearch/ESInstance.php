@@ -61,6 +61,13 @@ class ESInstance {
       ->build();
   }
 
+  /**
+   * Remove special characters from string.
+   *
+   * @param $query
+   *
+   * @return mixed
+   */
   protected function sanitizeQuery($query) {
     $query = stripslashes($query);
     $query = str_replace('\\', ' ', $query);
