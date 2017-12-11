@@ -76,6 +76,10 @@ class ESQueue{
 //        continue;
 //      }
 
+      if($queue->completed > $queue->total) {
+        static::fixProgress($queue);
+      }
+
       $last_run = new DateTime();
       $last_run->setTimestamp($queue->last_run_at);
 
@@ -108,6 +112,12 @@ class ESQueue{
       'percent' => number_format(($completed / ($total ?: 1)) * 100, 2),
       'time' => count($progress) > 0 ? $progress_last_run_at - $progress_started_at : 0,
     ];
+  }
+
+  public static function fixProgress(&$queue) {
+    $queue->completed = $queue->total;
+
+    db_query('UPDATE {'.self::QUEUE_TABLE.'} SET completed=total WHERE completed > total');
   }
 
   /**

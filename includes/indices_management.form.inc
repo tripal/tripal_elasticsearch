@@ -821,7 +821,7 @@ function tripal_elasticsearch_create_index(&$values) {
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters, $field_mapping_types)
       ->createIndex();
   } catch (Exception $exception) {
-    form_set_error($exception->getMessage());
+    form_set_error(0, $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
     return;
   }
