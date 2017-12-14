@@ -52,7 +52,7 @@ class TableIndexJob extends ESJob {
     $this->index = $index;
     $this->type = ucwords($index);
     $this->table = $table;
-    $this->fields = $fields;
+    $this->fields = array_map('db_escape_field', $fields);
   }
 
   /**
@@ -69,17 +69,6 @@ class TableIndexJob extends ESJob {
     elseif ($this->total > 0) {
       $es->createEntry($this->index, $this->table, FALSE, $records[0]);
     }
-
-    $sql = "
-    SELECT F.uniquename,
-           F.feature_id,
-           BLAST.hit_description,
-           CVT.cvterm_id
-            FROM chado.feature F
-            FULL OUTER JOIN chado.blast_hit_data BLAST ON F.feature_id = BLAST.feature_id
-            FULL OUTER JOIN chado.feature_cvterm CVT ON F.feature_id = CVT.feature_id
-            WHERE BLAST.hit_description IS NOT NULL OR CVT.cvterm_id IS NOT NULL
-            ";
   }
 
   /**
@@ -96,8 +85,8 @@ class TableIndexJob extends ESJob {
       $this->offset(0);
     }
 
-    $select_fields = implode(',', $this->fields);
-    $query = "SELECT {$select_fields} FROM {{$this->table}} ORDER BY {$this->fields[0]} ASC OFFSET :offset LIMIT :limit";
+    $select_fields = implode(', ', $this->fields);
+    $query = "SELECT {$select_fields} FROM {" . db_escape_table($this->table) . "} ORDER BY {$this->fields[0]} ASC OFFSET :offset LIMIT :limit";
 
     return db_query($query, [
       ':offset' => $this->offset,
@@ -121,6 +110,6 @@ class TableIndexJob extends ESJob {
    * @return int
    */
   public function count() {
-    return db_query('SELECT COUNT(*) FROM {' . $this->table . '}')->fetchField();
+    return db_query('SELECT COUNT(*) FROM {' . db_escape_table($this->table) . '}')->fetchField();
   }
 }

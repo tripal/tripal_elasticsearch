@@ -206,12 +206,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $exposed = $form_state['values']['exposed'];
   $index_name = $form_state['values']['index_name'];
 
-  // TODO: check validity of URL instead of checking if it exists
   if ($type === "database") {
-    // URLs are required for database and gene_search.  but only if they are exposed!
-    if (!$url && $exposed) {
-      form_set_error('url', t('Please provide a valid url'));
-    }
     // Index name validation.
     if (strlen($index_name) > 28) {
       form_set_error('index_name', t('String length cannot be greater than 28.'));
@@ -227,9 +222,14 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
 					use a different name.'));
     }
     // At least one table field need to be selected.
-    $table_fields = array_filter($form_state['values']['table_fields']);
-    if (empty($table_fields)) {
+    if (!is_array($form_state['values']['table_fields']) || empty($form_state['values']['table_fields'])) {
       form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
+    }
+    else {
+      $table_fields = array_filter($form_state['values']['table_fields']);
+      if (empty($table_fields)) {
+        form_set_error('table_fields', t('Please specify a mapping type for at least one field.'));
+      }
     }
   }
   elseif ($type === "gene_search_index") {
@@ -454,7 +454,7 @@ function tripal_elasticsearch_index_edit_confirm(
           $table_name = $table_name[0];
         }
 
-        db_query("INSERT INTO tripal_elasticsearch_indices (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')", [
+        db_query("INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')", [
           ':index_name' => $index_name,
           ':table_name' => $table_name,
         ]);
@@ -725,9 +725,7 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
 function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
-  if (isset($values['url'])) {
-    $url = $values['url'];
-  }
+  $url = isset($values['url']) ? $values['url'] : '';
 
   // Populate settings for website or entities.
   if ($index_type === 'website') {
@@ -827,6 +825,7 @@ function tripal_elasticsearch_create_index(&$values) {
   }
 
   // Dispatch jobs to populate the index
+  $job = NULL;
   switch ($index_type) {
     case 'website':
       $job = new NodesIndexJob();
@@ -835,6 +834,7 @@ function tripal_elasticsearch_create_index(&$values) {
       $job = new GeneSearchIndexJob($index_name);
       break;
     case 'entities':
+      EntitiesIndexJob::generateDispatcherJobs();
       break;
     default:
       $fields = array_keys($field_mapping_types);
@@ -843,10 +843,7 @@ function tripal_elasticsearch_create_index(&$values) {
 
   // All jobs other than entities can be dispatched directly.
   // Tripal entities must be dispatched by bundle type.
-  if ($index_type === 'entities') {
-    EntitiesIndexJob::generateDispatcherJobs();
-  }
-  else {
+  if ($job !== NULL) {
     $dispatcher = new DispatcherJob($job);
     $dispatcher->dispatch();
   }
@@ -854,7 +851,10 @@ function tripal_elasticsearch_create_index(&$values) {
   $base_url = variable_get('website_base_url');
   $cron_url = l($base_url . '/admin/config/system/cron', 'admin/config/system/cron');
 
-  drupal_set_message("The indexing job for {$index_name} has been submitted to your CRON queue.  You can view the status of your CRON jobs at {$cron_url}");
+  drupal_set_message("The indexing job for {$index_name} has been submitted to your CRON queue. You can view the status of your CRON jobs at {$cron_url}");
+  if ($index_type === 'database') {
+    drupal_set_message("You may create a search block for this index using the " . l('form management', 'admin/tripal/extension/tripal_elasticsearch/search_form_management') . " section.");
+  }
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
 }
 
