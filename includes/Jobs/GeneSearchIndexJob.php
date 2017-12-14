@@ -162,7 +162,7 @@ class GeneSearchIndexJob extends ESJob {
    * @return array
    */
   protected function loadAnnotations($keys) {
-    $query = "SELECT db.name AS db_name, dbxref.accession, cv.name AS cv_name, feature_id 
+    $query = "SELECT db.name AS db_name, dbxref.accession, cv.name AS cv_name, feature_id
               FROM chado.dbxref
               INNER JOIN chado.cvterm ON dbxref.dbxref_id = cvterm.dbxref_id
               INNER JOIN chado.feature_cvterm ON cvterm.cvterm_id = feature_cvterm.cvterm_id

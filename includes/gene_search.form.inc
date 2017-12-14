@@ -12,8 +12,25 @@
 function tripal_elasticsearch_gene_search_form(
   $form,
   &$form_state,
-  $local = TRUE
+  $local = TRUE,
+  $organism = NULL,
+  $url_query = []
 ) {
+  $constructed_url = '';
+  $i = 0;
+  foreach ($url_query as $key => $value) {
+    if ($i > 0) {
+      $constructed_url .= '&';
+    }
+    $constructed_url .= "{$key}={$value}";
+    $i++;
+
+    $form['hidden'][$key] = [
+      '#type' => 'value',
+      '#value' => $value,
+    ];
+  }
+
   $form['#attributes']['id'] = 'cross-site-search-form';
 
   $form['options'] = [
@@ -26,27 +43,35 @@ function tripal_elasticsearch_gene_search_form(
     ],
   ];
 
-  $default_organism = ['' => 'Any Organism'];
-  $organism_list = chado_query('SELECT genus, species, common_name FROM {organism}')->fetchAll();
-  $organisms = array_map(function ($organism) {
-    $name = "{$organism->genus} {$organism->species}";
-    if (!empty($organism->common_name)) {
-      $name .= " ({$organism->common_name})";
-    }
+  if ($organism !== NULL) {
+    $form['options']['organism'] = [
+      '#type' => 'value',
+      '#value' => $organism,
+    ];
+  }
+  else {
+    $default_organism = ['' => 'Any Organism'];
+    $organism_list = chado_query('SELECT genus, species, common_name FROM {organism}')->fetchAll();
+    $organisms = array_map(function ($organism) {
+      $name = "{$organism->genus} {$organism->species}";
+      if (!empty($organism->common_name)) {
+        $name .= " ({$organism->common_name})";
+      }
 
-    return $name;
-  }, $organism_list);
+      return $name;
+    }, $organism_list);
 
-  $form['options']['organism'] = [
-    '#type' => 'select',
-    '#attributes' => [
-      'id' => 'tripal-elasticsearch-search-category',
-      'style' => 'max-width: 250px;',
-    ],
-    '#options' => array_merge($default_organism, drupal_map_assoc($organisms)),
-    '#default_value' => isset($_GET['organism']) ? $_GET['organism'] : '',
-    '#required' => TRUE,
-  ];
+    $form['options']['organism'] = [
+      '#type' => 'select',
+      '#attributes' => [
+        'id' => 'tripal-elasticsearch-search-category',
+        'style' => 'max-width: 250px;',
+      ],
+      '#options' => array_merge($default_organism, drupal_map_assoc($organisms)),
+      '#default_value' => isset($_GET['organism']) ? $_GET['organism'] : '',
+      '#required' => TRUE,
+    ];
+  }
 
   $form['options']['search_term'] = [
     '#type' => 'textfield',
@@ -55,7 +80,7 @@ function tripal_elasticsearch_gene_search_form(
       'placeholder' => t('E,g. Kinase or IPR020405'),
       'id' => 'tripal-elasticsearch-search-field',
     ],
-    '#description' => '<small>Examples: <a href="?search_term=Heat+Shock">Heat Shock</a>, <a href="?search_term=IPR020575">IPR020575</a>, <a href="?search_term=GO:0016049">GO:0016049</a>, etc.</small>',
+    '#description' => '<small>Examples: <a href="?search_term=Heat+Shock&' . $constructed_url . '">Heat Shock</a>, <a href="?search_term=IPR020575&' . $constructed_url . '">IPR020575</a>, <a href="?search_term=GO:0016049&' . $constructed_url . '">GO:0016049</a>, etc.</small>',
     '#required' => TRUE,
     '#default_value' => isset($_GET['search_term']) ? $_GET['search_term'] : '',
   ];
@@ -89,7 +114,7 @@ function tripal_elasticsearch_gene_search_form(
     if (!empty($_GET['search_term']) || !empty($_GET['organism'])) {
       $form['results'] = [
         '#type' => 'markup',
-        '#markup' => tripal_elasticsearch_gene_search_index_results(),
+        '#markup' => tripal_elasticsearch_gene_search_index_results(true),
       ];
     }
   }
@@ -125,9 +150,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   }
 
   if (isset($arguments['search_term'])) {
-
     $search_term = str_replace(':', ' AND ', $arguments['search_term']);
-
     $queries[] = [
       'query_string' => [
         'query' => $search_term,
@@ -192,7 +215,7 @@ function tripal_elasticsearch_gene_search_index_results_formatter(
  *
  * @return string
  */
-function tripal_elasticsearch_gene_search_index_results($formatted = TRUE) {
+function tripal_elasticsearch_gene_search_index_results($display_download = false) {
   if (empty($_GET['search_term']) && empty($_GET['organism'])) {
     return '';
   }
@@ -220,7 +243,11 @@ function tripal_elasticsearch_gene_search_index_results($formatted = TRUE) {
   $content .= '<strong>' . $results['total'] . ' results found</strong>';
   $content .= '<strong style="float: right">Page ' . $results['page'] . ' - ' . $results['pages'] . '</strong>';
   $content .= '</div>';
-  $content .= '<a href="' . $download_url . '">Download results in CSV format</a>';
+
+  if($display_download) {
+    $content .= '<a href="' . $download_url . '">Download results in CSV format</a>';
+  }
+
   $content .= $formatted;
   $content .= $results['pager'];
 

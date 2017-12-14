@@ -12,6 +12,7 @@ require 'includes/indices_management.form.inc';
 require 'includes/gene_search.form.inc';
 require 'tripal_elasticsearch.ws.inc';
 require 'includes/tuning.form.inc';
+require 'includes/tripal_elasticsearch.fields.inc';
 
 // Auto discover and include jobs and ES classes.
 tripal_elasticsearch_auto_discover_classes();
@@ -434,23 +435,30 @@ function tripal_elasticsearch_generate_block($delta) {
     $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
 
     $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form', $index_name);
+
     if (isset($_GET['op'])) {
       drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
       $search_results = tripal_elasticsearch_paginate(10);
-      $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
-      $page_number = $search_results['page'];
-      $total_pages = ceil($search_results['total'] / 10);
+      if (empty($search_results)) {
+        $page['content'] = ['#markup' => '0 results found.'];
+      }
+      else {
+        $markup = get_table_search_result_table($search_results['results'], $index_name, $search_results['total']);
+        $page_number = $search_results['page'];
+        $total_pages = ceil($search_results['total'] / 10);
 
-      $page['download'] = [
-        '#markup' => '<p>' . '<a href="' . tripal_elasticsearch_build_download_url() . '" target="_blank">Download all results in csv format</a>' . '</p>',
-      ];
-      $page['count'] = [
-        '#markup' => "<div style='font-weight: bold; margin: 10px 0'>" . "<p style='float: right'>Showing page {$page_number} out of {$total_pages} pages.</p>" . "<p>Found {$search_results['total']} results.</p>" . "</div>",
-      ];
-      $page['results'] = [
-        '#markup' => $markup,
-      ];
+        $page['download'] = [
+          '#markup' => '<p>' . '<a href="' . tripal_elasticsearch_build_download_url() . '" target="_blank">Download all results in csv format</a>' . '</p>',
+        ];
+        $page['count'] = [
+          '#markup' => "<div style='font-weight: bold; margin: 10px 0'>" . "<p style='float: right'>Showing page {$page_number} out of {$total_pages} pages.</p>" . "<p>Found {$search_results['total']} results.</p>" . "</div>",
+        ];
+        $page['results'] = [
+          '#markup' => $markup,
+        ];
+      }
     }
+
     $block['content'] = $page;
   }
 
@@ -642,7 +650,7 @@ function tripal_elasticsearch_node_update($node) {
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
-    if(!in_array('website', $indices)) {
+    if (!in_array('website', $indices)) {
       return;
     }
   } catch (Exception $exception) {
@@ -695,7 +703,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
-    if(!in_array('entities', $indices)) {
+    if (!in_array('entities', $indices)) {
       return;
     }
   } catch (Exception $exception) {

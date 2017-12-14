@@ -349,7 +349,7 @@ function table_search_interface_building_form_submit($form, &$form_state) {
     }
   }
 
-  drupal_set_message("Search block set!");
+  drupal_set_message("Search block set! You can enable the block from Admin > Structure > " . l('Blocks', 'admin/structure/block'));
 }
 
 /**
