@@ -237,16 +237,11 @@ function tripal_elasticsearch_gene_search_index_results($display_download = fals
   if (isset($query['q'])) {
     unset($query['q']);
   }
-  $download_url = url('/elasticsearch/gene_search/download', ['query' => $query]);
 
   $content = '<div style="margin-bottom: 15px">';
   $content .= '<strong>' . $results['total'] . ' results found</strong>';
   $content .= '<strong style="float: right">Page ' . $results['page'] . ' - ' . $results['pages'] . '</strong>';
   $content .= '</div>';
-
-  if($display_download) {
-    $content .= '<a href="' . $download_url . '">Download results in CSV format</a>';
-  }
 
   $content .= $formatted;
   $content .= $results['pager'];
@@ -255,25 +250,4 @@ function tripal_elasticsearch_gene_search_index_results($display_download = fals
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
 
   return $content;
-}
-
-function tripal_elasticsearch_gene_search_download() {
-  if (empty($_GET['search_term']) && empty($_GET['organism'])) {
-    drupal_not_found();
-    return '';
-  }
-
-  try {
-    $es = new ESInstance();
-  } catch (Exception $exception) {
-    drupal_set_message($exception->getMessage(), 'error');
-    return '';
-  }
-
-  $query = tripal_elasticsearch_gene_search_index_query_mapper($_GET);
-  $results = $es->setTableSearchParams('gene_search_index', '', $query)
-    ->paginate(15);
-
-  dpm($results);
-  return '';
 }

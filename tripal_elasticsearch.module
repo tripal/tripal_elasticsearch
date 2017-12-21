@@ -13,6 +13,7 @@ require 'includes/gene_search.form.inc';
 require 'tripal_elasticsearch.ws.inc';
 require 'includes/tuning.form.inc';
 require 'includes/tripal_elasticsearch.fields.inc';
+require 'includes/collections.form.inc';
 
 // Auto discover and include jobs and ES classes.
 tripal_elasticsearch_auto_discover_classes();
@@ -205,12 +206,6 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-  $items['tripal_elasticsearch/gene_search/download'] = [
-    'page callback' => 'tripal_elasticsearch_gene_search_download',
-    'access callback' => user_access('access content'),
-    'type' => MENU_CALLBACK,
-  ];
-
   // API Endpoints
   // -------------
 
@@ -299,6 +294,49 @@ function tripal_elasticsearch_libraries_info() {
   ];
 
   return $libraries;
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers template files/functions used by this module.
+ */
+function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
+  $themes = [
+    'elastic_modal' => [
+      'template' => 'elastic_modal',
+      'render element' => 'elements',
+      'path' => "$path/theme/templates",
+      'variables' => [
+        // The trigger to open the modal
+        // Please supply a css selector such as #trigger-btn or .trigger-btn
+        'trigger' => NULL,
+        // What happens when the backdrop is clicked
+        // So far, we support "close" or "none"
+        'backdrop_click' => 'close',
+        // Content array. This value will be supplied to drupal_render().
+        'content' => [],
+        // Submit button text
+        'submit' => 'Submit',
+        // Cancel button text
+        // Specify NULL if you don't want the cancel button to appear
+        'cancel' => 'Cancel',
+        // The modal's title text
+        'title' => NULL,
+      ],
+    ],
+  ];
+
+  return $themes;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * Add JS file when the elastic modal theme function is called.
+ */
+function tripal_elasticsearch_preprocess_elastic_modal(&$variables) {
+  drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/ESModal.js');
 }
 
 /**
@@ -412,6 +450,11 @@ function tripal_elasticsearch_block_info() {
   return $blocks;
 }
 
+/**
+ * Generate a download URL.
+ *
+ * @return string
+ */
 function tripal_elasticsearch_build_download_url() {
   $query = ['query' => $_GET];
   if (array_key_exists('q', $query['query'])) {
@@ -421,6 +464,13 @@ function tripal_elasticsearch_build_download_url() {
   return url('tripal_elasticsearch/download/results', $query);
 }
 
+/**
+ * Generate an ES search block
+ *
+ * @param $delta
+ *
+ * @return array
+ */
 function tripal_elasticsearch_generate_block($delta) {
   $block = [];
 
@@ -513,8 +563,7 @@ function tripal_elasticsearch_block_view($delta = '') {
  *
  * @param string $node_type Category name
  */
-function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
-) {
+function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
   if (empty($keyword)) {
@@ -552,15 +601,54 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
 
   $current_page = $results['page'];
   $pages = $results['pages'];
-  $content = '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
+  $content = '';
+  if (count($results['results'])) {
+    $content = tripal_elasticsearch_create_collection_button();
+  }
+  $content .= '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
   $content .= get_website_search_result_table($results['results'], FALSE);
   $content .= $results['pager'];
+
+  $form = drupal_get_form('tripal_elasticsearch_collections_form');
+  try {
+    $content .= theme('elastic_modal', [
+      'trigger' => '#create-collection-btn',
+      'title' => 'Create Collection',
+      'submit' => 'Save Collection',
+      'content' => [
+        'form' => $form,
+      ],
+    ]);
+  } catch (Exception $exception) {
+
+  }
 
   return $content;
 }
 
 /**
+ * Create a "create collection link".
+ *
+ * @return string
+ */
+function tripal_elasticsearch_create_collection_button() {
+  // Make sure Tripal collections are supported
+  if (!function_exists('tripal_create_collection')) {
+    return '';
+  }
+
+  return '<p>' . l('Create Downloadable Collection', 'tripal_elasticsearch/collections/create', [
+      'attributes' => [
+        'id' => 'create-collection-btn',
+        'class' => 'btn btn-primary',
+      ],
+    ]) . '</p>';
+}
+
+/**
  * tripal_elasticsearch_table_search_page_callback
+ *
+ * @return string
  */
 function tripal_elasticsearch_table_search_page_callback() {
   // create an empty page to host table search blocks.

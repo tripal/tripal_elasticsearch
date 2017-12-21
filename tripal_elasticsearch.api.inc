@@ -283,6 +283,7 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
       'id' => 'es-search-results-table',
     ],
   ]);
+
   if ($pager) {
     $output .= theme('pager', ['quantity', count($rows)]);
   }

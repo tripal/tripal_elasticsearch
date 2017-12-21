@@ -72,9 +72,9 @@ class ESQueue{
     $progress_started_at = time();
 
     foreach ($queues as $queue) {
-//      if ($queue->total === $queue->completed) {
-//        continue;
-//      }
+      if ($queue->total === $queue->completed) {
+        continue;
+      }
 
       if($queue->completed > $queue->total) {
         static::fixProgress($queue);
