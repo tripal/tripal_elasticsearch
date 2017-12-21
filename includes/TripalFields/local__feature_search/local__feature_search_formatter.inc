@@ -16,9 +16,7 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
   public static $field_types = ['local__feature_search'];
 
   // The list of default settings for this formatter.
-  public static $default_settings = [
-    'setting1' => 'default_value',
-  ];
+  public static $default_settings = [];
 
   /**
    * Provides the field's setting form.
@@ -53,7 +51,6 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
    *   A Drupal Form array containing the settings form for this field.
    */
   public function settingsForm($view_mode, $form, &$form_state) {
-
   }
 
   /**
@@ -81,15 +78,12 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    // Get the settings
-    $settings = $display['settings'];
-
     $organism = $entity->chado_record;
     $form = drupal_get_form('tripal_elasticsearch_gene_search_form', TRUE, "$organism->genus $organism->species", [
       'ds_pane' => 'Feature Search',
     ]);
 
-    $content = '<p>You can search this organism’s  features in the database by entering search terms in the box. You can search by feature name or annotation, for example, (Heat Shock, IPR020575, GO:0016049, etc.)</p>';
+    $content = '<p>You can search this organism’s features in the database by entering search terms in the box. You can search by feature name or annotation.</p>';
     $content .= drupal_render($form);
     $element[] = [
       '#type' => 'markup',
@@ -127,5 +121,4 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
   public function settingsSummary($view_mode) {
     return '';
   }
-
 }

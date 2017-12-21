@@ -84,6 +84,7 @@ class ESInstance {
    * @param string $index
    * @param string $index_type
    * @param array $offset [int $from, int $to]
+   * @param bool $force_entities_only force search of entities only
    *
    * @return $this
    */
@@ -92,7 +93,8 @@ class ESInstance {
     $node_type = '',
     $index = 'website',
     $index_type = '',
-    $offset = []
+    $offset = [],
+    $force_entities_only = FALSE
   ) {
     $queries = [];
 
@@ -107,7 +109,7 @@ class ESInstance {
     if (!empty($node_type)) {
       $indices = $this->getIndices();
 
-      if (in_array('website', $indices)) {
+      if (in_array('website', $indices) && !$force_entities_only) {
         $queries[1]['query_string'] = [
           "default_field" => "type",
           "query" => '"' . $node_type . '"',
@@ -123,7 +125,7 @@ class ESInstance {
         ];
       }
 
-      if (in_array('entities', $indices) && in_array('website', $indices)) {
+      if (in_array('entities', $indices) && in_array('website', $indices) && !$force_entities_only) {
         $queries[1]['query_string'] = [
           "fields" => ["type", "bundle_label"],
           "query" => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
@@ -149,7 +151,7 @@ class ESInstance {
     ];
 
     $params = [];
-    $params['index'] = $index;
+    $params['index'] = $force_entities_only ? 'entities' : $index;
     $params['type'] = $index_type;
     $params['body'] = [
       'query' => $query,
