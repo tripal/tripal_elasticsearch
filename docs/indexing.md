@@ -6,3 +6,6 @@ For details about indexing operations, please visit [Elasticsearch's documentati
 
 - [Default Indices](default-indices.md)
 - [Building Custom Indices](custom-indices.md)
+
+
+**[Return to Handbook Index](/docs)**

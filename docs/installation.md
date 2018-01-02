@@ -46,3 +46,9 @@ To add a new remote Elasticsearch server, select the Remote Server Type radio bu
 After connecting a remote server, it will be displayed in the remote server health table (example below).  If the connection is successful, the Status column will be green/Active and you can include this remote connection in your search interface.  If the status remains Red, ensure that you have the correct URL, and that your firewall is not blocking connections.  You may also edit and delete your remote servers using this table.
 
 ![remote server health](../images/remote_server.png)
+
+
+
+**Next section: [What Is Indexing?](/docs/indexing.md)**
+
+**[Return to Handbook Index](/docs)**

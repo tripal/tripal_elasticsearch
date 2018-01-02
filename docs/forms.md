@@ -19,3 +19,8 @@ The URL link region of each field will let you configure URL links for that fiel
 The field type available to users in the search form. `textfield` indicates a text input box. `select` indicates a dropdown menu box. If this field contains more than 50 unique values in the database table, only the `textfield` will be available.
 
 If you choose a `select` field type, you must provide **key|value** pairs to build the dropdown box.  The keys should be the true values in your database table, and the values can be anything that you want to show to your users. key|value pairs must be placed within brackets.  For example, `[key|value]`.
+
+
+**Next section: [Cross Site Searching](/docs/cross-site-search.md)**
+
+**[Return to Handbook Index](/docs)**
