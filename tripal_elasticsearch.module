@@ -44,69 +44,41 @@ function tripal_elasticsearch_init() {
  */
 function tripal_elasticsearch_menu() {
   $admin_url_base = 'admin/tripal/extension/tripal_elasticsearch';
+
   $items[$admin_url_base] = [
     'title' => 'Tripal Elasticsearch',
     'description' => t('Administration pages for Tripal Elasticsearch'),
+    'access arguments' => ['administer tripal elasticsearch'],
+  ];
+
+  $items[$admin_url_base . '/elasticsearch_connection'] = [
+    'title' => 'Connections',
+    'access arguments' => ['administer tripal elasticsearch'],
     'page callback' => 'drupal_get_form',
     'page arguments' => ['elasticsearch_connection_form'],
     'access arguments' => ['administer tripal elasticsearch'],
+    'description' => t('Add or edit Elasticsearch connections for this site or remote sites.'),
     'file' => 'includes/elasticsearch_connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
   ];
 
-  $items[$admin_url_base . '/elasticsearch_connection'] = [
-    'title' => 'Connection',
-    'access arguments' => ['administer tripal elasticsearch'],
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 0,
-  ];
-
   // Create routing for editing and deleting individual remote entries
-  $items[$admin_url_base . '/edit/%'] = [
+  $items[$admin_url_base . '/elasticsearch_connection/edit/%'] = [
     'title' => t('Edit Remote Server'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['remote_edit_confirm', 5],
     'access arguments' => ['administer tripal elasticsearch'],
-    'type' => MENU_CALLBACK,
     'file' => 'includes/elasticsearch_connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
   ];
 
-  $items[$admin_url_base . '/delete/%'] = [
+  $items[$admin_url_base . '/elasticsearch_connection/delete/%'] = [
     'title' => t('Delete Remote Server'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['remote_delete_confirm', 5],
     'access arguments' => ['administer tripal elasticsearch'],
-    'type' => MENU_CALLBACK,
     'file' => 'includes/elasticsearch_connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-  ];
-
-  $items[$admin_url_base . '/progress'] = [
-    'title' => 'Progress',
-    'page callback' => 'tripal_elasticsearch_progress_page',
-    'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
-    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
-  ];
-
-  $items[$admin_url_base . '/progress/all'] = [
-    'title' => 'Progress',
-    'page callback' => 'tripal_elasticsearch_get_progress',
-    'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
-    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_CALLBACK,
-  ];
-
-  $items[$admin_url_base . '/tuning'] = [
-    'title' => 'Tuning',
-    'description' => t('Tuning'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['tripal_elasticsearch_tuning_form'],
-    'access arguments' => ['administer tripal elasticsearch'],
-    'type' => MENU_LOCAL_TASK,
   ];
 
   $items[$admin_url_base . '/indices_management'] = [
@@ -116,8 +88,8 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
+    'description' => t('Manage your Elasticsearch indices.  Create, edit, or delete indices, check their status, or manage settings such as cross-site querying.'),
+
   ];
 
   $items[$admin_url_base . '/indices_management/list'] = [
@@ -137,12 +109,6 @@ function tripal_elasticsearch_menu() {
     'weight' => 2,
   ];
 
-  /*$items[$admin_url_base . '/indices_management/indexing'] = [
-    'title' => 'Indexing',
-    'access arguments' => ['administer tripal elasticsearch'],
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 0,
-  ];*/
   $items[$admin_url_base . '/indices_management/edit/%'] = [
     'title' => 'Edit Index',
     'page callback' => 'drupal_get_form',
@@ -172,9 +138,37 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/search_form_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
+    'description' => t('Create or edit search forms for custom database table indices.'),
+
   ];
+
+
+  $items[$admin_url_base . '/progress'] = [
+    'title' => 'Progress',
+    'page callback' => 'tripal_elasticsearch_progress_page',
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/indices_management.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'description' => t('View the progress of Elasticsearch jobs.'),
+  ];
+
+  $items[$admin_url_base . '/progress/all'] = [
+    'title' => 'Progress',
+    'page callback' => 'tripal_elasticsearch_get_progress',
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/indices_management.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+  ];
+
+  $items[$admin_url_base . '/tuning'] = [
+    'title' => 'Tuning',
+    'description' => t('Tuning'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_elasticsearch_tuning_form'],
+    'access arguments' => ['administer tripal elasticsearch'],
+    'description' => t('Make fine changes to what fields are indexed.  Applies to custom indices only.'),
+  ];
+
 
   // USER PATHS
   //-----------
@@ -592,6 +586,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
       ->paginate($per_page);
   } catch (\Exception $e) {
     tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $e->getMessage());
+
     return 'Searching is not available. Please try later.';
   }
 
@@ -748,6 +743,7 @@ function tripal_elasticsearch_node_update($node) {
   // Delete entity if it's status changed
   if ($node->status === 0) {
     tripal_elasticsearch_node_delete($node);
+
     return;
   }
 
@@ -801,6 +797,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   // Delete entity if it's status changed
   if ($entity->status === 0) {
     tripal_elasticsearch_entity_delete($entity, $entity_type);
+
     return;
   }
 
@@ -888,6 +885,7 @@ function tripal_elasticsearch_paginate($per_page) {
   // Run Elasticsearch and return search results into an array.
   try {
     $es = new ESInstance();
+
     return $es->setTableSearchParams($index_name, $index_type, $query)
       ->paginate($per_page);
   } catch (\Exception $e) {
@@ -904,6 +902,7 @@ function tripal_elasticsearch_table_search_download() {
   // Build an associated array in which keys are field names and values are user input contents.
   if (!isset($_GET['index_name'])) {
     drupal_not_found();
+
     return;
   }
 
@@ -938,6 +937,7 @@ function tripal_elasticsearch_table_search_download() {
     $window_range = range(1, ceil($count / 1000));
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR', $exception->getMessage());
+
     return;
   }
 
@@ -949,6 +949,7 @@ function tripal_elasticsearch_table_search_download() {
         ->search();
     } catch (Exception $exception) {
       drupal_set_message($exception->getMessage(), 'error');
+
       return;
     }
 
