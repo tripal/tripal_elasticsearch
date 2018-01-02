@@ -1,3 +1,5 @@
+**Previous section:  [Building Search Forms](forms.md)**
+
 # Cross Site Searching
 Tripal Elasticsearch provides an API that allows multiple sites to communicate with each other and share search results.
 See the example below of a site returning results from multiple sites to a single page.

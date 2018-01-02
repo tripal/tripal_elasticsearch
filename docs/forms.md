@@ -1,3 +1,5 @@
+**Previous section:  [Indexing](indexing.md)**
+
 # Building Custom Search Forms
 After your database tables get indexed, you can build a search interface for them.  Note that search blocks for node, entities, and genes are configured automatically and cannot be customized.  
 You can choose to expose all table fields or a subset of fields for searching.

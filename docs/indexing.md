@@ -1,3 +1,5 @@
+**Previous section:  [Installation and Setup](installation.md)**
+
 # What is Indexing?
 Think of indices as a structured data store that allows Elasticsearch to perform fast searching. This store is also how
 Elasticsearch becomes aware of your site's content.
