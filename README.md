@@ -5,7 +5,7 @@ website.  It also easily enables Cross-Site Querying, allowing you to connect to
 additional search results to your users.
 
 ## Documentation
-Visit the [online documentation](docs/README.md) on Github.
+For installation and usage instructions, please visit the [online documentation](docs/README.md) on Github.
 
 ## License
 Tripal Elasticsearch is licensed under the [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.

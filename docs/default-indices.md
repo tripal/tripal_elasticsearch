@@ -37,3 +37,8 @@ from a Chado database. This index is dependent on Tripal (2 or 3). It also requi
 - `chado.cv`
 
 If this setup is satisfied, you can run the indexing job in the same manner as other default indices.
+
+
+**Next section: [Building Custom Indices](/docs/custom-indices.md)**
+
+**[Return to Handbook Index](/docs)**

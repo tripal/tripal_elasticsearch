@@ -25,3 +25,8 @@ when they click the `see all results` link.
 
 Once the local block is activated and placed in a page, you must edit the gene search index from the Indices Management page
 to provide the url path to the block.
+
+
+**Next section: [Elasticsearch Daemon](/docs/daemon.md)**
+
+**[Return to Handbook Index](/docs)**

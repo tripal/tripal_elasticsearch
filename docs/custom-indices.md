@@ -20,3 +20,9 @@ For a custom index, you will need to:
 * Decide if the index will be exposed to Cross-Site Search.
 * Select a table.
 * Select at least one field from the table to index.
+
+
+
+**Next section: [Building Search Forms](/docs/forms.md)**
+
+**[Return to Handbook Index](/docs)**

@@ -19,3 +19,7 @@ php composer.phar require "elasticsearch/elasticsearch:~5.0"
 ```
 
 For more details, visit the [Elasticsearch PHP library API](https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_quickstart.html).
+
+
+**Next section: [Installation and Setup](/docs/installation.md)**
+
