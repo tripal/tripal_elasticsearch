@@ -1,3 +1,6 @@
+**Previous section:  [](cross-site-search.md)**
+
+
 # Running Indexing Queues
 Before Tripal Elasticsearch can index your site's content, we have to setup cron jobs to process our queues.
 Since indexing jobs can take some time to complete, we deploy the jobs in separate queues and utilize them to perform

@@ -1,3 +1,5 @@
+**Previous section:  [Prerequisites](prerequisites.md)**
+
 # Installation
 
 After installing Elasticsearch and the Elasticsearch PHP library as described in the Prerequisites section, you are ready to install the Tripal Elasticsearch Drupal module.
