@@ -1,4 +1,4 @@
-**Previous section:  [](cross-site-search.md)**
+**Previous section:  [What is Indexing?](indexing.md)**
 
 
 # Running Indexing Queues
