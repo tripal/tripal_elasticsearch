@@ -20,11 +20,6 @@ crontab -e
 */5 * * * * drush cron-run queue_elasticsearch_queue_3 --options=thread=4 --root=/path/to/your/drupal/root
 */5 * * * * drush cron-run queue_elasticsearch_queue_4 --options=thread=5 --root=/path/to/your/drupal/root
 */5 * * * * drush cron-run queue_elasticsearch_queue_5 --options=thread=6 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_6 --options=thread=7 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_7 --options=thread=8 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_8 --options=thread=9 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_9 --options=thread=10 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_10 --options=thread=11 --root=/path/to/your/drupal/root
 ```
 
 ## Obtain cron job names
