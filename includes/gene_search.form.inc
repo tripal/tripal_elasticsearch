@@ -44,8 +44,8 @@ function tripal_elasticsearch_gene_search_form(
   ];
 
   if ($organism !== NULL) {
-    $form['options']['organism'] = [
-      '#type' => 'value',
+    $form['organism'] = [
+      '#type' => 'hidden',
       '#value' => $organism,
     ];
   }
@@ -114,7 +114,7 @@ function tripal_elasticsearch_gene_search_form(
     if (!empty($_GET['search_term']) || !empty($_GET['organism'])) {
       $form['results'] = [
         '#type' => 'markup',
-        '#markup' => tripal_elasticsearch_gene_search_index_results(true),
+        '#markup' => tripal_elasticsearch_gene_search_index_results(TRUE),
       ];
     }
   }
@@ -215,7 +215,7 @@ function tripal_elasticsearch_gene_search_index_results_formatter(
  *
  * @return string
  */
-function tripal_elasticsearch_gene_search_index_results($display_download = false) {
+function tripal_elasticsearch_gene_search_index_results($display_download = FALSE) {
   if (empty($_GET['search_term']) && empty($_GET['organism'])) {
     return '';
   }
