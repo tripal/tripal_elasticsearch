@@ -290,6 +290,10 @@ function tripal_elasticsearch_gene_search_download() {
   header('Content-Type: text/plain');
   header("Content-Disposition: attachment; filename=\"gene_search_results\"");
 
+  // Handle IE downloads
+  header("Pragma: public");
+  header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+
   try {
     $count = $es->setTableSearchParams('gene_search_index', '', $query)
       ->count();
