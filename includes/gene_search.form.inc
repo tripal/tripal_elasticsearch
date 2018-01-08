@@ -249,6 +249,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
       'query' => [
         'organism' => $_GET['organism'],
         'search_term' => $_GET['search_term'],
+        'from' => urlencode($_GET['q']),
       ],
       'attributes' => [
         'target' => '_blank',
@@ -280,23 +281,26 @@ function tripal_elasticsearch_gene_search_download() {
     $es = new ESInstance();
   } catch (Exception $exception) {
     drupal_set_message('Error occurred while generating records for download. Please try again later.', 'error');
-    header('Location: /' . $_GET['q']);
+    header('Location: /' . urldecode($_GET['from']));
     return;
   }
+
+  ob_clean();
 
   $query = tripal_elasticsearch_gene_search_index_query_mapper($_GET);
 
   // Set the mime type
-  header('Content-Type: text/plain');
-  header("Content-Disposition: attachment; filename=\"gene_search_results\"");
+  drupal_add_http_header('Content-Type', 'text/plain');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename="gene_search_results.fasta"');
 
   // Handle IE downloads
-  header("Pragma: public");
-  header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+  drupal_add_http_header("Pragma", "public");
+  drupal_add_http_header("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
 
   try {
-    $count = $es->setTableSearchParams('gene_search_index', '', $query)
-      ->count();
+    // Stop at 1 million
+    $count = min($es->setTableSearchParams('gene_search_index', '', $query)
+      ->count(), 1000000);
 
     $i = 0;
     $chunk = 500;
@@ -313,6 +317,7 @@ function tripal_elasticsearch_gene_search_download() {
       }
       $i += $chunk;
     }
+
   } catch (Exception $exception) {
     print 'Error occurred while generating file. Please try again later.';
     return;
