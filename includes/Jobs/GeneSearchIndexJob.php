@@ -71,11 +71,15 @@ class GeneSearchIndexJob extends ESJob {
   protected function get() {
     $query = 'SELECT F.uniquename,
                      F.feature_id,
+                     F.seqlen AS sequence_length,
+                     F.residues AS sequence,
+                     CV.name AS type,
                      O.genus AS organism_genus,
                      O.species AS organism_species,
                      O.common_name AS organism_common_name
                 FROM chado.feature F
                 INNER JOIN chado.organism O ON F.organism_id = O.organism_id
+                INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
                 ORDER BY feature_id ASC OFFSET :offset LIMIT :limit';
 
     $records = db_query($query, [

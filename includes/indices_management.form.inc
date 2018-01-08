@@ -775,6 +775,9 @@ function tripal_elasticsearch_create_index(&$values) {
       'organism_common_name' => 'string',
       'annotations' => 'string',
       'blast_hit_descriptions' => 'string',
+      'type' => 'string',
+      'sequence' => 'string',
+      'sequence_length' => 'integer'
     ];
   }
   else { //checks and defaults for custom index type

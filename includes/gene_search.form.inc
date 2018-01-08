@@ -243,6 +243,21 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   $content .= '<strong style="float: right">Page ' . $results['page'] . ' - ' . $results['pages'] . '</strong>';
   $content .= '</div>';
 
+  if ($display_download && intval($results['total']) > 0) {
+    $content .= '<p>';
+    $content .= l('Download results as FASTA', 'elasticsearch/gene_download', [
+      'query' => [
+        'organism' => $_GET['organism'],
+        'search_term' => $_GET['search_term'],
+      ],
+      'attributes' => [
+        'target' => '_blank',
+        'class' => ['btn', 'btn-info'],
+      ],
+    ]);
+    $content .= '</p>';
+  }
+
   $content .= $formatted;
   $content .= $results['pager'];
 
@@ -250,4 +265,72 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
 
   return $content;
+}
+
+/**
+ * @return void
+ */
+function tripal_elasticsearch_gene_search_download() {
+  if (!isset($_GET['search_term']) || empty($_GET['search_term'])) {
+    drupal_not_found();
+    return;
+  }
+
+  try {
+    $es = new ESInstance();
+  } catch (Exception $exception) {
+    drupal_set_message('Error occurred while generating records for download. Please try again later.', 'error');
+    header('Location: /' . $_GET['q']);
+    return;
+  }
+
+  $query = tripal_elasticsearch_gene_search_index_query_mapper($_GET);
+
+  // Set the mime type
+  header('Content-Type: text/plain');
+  header("Content-Disposition: attachment; filename=\"gene_search_results\"");
+
+  try {
+    $count = $es->setTableSearchParams('gene_search_index', '', $query)
+      ->count();
+
+    $i = 0;
+    $chunk = 500;
+    while ($i < $count) {
+      $records = $es->setTableSearchParams('gene_search_index', '', $query, [
+        $i,
+        $chunk,
+      ])->search();
+      foreach ($records as $record) {
+        print tripal_elasticsearch_put_fasta_line($record['uniquename'], $record['sequence'], [
+          'Sequence Length' => $record['sequence_length'],
+          'Type' => $record['type'],
+        ]);
+      }
+      $i += $chunk;
+    }
+  } catch (Exception $exception) {
+    print 'Error occurred while generating file. Please try again later.';
+    return;
+  }
+}
+
+/**
+ * @param string $name
+ * @param string $sequence
+ * @param array $meta
+ *
+ * @return string
+ */
+function tripal_elasticsearch_put_fasta_line($name, $sequence, array $meta = []) {
+  $line = ">$name";
+
+  // Join meta data
+  foreach ($meta as $title => $value) {
+    $line .= "; $title: $value";
+  }
+
+  $line .= "\n";
+
+  return "{$line}{$sequence}\n";
 }

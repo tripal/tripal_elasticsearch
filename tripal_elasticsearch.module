@@ -84,12 +84,10 @@ function tripal_elasticsearch_menu() {
   $items[$admin_url_base . '/indices_management'] = [
     'title' => 'Indices',
     'page callback' => 'tripal_elasticsearch_indices_list_page',
-    //'page arguments' => ['tripal_elasticsearch_indexing_form'],
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'description' => t('Manage your Elasticsearch indices.  Create, edit, or delete indices, check their status, or manage settings such as cross-site querying.'),
-
   ];
 
   $items[$admin_url_base . '/indices_management/list'] = [
@@ -139,9 +137,7 @@ function tripal_elasticsearch_menu() {
     'file' => 'includes/search_form_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'description' => t('Create or edit search forms for custom database table indices.'),
-
   ];
-
 
   $items[$admin_url_base . '/progress'] = [
     'title' => 'Progress',
@@ -149,7 +145,8 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'description' => t('View the progress of Elasticsearch jobs.'),
+    'description' => t('View the progress of indexing jobs.'),
+    'type' => MENU_LOCAL_TASK,
   ];
 
   $items[$admin_url_base . '/progress/all'] = [
@@ -158,15 +155,15 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/indices_management.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
   ];
 
   $items[$admin_url_base . '/tuning'] = [
     'title' => 'Tuning',
-    'description' => t('Tuning'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_tuning_form'],
     'access arguments' => ['administer tripal elasticsearch'],
-    'description' => t('Make fine changes to what fields are indexed.  Applies to custom indices only.'),
+    'description' => t('Make fine changes to what fields are indexed. Applies to Tripal 3 entities index only.'),
   ];
 
 
@@ -191,12 +188,18 @@ function tripal_elasticsearch_menu() {
   $items['tripal_elasticsearch/search_table'] = [
     'title' => '',
     'page callback' => 'tripal_elasticsearch_table_search_page_callback',
-    'access callback' => user_access('access content'),
+    'access arguments' => ['access content'],
   ];
 
   $items['tripal_elasticsearch/download/results'] = [
     'page callback' => 'tripal_elasticsearch_table_search_download',
-    'access callback' => user_access('access content'),
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['elasticsearch/gene_download'] = [
+    'page callback' => 'tripal_elasticsearch_gene_search_download',
+    'access arguments' => ['access content'],
     'type' => MENU_CALLBACK,
   ];
 
