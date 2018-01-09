@@ -22,7 +22,7 @@ abstract class ESJob{
    *
    * @var int
    */
-  public $chunk = 500;
+  public $chunk = 1;
 
   /**
    * SQL limit.
