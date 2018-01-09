@@ -322,6 +322,11 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
         'title' => NULL,
       ],
     ],
+    'elasticsearch_tips' => [
+      'template' => 'advanced_search',
+      'render element' => 'content',
+      'path' => "$path/theme/templates",
+    ],
   ];
 
   return $themes;
@@ -564,7 +569,10 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
   if (empty($keyword)) {
-    return 'Please enter some content into the search box and click the search button.';
+    $content = '<p>Please enter some content into the search box and click the search button.</p>';
+    $content .= theme('elasticsearch_tips');
+
+    return $content;
   }
 
   // Run Elasticsearch.
@@ -593,8 +601,11 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
     return 'Searching is not available. Please try later.';
   }
 
-  if (count($results) == 0) {
-    return "Your search -<strong>" . $keyword . "</strong>- didn't match any content.";
+  if ($results['total'] == 0) {
+    $content = "<p>Your search -<strong>" . $keyword . "</strong>- didn't match any content.</p>";
+    $content .= theme('elasticsearch_tips');
+
+    return $content;
   }
 
   $current_page = $results['page'];

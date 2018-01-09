@@ -259,8 +259,13 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     $content .= '</p>';
   }
 
-  $content .= $formatted;
-  $content .= $results['pager'];
+  if ($results['total'] == 0) {
+    $content .= theme('elasticsearch_tips');
+  }
+  else {
+    $content .= $formatted;
+    $content .= $results['pager'];
+  }
 
   // Add the necessary JS
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
@@ -269,6 +274,9 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
 }
 
 /**
+ * Create downloadable FASTA file.
+ * This function allows up to 1 million records max.
+ *
  * @return void
  */
 function tripal_elasticsearch_gene_search_download() {
@@ -294,8 +302,8 @@ function tripal_elasticsearch_gene_search_download() {
   drupal_add_http_header('Content-Disposition', 'attachment; filename="gene_search_results.fasta"');
 
   // Handle IE downloads
-  drupal_add_http_header("Pragma", "public");
-  drupal_add_http_header("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
+  drupal_add_http_header('Pragma', 'public');
+  drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
 
   try {
     // Stop at 1 million
@@ -309,15 +317,16 @@ function tripal_elasticsearch_gene_search_download() {
         $i,
         $chunk,
       ])->search();
+
       foreach ($records as $record) {
         print tripal_elasticsearch_put_fasta_line($record['uniquename'], $record['sequence'], [
           'Sequence Length' => $record['sequence_length'],
           'Type' => $record['type'],
         ]);
       }
+
       $i += $chunk;
     }
-
   } catch (Exception $exception) {
     print 'Error occurred while generating file. Please try again later.';
     return;
@@ -325,6 +334,8 @@ function tripal_elasticsearch_gene_search_download() {
 }
 
 /**
+ * Create a FASTA line.
+ *
  * @param string $name
  * @param string $sequence
  * @param array $meta
