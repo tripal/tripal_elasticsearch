@@ -201,8 +201,8 @@ class GeneSearchIndexJob extends ESJob {
 
     foreach ($keys as $id) {
       $url = NULL;
-      if (function_exists('tripal_get_chado_entity_id')) {
-        $eid = tripal_get_chado_entity_id('feature', $id);
+      if (function_exists('chado_get_record_entity_by_table')) {
+        $eid = chado_get_record_entity_by_table('feature', $id);
         if ($eid !== NULL) {
           $url = 'bio_data/' . $eid;
         }
