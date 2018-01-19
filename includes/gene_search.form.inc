@@ -223,13 +223,22 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   try {
     $es = new ESInstance();
   } catch (Exception $exception) {
-    drupal_set_message($exception->getMessage(), 'error');
+    drupal_set_message('An error encountered while processing your request. Please try again later.', 'error');
+    watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: '.$exception->getMessage(), [], WATCHDOG_ERROR);
     return '';
   }
 
   $query = tripal_elasticsearch_gene_search_index_query_mapper($_GET);
-  $results = $es->setTableSearchParams('gene_search_index', '', $query)
-    ->paginate(15);
+
+  try {
+    $results = $es->setTableSearchParams('gene_search_index', '', $query)
+      ->paginate(15);
+  } catch (Exception $exception) {
+    drupal_set_message('An error encountered while processing your request. Please try again later.', 'error');
+    watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: '.$exception->getMessage(), [], WATCHDOG_ERROR);
+    return '';
+  }
+
 
   $formatted = tripal_elasticsearch_gene_search_index_results_formatter($results['results']);
 
