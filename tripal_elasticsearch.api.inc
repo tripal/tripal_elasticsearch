@@ -187,8 +187,8 @@ function get_website_search_results_category_list($keyword) {
         $search_website_count_by_category[$node_type] = $count;
       }
     } catch (Exception $exception) {
-      tripal_report_error('tripal_elasticsearch', 'TRIPAL_WARNING', $exception->getMessage());
-      watchdog('tripal_elasticsearch', $exception->getMessage());
+      drupal_set_message('The search service is currently unavailable. Please try again later.', 'error');
+      watchdog('tripal_elasticsearch', $exception->getMessage(), [], 'error');
     }
   }
 

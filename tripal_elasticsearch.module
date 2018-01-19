@@ -598,7 +598,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
   } catch (\Exception $e) {
     tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $e->getMessage());
 
-    return 'Searching is not available. Please try later.';
+    return 'The search service is currently unavailable. Please try again later.';
   }
 
   if ($results['total'] == 0) {
