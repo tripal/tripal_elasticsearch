@@ -62,6 +62,8 @@ function tripal_elasticsearch_menu() {
   $items[$admin_url_base] = [
     'title' => 'Tripal Elasticsearch',
     'description' => t('Administration pages for Tripal Elasticsearch'),
+    'page callback' => 'drupal_goto',
+    'page arguments' => [$admin_url_base . '/connection'],
     'access arguments' => ['administer tripal elasticsearch'],
     //'page callback' => 'tripal_elasticsearch_admin_home',
     'type' => MENU_NORMAL_ITEM,
@@ -75,9 +77,10 @@ function tripal_elasticsearch_menu() {
     'description' => t('Add or edit Elasticsearch connections for this site or remote sites.'),
     'file' => 'includes/tripal_elasticsearch.connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK,
     'weight' => 0
   ];
+
 
   // Create routing for editing and deleting individual remote entries
   $items[$admin_url_base . '/connection/edit/%'] = [
