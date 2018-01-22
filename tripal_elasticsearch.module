@@ -6,14 +6,14 @@
  */
 
 require 'tripal_elasticsearch.api.inc';
-require 'includes/search_form_management.form.inc';
+require 'includes/tripal_elasticsearch.search_forms.form.inc';
 require 'includes/search_box.form.inc';
-require 'includes/indices_management.form.inc';
+require 'includes/tripal_elasticsearch.indices.form.inc';
 require 'includes/gene_search.form.inc';
 require 'tripal_elasticsearch.ws.inc';
 require 'includes/tuning.form.inc';
 require 'includes/tripal_elasticsearch.fields.inc';
-require 'includes/collections.form.inc';
+require 'includes/tripal_elasticsearch.collections.form.inc';
 
 // Auto discover and include jobs and ES classes.
 tripal_elasticsearch_auto_discover_classes();
@@ -43,127 +43,139 @@ function tripal_elasticsearch_init() {
  * Implements hook_menu().
  */
 function tripal_elasticsearch_menu() {
-  $admin_url_base = 'admin/tripal/extension/tripal_elasticsearch';
+  $url = 'admin/tripal/extension/tripal_elasticsearch';
 
-  $items[$admin_url_base] = [
+  $items = [];
+
+  $items[$url] = [
     'title' => 'Tripal Elasticsearch',
     'description' => t('Administration pages for Tripal Elasticsearch'),
+    'page callback' => 'drupal_goto',
+    'page arguments' => [$url . '/connection'],
     'access arguments' => ['administer tripal elasticsearch'],
+    'type' => MENU_NORMAL_ITEM,
   ];
 
-  $items[$admin_url_base . '/elasticsearch_connection'] = [
+  $items[$url . '/connection'] = [
     'title' => 'Connections',
     'access arguments' => ['administer tripal elasticsearch'],
     'page callback' => 'drupal_get_form',
     'page arguments' => ['elasticsearch_connection_form'],
-    'access arguments' => ['administer tripal elasticsearch'],
     'description' => t('Add or edit Elasticsearch connections for this site or remote sites.'),
-    'file' => 'includes/elasticsearch_connection.form.inc',
+    'file' => 'includes/tripal_elasticsearch.connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0
   ];
 
+
   // Create routing for editing and deleting individual remote entries
-  $items[$admin_url_base . '/elasticsearch_connection/edit/%'] = [
+  $items[$url . '/connection/edit/%'] = [
     'title' => t('Edit Remote Server'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['remote_edit_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/elasticsearch_connection.form.inc',
+    'file' => 'includes/tripal_elasticsearch.connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
   ];
 
-  $items[$admin_url_base . '/elasticsearch_connection/delete/%'] = [
+  $items[$url . '/connection/delete/%'] = [
     'title' => t('Delete Remote Server'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['remote_delete_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/elasticsearch_connection.form.inc',
+    'file' => 'includes/tripal_elasticsearch.connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
   ];
 
-  $items[$admin_url_base . '/indices_management'] = [
+  $items[$url . '/indices'] = [
     'title' => 'Indices',
     'page callback' => 'tripal_elasticsearch_indices_list_page',
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'description' => t('Manage your Elasticsearch indices.  Create, edit, or delete indices, check their status, or manage settings such as cross-site querying.'),
+    'type' => MENU_LOCAL_TASK,
   ];
 
-  $items[$admin_url_base . '/indices_management/list'] = [
+  $items[$url . '/indices/list'] = [
     'title' => 'List Indices',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   ];
 
-  $items[$admin_url_base . '/indices_management/create'] = [
+  $items[$url . '/indices/create'] = [
     'title' => 'Create Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_indexing_form'],
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   ];
 
-  $items[$admin_url_base . '/indices_management/edit/%'] = [
+  $items[$url . '/indices/edit/%'] = [
     'title' => 'Edit Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_index_edit_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_CALLBACK,
     'weight' => 1,
   ];
 
-  $items[$admin_url_base . '/indices_management/delete/%'] = [
+  $items[$url . '/indices/delete/%'] = [
     'title' => 'Delete Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_index_delete_confirm', 6],
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_CALLBACK,
     'weight' => 1,
   ];
 
-  $items[$admin_url_base . '/search_form_management'] = [
+  $items[$url . '/forms'] = [
     'title' => 'Search Forms',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['table_search_interface_building_form'],
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/search_form_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.search_forms.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'description' => t('Create or edit search forms for custom database table indices.'),
+    'type' => MENU_LOCAL_TASK,
   ];
 
-  $items[$admin_url_base . '/progress'] = [
+  $items[$url . '/progress'] = [
     'title' => 'Progress',
     'page callback' => 'tripal_elasticsearch_progress_page',
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'description' => t('View the progress of indexing jobs.'),
     'type' => MENU_LOCAL_TASK,
   ];
 
-  $items[$admin_url_base . '/progress/all'] = [
+  $items[$url . '/progress/all'] = [
     'title' => 'Progress',
     'page callback' => 'tripal_elasticsearch_get_progress',
     'access arguments' => ['administer tripal elasticsearch'],
-    'file' => 'includes/indices_management.form.inc',
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_CALLBACK,
   ];
 
-  $items[$admin_url_base . '/tuning'] = [
+  $items[$url . '/tuning'] = [
     'title' => 'Tuning',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_tuning_form'],
     'access arguments' => ['administer tripal elasticsearch'],
     'description' => t('Make fine changes to what fields are indexed. Applies to Tripal 3 entities index only.'),
+    'type' => MENU_LOCAL_TASK,
   ];
 
 
