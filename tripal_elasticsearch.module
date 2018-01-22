@@ -39,37 +39,24 @@ function tripal_elasticsearch_init() {
   }
 }
 
-function tripal_elasticsearch_admin_home() {
-  dpm(tripal_elasticsearch_menu());
-  return theme_item_list([
-    'title' => 'Title',
-    'type' => 'ul',
-    'items' => [
-      'some element',
-    ],
-    'attributes' => []
-  ]);
-}
-
 /**
  * Implements hook_menu().
  */
 function tripal_elasticsearch_menu() {
-  $admin_url_base = 'admin/tripal/extension/tripal_elasticsearch';
+  $url = 'admin/tripal/extension/tripal_elasticsearch';
 
   $items = [];
 
-  $items[$admin_url_base] = [
+  $items[$url] = [
     'title' => 'Tripal Elasticsearch',
     'description' => t('Administration pages for Tripal Elasticsearch'),
     'page callback' => 'drupal_goto',
-    'page arguments' => [$admin_url_base . '/connection'],
+    'page arguments' => [$url . '/connection'],
     'access arguments' => ['administer tripal elasticsearch'],
-    //'page callback' => 'tripal_elasticsearch_admin_home',
     'type' => MENU_NORMAL_ITEM,
   ];
 
-  $items[$admin_url_base . '/connection'] = [
+  $items[$url . '/connection'] = [
     'title' => 'Connections',
     'access arguments' => ['administer tripal elasticsearch'],
     'page callback' => 'drupal_get_form',
@@ -83,7 +70,7 @@ function tripal_elasticsearch_menu() {
 
 
   // Create routing for editing and deleting individual remote entries
-  $items[$admin_url_base . '/connection/edit/%'] = [
+  $items[$url . '/connection/edit/%'] = [
     'title' => t('Edit Remote Server'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['remote_edit_confirm', 6],
@@ -93,7 +80,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-  $items[$admin_url_base . '/connection/delete/%'] = [
+  $items[$url . '/connection/delete/%'] = [
     'title' => t('Delete Remote Server'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['remote_delete_confirm', 6],
@@ -103,7 +90,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-  $items[$admin_url_base . '/indices'] = [
+  $items[$url . '/indices'] = [
     'title' => 'Indices',
     'page callback' => 'tripal_elasticsearch_indices_list_page',
     'access arguments' => ['administer tripal elasticsearch'],
@@ -113,13 +100,13 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_LOCAL_TASK,
   ];
 
-  $items[$admin_url_base . '/indices/list'] = [
+  $items[$url . '/indices/list'] = [
     'title' => 'List Indices',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   ];
 
-  $items[$admin_url_base . '/indices/create'] = [
+  $items[$url . '/indices/create'] = [
     'title' => 'Create Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_indexing_form'],
@@ -130,7 +117,7 @@ function tripal_elasticsearch_menu() {
     'weight' => 2,
   ];
 
-  $items[$admin_url_base . '/indices/edit/%'] = [
+  $items[$url . '/indices/edit/%'] = [
     'title' => 'Edit Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_index_edit_confirm', 6],
@@ -141,7 +128,7 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
-  $items[$admin_url_base . '/indices/delete/%'] = [
+  $items[$url . '/indices/delete/%'] = [
     'title' => 'Delete Index',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_index_delete_confirm', 6],
@@ -152,7 +139,7 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
-  $items[$admin_url_base . '/forms'] = [
+  $items[$url . '/forms'] = [
     'title' => 'Search Forms',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['table_search_interface_building_form'],
@@ -163,7 +150,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_LOCAL_TASK,
   ];
 
-  $items[$admin_url_base . '/progress'] = [
+  $items[$url . '/progress'] = [
     'title' => 'Progress',
     'page callback' => 'tripal_elasticsearch_progress_page',
     'access arguments' => ['administer tripal elasticsearch'],
@@ -173,7 +160,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_LOCAL_TASK,
   ];
 
-  $items[$admin_url_base . '/progress/all'] = [
+  $items[$url . '/progress/all'] = [
     'title' => 'Progress',
     'page callback' => 'tripal_elasticsearch_get_progress',
     'access arguments' => ['administer tripal elasticsearch'],
@@ -182,7 +169,7 @@ function tripal_elasticsearch_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-  $items[$admin_url_base . '/tuning'] = [
+  $items[$url . '/tuning'] = [
     'title' => 'Tuning',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_tuning_form'],
