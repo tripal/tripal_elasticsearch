@@ -6,12 +6,12 @@
  */
 
 require 'tripal_elasticsearch.api.inc';
-require 'includes/tripal_elasticsearch.search_forms.form.inc';
-require 'includes/search_box.form.inc';
-require 'includes/tripal_elasticsearch.indices.form.inc';
-require 'includes/gene_search.form.inc';
 require 'tripal_elasticsearch.ws.inc';
-require 'includes/tuning.form.inc';
+require 'includes/tripal_elasticsearch.search_forms.form.inc';
+require 'includes/tripal_elasticsearch.website_search.form.inc';
+require 'includes/tripal_elasticsearch.indices.form.inc';
+require 'includes/tripal_elasticsearch.gene_search.form.inc';
+require 'includes/tripal_elasticsearch.tuning.form.inc';
 require 'includes/tripal_elasticsearch.fields.inc';
 require 'includes/tripal_elasticsearch.collections.form.inc';
 
@@ -65,7 +65,7 @@ function tripal_elasticsearch_menu() {
     'file' => 'includes/tripal_elasticsearch.connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
+    'weight' => 0,
   ];
 
 

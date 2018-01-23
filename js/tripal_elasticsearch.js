@@ -17,20 +17,20 @@
 
       this.settings = settings;
 
-      this.axios   = window.axios.create({
+      this.axios = window.axios.create({
         baseURL: '/elasticsearch/api/v1',
         timeout: 20000,
         headers: {
-          'Accept'          : 'application/json',
+          'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         }
       });
       this.remotes = settings.remotes;
-      this.state   = {
+      this.state = {
         resultsCount: 0,
-        sitesCount  : 0,
-        emptySites  : [],
-        footerBlock : $('<div />')
+        sitesCount: 0,
+        emptySites: [],
+        footerBlock: $('<div />')
       };
 
       this[settings.action]();
@@ -42,9 +42,9 @@
     resetState: function () {
       this.state = {
         resultsCount: 0,
-        sitesCount  : 0,
-        emptySites  : [],
-        footerBlock : $('<div />')
+        sitesCount: 0,
+        emptySites: [],
+        footerBlock: $('<div />')
       };
     },
 
@@ -61,7 +61,11 @@
           }
 
           $('#remote-host-' + remote.id).html(data.status);
-          $('#remote-host-' + remote.id + '-circle').addClass('is-success');
+          if (data.healthy) {
+            $('#remote-host-' + remote.id + '-circle').addClass('is-success');
+          } else {
+            $('#remote-host-' + remote.id + '-circle').addClass('is-danger');
+          }
         }).catch(function (error) {
           var response = error.response;
           if (response) {
@@ -97,10 +101,10 @@
 
       $('#tripal-elasticsearch-search-button').click(function (e) {
         e.preventDefault();
-        var form     = {};
+        var form = {};
         var category = $('#tripal-elasticsearch-search-category').val();
 
-        form.terms    = $('#tripal-elasticsearch-search-field').val();
+        form.terms = $('#tripal-elasticsearch-search-field').val();
         form.category = category === 'Any Type' ? null : category;
 
         this.pushHistory(form);
@@ -135,9 +139,9 @@
      */
     sendSearchRequest: function (form) {
       this.resetState();
-      var block        = $('#tripal-elasticsearch-results-block');
+      var block = $('#tripal-elasticsearch-results-block');
       var resultsBlock = $('<div />');
-      var statsBlock   = $('<div />', {'class': 'elastic-stats-block'});
+      var statsBlock = $('<div />', {'class': 'elastic-stats-block'});
       block.html(statsBlock);
       block.append(resultsBlock);
       block.append(this.state.footerBlock);
@@ -152,9 +156,9 @@
 
         this.axios.get('/search/' + remote.id, {
           params: {
-            terms   : form.terms,
+            terms: form.terms,
             category: form.category,
-            size    : 2
+            size: 2
           }
         }).then(function (response) {
           var data = response.data.data;
@@ -248,7 +252,7 @@
         if (state.category || state.terms) {
           var form = {
             category: state.category || null,
-            terms   : state.terms
+            terms: state.terms
           };
           this.sendSearchRequest(form);
         }
@@ -262,9 +266,9 @@
      */
     setupTableIndexPage: function () {
       // Get page settings
-      var index        = this.settings.index;
+      var index = this.settings.index;
       var formSelector = '#cross-site-search-form';
-      var mapper       = this.settings.field_mapper || {};
+      var mapper = this.settings.field_mapper || {};
 
       // Set global variables
       this.searchURL = index + '/search';
@@ -278,9 +282,9 @@
           event.preventDefault();
         }
 
-        var form     = $(formSelector);
+        var form = $(formSelector);
         var formData = this.formToObject(form);
-        var data     = this.mapForm(formData, mapper);
+        var data = this.mapForm(formData, mapper);
         this.tableSearch(data);
         this.pushHistory(formData);
       }.bind(this));
@@ -293,8 +297,8 @@
      */
     initHistory: function (mapper) {
       var formSelector = '#cross-site-search-form';
-      var data         = this.mapForm(this.formToObject($(formSelector)), mapper);
-      var has_values   = false;
+      var data = this.mapForm(this.formToObject($(formSelector)), mapper);
+      var has_values = false;
       Object.keys(data).map(function (element) {
         if (typeof data[element] === 'string') {
           if (data[element].length > 0) {
@@ -316,11 +320,11 @@
      */
     formToObject: function (form) {
       var formData = form.serializeArray();
-      var data     = {};
+      var data = {};
 
       // Prepare form data
       Object.keys(formData).map(function (key) {
-        var element        = formData[key];
+        var element = formData[key];
         data[element.name] = element.value;
       });
 
@@ -370,9 +374,9 @@
      */
     tableSearch: function (data) {
       this.resetState();
-      var block        = $('#tripal-elasticsearch-results-block');
+      var block = $('#tripal-elasticsearch-results-block');
       var resultsBlock = $('<div />');
-      var statsBlock   = $('<div />', {'class': 'elastic-stats-block'});
+      var statsBlock = $('<div />', {'class': 'elastic-stats-block'});
       block.html(statsBlock);
       block.append(resultsBlock);
       block.append(this.state.footerBlock);
@@ -422,7 +426,7 @@
      * @private
      */
     _squish: function () {
-      var text  = $(this).html();
+      var text = $(this).html();
       var array = text.split('<br>');
 
       if (array.length > 2) {
@@ -433,7 +437,7 @@
         div.append(hidden);
         div.append('<br>');
         var btn = $('<button />', {
-          'type' : 'button',
+          'type': 'button',
           'class': 'btn btn-secondary btn-sm'
         }).html('Show More')
             .click(function (e) {

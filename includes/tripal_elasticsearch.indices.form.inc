@@ -382,8 +382,8 @@ function tripal_elasticsearch_indices_list_page() {
       $exposed_text = "public";
     }
 
-    $edit = l('Edit', 'admin/tripal/extension/tripal_elasticsearch/indices_management/edit/' . $index);
-    $delete = l('Delete', 'admin/tripal/extension/tripal_elasticsearch/indices_management/delete/' . $index);
+    $edit = l('Edit', 'admin/tripal/extension/tripal_elasticsearch/indices/edit/' . $index);
+    $delete = l('Delete', 'admin/tripal/extension/tripal_elasticsearch/indices/delete/' . $index);
     $rows[] = [$index, $table, $exposed_text, $edit, $delete];
   }
 
@@ -392,7 +392,7 @@ function tripal_elasticsearch_indices_list_page() {
     'header' => ['Index Name', 'Indexed Table', 'Exposed', 'Edit', 'Delete'],
     'rows' => $rows,
   ]);
-  $link = l('Create Index', 'admin/tripal/extension/tripal_elasticsearch/indices_management/create');
+  $link = l('Create Index', 'admin/tripal/extension/tripal_elasticsearch/indices/create');
   $output .= '<p>To create a new index, click the ' . $link . ' tab above.</p>';
 
   return $output;
@@ -605,7 +605,7 @@ function tripal_elasticsearch_index_edit_confirm(
   }
 
   if ($index_name == 'website' || $index_name == 'entities' || $index_name == 'gene_search_index') {
-    $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+    $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
 
     return confirm_form($form, 'Edit Index', $cancel_path, '', 'Submit Edits');
   }
@@ -639,7 +639,7 @@ function tripal_elasticsearch_index_edit_confirm(
   }
 
   $description = 'Edit settings for ' . $index_name;
-  $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+  $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
 
   return confirm_form($form, 'Edit Index', $cancel_path, $description, 'Submit Edits');
 }
@@ -667,7 +667,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
         // No need to delete the index, just need to update the table.
         tripal_elasticsearch_update_index_table($form_state['values']);
         drupal_set_message("Your index has been updated. Re-indexing is not necessary.");
-        drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+        drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
         return;
       }
     }
@@ -696,7 +696,7 @@ function tripal_elasticsearch_index_delete_confirm(
 ) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
-  $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices_management';
+  $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
   $form['index_name'] = [
     '#type' => 'hidden',
     '#value' => $index_name,
@@ -715,7 +715,7 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
 
   tripal_elasticsearch_delete_index($index);
   drupal_set_message('Index "' . $index . '" deleted successfully.');
-  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
 /** Creates an index.  Used by the create and edit index functions.
@@ -856,9 +856,9 @@ function tripal_elasticsearch_create_index(&$values) {
 
   drupal_set_message("The indexing job for {$index_name} has been submitted to your CRON queue. You can view the status of your CRON jobs at {$cron_url}");
   if ($index_type === 'database') {
-    drupal_set_message("You may create a search block for this index using the " . l('form management', 'admin/tripal/extension/tripal_elasticsearch/search_form_management') . " section.");
+    drupal_set_message("You may create a search block for this index using the " . l('form management', 'admin/tripal/extension/tripal_elasticsearch/forms') . " section.");
   }
-  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices_management');
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
 /**
