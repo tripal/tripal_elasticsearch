@@ -10,7 +10,7 @@ these concepts, we recommend you select `standard` for tokenizer and `standard` 
 
 ## Creating a new custom Index
 
-You can create a new index by clicking on the create Index tab, or navigating to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices_management/create`.  
+You can create a new index by clicking on the create Index tab, or navigating to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch/indices/create`.  
 
 For a custom index, you will need to:
 
