@@ -134,8 +134,8 @@ function elasticsearch_connection_form($form, &$form_state) {
       $label = $remote->label;
       $description = $remote->description;
       $status = "<span class='elastic-status-circle' id='remote-host-{$remote->id}-circle'></span> <span id='remote-host-{$remote->id}'>Loading</span>";
-      $edit = l("Edit", "admin/tripal/extension/tripal_elasticsearch/elasticsearch_connection/edit/{$remote->id}");
-      $delete = l("Delete", "admin/tripal/extension/tripal_elasticsearch/elasticsearch_connection/delete/{$remote->id}");
+      $edit = l("Edit", "admin/tripal/extension/tripal_elasticsearch/connection/edit/{$remote->id}");
+      $delete = l("Delete", "admin/tripal/extension/tripal_elasticsearch/connection/delete/{$remote->id}");
 
       $rows[] = [$url, $label, $description, $status, $edit, $delete];
     }
