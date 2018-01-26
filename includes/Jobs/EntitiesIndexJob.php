@@ -331,7 +331,7 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function getMultipleEntities() {
-    $query = 'SELECT tripal_entity.id AS entity_id, title, label AS bundle_label
+    $query = 'SELECT tripal_entity.id AS entity_id, title, tripal_bundle.name AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
               WHERE status=1 AND bundle=:bundle
