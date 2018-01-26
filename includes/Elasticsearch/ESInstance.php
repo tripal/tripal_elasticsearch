@@ -558,25 +558,24 @@ class ESInstance {
    * @return array
    */
   public function getAllCategories($version = NULL) {
-    $node_types = [];
-    $entity_types = [];
-    $index_name = [];
+    $types = [];
     $indices = $this->getIndices();
 
     if (in_array('website', $indices) && ($version === NULL || $version === 2)) {
       // Get all node types from the node table.
-      $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchCol('type');
-      $index_name[] = 'website';
+      $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchAll();
+      foreach ($node_types as $type) {
+        $types[$type->type] = $type->type;
+      }
     }
 
     if (in_array('entities', $indices) && ($version === NULL || $version === 3)) {
       // Get all tripal entity types from the tripal_bundle table.
-      $entity_types = db_query("SELECT DISTINCT(label) FROM {tripal_bundle}")->fetchCol('label');
-      $index_name[] = 'entities';
+      $entity_types = db_query("SELECT name, label FROM {tripal_bundle}")->fetchAll();
+      foreach ($entity_types as $type) {
+        $types[$type->name] = $type->label;
+      }
     }
-
-    $types = array_merge($node_types, $entity_types);
-    sort($types);
 
     return $types;
   }

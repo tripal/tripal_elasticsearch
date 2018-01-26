@@ -154,6 +154,7 @@ function build_search_query_from_field_content_pairs(array $field_content_pairs,
  * Function to theme search results count by node type.
  * This function returns an html list.
  *
+ * @throws \Exception
  * @return string
  */
 function get_website_search_results_category_list($keyword) {
@@ -179,12 +180,12 @@ function get_website_search_results_category_list($keyword) {
 
   // Save search results count to an associative array with node types as keys.
   $search_website_count_by_category = [];
-  foreach ($types as $node_type) {
+  foreach ($types as $type => $label) {
     try {
-      $count = $es->setWebsiteSearchParams($keyword, $node_type, implode(',', $index_name))
+      $count = $es->setWebsiteSearchParams($keyword, $type, implode(',', $index_name))
         ->count();
       if ($count > 0) {
-        $search_website_count_by_category[$node_type] = $count;
+        $search_website_count_by_category[$type] = $count;
       }
     } catch (Exception $exception) {
       drupal_set_message('The search service is currently unavailable. Please try again later.', 'error');
@@ -216,7 +217,7 @@ function get_website_search_results_category_list($keyword) {
 
   $items = [];
   foreach ($website_search_by_node_type['count'] as $category => $count) {
-    $text = $category . ' (' . $count . ')';
+    $text = $types[$category] . ' (' . $count . ')';
     $url = 'tripal_elasticsearch/search_website/' . $category;
     $items[] = l($text, $url, [
       'query' => [
