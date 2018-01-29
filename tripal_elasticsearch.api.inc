@@ -251,16 +251,14 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
   if (function_exists('tripal_load_entity')) {
     $entity_labels = db_query('SELECT name, label FROM {tripal_bundle}')->fetchAll();
     foreach ($entity_labels as $label) {
-      $types[$label->name] = $types[$label->label];
+      $types[$label->name] = $label->label;
     }
   }
 
   $node_labels = db_query('SELECT type, name FROM {node_type}')->fetchAll();
   foreach ($node_labels as $label) {
-    $types[$label->type] = $types[$label->name];
+    $types[$label->type] = $label->name;
   }
-
-  dpm($types);
 
   // grab page title and highlight content from search results.
   $rows = [];
