@@ -260,6 +260,7 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
     $types[$label->type] = $types[$label->name];
   }
 
+  dpm($types);
 
   // grab page title and highlight content from search results.
   $rows = [];
