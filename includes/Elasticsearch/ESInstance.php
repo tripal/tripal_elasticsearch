@@ -261,6 +261,7 @@ class ESInstance {
       'number_of_shards' => $shards,
       'number_of_replicas' => $replicas,
       'analysis' => $analysis,
+      'max_result_window' => 1000000
     ];
 
     $properties = [];
