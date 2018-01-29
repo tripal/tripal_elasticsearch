@@ -756,6 +756,8 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
  * Implements hook_node_update().
  */
 function tripal_elasticsearch_node_update($node) {
+  static $tripal_elasticsearch_errors = FALSE;
+
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
@@ -763,7 +765,10 @@ function tripal_elasticsearch_node_update($node) {
       return;
     }
   } catch (Exception $exception) {
-    watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+    if (!$tripal_elasticsearch_errors) {
+      watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+      $tripal_elasticsearch_errors = TRUE;
+    }
   }
 
   // Delete entity if it's status changed
@@ -788,14 +793,17 @@ function tripal_elasticsearch_node_insert($node) {
  * Implements hook_node_delete().
  */
 function tripal_elasticsearch_node_delete($node) {
+  static $tripal_elasticsearch_errors = FALSE;
+
   try {
     $es = new ESInstance();
     $es->deleteEntry('website', 'website', $node->nid);
-    $message = 'Removed document ' . $node->nid . 'from index "website"';
-    watchdog('tripal_elasticsearch', $message);
   } catch (\Exception $e) {
-    $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
-    watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+    if (!$tripal_elasticsearch_errors) {
+      $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
+      watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+      $tripal_elasticsearch_errors = TRUE;
+    }
   }
 }
 
@@ -810,6 +818,8 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
+  static $tripal_elasticsearch_errors = FALSE;
+
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
@@ -817,7 +827,10 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
       return;
     }
   } catch (Exception $exception) {
-    watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+    if (!$tripal_elasticsearch_errors) {
+      watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+      $tripal_elasticsearch_errors = TRUE;
+    }
   }
 
   // Delete entity if it's status changed
@@ -862,14 +875,19 @@ function tripal_elasticsearch_entity_delete($entity, $type) {
     return;
   }
 
+  static $tripal_elasticsearch_errors = FALSE;
+
   try {
     $es = new ESInstance();
     $es->deleteEntry('entities', 'entities', $entity->id);
     $message = 'Removed document ' . $entity->id . 'from index "entities"';
     watchdog('tripal_elasticsearch', $message, WATCHDOG_INFO);
   } catch (\Exception $e) {
-    $message = $e->getMessage() . ' Failed to delete indexed entity ' . $entity->id;
-    watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+    if (!$tripal_elasticsearch_errors) {
+      $message = $e->getMessage() . ' Failed to delete indexed entity ' . $entity->id;
+      watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+      $tripal_elasticsearch_errors = TRUE;
+    }
   }
 }
 
