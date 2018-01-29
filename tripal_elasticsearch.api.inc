@@ -246,6 +246,21 @@ function get_website_search_results_category_list($keyword) {
  * @return string
  */
 function get_website_search_result_table($search_results, $pager = TRUE, $base_url = NULL) {
+  // Get all labels
+  $types = [];
+  if (function_exists('tripal_load_entity')) {
+    $entity_labels = db_query('SELECT name, label FROM {tripal_bundle}')->fetchAll();
+    foreach ($entity_labels as $label) {
+      $types[$label->name] = $types[$label->label];
+    }
+  }
+
+  $node_labels = db_query('SELECT type, name FROM {node_type}')->fetchAll();
+  foreach ($node_labels as $label) {
+    $types[$label->type] = $types[$label->name];
+  }
+
+
   // grab page title and highlight content from search results.
   $rows = [];
   foreach ($search_results as $item) {
@@ -264,10 +279,10 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
     }
 
     if (property_exists($item, 'bundle_label')) {
-      $row .= '<div>Type: <i>' . $item->bundle_label . '</i></div>';
+      $row .= '<div>Type: <i>' . $types[$item->bundle_label] . '</i></div>';
     }
     elseif (property_exists($item, 'type')) {
-      $row .= '<div>Type: <i>' . $item->type . '</i></div>';
+      $row .= '<div>Type: <i>' . $types[$item->type] . '</i></div>';
     }
 
     if (property_exists($item, 'highlight')) {
