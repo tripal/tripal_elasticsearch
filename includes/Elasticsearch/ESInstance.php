@@ -37,7 +37,7 @@ class ESInstance {
    * Establishes a connection to a host.
    *
    * @param null $host
-   *
+   * @throws \Exception
    * @return void
    */
   public function __construct($host = NULL) {
@@ -244,14 +244,9 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams(
-    $index_name,
-    $shards = 5,
-    $replicas = 0,
-    $tokenizer = 'standard',
-    $token_filters = [],
-    $field_mapping_types = []
-  ) {
+  public function setIndexParams($index_name, $shards = 5, $replicas = 0,
+                                 $tokenizer = 'standard', $token_filters = [],
+                                 $field_mapping_types = []) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -472,13 +467,7 @@ class ESInstance {
    *
    * @return array
    */
-  public function bulk(
-    $operation,
-    $index,
-    $entries,
-    $type = NULL,
-    $id_key = NULL
-  ) {
+  public function bulk($operation, $index, $entries, $type = NULL, $id_key = NULL) {
     if (count($entries) === 0) {
       return [];
     }
@@ -520,7 +509,7 @@ class ESInstance {
    * Paginate search results.
    *
    * @param $per_page
-   *
+   * @throws \Exception
    * @return array
    */
   public function paginate($per_page) {
@@ -555,6 +544,7 @@ class ESInstance {
   /**
    * Get all available categories.
    *
+   * @throws \Exception
    * @return array
    */
   public function getAllCategories($version = NULL) {
@@ -609,9 +599,10 @@ class ESInstance {
   /**
    * Returns results from all indices.
    *
-   * @param $terms
-   * @param $size
-   *
+   * @param string $terms
+   * @param int $size
+   * @param string|null $category
+   * @throws \Exception
    * @return array
    */
   public function searchWebIndices($terms, $size, $category = NULL) {
@@ -684,8 +675,9 @@ class ESInstance {
   /**
    * Get a single record.
    *
-   * @param $index
-   * @param $id
+   * @param string $index
+   * @param string $type
+   * @param int $id
    *
    * @return array
    */

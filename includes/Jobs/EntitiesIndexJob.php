@@ -86,20 +86,24 @@ class EntitiesIndexJob extends ESJob {
    * Bulk index all entries if there are more than one.
    */
   public function handle() {
-    $this->es = new ESInstance();
-    $records = $this->get();
-    $records = $this->loadContent($records);
+    try {
+      $this->es = new ESInstance();
+      $records = $this->get();
+      $records = $this->loadContent($records);
 
-    if ($this->total > 1) {
-      if (!$this->shouldUpdate) {
-        $this->es->bulkIndex($this->index, $records, $this->index, 'entity_id');
+      if ($this->total > 1) {
+        if (!$this->shouldUpdate) {
+          $this->es->bulkIndex($this->index, $records, $this->index, 'entity_id');
+        }
+        else {
+          $this->es->bulkUpdate($this->index, $records, $this->index, 'entity_id');
+        }
       }
-      else {
-        $this->es->bulkUpdate($this->index, $records, $this->index, 'entity_id');
+      elseif (count($records) > 0) {
+        $this->es->createEntry($this->index, $this->index, $records[0]->entity_id, $records[0]);
       }
-    }
-    elseif (count($records) > 0) {
-      $this->es->createEntry($this->index, $this->index, $records[0]->entity_id, $records[0]);
+    } catch (Exception $exception) {
+      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
     }
   }
 
@@ -180,9 +184,9 @@ class EntitiesIndexJob extends ESJob {
    * @return array
    */
   protected function getPriorityList($fields) {
-//    if ($this->id !== NULL) {
-//      return $this->getAllFields($fields);
-//    }
+    //    if ($this->id !== NULL) {
+    //      return $this->getAllFields($fields);
+    //    }
 
     return $this->prioritizeFields($fields);
   }
@@ -241,7 +245,7 @@ class EntitiesIndexJob extends ESJob {
       // If we find a match for the priority round add to the should-be-indexed fields list
       // Or if this is a single entity add all the fields to the list
       if (isset($indexed[$id]) && ($indexed[$id] == $this->priority_round || $this->id !== NULL)) {
-        if($this->id !== null && $indexed[$id] == 0) {
+        if ($this->id !== NULL && $indexed[$id] == 0) {
           // This field is not supposed to be indexed
           continue;
         }

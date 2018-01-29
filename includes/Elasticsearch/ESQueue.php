@@ -152,7 +152,7 @@ class ESQueue{
         $job->handle();
         $total = $job->total();
       } catch (Exception $exception) {
-        watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
+        tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
         $total = $job->chunk ?: 1;
       }
 
