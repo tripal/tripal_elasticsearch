@@ -801,7 +801,7 @@ function tripal_elasticsearch_node_delete($node) {
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
       $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
-      watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
+      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $message);
       $tripal_elasticsearch_errors = TRUE;
     }
   }
@@ -840,6 +840,8 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     return;
   }
 
+  // the entities job will verify if the record already exists or if it should
+  // create a new entry for it
   $job = new EntitiesIndexJob($entity->bundle, $entity->id);
   $job->dispatch();
 }
