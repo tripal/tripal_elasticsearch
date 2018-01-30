@@ -41,8 +41,7 @@ function drush_tripal_elasticsearch_es_run_tests() {
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
               WHERE status=1 AND bundle=:bundle", [':bundle' => $table])->fetchField();
 
-  for ($i = 193845; $i < $max; $i += 100) {
-    //      for ($i = 0; $i < $max; $i += 100) {
+  for ($i = 0; $i < $max; $i += 100) {
     $records = db_query("SELECT tripal_entity.id AS entity_id, title, tripal_bundle.name AS bundle_label
               FROM tripal_entity
               JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
@@ -63,6 +62,8 @@ function drush_tripal_elasticsearch_es_run_tests() {
     $mem = memory_get_usage();
     $memory_usage[$i][] = $mem;
     print "After load memory Usage: " . number_format($mem) . " bytes\n";
+
+    $entities = NULL;
 
     print "\n ============ \n\n";
   }
