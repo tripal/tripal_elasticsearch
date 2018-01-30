@@ -32,8 +32,9 @@ The Tripal Elasticsearch module allows connections to local and remote servers. 
 ### Connect to your local Elastic cluster
 
 Go to `http://[your-tripal-site-domain]/admin/tripal/extension/tripal_elasticsearch` and 
-enter the host and port of your elastic cluster.  Make sure that the Server Type radio button is set to **local**. For example, the image below shows that
-the Elastic server is running on the same host as the Tripal site, and the port is 9203.
+enter the host and port of your elastic cluster.  Make sure that the Server Type radio button is set to **local**. For example, the image below shows that the Elasticsearch server is running on the same host as the Tripal site, and the port is 9203.
+
+**NOTE:** Default Elasticsearch port is **9200**.
 
 ![connect to elastic](../images/elastic_search_connect.png)
 
