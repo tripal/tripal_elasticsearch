@@ -58,7 +58,7 @@ function drush_tripal_elasticsearch_es_run_tests() {
     $memory_usage[$i][] = $mem;
     print "Before load memory Usage: " . number_format($mem) . " bytes\n";
     print "Loading entities SELECT * FROM {" . $table . "} ORDER BY entity_id DESC OFFSET $i LIMIT 100\n";
-    $entities = tripal_load_entity('TripalEntity', $entity_ids);
+    $entities = tripal_load_entity('TripalEntity', $entity_ids, TRUE);
     $mem = memory_get_usage();
     $memory_usage[$i][] = $mem;
     print "After load memory Usage: " . number_format($mem) . " bytes\n";

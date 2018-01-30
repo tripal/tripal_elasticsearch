@@ -127,7 +127,7 @@ class EntitiesIndexJob extends ESJob {
 
     // Load priority list
     $priority = $this->getPriorityList($fields);
-    $entities = tripal_load_entity('TripalEntity', $ids, FALSE, $priority['ids']);
+    $entities = tripal_load_entity('TripalEntity', $ids, TRUE, $priority['ids']);
     foreach ($records as $record) {
       $this->total++;
 
