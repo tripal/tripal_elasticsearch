@@ -31,14 +31,25 @@ function drush_tripal_elasticsearch_es_run_tests() {
 
   $table = '';
   foreach ($bundles as $bundle) {
-    $table = 'chado_' . $bundle->name;
+    $table = $bundle->name;
   }
 
   $memory_usage = [];
 
-   for ($i = 193845; $i < (193845 + 700); $i += 100) {
-//  for ($i = 0; $i < (100); $i += 100) {
-    $records = db_query("SELECT * FROM {" . $table . "} ORDER BY entity_id DESC OFFSET $i LIMIT 100")->fetchAll();
+  $max = db_query("SELECT COUNT(*)
+              FROM tripal_entity
+              JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
+              WHERE status=1 AND bundle=:bundle", [':bundle' => $table])->fetchField();
+
+  for ($i = 193845; $i < $max; $i += 100) {
+    //      for ($i = 0; $i < $max; $i += 100) {
+    $records = db_query("SELECT tripal_entity.id AS entity_id, title, tripal_bundle.name AS bundle_label
+              FROM tripal_entity
+              JOIN tripal_bundle ON tripal_entity.term_id = tripal_bundle.term_id
+              WHERE status=1 AND bundle=:bundle
+              ORDER BY tripal_entity.id DESC
+              OFFSET :offset
+              LIMIT 100", [':bundle' => $table, ':offset' => $i])->fetchAll();
     $entity_ids = array_map(function ($record) {
       return $record->entity_id;
     }, $records);
@@ -60,6 +71,6 @@ function drush_tripal_elasticsearch_es_run_tests() {
   $mask = "|%-15s |%-25s |\n";
   printf($mask, 'OFFSET', 'MEMORY');
   foreach ($memory_usage as $offset => $row) {
-    printf($mask, $offset,  number_format((($row[1] - $row[0]) / 1024) / 1024). ' MB');
+    printf($mask, $offset, number_format((($row[1] - $row[0]) / 1024) / 1024) . ' MB');
   }
 }
