@@ -46,7 +46,7 @@ function get_token_filter_options() {
  */
 function get_field_mapping_types() {
   return drupal_map_assoc([
-    'string',
+    'text',
     'keyword',
     'date',
     'long',
