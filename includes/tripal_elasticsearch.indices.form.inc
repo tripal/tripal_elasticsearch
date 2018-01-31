@@ -739,9 +739,9 @@ function tripal_elasticsearch_create_index(&$values) {
     ]);
     $field_mapping_types = [
       'nid' => 'integer',
-      'type' => 'string',
-      'title' => 'string',
-      'content' => 'string',
+      'type' => 'text',
+      'title' => 'text',
+      'content' => 'text',
     ];
   }
   elseif ($index_type === 'entities') {
@@ -754,9 +754,9 @@ function tripal_elasticsearch_create_index(&$values) {
     ]);
     $field_mapping_types = [
       'entity_id' => 'integer',
-      'bundle_label' => 'string',
-      'title' => 'string',
-      'content' => 'string',
+      'bundle_label' => 'text',
+      'title' => 'text',
+      'content' => 'text',
     ];
   }
   elseif ($index_type === 'gene_search') {
@@ -768,15 +768,15 @@ function tripal_elasticsearch_create_index(&$values) {
       'lowercase',
     ]);
     $field_mapping_types = [
-      'uniquename' => 'string',
+      'uniquename' => 'text',
       'feature_id' => 'integer',
-      'organism_genus' => 'string',
-      'organism_species' => 'string',
-      'organism_common_name' => 'string',
-      'annotations' => 'string',
-      'blast_hit_descriptions' => 'string',
-      'type' => 'string',
-      'sequence' => 'string',
+      'organism_genus' => 'text',
+      'organism_species' => 'text',
+      'organism_common_name' => 'text',
+      'annotations' => 'text',
+      'blast_hit_descriptions' => 'text',
+      'type' => 'text',
+      'sequence' => 'text',
       'sequence_length' => 'integer'
     ];
   }
