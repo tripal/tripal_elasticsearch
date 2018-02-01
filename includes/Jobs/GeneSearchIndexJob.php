@@ -50,6 +50,8 @@ class GeneSearchIndexJob extends ESJob {
 
   /**
    * Execute the indexing job.
+   *
+   * @throws \Exception
    */
   public function handle() {
     $records = $this->get();
@@ -145,6 +147,10 @@ class GeneSearchIndexJob extends ESJob {
    * @return array
    */
   protected function loadBlastData($keys) {
+    if (!db_table_exists('chado.blast_hit_data')) {
+      return [];
+    }
+
     $records = db_query('SELECT feature_id, hit_description, hit_accession FROM chado.blast_hit_data WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
 
     $indexed = [];
