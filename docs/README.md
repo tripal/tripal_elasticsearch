@@ -11,6 +11,7 @@ Tripal Elasticsearch Documentation
 	- [Building Custom Indices](custom-indices.md)
 - [Building Search Forms](forms.md)
 - [Cross Site Searching](cross-site-search.md)
+- [Deleting Indices and Queues](manage_queues.md)
 - [Elasticsearch Daemon](daemon.md) *COMING SOON*
 
 ## Developers Handbook *(under development)*
