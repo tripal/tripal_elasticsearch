@@ -79,6 +79,22 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $organism = $entity->chado_record;
+
+    try {
+      $es = new ESInstance();
+      $query = tripal_elasticsearch_gene_search_index_query_mapper([
+        'organism' => "$organism->genus $organism->species",
+        "search_term" => '*',
+      ]);
+      $count = $es->setTableSearchParams('gene_search_index', '', $query)
+        ->count();
+      if ($count < 1) {
+        return NULL;
+      }
+    } catch (Exception $exception) {
+      return NULL;
+    }
+
     $form = drupal_get_form('tripal_elasticsearch_gene_search_form', TRUE, "$organism->genus $organism->species", [
       'ds_pane' => 'Feature Search',
     ]);
