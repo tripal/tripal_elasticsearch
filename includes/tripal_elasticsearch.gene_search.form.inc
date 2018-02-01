@@ -144,7 +144,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
       'query_string' => [
         'fields' => ['organism_genus', 'organism_species'],
         "query" => "$genus $species",
-        "default_operator" => "OR",
+        "default_operator" => "AND",
       ],
     ];
   }
@@ -155,7 +155,9 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
       'query_string' => [
         'query' => $search_term,
         'fields' => [
-          '_all',
+          'uniquename',
+          'annotations',
+          'blast_hit_descriptions',
         ],
       ],
     ];
@@ -224,7 +226,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     $es = new ESInstance();
   } catch (Exception $exception) {
     drupal_set_message('The search service is currently unavailable. Please try again later.', 'error');
-    watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: '.$exception->getMessage(), [], WATCHDOG_ERROR);
+    watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: ' . $exception->getMessage(), [], WATCHDOG_ERROR);
     return '';
   }
 
@@ -235,7 +237,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
       ->paginate(15);
   } catch (Exception $exception) {
     drupal_set_message('The search service is currently unavailable. Please try again later.', 'error');
-    watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: '.$exception->getMessage(), [], WATCHDOG_ERROR);
+    watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: ' . $exception->getMessage(), [], WATCHDOG_ERROR);
     return '';
   }
 
@@ -256,7 +258,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     $content .= '<p>';
     $content .= l('Download results as FASTA', 'elasticsearch/gene_download', [
       'query' => [
-        'organism' =>isset($_GET['organism']) ? $_GET['organism'] : '',
+        'organism' => isset($_GET['organism']) ? $_GET['organism'] : '',
         'search_term' => $_GET['search_term'],
         'from' => urlencode($_GET['q']),
       ],
