@@ -153,7 +153,7 @@ class ESQueue{
         $total = $job->total();
       } catch (Exception $exception) {
         tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
-        $total = $job->chunk ?: 1;
+        $total = $job->chunk ? $job->chunk : 1;
       }
 
       $remaining = static::updateProgress($job->type, $total);
