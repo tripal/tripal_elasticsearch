@@ -256,7 +256,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     $content .= '<p>';
     $content .= l('Download results as FASTA', 'elasticsearch/gene_download', [
       'query' => [
-        'organism' => $_GET['organism'],
+        'organism' =>isset($_GET['organism']) ? $_GET['organism'] : '',
         'search_term' => $_GET['search_term'],
         'from' => urlencode($_GET['q']),
       ],
