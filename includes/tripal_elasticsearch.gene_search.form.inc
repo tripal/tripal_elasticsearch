@@ -143,7 +143,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     $queries[] = [
       'query_string' => [
         'fields' => ['organism_genus', 'organism_species'],
-        "query" => "\"$genus\" \"$species\"",
+        "query" => "+$genus +$species",
         "default_operator" => "AND",
       ],
     ];
