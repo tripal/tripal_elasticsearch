@@ -161,7 +161,7 @@ function get_website_search_results_category_list($keyword) {
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
-    $types = $es->getAllCategories();
+    $types = $es->getAllCategories(null , true, $keyword);
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_WARNING', $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -180,10 +180,9 @@ function get_website_search_results_category_list($keyword) {
 
   // Save search results count to an associative array with node types as keys.
   $search_website_count_by_category = [];
-  foreach ($types as $type => $label) {
+  foreach ($types['types'] as $type => $label) {
     try {
-      $count = $es->setWebsiteSearchParams($keyword, $type, implode(',', $index_name))
-        ->count();
+      $count = $types['count'][$type];
       if ($count > 0) {
         $search_website_count_by_category[$type] = $count;
       }
@@ -217,7 +216,7 @@ function get_website_search_results_category_list($keyword) {
 
   $items = [];
   foreach ($website_search_by_node_type['count'] as $category => $count) {
-    $text = $types[$category] . ' (' . $count . ')';
+    $text = $types['types'][$category] . ' (' . $count . ')';
     $url = 'tripal_elasticsearch/search_website/' . $category;
     $items[] = l($text, $url, [
       'query' => [

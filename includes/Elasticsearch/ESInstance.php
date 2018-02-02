@@ -37,6 +37,7 @@ class ESInstance {
    * Establishes a connection to a host.
    *
    * @param null $host
+   *
    * @throws \Exception
    * @return void
    */
@@ -261,7 +262,7 @@ class ESInstance {
       'number_of_shards' => $shards,
       'number_of_replicas' => $replicas,
       'analysis' => $analysis,
-      'max_result_window' => 1000000
+      'max_result_window' => 1000000,
     ];
 
     $properties = [];
@@ -510,6 +511,7 @@ class ESInstance {
    * Paginate search results.
    *
    * @param $per_page
+   *
    * @throws \Exception
    * @return array
    */
@@ -545,19 +547,28 @@ class ESInstance {
   /**
    * Get all available categories.
    *
+   * @param int $version Get specific tripal version categories.
+   * @param boolean $get_count Add count to the list. If set to TRUE, elements
+   *                            with 0 count won't be removed.
+   * @param string $keyword Count keyword.
+   *
    * @throws \Exception
    * @return array
+   *          If count is requested, 2 arrays will be returned.
+   *          Otherwise, the structure is $array[$type_label] = $type_label
    */
-  public function getAllCategories($version = NULL) {
+  public function getAllCategories($version = NULL, $get_count = FALSE, $keyword = '*') {
     $types = [];
     $indices = $this->getIndices();
-
+    $search_index = [];
     if (in_array('website', $indices) && ($version === NULL || $version === 2)) {
       // Get all node types from the node table.
       $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchAll();
       foreach ($node_types as $type) {
         $types[$type->type] = $type->type;
       }
+
+      $search_index[] = 'website';
     }
 
     if (in_array('entities', $indices) && ($version === NULL || $version === 3)) {
@@ -566,9 +577,33 @@ class ESInstance {
       foreach ($entity_types as $type) {
         $types[$type->name] = $type->label;
       }
+
+      $search_index[] = 'entities';
     }
 
-    return $types;
+    // Prevent anonymous categories from showing up.
+    $es = new static();
+    $indices = implode(',', $search_index);
+    $counts = [];
+    foreach ($types as $key => $type) {
+      $count = $es->setWebsiteSearchParams($keyword, $key, $indices)
+        ->count();
+      if ($count < 1 && !$get_count) {
+        unset($types[$key]);
+      }
+      $counts[$key] = $count;
+    }
+
+    if (!$get_count) {
+      return $types;
+    }
+
+    asort($types);
+
+    return [
+      'types' => $types,
+      'count' => $counts,
+    ];
   }
 
   /**
@@ -603,6 +638,7 @@ class ESInstance {
    * @param string $terms
    * @param int $size
    * @param string|null $category
+   *
    * @throws \Exception
    * @return array
    */
