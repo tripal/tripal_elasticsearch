@@ -548,11 +548,16 @@ class ESInstance {
    * Get all available categories.
    *
    * @param int $version Get specific tripal version categories.
+   * @param boolean $get_count Add count to the list. If set to TRUE, elements
+   *                            with 0 count won't be removed.
+   * @param string $keyword Count keyword.
    *
    * @throws \Exception
    * @return array
+   *          If count is requested, 2 arrays will be returned.
+   *          Otherwise, the structure is $array[$type_label] = $type_label
    */
-  public function getAllCategories($version = NULL) {
+  public function getAllCategories($version = NULL, $get_count = FALSE, $keyword = '*') {
     $types = [];
     $indices = $this->getIndices();
     $search_index = [];
@@ -579,15 +584,26 @@ class ESInstance {
     // Prevent anonymous categories from showing up.
     $es = new static();
     $indices = implode(',', $search_index);
+    $counts = [];
     foreach ($types as $key => $type) {
-      $count = $es->setWebsiteSearchParams('*', $type, $indices)
+      $count = $es->setWebsiteSearchParams($keyword, $key, $indices)
         ->count();
-      if ($count < 1) {
+      if ($count < 1 && !$get_count) {
         unset($types[$key]);
       }
+      $counts[$key] = $count;
     }
 
-    return $types;
+    if (!$get_count) {
+      return $types;
+    }
+
+    asort($types);
+
+    return [
+      'types' => $types,
+      'count' => $counts,
+    ];
   }
 
   /**
