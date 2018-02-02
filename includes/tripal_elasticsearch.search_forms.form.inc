@@ -19,7 +19,10 @@ function table_search_interface_building_form($form, &$form_state) {
 
   $form['help'] = [
     '#type' => 'markup',
-    '#markup' => t('This administrative page is used to build search blocks for indexed data. You cannot and do not need to build or alter search blocks for website node or website entity indices.  To begin, select a data table index below.'),
+    '#markup' => t('This administrative page is used to build search blocks for
+                    custom indices. You cannot and do not need to build or alter
+                    search blocks for Tripal Entities, Website and Gene Search
+                    indices. To begin, select a data table index below.'),
   ];
 
   try {
@@ -75,7 +78,8 @@ function table_search_interface_building_form($form, &$form_state) {
     $table_name = $dbtable[0];
 
     if (!$table_name) {
-      drupal_set_message(t("Error: no database table associated with this index.  Recreate the index and try again."), 'error');
+      drupal_set_message(t("Error: no database table associated with this index.
+                            Recreate the index and try again."), 'error');
     }
 
     $index_profile = $existing_indices[$index_name];
@@ -138,7 +142,9 @@ function table_search_interface_building_form($form, &$form_state) {
   $form['manage_block']['index_fields'] = [
     '#type' => 'checkboxes',
     '#title' => t('Select index fields'),
-    '#description' => t('Select which index fields will show up on the table search interface. Click on the settings dropdown below to configure a given field.'),
+    '#description' => t('Select which index fields will show up on the table
+                         search interface. Click on the settings dropdown below
+                         to configure a given field.'),
     '#options' => drupal_map_assoc($index_fields),
     '#default_value' => $start_check,
   ];
@@ -198,8 +204,9 @@ function table_search_interface_building_form($form, &$form_state) {
     $form['manage_block']['field_settings'][$field]['description'] = [
       '#type' => 'textarea',
       '#title' => t('Field description'),
-      '#description' => t('A description for this search.  Enter some text to show users some example searches,
-						or give some instructions.'),
+      '#description' => t('A description for this search. Enter some text to
+                           show users some example searches, or give some
+                           instructions.'),
       '#default_value' => t($settings["form_field_description"]),
     ];
 
@@ -240,14 +247,18 @@ function table_search_interface_building_form($form, &$form_state) {
     $form['manage_block']['field_settings'][$field]['weight'] = [
       '#type' => 'select',
       '#title' => t('Field weight'),
-      '#description' => t('The search rank weight for this field. A higher weight means matches in this field will influence the relevance more.'),
+      '#description' => t('The search rank weight for this field. A higher 
+                            weight means matches in this field will influence
+                            the relevance more.'),
       '#options' => drupal_map_assoc(range(0, 20)),
       '#default_value' => $settings["form_field_weight"],
     ];
     $form['manage_block']['field_settings'][$field]['url_link'] = [
       '#title' => 'URL linking',
       '#type' => 'textfield',
-      '#description' => t('A URL linking for this field. You can add a static url (https://www.ncbi.nim.nih.gov) or a dynamic field (organism/[genus]/[species]'),
+      '#description' => t('A URL linking for this field. You can add a static
+                           url (https://www.ncbi.nim.nih.gov) or a dynamic field
+                           (organism/[genus]/[species]'),
       '#default_value' => $settings["url"],
 
     ];
