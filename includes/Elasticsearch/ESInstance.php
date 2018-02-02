@@ -37,6 +37,7 @@ class ESInstance {
    * Establishes a connection to a host.
    *
    * @param null $host
+   *
    * @throws \Exception
    * @return void
    */
@@ -261,7 +262,7 @@ class ESInstance {
       'number_of_shards' => $shards,
       'number_of_replicas' => $replicas,
       'analysis' => $analysis,
-      'max_result_window' => 1000000
+      'max_result_window' => 1000000,
     ];
 
     $properties = [];
@@ -510,6 +511,7 @@ class ESInstance {
    * Paginate search results.
    *
    * @param $per_page
+   *
    * @throws \Exception
    * @return array
    */
@@ -551,13 +553,15 @@ class ESInstance {
   public function getAllCategories($version = NULL) {
     $types = [];
     $indices = $this->getIndices();
-
+    $search_index = [];
     if (in_array('website', $indices) && ($version === NULL || $version === 2)) {
       // Get all node types from the node table.
       $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchAll();
       foreach ($node_types as $type) {
         $types[$type->type] = $type->type;
       }
+
+      $search_index[] = 'website';
     }
 
     if (in_array('entities', $indices) && ($version === NULL || $version === 3)) {
@@ -565,6 +569,18 @@ class ESInstance {
       $entity_types = db_query("SELECT name, label FROM {tripal_bundle}")->fetchAll();
       foreach ($entity_types as $type) {
         $types[$type->name] = $type->label;
+      }
+
+      $search_index[] = 'entities';
+    }
+
+    // Prevent anonymous categories from showing up.
+    $es = new static();
+    foreach ($types as $key => $type) {
+      $count = $es->setWebsiteSearchParams('*' . $type, implode(',', $search_index))
+        ->count();
+      if ($count < 1) {
+        unset($types[$key]);
       }
     }
 
@@ -603,6 +619,7 @@ class ESInstance {
    * @param string $terms
    * @param int $size
    * @param string|null $category
+   *
    * @throws \Exception
    * @return array
    */
