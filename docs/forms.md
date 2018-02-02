@@ -1,5 +1,8 @@
 **Previous section:  [Indexing](indexing.md)**
 
+# Notice
+Search forms are available only for custom made indices (or indices of type "database"). The default indices (Tripal Entities, Website and Gene Search) have predefined Drupal blocks that can be found at Structure > Blocks or `/admin/structure/block`.
+
 # Building Custom Search Forms
 After your database tables get indexed, you can build a search interface for them.  Note that search blocks for node, entities, and genes are configured automatically and cannot be customized.  
 You can choose to expose all table fields or a subset of fields for searching.
