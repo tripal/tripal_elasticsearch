@@ -9,13 +9,7 @@
  * @param $form
  * @param $form_state
  */
-function tripal_elasticsearch_gene_search_form(
-  $form,
-  &$form_state,
-  $local = TRUE,
-  $organism = NULL,
-  $url_query = []
-) {
+function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRUE, $organism = NULL, $url_query = []) {
   $constructed_url = '';
   $i = 0;
   foreach ($url_query as $key => $value) {
@@ -159,6 +153,9 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     $organism = explode(' ', $organism);
     $genus = array_shift($organism);
     $species = array_shift($organism);
+
+    dpm($genus);
+    dpm($species);
 
     $queries[] = [
       'query_string' => [
