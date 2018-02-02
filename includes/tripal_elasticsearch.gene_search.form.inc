@@ -154,9 +154,6 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     $genus = array_shift($organism);
     $species = array_shift($organism);
 
-    dpm($genus);
-    dpm($species);
-
     $queries[] = [
       'query_string' => [
         'fields' => ['organism_genus', 'organism_species'],
@@ -168,14 +165,22 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
 
   if (isset($arguments['search_term'])) {
     $search_term = str_replace(':', ' AND ', $arguments['search_term']);
+
+    if (isset($arguments['organism']) && !empty($arguments['organism'])) {
+      $fields = [
+        'uniquename',
+        'annotations',
+        'blast_hit_descriptions',
+      ];
+    }
+    else {
+      $fields = ['_all'];
+    }
+
     $queries[] = [
       'query_string' => [
         'query' => $search_term,
-        'fields' => [
-          'uniquename',
-          'annotations',
-          'blast_hit_descriptions',
-        ],
+        'fields' => $fields,
       ],
     ];
   }
