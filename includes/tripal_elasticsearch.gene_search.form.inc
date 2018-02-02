@@ -52,14 +52,34 @@ function tripal_elasticsearch_gene_search_form(
   else {
     $default_organism = ['' => 'Any Organism'];
     $organism_list = chado_query('SELECT genus, species, common_name FROM {organism}')->fetchAll();
-    $organisms = array_map(function ($organism) {
-      $name = "{$organism->genus} {$organism->species}";
-      if (!empty($organism->common_name)) {
-        $name .= " ({$organism->common_name})";
-      }
+    try {
+      $es = new ESInstance();
+      $organisms = [];
+      foreach ($organism_list as $organism) {
+        $name = "{$organism->genus} {$organism->species}";
 
-      return $name;
-    }, $organism_list);
+        $query = tripal_elasticsearch_gene_search_index_query_mapper([
+          'organism' => $name,
+          'search_term' => '*',
+        ]);
+
+        // TODO: CACHE THE RESULTS OF THIS QUERY
+        $count = $es->setTableSearchParams('gene_search_index', '', $query)
+          ->count();
+
+        if ($count < 1) {
+          continue;
+        }
+
+        if (!empty($organism->common_name)) {
+          $name .= " ({$organism->common_name})";
+        }
+
+        $organisms[] = $name;
+      }
+    } catch (Exception $exception) {
+
+    }
 
     $form['options']['organism'] = [
       '#type' => 'select',
