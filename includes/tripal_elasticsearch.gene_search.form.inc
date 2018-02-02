@@ -51,7 +51,7 @@ function tripal_elasticsearch_gene_search_form(
   }
   else {
     $default_organism = ['' => 'Any Organism'];
-    $organism_list = chado_query('SELECT genus, species, common_name FROM {organism} ORDER BY genus ASC')->fetchAll();
+    $organism_list = chado_query('SELECT genus, species, common_name FROM {organism} ORDER BY genus ASC, species ASC')->fetchAll();
     try {
       $es = new ESInstance();
       $organisms = [];
