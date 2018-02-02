@@ -163,7 +163,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     $queries[] = [
       'query_string' => [
         'fields' => ['organism_genus', 'organism_species'],
-        "query" => "+$genus +$species",
+        "query" => "+$genus AND +$species",
         "default_operator" => "AND",
       ],
     ];
@@ -260,7 +260,6 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: ' . $exception->getMessage(), [], WATCHDOG_ERROR);
     return '';
   }
-
 
   $formatted = tripal_elasticsearch_gene_search_index_results_formatter($results['results']);
 
