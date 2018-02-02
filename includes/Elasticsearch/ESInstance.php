@@ -547,6 +547,8 @@ class ESInstance {
   /**
    * Get all available categories.
    *
+   * @param int $version Get specific tripal version categories.
+   *
    * @throws \Exception
    * @return array
    */
@@ -576,8 +578,9 @@ class ESInstance {
 
     // Prevent anonymous categories from showing up.
     $es = new static();
+    $indices = implode(',', $search_index);
     foreach ($types as $key => $type) {
-      $count = $es->setWebsiteSearchParams('*' . $type, implode(',', $search_index))
+      $count = $es->setWebsiteSearchParams('*', $type, $indices)
         ->count();
       if ($count < 1) {
         unset($types[$key]);
