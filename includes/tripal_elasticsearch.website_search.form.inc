@@ -14,8 +14,10 @@
  * @return mixed
  */
 function website_search_box_form($form, &$form_state) {
-  $default = isset($_GET['search_box']) ? $_GET['search_box'] : '';
-  $category = isset($_GET['category']) ? $_GET['category'] : '';
+  global $base_url;
+
+  $default = isset($_GET['search_box']) && $_GET['search_box'] ? $_GET['search_box'] : '';
+  $category = isset($_GET['category']) && $_GET['category'] ? $_GET['category'] : '';
   $form['container'] = [
     '#type' => 'container',
     '#attributes' => [
@@ -46,7 +48,7 @@ function website_search_box_form($form, &$form_state) {
   ];
 
   $form['#method'] = 'GET';
-  $form['#action'] = '/tripal_elasticsearch/search_website/' . $category;
+  $form['#action'] = $base_url . '/tripal_elasticsearch/search_website/' . $category;
 
   return $form;
 }
@@ -159,7 +161,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     try {
       $es = new ESInstance();
       $results_count = $es->setTableSearchParams($index_name, $index_type, $query)
-                          ->count();
+        ->count();
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
