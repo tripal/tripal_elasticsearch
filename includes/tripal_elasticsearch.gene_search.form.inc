@@ -9,13 +9,7 @@
  * @param $form
  * @param $form_state
  */
-function tripal_elasticsearch_gene_search_form(
-  $form,
-  &$form_state,
-  $local = TRUE,
-  $organism = NULL,
-  $url_query = []
-) {
+function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRUE, $organism = NULL, $url_query = []) {
   $constructed_url = '';
   $i = 0;
   foreach ($url_query as $key => $value) {
@@ -163,7 +157,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
     $queries[] = [
       'query_string' => [
         'fields' => ['organism_genus', 'organism_species'],
-        "query" => "+$genus +$species",
+        "query" => "+$genus AND +$species",
         "default_operator" => "AND",
       ],
     ];
@@ -171,14 +165,22 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
 
   if (isset($arguments['search_term'])) {
     $search_term = str_replace(':', ' AND ', $arguments['search_term']);
+
+    if (isset($arguments['organism']) && !empty($arguments['organism'])) {
+      $fields = [
+        'uniquename',
+        'annotations',
+        'blast_hit_descriptions',
+      ];
+    }
+    else {
+      $fields = ['_all'];
+    }
+
     $queries[] = [
       'query_string' => [
         'query' => $search_term,
-        'fields' => [
-          'uniquename',
-          'annotations',
-          'blast_hit_descriptions',
-        ],
+        'fields' => $fields,
       ],
     ];
   }
@@ -260,7 +262,6 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     watchdog('tripal_elasticsearch', 'Feature/Gene search form resulted in this error: ' . $exception->getMessage(), [], WATCHDOG_ERROR);
     return '';
   }
-
 
   $formatted = tripal_elasticsearch_gene_search_index_results_formatter($results['results']);
 

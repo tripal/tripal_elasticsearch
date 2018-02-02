@@ -95,8 +95,10 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
       return NULL;
     }
 
-    $form = drupal_get_form('tripal_elasticsearch_gene_search_form', TRUE, "$organism->genus $organism->species", [
+    $organism_name = "$organism->genus $organism->species";
+    $form = drupal_get_form('tripal_elasticsearch_gene_search_form', TRUE, $organism_name, [
       'ds_pane' => 'Feature Search',
+      'organism' => $organism_name,
     ]);
 
     $content = '<p>You can search this organism’s features in the database by entering search terms in the box. You can search by feature name or annotation.</p>';
