@@ -260,7 +260,6 @@ function table_search_interface_building_form($form, &$form_state) {
                            url (https://www.ncbi.nim.nih.gov) or a dynamic field
                            (organism/[genus]/[species]'),
       '#default_value' => $settings["url"],
-
     ];
   }
 

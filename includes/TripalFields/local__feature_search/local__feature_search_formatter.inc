@@ -92,7 +92,16 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
         return NULL;
       }
     } catch (Exception $exception) {
-      return NULL;
+      $element[] = [
+        '#type' => 'markup',
+        '#markup' => t('<p>Search service is not available at this time. Please 
+                        contact us to fix this issue.</p>'),
+      ];
+      $message = "Feature search in organism {$organism->genus}
+                  {$organism->species} has failed with the following 
+                  message. " . $exception->getMessage();
+      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $message);
+      return;
     }
 
     $organism_name = "$organism->genus $organism->species";
@@ -107,6 +116,8 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
       '#type' => 'markup',
       '#markup' => $content,
     ];
+
+    return;
   }
 
   /**

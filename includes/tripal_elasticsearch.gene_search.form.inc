@@ -42,6 +42,10 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
       '#type' => 'hidden',
       '#value' => $organism,
     ];
+    $form['tripal_pane'] = [
+      '#type' => 'hidden',
+      '#value' => 'group_feature_search',
+    ];
   }
   else {
     $default_organism = ['' => 'Any Organism'];
