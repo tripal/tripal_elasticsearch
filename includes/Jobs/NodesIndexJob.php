@@ -152,7 +152,7 @@ class NodesIndexJob extends ESJob {
    */
   protected function get() {
     if ($this->id !== NULL) {
-      $query = 'SELECT nid, title, node_type.name AS type
+      $query = 'SELECT nid, title, node_type.type AS type
                   FROM {node} 
                   JOIN {node_type} ON node_type.type = node.type
                   WHERE status=1 AND nid=:id';
