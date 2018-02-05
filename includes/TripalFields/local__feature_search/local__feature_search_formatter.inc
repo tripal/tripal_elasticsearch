@@ -106,7 +106,7 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
 
     $organism_name = "$organism->genus $organism->species";
     $form = drupal_get_form('tripal_elasticsearch_gene_search_form', TRUE, $organism_name, [
-      'ds_pane' => 'Feature Search',
+      'tripal_pane' => 'group_feature_search',
       'organism' => $organism_name,
     ]);
 
