@@ -563,9 +563,9 @@ class ESInstance {
     $search_index = [];
     if (in_array('website', $indices) && ($version === NULL || $version === 2)) {
       // Get all node types from the node table.
-      $node_types = db_query("SELECT DISTINCT(type) FROM {node}")->fetchAll();
+      $node_types = db_query("SELECT name, type FROM {node_type}")->fetchAll();
       foreach ($node_types as $type) {
-        $types[$type->type] = $type->type;
+        $types[$type->type] = $type->name;
       }
 
       $search_index[] = 'website';
