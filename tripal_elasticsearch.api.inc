@@ -161,7 +161,7 @@ function get_website_search_results_category_list($keyword) {
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
-    $types = $es->getAllCategories(null , true, $keyword);
+    $types = $es->getAllCategories(NULL, TRUE, $keyword);
   } catch (Exception $exception) {
     tripal_report_error('tripal_elasticsearch', 'TRIPAL_WARNING', $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -277,10 +277,12 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
     }
 
     if (property_exists($item, 'bundle_label')) {
-      $row .= '<div>Type: <i>' . $types[$item->bundle_label] . '</i></div>';
+      $type = isset($types[$item->bundle_label]) ? $types[$item->bundle_label] : $item->bundle_label;
+      $row .= '<div>Type: <i>' . $type . '</i></div>';
     }
     elseif (property_exists($item, 'type')) {
-      $row .= '<div>Type: <i>' . $types[$item->type] . '</i></div>';
+      $type = isset($types[$item->type]) ? $types[$item->type] : $item->type;
+      $row .= '<div>Type: <i>' . $type . '</i></div>';
     }
 
     if (property_exists($item, 'highlight')) {
