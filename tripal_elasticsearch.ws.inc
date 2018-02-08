@@ -320,21 +320,35 @@ function tripal_elasticsearch_results_formatter($search_results, $index_name = N
  * @return string
  */
 function elasticsearch_recursive_implode($glue, $array) {
+  $result = [];
+
+  elasticsearch_recursive_flatten($array, $result);
+
+  $unique = array_unique($result);
+
+  return implode($glue, $unique);
+}
+
+/**
+ * Flatten a nested array.
+ *
+ * @param array $array The input nested array
+ * @param array $result The resulting flattened array
+ */
+function elasticsearch_recursive_flatten($array, &$result) {
   if (!is_array($array)) {
-    return $array;
+    $result[] = $array;
+    return;
   }
 
-  $string = '';
-  foreach ($array as $item) {
-    if (is_array($item)) {
-      $string .= $glue . elasticsearch_recursive_implode($glue, $item);
+  foreach ($array as $value) {
+    if (is_array($value)) {
+      elasticsearch_recursive_unique($value, $result);
     }
     else {
-      $string .= $glue . $item;
+      $result[] = $value;
     }
   }
-
-  return ltrim($string, $glue);
 }
 
 /**
