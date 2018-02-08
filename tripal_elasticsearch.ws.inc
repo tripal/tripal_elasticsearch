@@ -343,7 +343,7 @@ function elasticsearch_recursive_flatten($array, &$result) {
 
   foreach ($array as $value) {
     if (is_array($value)) {
-      elasticsearch_recursive_unique($value, $result);
+      elasticsearch_recursive_flatten($value, $result);
     }
     else {
       $result[] = $value;
