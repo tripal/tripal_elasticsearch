@@ -17,8 +17,9 @@
 
       this.settings = settings;
 
+      var base = settings.base;
       this.axios = window.axios.create({
-        baseURL: '/elasticsearch/api/v1',
+        baseURL: base + '/elasticsearch/api/v1',
         timeout: 20000,
         headers: {
           'Accept': 'application/json',
@@ -63,7 +64,8 @@
           $('#remote-host-' + remote.id).html(data.status);
           if (data.healthy) {
             $('#remote-host-' + remote.id + '-circle').addClass('is-success');
-          } else {
+          }
+          else {
             $('#remote-host-' + remote.id + '-circle').addClass('is-danger');
           }
         }).catch(function (error) {
@@ -380,7 +382,6 @@
       block.html(statsBlock);
       block.append(resultsBlock);
       block.append(this.state.footerBlock);
-
       this.remotes.map(function (remote) {
         var block = this.createSiteBlock(remote);
         resultsBlock.append(block);

@@ -382,6 +382,8 @@ function tripal_elasticsearch_api_v1_categories() {
  * @return mixed
  */
 function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
+  global $base_url;
+
   $form['options'] = [
     '#type' => 'fieldset',
     '#attributes' => [
@@ -447,6 +449,7 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   drupal_add_js([
     'remotes' => $remotes,
     'action' => 'setupSearchPage',
+    'base' => $base_url,
   ], 'setting');
 
   return $form;

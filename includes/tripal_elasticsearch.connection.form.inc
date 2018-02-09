@@ -161,9 +161,15 @@ function elasticsearch_connection_form($form, &$form_state) {
     ];
   }
 
+  global $base_url;
+
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/axios.min.js');
   drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
-  drupal_add_js(['remotes' => $remotes, 'action' => 'getStatus'], 'setting');
+  drupal_add_js([
+    'remotes' => $remotes,
+    'action' => 'getStatus',
+    'base' => $base_url,
+  ], 'setting');
 
   return $form;
 }
