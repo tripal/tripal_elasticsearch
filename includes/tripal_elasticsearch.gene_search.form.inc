@@ -10,6 +10,8 @@
  * @param $form_state
  */
 function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRUE, $organism = NULL, $url_query = []) {
+  global $base_url;
+
   $constructed_url = '';
   $i = 0;
   foreach ($url_query as $key => $value) {
@@ -125,6 +127,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
       'remotes' => $remotes,
       'action' => 'setupTableIndexPage',
       'index' => 'gene_search_index',
+      'base' => $base_url,
     ], 'setting');
     drupal_add_js(drupal_get_path('module', 'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
   }
