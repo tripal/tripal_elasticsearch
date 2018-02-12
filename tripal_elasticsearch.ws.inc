@@ -132,6 +132,13 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
 function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   global $base_url;
 
+  $exposed = tripal_elasticsearch_is_index_exposed(['website', 'entities']);
+
+  if (!$exposed) {
+    return ESResponse::error('403 Forbidden. The request index is not available
+     for cross site search. Contact the admin to mark the index as public', 403);
+  }
+
   // Validate the request
   $terms = isset($_GET['terms']) ? $_GET['terms'] : '';
   $size = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
@@ -174,6 +181,11 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
  */
 function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_host_id) {
   $remote_id = abs(intval(trim($remote_host_id)));
+
+  if (!tripal_elasticsearch_is_index_exposed($index_name)) {
+    return ESResponse::error('403 Forbidden. The request index is not available
+     for cross site search. Contact the admin to mark the index as public', 403);
+  }
 
   if ($remote_id === 0) {
     $host = tripal_elasticsearch_get_local_server_entry();
@@ -469,4 +481,28 @@ function tripal_elasticsearch_get_local_server_entry() {
     'description' => '',
     'url' => $base_url,
   ];
+}
+
+/**
+ * Checks if an index is exposed.
+ *
+ * @param $index_name
+ *
+ * @return bool
+ */
+function tripal_elasticsearch_is_index_exposed($index_name) {
+  // Check if the index is publicly exposed
+  $indices = db_query('SELECT * FROM {tripal_elasticsearch_indices} WHERE index_name IN (:indices)', [
+    ':indices' => is_array($index_name) ? $index_name : [$index_name],
+  ])->fetchAll();
+
+  $exposed = FALSE;
+  foreach ($indices as $index) {
+    if ($index->exposed) {
+      $exposed = TRUE;
+      break;
+    }
+  }
+
+  return $exposed;
 }
