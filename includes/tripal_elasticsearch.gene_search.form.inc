@@ -6,6 +6,8 @@
  */
 
 /**
+ * Gene search form.
+ *
  * @param $form
  * @param $form_state
  */

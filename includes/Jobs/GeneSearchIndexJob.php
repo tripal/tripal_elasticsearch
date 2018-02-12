@@ -38,14 +38,31 @@ class GeneSearchIndexJob extends ESJob {
   protected $total;
 
   /**
+   * Tripal version.
+   * Specify 2 or 3
+   *
+   * @var int
+   */
+  protected $tripal_version;
+
+  /**
+   * Bundle table.
+   * Will equal "chado_feature" if tripal 2.
+   *
+   * @var string
+   */
+  protected $bundle_table;
+
+  /**
    * GeneSearchIndexJob constructor.
    *
-   * @param string $index Name of index to add data to.
+   * @param string Bundle table (if tripal 2, use NULL or chado_feature).
+   * @param int $tripal_version Version of tripal to index.
    */
-  public function __construct($index = NULL) {
-    if ($index) {
-      $this->index = $index;
-    }
+  public function __construct($bundle_table, $tripal_version = 3) {
+    $this->bundle_table = $bundle_table !== NULL ? $bundle_table : 'chado_feature';
+    $this->tripal_version = $tripal_version;
+    $this->type = 'Gene Search Index. Bundle: ' . $bundle_table;
   }
 
   /**
@@ -61,7 +78,7 @@ class GeneSearchIndexJob extends ESJob {
     // Can't use bulk indexing since we are using array data
     // type (ES error not our fault)
     foreach ($records as $record) {
-      $es->createEntry($this->index, $this->table, FALSE, $record);
+      $es->createEntry($this->index, $this->table, $record->feature_id, $record);
     }
   }
 
@@ -71,20 +88,7 @@ class GeneSearchIndexJob extends ESJob {
    * @return mixed
    */
   protected function get() {
-    $query = 'SELECT F.uniquename,
-                     F.feature_id,
-                     F.seqlen AS sequence_length,
-                     F.residues AS sequence,
-                     CV.name AS type,
-                     O.genus AS organism_genus,
-                     O.species AS organism_species,
-                     O.common_name AS organism_common_name
-                FROM chado.feature F
-                INNER JOIN chado.organism O ON F.organism_id = O.organism_id
-                INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
-                ORDER BY feature_id ASC OFFSET :offset LIMIT :limit';
-
-    $records = db_query($query, [
+    $records = db_query($this->getQuery(), [
       ':offset' => $this->offset,
       ':limit' => $this->limit,
     ])->fetchAll();
@@ -97,6 +101,68 @@ class GeneSearchIndexJob extends ESJob {
     }
 
     return $records;
+  }
+
+  /**
+   * Get features depending on the tripal version fron tripal_entity or
+   * chado_organism.
+   *
+   * @return array
+   */
+  protected function getQuery() {
+    if ($this->tripal_version === 3) {
+      return $this->tripal3FeaturesQuery();
+    }
+
+    return $this->tripal3FeaturesQuery();
+  }
+
+  /**
+   * Tripal 3 features query.
+   *
+   * @return string
+   */
+  protected function tripal3FeaturesQuery() {
+    return 'SELECT BT.entity_id as entity_id,
+                   F.uniquename,
+                   F.feature_id,
+                   F.seqlen AS sequence_length,
+                   F.residues AS sequence,
+                   CV.name AS type,
+                   O.genus AS organism_genus,
+                   O.species AS organism_species,
+                   O.common_name AS organism_common_name
+                FROM chado.feature F
+                INNER JOIN chado.organism O ON F.organism_id = O.organism_id
+                INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
+                INNER JOIN ' . db_escape_table($this->bundle_table) . ' BT ON BT.record_id = F.feature_id
+                INNER JOIN tripal_entity TE ON BT.entity_id = TE.id
+                WHERE TE.status = 1
+                ORDER BY TE.id ASC OFFSET :offset LIMIT :limit';
+  }
+
+  /**
+   * Tripal 2 features query.
+   *
+   * @return string
+   */
+  protected function tripal2FeaturesQuery() {
+    return 'SELECT CF.nid as node_id,
+                   F.uniquename,
+                   F.feature_id,
+                   F.seqlen AS sequence_length,
+                   F.residues AS sequence,
+                   CV.name AS type,
+                   O.genus AS organism_genus,
+                   O.species AS organism_species,
+                   O.common_name AS organism_common_name
+                FROM chado.feature F
+                INNER JOIN chado.organism O ON F.organism_id = O.organism_id
+                INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
+                INNER JOIN chado_feature CF ON CF.feature_id = F.feature_id
+                INNER JOIN node ON node.nid = CF.nid
+                WHERE node.status = 1
+                ORDER BY node.nid ASC OFFSET :offset LIMIT :limit';
   }
 
   /**
@@ -117,7 +183,7 @@ class GeneSearchIndexJob extends ESJob {
     $annotations = $this->loadAnnotations($primary_keys);
 
     // Load urls
-    $urls = $this->loadUrlPaths($primary_keys);
+    // $urls = $this->loadUrlPaths($primary_keys);
 
     // Attach data to records
     foreach ($records as $key => $record) {
@@ -128,14 +194,14 @@ class GeneSearchIndexJob extends ESJob {
       }
 
       // Remove any features that we can't link to
-      if (!isset($urls[$record->feature_id]) || empty($urls[$record->feature_id])) {
-        unset($records[$key]);
-        continue;
-      }
+      //      if (!isset($urls[$record->feature_id]) || empty($urls[$record->feature_id])) {
+      //        unset($records[$key]);
+      //        continue;
+      //      }
 
       $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : '';
       $records[$key]->blast_hit_descriptions = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : '';
-      $records[$key]->url = isset($urls[$record->feature_id]) ? $urls[$record->feature_id] : NULL;
+      $records[$key]->url = $this->tripal_version === 3 ? "bio_data/{$record->entity_id}" : "node/{$record->node_id}";
     }
   }
 
@@ -151,7 +217,9 @@ class GeneSearchIndexJob extends ESJob {
       return [];
     }
 
-    $records = db_query('SELECT feature_id, hit_description, hit_accession FROM chado.blast_hit_data WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
+    $records = db_query('SELECT feature_id, hit_description, hit_accession 
+                          FROM chado.blast_hit_data 
+                          WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
 
     $indexed = [];
     foreach ($records as $record) {
@@ -172,7 +240,11 @@ class GeneSearchIndexJob extends ESJob {
    * @return array
    */
   protected function loadAnnotations($keys) {
-    $query = "SELECT db.name AS db_name, dbxref.accession, cv.name AS cv_name, feature_id
+    $query = "SELECT db.name AS db_name,
+                     dbxref.accession AS accession,
+                     cv.name AS cv_name,
+                     feature_id AS feature_id,
+                     cvterm.definition AS definition
               FROM chado.dbxref
               INNER JOIN chado.cvterm ON dbxref.dbxref_id = cvterm.dbxref_id
               INNER JOIN chado.feature_cvterm ON cvterm.cvterm_id = feature_cvterm.cvterm_id
@@ -187,6 +259,7 @@ class GeneSearchIndexJob extends ESJob {
         $record->db_name,
         $record->cv_name,
         $record->accession,
+        $record->definition,
       ];
     }
 
@@ -198,6 +271,7 @@ class GeneSearchIndexJob extends ESJob {
    *
    * @param $keys
    *
+   * @deprecated not completely ignore by the indexer now
    * @return array
    */
   protected function loadUrlPaths($keys) {
@@ -242,6 +316,43 @@ class GeneSearchIndexJob extends ESJob {
    * @return int
    */
   public function count() {
-    return db_query('SELECT COUNT(feature_id) FROM chado.feature')->fetchField();
+    if ($this->tripal_version === 3) {
+      return db_query('SELECT COUNT(TE.id) FROM ' . db_escape_table($this->bundle_table) . ' CB
+               INNER JOIN tripal_entity TE ON TE.id = CB.entity_id
+               WHERE TE.status = 1')->fetchField();
+    }
+
+    return db_query('SELECT COUNT(nid) FROM {chado_feature} CF
+                     INNER JOIN node N ON N.nid = CF.nid
+                     WHERE N.status = 1')->fetchField();
+  }
+
+  /**
+   * A method to quickly create and dispatch indexing jobs.
+   *
+   * @param int $round Priority round (1 or 2)
+   */
+  public static function generateDispatcherJobs() {
+    if (db_table_exists('chado_bundle')) {
+      // Foreach bundle type, create a dispatcher job.
+      $bundles = db_query('SELECT bundle_id FROM {chado_bundle} WHERE data_table = :data_table', [
+        ':data_table' => 'feature',
+      ])->fetchAll();
+
+      foreach ($bundles as $bundle) {
+        $bundle = "chado_bio_data_{$bundle->bundle_id}";
+
+        $job = new GeneSearchIndexJob($bundle, 3);
+        $dispatcher = new DispatcherJob($job);
+        $dispatcher->dispatch();
+      }
+
+      return;
+    }
+
+    // Tripal 2 so index chado feature instead
+    $job = new GeneSearchIndexJob('chado_feature', 2);
+    $dispatcher = new DispatcherJob($job);
+    $dispatcher->dispatch();
   }
 }

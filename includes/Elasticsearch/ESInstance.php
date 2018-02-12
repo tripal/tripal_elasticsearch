@@ -729,4 +729,40 @@ class ESInstance {
       return ['found' => FALSE];
     }
   }
+
+  /**
+   * Update field mappings of an index.
+   *
+   * @param string $index_name Index name
+   * @param string $field_name Field name
+   * @param string $field_type Mapping type. E.g, text, integer, etc.
+   *
+   * @throws \Exception
+   * @return array
+   */
+  public function putMapping($index_name, $field_name, $field_type, $index_type = NULL) {
+    if ($index_type === NULL) {
+      $index_type = $index_name;
+    }
+
+    $properties = [
+      $field_name => [
+        'type' => $field_type,
+        'fields' => [
+          'raw' => [
+            'type' => $field_type,
+            'index' => 'not_analyzed',
+          ],
+        ],
+      ],
+    ];
+
+    return $this->client->indices()->putMapping([
+      'index' => $index_name,
+      'type' => $index_type,
+      'body' => [
+        'properties' => $properties,
+      ],
+    ]);
+  }
 }
