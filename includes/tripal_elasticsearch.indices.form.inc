@@ -27,9 +27,15 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   $form['instructions'] = [
     '#type' => 'markup',
     '#markup' => '<h1>Create New Index</h1>
-<p>You can create indices for your local Elasticsearch server here.  There are three types of indices:  website-wide <b>node</b>, website-wide <b>Tripal entity</b>, and <b>database table</b>.  
-The website-wide indices are intended to index all Tripal 2 or Tripal 3 content, respectively, and cannot be configured beyond Token settings.
-  <b>Database table</b> indices can be customized by indexing and displaying specific fields. </p><p>Please note that that the indices of remote Elasticsearch servers cannot be created or edited.</p>',
+                  <p>You can create indices for your local Elasticsearch server
+                  here. There are three types of indices:  website-wide 
+                  <b>node</b>, website-wide <b>Tripal entity</b>, and
+                  <b>database table</b>. The website-wide indices are intended
+                  to index all Tripal 2 or Tripal 3 content, respectively, and
+                  cannot be configured beyond Token settings. <b>Database table</b>
+                  indices can be customized by indexing and displaying specific
+                  fields. </p><p>Please note that that the indices of remote
+                  Elasticsearch servers cannot be created or edited.</p>',
   ];
 
   $index_types = [
@@ -51,7 +57,8 @@ The website-wide indices are intended to index all Tripal 2 or Tripal 3 content,
   $form['index_type'] = [
     '#type' => 'select',
     '#title' => t('Index type'),
-    '#description' => t('If you already have a website-wide node or tripal entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'),
+    '#description' => t('If you already have a website-wide node or tripal
+                         entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'),
     '#options' => $index_types,
     '#default_value' => isset($index_types['website']) ? 'website' : 'database',
   ];
@@ -768,6 +775,8 @@ function tripal_elasticsearch_create_index(&$values) {
       'lowercase',
     ]);
     $field_mapping_types = [
+      'node_id' => 'integer',
+      'entity_id' => 'integer',
       'uniquename' => 'text',
       'feature_id' => 'integer',
       'organism_genus' => 'text',
@@ -777,7 +786,7 @@ function tripal_elasticsearch_create_index(&$values) {
       'blast_hit_descriptions' => 'text',
       'type' => 'text',
       'sequence' => 'text',
-      'sequence_length' => 'integer'
+      'sequence_length' => 'integer',
     ];
   }
   else { //checks and defaults for custom index type
@@ -834,7 +843,7 @@ function tripal_elasticsearch_create_index(&$values) {
       $job = new NodesIndexJob();
       break;
     case 'gene_search':
-      $job = new GeneSearchIndexJob($index_name);
+      GeneSearchIndexJob::generateDispatcherJobs();
       break;
     case 'entities':
       EntitiesIndexJob::generateDispatcherJobs();

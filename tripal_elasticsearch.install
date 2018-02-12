@@ -362,3 +362,21 @@ function tripal_elasticsearch_update_7208() {
     db_add_field('tripal_elasticsearch_queues', 'priority', $spec);
   }
 }
+
+/**
+ * Create new gene search elasticsearch fields.
+ *
+ * @throws \Exception
+ */
+function tripal_elasticsearch_update_7209() {
+  try {
+    $es = new ESInstance();
+    $es->putMapping('gene_search_index', 'entity_id', 'integer');
+    $es->putMapping('gene_search_index', 'node_id', 'integer');
+  } catch (Exception $exception) {
+    print "ERROR: failed to add new elasticsearch fields due to the following error\n";
+    print $exception->getMessage();
+
+    throw $exception;
+  }
+}

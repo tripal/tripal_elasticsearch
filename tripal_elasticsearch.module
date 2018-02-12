@@ -532,6 +532,7 @@ function tripal_elasticsearch_generate_block($delta) {
 /**
  * Implements hook_block_view().
  *
+ * @throws \Exception
  * @param $delta
  */
 function tripal_elasticsearch_block_view($delta = '') {
