@@ -107,7 +107,7 @@ class GeneSearchIndexJob extends ESJob {
    * Get features depending on the tripal version fron tripal_entity or
    * chado_organism.
    *
-   * @return array
+   * @return string
    */
   protected function getQuery() {
     if ($this->tripal_version === 3) {
