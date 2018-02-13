@@ -5,7 +5,7 @@
  * ======================================
  * Dispatch jobs for bulk indexing
  */
-class DispatcherJob extends ESJob{
+class DispatcherJob extends ESJob {
 
   /**
    * Dispatcher job type.
@@ -46,7 +46,7 @@ class DispatcherJob extends ESJob{
     $round = $this->job->hasRounds() ? $this->job->currentRound() : 1;
     ESQueue::initProgress($this->job->type, $this->job->index, $this->total, $round);
 
-    for ($offset = 0; $offset < $this->total; ($offset + $chunk < $this->total) ? ($offset += $chunk) : ($offset += $this->total - $offset)) {
+    for ($offset = 0; $offset < $this->total; $offset += $chunk) {
       $this->job->offset($offset)->limit($chunk)->dispatch();
     }
   }
