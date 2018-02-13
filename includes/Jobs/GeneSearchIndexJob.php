@@ -28,7 +28,7 @@ class GeneSearchIndexJob extends ESJob {
    *
    * @var int
    */
-  public $chunk = 100;
+  public $chunk = 1000;
 
   /**
    * Total number of indexed records.
@@ -132,13 +132,16 @@ class GeneSearchIndexJob extends ESJob {
                    O.genus AS organism_genus,
                    O.species AS organism_species,
                    O.common_name AS organism_common_name
-                FROM chado.feature F
+                FROM ' . db_escape_table($this->bundle_table) . ' BT
+                INNER JOIN chado.feature F ON BT.record_id = F.feature_id
                 INNER JOIN chado.organism O ON F.organism_id = O.organism_id
                 INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
-                INNER JOIN ' . db_escape_table($this->bundle_table) . ' BT ON BT.record_id = F.feature_id
                 INNER JOIN tripal_entity TE ON BT.entity_id = TE.id
-                WHERE TE.status = 1
-                ORDER BY TE.id ASC OFFSET :offset LIMIT :limit';
+                WHERE TE.status = 1 AND BT.mapping_id IN (
+                  SELECT mapping_id FROM ' . db_escape_table($this->bundle_table) . '
+                  ORDER BY entity_id ASC
+                  OFFSET :offset LIMIT :limit
+                )';
   }
 
   /**
@@ -156,10 +159,10 @@ class GeneSearchIndexJob extends ESJob {
                    O.genus AS organism_genus,
                    O.species AS organism_species,
                    O.common_name AS organism_common_name
-                FROM chado.feature F
+                FROM chado_feature CF
                 INNER JOIN chado.organism O ON F.organism_id = O.organism_id
                 INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
-                INNER JOIN chado_feature CF ON CF.feature_id = F.feature_id
+                INNER JOIN chado.feature F ON CF.feature_id = F.feature_id
                 INNER JOIN node ON node.nid = CF.nid
                 WHERE node.status = 1
                 ORDER BY node.nid ASC OFFSET :offset LIMIT :limit';
@@ -317,14 +320,14 @@ class GeneSearchIndexJob extends ESJob {
    */
   public function count() {
     if ($this->tripal_version === 3) {
-      return db_query('SELECT COUNT(TE.id) FROM ' . db_escape_table($this->bundle_table) . ' CB
+      return intval(db_query('SELECT COUNT(entity_id) FROM ' . db_escape_table($this->bundle_table) . ' CB
                INNER JOIN tripal_entity TE ON TE.id = CB.entity_id
-               WHERE TE.status = 1')->fetchField();
+               WHERE TE.status = 1')->fetchField());
     }
 
-    return db_query('SELECT COUNT(nid) FROM {chado_feature} CF
+    return intval(db_query('SELECT COUNT(nid) FROM {chado_feature} CF
                      INNER JOIN node N ON N.nid = CF.nid
-                     WHERE N.status = 1')->fetchField();
+                     WHERE N.status = 1')->fetchField());
   }
 
   /**
