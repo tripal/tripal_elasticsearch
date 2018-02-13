@@ -28,7 +28,7 @@ class GeneSearchIndexJob extends ESJob {
    *
    * @var int
    */
-  public $chunk = 1000;
+  public $chunk = 500;
 
   /**
    * Total number of indexed records.
