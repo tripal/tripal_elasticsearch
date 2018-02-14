@@ -93,8 +93,6 @@ class GeneSearchIndexJob extends ESJob {
       ':limit' => $this->limit,
     ])->fetchAll();
 
-    $this->total = count($records);
-
     if ($this->total > 0) {
       // Eager load all blast hit descriptions and feature annotations
       $this->loadData($records);
@@ -310,7 +308,11 @@ class GeneSearchIndexJob extends ESJob {
    * @return int
    */
   public function total() {
-    return $this->total;
+    if ($this->tripal_version === 3) {
+      return db_query('SELECT COUNT(*) FROM ' . db_escape_table($this->bundle_table))->fetchField();
+    }
+
+    return db_query('SELECT COUNT(*) FROM {chado_feature}')->fetchField();
   }
 
   /**
