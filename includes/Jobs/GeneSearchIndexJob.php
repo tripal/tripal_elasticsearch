@@ -276,19 +276,16 @@ class GeneSearchIndexJob extends ESJob {
    * @return int
    */
   public function total() {
+    $sql = 'SELECT COUNT(*) FROM {chado_feature} 
+              ORDER BY nid ASC 
+              OFFSET :offset LIMIT :limit';
+
     if ($this->tripal_version === 3) {
       $sql = 'SELECT COUNT(*) FROM ' . db_escape_table($this->bundle_table) . ' 
                 ORDER BY mapping_id ASC
                 OFFSET :offset LIMIT :limit';
-      return db_query($sql, [
-        ':offset' => $this->offset,
-        ':limit' => $this->limit,
-      ])->fetchField();
     }
 
-    $sql = 'SELECT COUNT(*) FROM {chado_feature} 
-              ORDER BY nid ASC 
-              OFFSET :offset LIMIT :limit';
     return db_query($sql, [
       ':offset' => $this->offset,
       ':limit' => $this->limit,
