@@ -136,7 +136,7 @@ class GeneSearchIndexJob extends ESJob {
                 INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
                 INNER JOIN tripal_entity TE ON BT.entity_id = TE.id
                 WHERE TE.status = 1 AND BT.mapping_id IN (
-                  SELECT mapping_id FROM ' . db_escape_table($this->bundle_table) . '
+                  SELECT mapping_id FROM {' . db_escape_table($this->bundle_table) . '}
                   ORDER BY entity_id ASC
                   OFFSET :offset LIMIT :limit
                 )';
@@ -157,13 +157,16 @@ class GeneSearchIndexJob extends ESJob {
                    O.genus AS organism_genus,
                    O.species AS organism_species,
                    O.common_name AS organism_common_name
-                FROM chado_feature CF
+                FROM {chado_feature} CF
                 INNER JOIN chado.organism O ON F.organism_id = O.organism_id
                 INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
                 INNER JOIN chado.feature F ON CF.feature_id = F.feature_id
                 INNER JOIN node ON node.nid = CF.nid
-                WHERE node.status = 1
-                ORDER BY node.nid ASC OFFSET :offset LIMIT :limit';
+                WHERE node.status = 1 AND CF.nid IN (
+                    SELECT nid FROM {chado_feature}
+                    ORDER BY nid ASC 
+                    OFFSET :offset LIMIT :limit;
+                )';
   }
 
   /**
@@ -219,7 +222,7 @@ class GeneSearchIndexJob extends ESJob {
     }
 
     $records = db_query('SELECT feature_id, hit_description, hit_accession 
-                          FROM chado.blast_hit_data 
+                          FROM {chado.blast_hit_data} 
                           WHERE feature_id IN (:keys)', [':keys' => $keys])->fetchAll();
 
     $indexed = [];
@@ -246,7 +249,7 @@ class GeneSearchIndexJob extends ESJob {
                      cv.name AS cv_name,
                      feature_id AS feature_id,
                      cvterm.definition AS definition
-              FROM chado.dbxref
+              FROM {chado.dbxref}
               INNER JOIN chado.cvterm ON dbxref.dbxref_id = cvterm.dbxref_id
               INNER JOIN chado.feature_cvterm ON cvterm.cvterm_id = feature_cvterm.cvterm_id
               INNER JOIN chado.db ON dbxref.db_id = db.db_id
@@ -268,51 +271,28 @@ class GeneSearchIndexJob extends ESJob {
   }
 
   /**
-   * Load urls of each feature's node or entity.
-   *
-   * @param $keys
-   *
-   * @deprecated not completely ignore by the indexer now
-   * @return array
-   */
-  protected function loadUrlPaths($keys) {
-    $indexed = [];
-
-    $chado_feature = db_table_exists('chado_feature');
-
-    foreach ($keys as $id) {
-      $url = NULL;
-      if (function_exists('chado_get_record_entity_by_table')) {
-        $eid = chado_get_record_entity_by_table('feature', $id);
-        if ($eid !== NULL) {
-          $url = 'bio_data/' . $eid;
-        }
-      }
-
-      if (empty($url) && $chado_feature) {
-        $nid = db_query('SELECT nid FROM chado_feature WHERE feature_id=:id', [':id' => $id])->fetchField();
-        if ($nid) {
-          $url = "node/{$nid}";
-        }
-      }
-
-      $indexed[$id] = $url;
-    }
-
-    return $indexed;
-  }
-
-  /**
    * Total number of indexed records.
    *
    * @return int
    */
   public function total() {
     if ($this->tripal_version === 3) {
-      return db_query('SELECT COUNT(*) FROM ' . db_escape_table($this->bundle_table))->fetchField();
+      $sql = 'SELECT COUNT(*) FROM ' . db_escape_table($this->bundle_table) . ' 
+                ORDER BY mapping_id ASC
+                OFFSET :offset LIMIT :limit';
+      return db_query($sql, [
+        ':offset' => $this->offset,
+        ':limit' => $this->limit,
+      ])->fetchField();
     }
 
-    return db_query('SELECT COUNT(*) FROM {chado_feature}')->fetchField();
+    $sql = 'SELECT COUNT(*) FROM {chado_feature} 
+              ORDER BY nid ASC 
+              OFFSET :offset LIMIT :limit';
+    return db_query($sql, [
+      ':offset' => $this->offset,
+      ':limit' => $this->limit,
+    ])->fetchField();
   }
 
   /**
