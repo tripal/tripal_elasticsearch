@@ -11,9 +11,6 @@ chdir(DRUPAL_ROOT);
 
 // Bootstrap Drupal.
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-
-require_once __DIR__.'/../tripal_elasticsearch.module';
-
 chdir($current_dir);
 
 /**

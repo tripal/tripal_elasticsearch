@@ -7,7 +7,7 @@ before_script:
   - docker pull bcondon/docker_tripal3
 
 scripts:
-  - docker run  -it -d --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
+  - docker run  -it -d -e DRUPAL_ROOT=/var/www/html --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
   - docker exec -it tripal bash -c 'cd /var/www/html/sites/all/modules/tripal_extensions && git clone https://github.com/tripal/tripal_elasticsearch.git'
   - sleep 20
   - docker exec -it tripal drush pm-enable -y tripal_elasticsearch

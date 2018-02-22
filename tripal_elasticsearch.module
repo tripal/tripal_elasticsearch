@@ -1033,14 +1033,11 @@ function tripal_elasticsearch_table_search_download()
 function tripal_elasticsearch_auto_discover_classes()
 {
     $path = drupal_get_path('module', 'tripal_elasticsearch');
-    echo "FIVEN PATH $path\n";
     foreach (glob("{$path}/includes/Elasticsearch/*.php", GLOB_NOSORT) as $file) {
         require_once $file;
-        echo "FOUND $file\n";
     }
 
     foreach (glob("{$path}/includes/Jobs/*.php", GLOB_NOSORT) as $file) {
         require_once $file;
-        echo "FOUND $file\n";
     }
 }
