@@ -197,12 +197,6 @@ class GeneSearchIndexJob extends ESJob {
         continue;
       }
 
-      // Remove any features that we can't link to
-      //      if (!isset($urls[$record->feature_id]) || empty($urls[$record->feature_id])) {
-      //        unset($records[$key]);
-      //        continue;
-      //      }
-
       $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : '';
       $records[$key]->blast_hit_descriptions = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : '';
       $records[$key]->url = $this->tripal_version === 3 ? "bio_data/{$record->entity_id}" : "node/{$record->node_id}";

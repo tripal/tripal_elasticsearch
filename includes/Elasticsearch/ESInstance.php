@@ -182,13 +182,7 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setTableSearchParams(
-    $index,
-    $type,
-    $query,
-    $offset = [],
-    $highlight = FALSE
-  ) {
+  public function setTableSearchParams($index, $type, $query, $offset = [], $highlight = FALSE) {
     $params = [];
     $params['index'] = $index;
     $params['type'] = $type;
