@@ -10,6 +10,8 @@
  *
  * @param $form
  * @param $form_state
+ *
+ * @throws \Exception
  */
 function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRUE, $organism = NULL, $url_query = []) {
   global $base_url;
@@ -53,35 +55,7 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
   }
   else {
     $default_organism = ['' => 'Any Organism'];
-    $organism_list = chado_query('SELECT genus, species, common_name FROM {organism} ORDER BY genus ASC, species ASC')->fetchAll();
-    try {
-      $es = new ESInstance();
-      $organisms = [];
-      foreach ($organism_list as $organism) {
-        $name = "{$organism->genus} {$organism->species}";
-
-        $query = tripal_elasticsearch_gene_search_index_query_mapper([
-          'organism' => $name,
-          'search_term' => '*',
-        ]);
-
-        // TODO: CACHE THE RESULTS OF THIS QUERY
-        $count = $es->setTableSearchParams('gene_search_index', '', $query)
-          ->count();
-
-        if ($count < 1) {
-          continue;
-        }
-
-        if (!empty($organism->common_name)) {
-          $name .= " ({$organism->common_name})";
-        }
-
-        $organisms[] = $name;
-      }
-    } catch (Exception $exception) {
-
-    }
+    $organisms = tripal_elasticsearch_get_gene_search_organisms();
 
     $form['options']['organism'] = [
       '#type' => 'select',
@@ -211,10 +185,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
  *
  * @return string
  */
-function tripal_elasticsearch_gene_search_index_results_formatter(
-  $search_results,
-  $host = NULL
-) {
+function tripal_elasticsearch_gene_search_index_results_formatter($search_results, $host = NULL) {
   $header = ['Gene Identifier', 'Blast Hit Descriptions', 'Annotations'];
   $rows = [];
   if ($host) {
@@ -394,4 +365,49 @@ function tripal_elasticsearch_put_fasta_line($name, $sequence, array $meta = [])
   $line .= "\n";
 
   return "{$line}{$sequence}\n";
+}
+
+/**
+ * Get a list of available organisms.
+ *
+ * @throws \Exception
+ */
+function tripal_elasticsearch_get_gene_search_organisms() {
+  $sql = 'SELECT genus, species, common_name 
+            FROM {organism} 
+            ORDER BY genus ASC, species ASC';
+
+  $organism_list = chado_query($sql)->fetchAll();
+  try {
+    $es = new ESInstance();
+    $organisms = [];
+    foreach ($organism_list as $organism) {
+      $name = "{$organism->genus} {$organism->species}";
+
+      $query = tripal_elasticsearch_gene_search_index_query_mapper([
+        'organism' => $name,
+        'search_term' => '*',
+      ]);
+
+      // TODO: CACHE THE RESULTS OF THIS QUERY
+      $count = $es->setTableSearchParams('gene_search_index', '', $query)
+        ->count();
+
+      if ($count < 1) {
+        continue;
+      }
+
+      if (!empty($organism->common_name)) {
+        $name .= " ({$organism->common_name})";
+      }
+
+      $organisms[] = $name;
+    }
+  } catch (Exception $exception) {
+    drupal_set_message('Unable to get list of available organisms.
+                        Please contact us to resolve the problem', 'error');
+    return [];
+  }
+
+  return $organisms;
 }
