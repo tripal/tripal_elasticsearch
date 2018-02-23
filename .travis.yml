@@ -13,7 +13,7 @@ before_script:
 
 script:
   - echo "Running docker soon"
-  - docker run  -it -d -v "$HOME/tripal/tripal_elasticsearch":/var/www/html/sites/all/modules/tripal_elaticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
+  - docker run -d -v "$HOME/tripal/tripal_elasticsearch":/var/www/html/sites/all/modules/tripal_elaticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
   - sleep 20
-  - docker exec -it tripal drush pm-enable -y tripal_elasticsearch
-  - docker exec -it tripal bash -c 'cd /var/www/html/sites/all/modules/tripal_elaticsearch composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
+  - docker exec tripal drush pm-enable -y tripal_elasticsearch
+  - docker exec tripal bash -c 'cd /var/www/html/sites/all/modules/tripal_elaticsearch && composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
