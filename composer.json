@@ -5,7 +5,7 @@
   "require": {
     "elasticsearch/elasticsearch": "^5.2",
     "composer/installers": "~1.0",
-    "phpunit/phpunit": "^7.0"
+    "phpunit/phpunit": "^5.0"
   },
   "license": "GPLv3",
   "authors": [
