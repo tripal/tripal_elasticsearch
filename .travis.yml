@@ -12,8 +12,9 @@ before_script:
   - docker pull bcondon/docker_tripal3
 
 script:
+  - pwd
   - ls
-  - docker run -d -v ".":/var/www/html/sites/all/modules/tripal_elasticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
+  - docker run -d -v "$(pwd)":/var/www/html/sites/all/modules/tripal_elasticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
   - sleep 20 # Allow docker to start up in the background
   - docker exec tripal bash -c "mkdir /var/www/html/sites/all/modules/tripal_elasticsearch"
   - docker exec tripal bash -c "cd /var/www/html && drush pm-enable -y tripal_elasticsearch"
