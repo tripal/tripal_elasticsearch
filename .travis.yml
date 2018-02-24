@@ -12,8 +12,8 @@ before_script:
   - docker pull bcondon/docker_tripal3
 
 script:
-  - echo "Running docker soon"
-  - docker run -d -v "$HOME/tripal/tripal_elasticsearch":/var/www/html/sites/all/modules/tripal_elaticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
+  - ls
+  - docker run -d -v "tripal_elasticsearch":/var/www/html/sites/all/modules/tripal_elaticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
   - sleep 20
-  - docker exec tripal drush pm-enable -y tripal_elasticsearch
+  - docker exec tripal drush pm-enable -y tripal_elasticsearch --root=/var/www/html
   - docker exec tripal bash -c 'cd /var/www/html/sites/all/modules/tripal_elaticsearch && composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
