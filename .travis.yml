@@ -16,6 +16,6 @@ script:
   - ls
   - docker run -d -v "$(pwd)":/var/www/html/sites/all/modules/tripal_elasticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
   - sleep 20 # Allow docker to start up in the background
-  - docker exec tripal bash -c "mkdir /var/www/html/sites/all/modules/tripal_elasticsearch"
+  - docker exec tripal bash -c "rm -rf /var/www/html/sites/all/modules/tripal_elasticsearch && mkdir /var/www/html/sites/all/modules/tripal_elasticsearch"
   - docker exec tripal bash -c "cd /var/www/html && drush pm-enable -y tripal_elasticsearch"
   - docker exec tripal bash -c 'cd /var/www/html/sites/all/modules/tripal_elaticsearch && composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
