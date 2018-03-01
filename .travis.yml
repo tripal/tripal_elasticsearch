@@ -2,20 +2,16 @@ language: php
 
 sudo: required
 
-env:
-  - DRUPAL_ROOT=/var/www/html
+notifications:
+  slack: statonlab:pdwrAnplO9Fy6jWEMRHfwE75
 
 services:
   - docker
 
 before_script:
-  - docker pull bcondon/docker_tripal3
+  - docker-compose -f tests/docker-compose.yml up -d
 
 script:
-  - pwd
-  - ls
-  - docker run -d -v "$(pwd)":/var/www/html/sites/all/modules/tripal_elasticsearch --name tripal -p 8080:80 bcondon/docker_tripal3 /bin/bash
-  - sleep 20 # Allow docker to start up in the background
-  - docker exec tripal bash -c "rm -rf /var/www/html/sites/all/modules/tripal_elasticsearch && mkdir /var/www/html/sites/all/modules/tripal_elasticsearch"
-  - docker exec tripal bash -c "cd /var/www/html && drush pm-enable -y tripal_elasticsearch"
-  - docker exec tripal bash -c 'cd /var/www/html/sites/all/modules/tripal_elaticsearch && composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
+  - sleep 15 # Allow docker to start up in the background
+  - docker-compose -f tests/docker-compose.yml exec -it app drush pm-enable -y tripal_elasticsearch
+  - docker-compose -f tests/docker-compose.yml exec -it app bash -c 'cd /modules/tripal_elaticsearch && composer install && ./vendor/bin/phpunit'

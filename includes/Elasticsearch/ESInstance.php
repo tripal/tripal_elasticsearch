@@ -47,7 +47,7 @@ class ESInstance {
     }
 
     if (empty($host)) {
-      throw new Exception('A host was not provided. Please set an Elasticsearch host through the admin interface.');
+      throw new Exception('A host was not provided. Please set an Elasticsearch host through the admin interface.', 100);
     }
 
     if (!is_array($host)) {

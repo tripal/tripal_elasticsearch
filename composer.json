@@ -1,17 +1,18 @@
 {
-  "name": "tripal/tripal_elasticsearch",
-  "description": "Support elasticsearch in Tripal",
-  "type": "drupal-module",
-  "require": {
-    "elasticsearch/elasticsearch": "^5.2",
-    "composer/installers": "~1.0",
-    "phpunit/phpunit": "^5.0"
-  },
-  "license": "GPLv3",
-  "authors": [
-    {
-      "name": "Staton Lab",
-      "email": "support@hardwoodgenomics.org"
-    }
-  ]
+    "name": "tripal/tripal_elasticsearch",
+    "description": "Support elasticsearch in Tripal",
+    "type": "drupal-module",
+    "require-dev": {
+        "elasticsearch/elasticsearch": "^5.2",
+        "composer/installers": "~1.0",
+        "phpunit/phpunit": "~7.0",
+        "statonlab/tripal-test-suite": "~0.0"
+    },
+    "license": "GPLv3",
+    "authors": [
+        {
+            "name": "Staton Lab",
+            "email": "support@hardwoodgenomics.org"
+        }
+    ]
 }

@@ -1,11 +1,14 @@
 <?php
 
-namespace Test;
+namespace Test\Feature;
 
-use PHPUnit\Framework\TestCase;
+use StatonLab\TripalTestSuite\DBTransaction;
+use StatonLab\TripalTestSuite\TripalTestCase;
 
-class ConnectToElasticSearchServerTest extends TestCase
+class ConnectToElasticSearchServerTest extends TripalTestCase
 {
+    use DBTransaction;
+
     /**
      * Tests that an exception is thrown when no host is specified.
      *
@@ -29,7 +32,7 @@ class ConnectToElasticSearchServerTest extends TestCase
      */
     public function should_successfully_connect_to_server_after_specifying_host()
     {
-        variable_set('elasticsearch_host', 'localhost:9200');
+        variable_set('elasticsearch_host', 'http://localhost:9200');
 
         $es = new \ESInstance();
 
