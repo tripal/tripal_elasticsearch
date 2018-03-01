@@ -2,9 +2,6 @@ language: php
 
 sudo: required
 
-notifications:
-  slack: statonlab:pdwrAnplO9Fy6jWEMRHfwE75
-
 services:
   - docker
 
@@ -12,6 +9,6 @@ before_script:
   - docker-compose up -d
 
 script:
-  - sleep 15 # Allow docker to start up in the background
+  - sleep 20 # Allow docker to start up in the background
   - docker-compose exec app drush pm-enable -y tripal_elasticsearch
   - docker-compose exec app bash -c 'cd /modules/tripal_elaticsearch && composer install && ./vendor/bin/phpunit'
