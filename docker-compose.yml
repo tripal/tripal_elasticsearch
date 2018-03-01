@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  app:
+    image: 'statonlab/tripal3'
+    environment:
+      - DRUPAL_ROOT=/var/www/html
+    volumes:
+      - .:/modules/tripal_elasticsearch
+      - ./vendor:/var/www/html/sites/all/libraries/elasticsearch-php
+  elasticsearch:
+    image: 'elasticsearch:5'
+    ports:
+      - "9200:9200"

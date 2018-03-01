@@ -1,0 +1,17 @@
+language: php
+
+php:
+  - 7.1
+
+sudo: required
+
+services:
+  - docker
+
+before_script:
+  - docker-compose up -d
+  - sleep 60
+
+script:
+  - docker-compose exec app drush en -y tripal_elasticsearch
+  - docker-compose exec app bash -c 'cd /modules/tripal_elasticsearch && composer install && ./vendor/bin/phpunit'
