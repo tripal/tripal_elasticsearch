@@ -9,9 +9,9 @@ services:
   - docker
 
 before_script:
-  - docker-compose -f tests/docker-compose.yml up -d
+  - docker-compose up -d
 
 script:
   - sleep 15 # Allow docker to start up in the background
-  - docker-compose -f tests/docker-compose.yml exec -it app drush pm-enable -y tripal_elasticsearch
-  - docker-compose -f tests/docker-compose.yml exec -it app bash -c 'cd /modules/tripal_elaticsearch && composer install && ./vendor/bin/phpunit'
+  - docker-compose exec app drush pm-enable -y tripal_elasticsearch
+  - docker-compose exec app bash -c 'cd /modules/tripal_elaticsearch && composer install && ./vendor/bin/phpunit'
