@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/58019623.svg)](https://zenodo.org/badge/latestdoi/58019623)
+
+
 # Tripal Elasticsearch
 
 The Tripal Elasticsearch module allows you to easily manage the indexing and display of Elasticsearch on your Tripal 
