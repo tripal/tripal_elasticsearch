@@ -149,8 +149,8 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
     $es->setWebsiteSearchParams($query, $bundle_label, '', '', [0, 10], TRUE);
     $count = $es->count();
 
-    for ($i = 0; $i < $count; $i + 500 > $count ? $i = $count - $i : $i += 500) {
-      $results = $es->setWebsiteSearchParams($query, $bundle_label, 'entities', '', [
+    for ($i = 0; $i < $count; $i += 500) {
+      $results = $es->setWebsiteSearchParams($query, $bundle_label, '', '', [
         $i,
         500,
       ], TRUE)->search();
@@ -169,7 +169,7 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
   tripal_create_collection([
     'uid' => $user->uid,
     'collection_name' => $collection_name,
-    'bundle_name' => $bundle_name,
+    'bundle_name' => $bundle_label,
     'ids' => $entities,
     'fields' => $fields,
     'description' => $description,
