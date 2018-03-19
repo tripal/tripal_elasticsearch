@@ -143,7 +143,6 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
   // get the bundle label
   $bundle_label = db_query('SELECT name FROM {tripal_bundle} WHERE name=:name', [':name' => $bundle_name])->fetchField();
   $entities = [];
-  $results = [];
 
   try {
     $es = new ESInstance();
