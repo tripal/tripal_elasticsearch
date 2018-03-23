@@ -12,6 +12,7 @@ Tripal Elasticsearch Documentation
 - [Building Search Forms](forms.md)
 - [Cross Site Searching](cross-site-search.md)
 - [Deleting Indices and Queues](manage_queues.md)
+- [System Resources Management](system-resources.md)
 - [Elasticsearch Daemon](daemon.md) *COMING SOON*
 
 ## Developers Handbook *(under development)*
