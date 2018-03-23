@@ -49,6 +49,8 @@ class NodesIndexJob extends ESJob {
   /**
    * Job handler.
    * Bulk index all entries if there are more than one.
+   *
+   * @throws \Exception
    */
   public function handle() {
     $es = new ESInstance();

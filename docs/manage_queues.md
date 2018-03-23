@@ -6,3 +6,5 @@ they will keep executing if not explicitly deleted. Therefore, before deleting a
 you should delete all queues that contain the name elasticsearch. To do so, visit `/admin/config/system/queue-ui`, check
 all relevant queues and press the  `delete queues` button. After that, go to the manage indices page
 (at `/admin/tripal/extension/tripal_elasticsearch/indices`) and delete the index.
+
+**Next Section:** [System Resources](system-resources.md)
