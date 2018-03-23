@@ -164,7 +164,8 @@ class EntitiesIndexJob extends ESJob {
       $prev_entity = $this->es->getRecord('entities', 'entities', $entity->id);
       if ($prev_entity['found']) {
         $this->shouldUpdate = TRUE;
-        $content = array_merge($prev_entity['_source']['content'], $content);
+        // Use + to preserve keys. array_merge() does not preserve keys.
+        $content = $prev_entity['_source']['content'] + $content;
       }
 
       $all[] = (object) [
