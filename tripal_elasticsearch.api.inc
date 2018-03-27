@@ -243,6 +243,7 @@ function get_website_search_results_category_list($keyword) {
  * @param string $base_url Specify the site that owns the results.
  *
  * @return string
+ * @throws Exception
  */
 function get_website_search_result_table($search_results, $pager = TRUE, $base_url = NULL) {
   // Get all labels
@@ -263,41 +264,66 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
   $rows = [];
   foreach ($search_results as $item) {
     $item = (object) $item;
+    $row = new stdClass();
+    $row->title = $item->title;
     if (isset($item->nid)) {
-      $row = '<h3>' . l($item->title, 'node/' . $item->nid) . '</h3>';
+      //      $row = '<h3>' . l($item->title, 'node/' . $item->nid) . '</h3>';
+      //      if ($base_url) {
+      //        $row = '<h3><a href="' . $base_url . '/node/' . $item->nid . '">' . $item->title . '</a></h3>';
+      //      }
+
       if ($base_url) {
-        $row = '<h3><a href="' . $base_url . '/node/' . $item->nid . '">' . $item->title . '</a></h3>';
+        $row->url = "{$base_url}/node/{$item->nid}";
+      }
+      else {
+        $row->url = "/node/{$item->nid}";
       }
     }
     else {
-      $row = '<h3>' . l($item->title, 'bio_data/' . $item->entity_id) . '</h3>';
+      //      $row = '<h3>' . l($item->title, 'bio_data/' . $item->entity_id) . '</h3>';
+      //      if ($base_url) {
+      //        $row = '<h3><a href="' . $base_url . '/bio_data/' . $item->entity_id . '">' . $item->title . '</a></h3>';
+      //      }
+
       if ($base_url) {
-        $row = '<h3><a href="' . $base_url . '/bio_data/' . $item->entity_id . '">' . $item->title . '</a></h3>';
+        $row->url = "{$base_url}/bio_data/{$item->entity_id}";
+      }
+      else {
+        $row->url = "/bio_data/{$item->entity_id}";
       }
     }
 
+    $row->type = '';
     if (property_exists($item, 'bundle_label')) {
       $type = isset($types[$item->bundle_label]) ? $types[$item->bundle_label] : $item->bundle_label;
-      $row .= '<div>Type: <i>' . $type . '</i></div>';
+      //      $row .= '<div>Type: <i>' . $type . '</i></div>';
+      $row->type = $type;
     }
     elseif (property_exists($item, 'type')) {
       $type = isset($types[$item->type]) ? $types[$item->type] : $item->type;
-      $row .= '<div>Type: <i>' . $type . '</i></div>';
+      //      $row .= '<div>Type: <i>' . $type . '</i></div>';
+      $row->type = $type;
     }
 
+    $row->content = '';
     if (property_exists($item, 'highlight')) {
-      $row .= '<p>' . $item->highlight . '</p>';
+      //      $row .= '<p>' . $item->highlight . '</p>';
+      $row->content = $item->highlight;
     }
 
-    $rows[] = [$row];
+    $rows[] = $row;
   }
 
-  $output = theme('table', [
-    'header' => [],
+  //  $output = theme('table', [
+  //    'header' => [],
+  //    'rows' => $rows,
+  //    'attributes' => [
+  //      'id' => 'es-search-results-table',
+  //    ],
+  //  ]);
+  $output = theme('elasticsearch_results', [
     'rows' => $rows,
-    'attributes' => [
-      'id' => 'es-search-results-table',
-    ],
+    'base_url' => $base_url
   ]);
 
   if ($pager) {
