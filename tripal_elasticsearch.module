@@ -337,6 +337,17 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
       'render element' => 'content',
       'path' => "$path/theme/templates",
     ],
+    'elasticsearch_results' => [
+      'template' => 'elasticsearch_results',
+      // 'render element' => 'elements',
+      'path' => "$path/theme/templates",
+      'variables' => [
+        // The results array
+        'rows' => [],
+        // The base url of the site
+        'base_url' => null
+      ]
+    ],
   ];
 
   return $themes;
@@ -575,6 +586,7 @@ function tripal_elasticsearch_block_view($delta = '') {
  * tripal_elasticsearch_search_results_category_page_callback
  *
  * @param string $node_type Category name
+ * @throws Exception
  */
 function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
