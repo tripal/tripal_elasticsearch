@@ -110,9 +110,15 @@ class NodesIndexJob extends ESJob {
         continue;
       }
 
+      // Ignore nodes with empty titles
+      $title = trim($record->title);
+      if(empty($title)) {
+        continue;
+      }
+
       $all[] = (object) [
         'nid' => $record->nid,
-        'title' => $record->title,
+        'title' => $title,
         'type' => $record->type,
         'content' => $this->cleanHTML($content),
       ];

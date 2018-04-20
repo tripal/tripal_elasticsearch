@@ -100,10 +100,10 @@ class ESInstance {
     $queries = [];
 
     $queries[] = [
-      "query_string" => [
-        "default_field" => "content",
-        "query" => $this->sanitizeQuery($search_terms),
-        "default_operator" => "AND",
+      'query_string' => [
+        'default_field' => 'content',
+        'query' => $this->sanitizeQuery($search_terms),
+        'default_operator' => 'AND',
       ],
     ];
 
@@ -112,42 +112,41 @@ class ESInstance {
 
       if (in_array('website', $indices) && !$force_entities_only) {
         $queries[1]['query_string'] = [
-          "default_field" => "type",
-          "query" => '"' . $node_type . '"',
-          "default_operator" => "AND",
+          'default_field' => 'type',
+          'query' => '"' . $node_type . '"',
+          'default_operator' => 'AND',
         ];
       }
 
       if (in_array('entities', $indices)) {
         $queries[1]['query_string'] = [
-          "default_field" => "bundle_label",
-          "query" => '"' . $node_type . '"',
-          "default_operator" => "AND",
+          'default_field' => 'bundle_label',
+          'query' => '"' . $node_type . '"',
+          'default_operator' => 'AND',
         ];
       }
 
       if (in_array('entities', $indices) && in_array('website', $indices) && !$force_entities_only) {
         $queries[1]['query_string'] = [
-          "fields" => ["type", "bundle_label"],
-          "query" => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
-          "default_operator" => "AND",
+          'fields' => ['type', 'bundle_label'],
+          'query' => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
+          'default_operator' => 'AND',
         ];
       }
     }
 
     $query = [
-      "bool" => [
-        "must" => $queries,
-        "filter" => []
+      'bool' => [
+        'must' => $queries,
       ],
     ];
 
     $highlight = [
-      "pre_tags" => ["<em><b>"],
-      "post_tags" => ["</b></em>"],
-      "fields" => [
-        "content" => [
-          "fragment_size" => 150,
+      'pre_tags' => ['<em><b>'],
+      'post_tags' => ['</b></em>'],
+      'fields' => [
+        'content' => [
+          'fragment_size' => 150,
         ],
       ],
     ];
@@ -302,14 +301,14 @@ class ESInstance {
    * @return array
    * @throws \Exception
    */
-  public function search($return_source = false) {
+  public function search($return_source = FALSE) {
     if (empty($this->searchParams)) {
       throw new Exception('Please build search parameters before attempting to search.');
     }
 
     $hits = $this->client->search($this->searchParams);
 
-    if($return_source) {
+    if ($return_source) {
       return $hits;
     }
 
