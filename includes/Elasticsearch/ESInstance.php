@@ -293,18 +293,25 @@ class ESInstance {
    * Perform the actual search.
    * Use this function after setting the search params.
    *
+   * @param bool $return_source whether to format the results or not.
+   *
    * @see \ESInstance::setTableSearchParams()
    * @see \ESInstance::setWebsiteSearchParams()
    *
    * @return array
    * @throws \Exception
    */
-  public function search() {
+  public function search($return_source = false) {
     if (empty($this->searchParams)) {
       throw new Exception('Please build search parameters before attempting to search.');
     }
 
     $hits = $this->client->search($this->searchParams);
+
+    if($return_source) {
+      return $hits;
+    }
+
     $results = [];
     foreach ($hits['hits']['hits'] as $hit) {
       if (isset($hit['highlight'])) {

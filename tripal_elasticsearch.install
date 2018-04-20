@@ -134,13 +134,13 @@ function tripal_elasticsearch_uninstall() {
 
   // Auto drop anything in the schema
   foreach ($schema as $table => $fields) {
-    if(db_table_exists($table)) {
+    if (db_table_exists($table)) {
       db_drop_table($table);
     }
   }
 
   // Drop tables that are created in the update functions
-  if(db_table_exists('tripal_elasticsearch_indices')) {
+  if (db_table_exists('tripal_elasticsearch_indices')) {
     db_drop_table('tripal_elasticsearch_indices');
   }
 }
@@ -375,6 +375,52 @@ function tripal_elasticsearch_update_7209() {
     $es->putMapping('gene_search_index', 'node_id', 'integer');
   } catch (Exception $exception) {
     print "ERROR: failed to add new elasticsearch fields due to the following error\n";
+    print $exception->getMessage();
+
+    throw $exception;
+  }
+}
+
+/**
+ * Remove blast database content type from website index.
+ *
+ * @throws \Exception
+ */
+function tripal_elasticsearch_update_7210() {
+  try {
+    $es = new ESInstance();
+    $count = $es->setWebsiteSearchParams('*', 'Blast Database', 'website')
+      ->count();
+    $client = $es->client;
+
+    if ($count === 0) {
+      print "No blast database content was found\n";
+      return;
+    }
+
+    for ($i = 0; $i < $count; $i += 100) {
+      $results = $es->setWebsiteSearchParams('*', 'Blast Database', 'website', 'website', [
+        $i,
+        100,
+      ])->search(FALSE);
+      foreach ($results as $result) {
+        $client->deleteByQuery([
+          'index' => 'website',
+          'type' => 'website',
+          'body' => [
+            'query' => [
+              'match' => [
+                'nid' => $result['nid'],
+              ],
+            ],
+          ],
+        ]);
+      }
+    }
+
+    print "Successfully removed all blast database nodes from website index.\n";
+  } catch (Exception $exception) {
+    print "ERROR: failed to remove blast database nodes from website index due to the following exception\n";
     print $exception->getMessage();
 
     throw $exception;
