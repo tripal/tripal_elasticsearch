@@ -168,9 +168,15 @@ class EntitiesIndexJob extends ESJob {
         $content = $prev_entity['_source']['content'] + $content;
       }
 
+      // Ignore entities with empty titles
+      $title = trim($entity->title);
+      if (empty($title)) {
+        continue;
+      }
+
       $all[] = (object) [
         'entity_id' => $entity->id,
-        'title' => $entity->title,
+        'title' => $title,
         'bundle_label' => $record->bundle_label,
         'content' => $content,
       ];
