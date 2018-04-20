@@ -426,3 +426,50 @@ function tripal_elasticsearch_update_7210() {
     throw $exception;
   }
 }
+
+
+/**
+ * Remove blastdb content type from website index.
+ *
+ * @throws \Exception
+ */
+function tripal_elasticsearch_update_7211() {
+  try {
+    $es = new ESInstance();
+    $count = $es->setWebsiteSearchParams('*', 'blastdb', 'website')
+      ->count();
+    $client = $es->client;
+
+    if ($count === 0) {
+      print "No blastdb content was found\n";
+      return;
+    }
+
+    for ($i = 0; $i < $count; $i += 100) {
+      $results = $es->setWebsiteSearchParams('*', 'blastdb', 'website', 'website', [
+        $i,
+        100,
+      ])->search(FALSE);
+      foreach ($results as $result) {
+        $client->deleteByQuery([
+          'index' => 'website',
+          'type' => 'website',
+          'body' => [
+            'query' => [
+              'match' => [
+                'nid' => $result['nid'],
+              ],
+            ],
+          ],
+        ]);
+      }
+    }
+
+    print "Successfully removed all blastdb nodes from website index.\n";
+  } catch (Exception $exception) {
+    print "ERROR: failed to remove blastdb nodes from website index due to the following exception\n";
+    print $exception->getMessage();
+
+    throw $exception;
+  }
+}

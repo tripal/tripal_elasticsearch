@@ -138,6 +138,7 @@ class ESInstance {
     $query = [
       "bool" => [
         "must" => $queries,
+        "filter" => []
       ],
     ];
 
