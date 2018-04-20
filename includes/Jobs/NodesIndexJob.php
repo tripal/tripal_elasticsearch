@@ -194,6 +194,7 @@ class NodesIndexJob extends ESJob {
    * @return int
    */
   public function count() {
-    return db_query('SELECT COUNT(nid) FROM {node} WHERE status=1')->fetchField();
+    return db_query('SELECT COUNT(nid) FROM {node} N
+                      WHERE status=1 AND type != :type', [':type' => 'blastdb'])->fetchField();
   }
 }
