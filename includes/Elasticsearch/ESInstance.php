@@ -266,7 +266,7 @@ class ESInstance {
         'fields' => [
           'raw' => [
             'type' => $mapping_type,
-            'index' => 'not_analyzed',
+            //'index' => 'not_analyzed',
           ],
         ],
       ];
@@ -752,7 +752,7 @@ class ESInstance {
         'fields' => [
           'raw' => [
             'type' => $field_type,
-            'index' => 'not_analyzed',
+            //'index' => 'not_analyzed',
           ],
         ],
       ],

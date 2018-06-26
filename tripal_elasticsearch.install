@@ -389,6 +389,9 @@ function tripal_elasticsearch_update_7209() {
 function tripal_elasticsearch_update_7210() {
   try {
     $es = new ESInstance();
+    if (in_array('website', $es->getIndices())) {
+      return;
+    }
     $count = $es->setWebsiteSearchParams('*', 'Blast Database', 'website')
       ->count();
     $client = $es->client;
@@ -436,6 +439,11 @@ function tripal_elasticsearch_update_7210() {
 function tripal_elasticsearch_update_7211() {
   try {
     $es = new ESInstance();
+
+    if (!in_array('website', $es->getIndices())) {
+      return;
+    }
+
     $count = $es->setWebsiteSearchParams('*', 'blastdb', 'website')
       ->count();
     $client = $es->client;
