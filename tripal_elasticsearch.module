@@ -345,8 +345,8 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
         // The results array
         'rows' => [],
         // The base url of the site
-        'base_url' => null
-      ]
+        'base_url' => NULL,
+      ],
     ],
   ];
 
@@ -586,6 +586,7 @@ function tripal_elasticsearch_block_view($delta = '') {
  * tripal_elasticsearch_search_results_category_page_callback
  *
  * @param string $node_type Category name
+ *
  * @throws Exception
  */
 function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
@@ -836,6 +837,13 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
+    if (in_array('gene_search_index', $indices)) {
+      if (isset($entity->chado_table) && $entity->chado_table === 'feature') {
+        $job = new GeneSearchIndexJob('chado_' . $entity->bundle, 3, $entity->id);
+        $job->dispatch();
+      }
+    }
+
     if (!in_array('entities', $indices)) {
       return;
     }
@@ -894,9 +902,13 @@ function tripal_elasticsearch_entity_delete($entity, $type) {
 
   try {
     $es = new ESInstance();
-    $es->deleteEntry('entities', 'entities', $entity->id);
-    $message = 'Removed document ' . $entity->id . 'from index "entities"';
-    watchdog('tripal_elasticsearch', $message, WATCHDOG_INFO);
+    if (in_array('entities', $es->getIndices())) {
+      $es->deleteEntry('entities', 'entities', $entity->id);
+    }
+
+    if ($entity->chado_table === 'feature' && in_array('gene_search_index', $es->getIndices())) {
+      $es->deleteEntry('gene_search_index', 'chado.feature', $entity->chado_record_id);
+    }
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
       $message = $e->getMessage() . ' Failed to delete indexed entity ' . $entity->id;

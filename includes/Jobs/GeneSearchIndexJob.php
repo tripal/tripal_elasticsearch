@@ -54,15 +54,23 @@ class GeneSearchIndexJob extends ESJob {
   protected $bundle_table;
 
   /**
+   * To index a single entity.
+   *
+   * @var int
+   */
+  protected $entity_id = NULL;
+
+  /**
    * GeneSearchIndexJob constructor.
    *
    * @param string Bundle table (if tripal 2, use NULL or chado_feature).
    * @param int $tripal_version Version of tripal to index.
    */
-  public function __construct($bundle_table, $tripal_version = 3) {
+  public function __construct($bundle_table, $tripal_version = 3, $entity_id = NULL) {
     $this->bundle_table = $bundle_table !== NULL ? $bundle_table : 'chado_feature';
     $this->tripal_version = $tripal_version;
     $this->type = 'Gene Search Index. Bundle: ' . $bundle_table;
+    $this->entity_id = $entity_id;
   }
 
   /**
@@ -71,14 +79,31 @@ class GeneSearchIndexJob extends ESJob {
    * @throws \Exception
    */
   public function handle() {
-    $records = $this->get();
-    $this->total = count($records);
-    $es = new ESInstance();
+    if (!is_null($this->entity_id)) {
+      $records = $this->getSingleEntity();
+    }
+    else {
+      $records = $this->get();
+    }
 
-    // Can't use bulk indexing since we are using array data
-    // type (ES error not our fault)
-    foreach ($records as $record) {
-      $es->createEntry($this->index, $this->table, $record->feature_id, $record);
+    $this->total = count($records);
+
+    try {
+      $es = new ESInstance();
+
+      // Delete the feature if it already exists
+      if (!is_null($this->entity_id) && in_array('gene_search_index', $es->getIndices()) && $this->total > 0) {
+        $record = $records[0];
+        $es->deleteEntry('gene_search_index', 'chado.feature', $record->feature_id);
+      }
+
+      // Can't use bulk indexing since we are using array data
+      // type (ES error not our fault)
+      foreach ($records as $record) {
+        $es->createEntry($this->index, $this->table, $record->feature_id, $record);
+      }
+    } catch (Exception $exception) {
+      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
     }
   }
 
@@ -93,7 +118,38 @@ class GeneSearchIndexJob extends ESJob {
       ':limit' => $this->limit,
     ])->fetchAll();
 
-    if ($this->total > 0) {
+    if (count($records)) {
+      // Eager load all blast hit descriptions and feature annotations
+      $this->loadData($records);
+    }
+
+    return $records;
+  }
+
+  protected function getSingleEntity($entity_id = NULL) {
+    if (!is_numeric($entity_id)) {
+      throw new Exception('Please provide a valid entity id in GeneSearchIndexer');
+    }
+
+    $records = db_query('SELECT BT.entity_id as entity_id,
+                   F.uniquename,
+                   F.feature_id,
+                   F.seqlen AS sequence_length,
+                   F.residues AS sequence,
+                   CV.name AS type,
+                   O.genus AS organism_genus,
+                   O.species AS organism_species,
+                   O.common_name AS organism_common_name
+                FROM ' . db_escape_table($this->bundle_table) . ' BT
+                INNER JOIN chado.feature F ON BT.record_id = F.feature_id
+                INNER JOIN chado.organism O ON F.organism_id = O.organism_id
+                INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
+                INNER JOIN tripal_entity TE ON BT.entity_id = TE.id
+                WHERE TE.status = 1 AND BT.entity_id=:entity_id', [
+      ':entity_id' => $entity_id,
+    ])->fetchAll();
+
+    if (count($records) > 0) {
       // Eager load all blast hit descriptions and feature annotations
       $this->loadData($records);
     }
@@ -117,6 +173,8 @@ class GeneSearchIndexJob extends ESJob {
 
   /**
    * Tripal 3 features query.
+   *
+   * @param int $entity_id Entity id
    *
    * @return string
    */
@@ -192,10 +250,10 @@ class GeneSearchIndexJob extends ESJob {
     // Attach data to records
     foreach ($records as $key => $record) {
       // Get only features that have annotations or blast hit descriptions
-      if (!isset($annotations[$record->feature_id]) && !isset($blast_results[$record->feature_id])) {
-        unset($records[$key]);
-        continue;
-      }
+//      if (!isset($annotations[$record->feature_id]) && !isset($blast_results[$record->feature_id])) {
+//        unset($records[$key]);
+//        continue;
+//      }
 
       $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : '';
       $records[$key]->blast_hit_descriptions = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : '';
