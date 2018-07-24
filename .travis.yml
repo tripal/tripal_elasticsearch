@@ -8,6 +8,9 @@ sudo: required
 services:
   - docker
 
+env:
+  - DRUPAL_ROOT=/var/www/html
+
 before_script:
   - docker-compose up -d
   - sleep 60
