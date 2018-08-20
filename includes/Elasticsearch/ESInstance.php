@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance {
+class ESInstance{
 
   /**
    * Elasticsearch client.
@@ -47,7 +47,8 @@ class ESInstance {
     }
 
     if (empty($host)) {
-      throw new Exception('A host was not provided. Please set an Elasticsearch host through the admin interface.', 100);
+      throw new Exception('A host was not provided. Please set an Elasticsearch host through the admin interface.',
+        100);
     }
 
     if (!is_array($host)) {
@@ -56,6 +57,11 @@ class ESInstance {
 
     // Load the elastic search library
     libraries_load('elasticsearch-php');
+
+    $exists = class_exists("Elasticsearch\\ClientBuilder");
+    if ($exists === FALSE) {
+      throw new Exception('The elasticsearch-php library is not available. Please refer to the prerequisites section of the online documentation.');
+    }
 
     $this->client = Elasticsearch\ClientBuilder::create()
       ->setHosts($host)
@@ -126,7 +132,8 @@ class ESInstance {
         ];
       }
 
-      if (in_array('entities', $indices) && in_array('website', $indices) && !$force_entities_only) {
+      if (in_array('entities', $indices) && in_array('website',
+          $indices) && !$force_entities_only) {
         $queries[1]['query_string'] = [
           'fields' => ['type', 'bundle_label'],
           'query' => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
@@ -182,7 +189,13 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setTableSearchParams($index, $type, $query, $offset = [], $highlight = FALSE) {
+  public function setTableSearchParams(
+    $index,
+    $type,
+    $query,
+    $offset = [],
+    $highlight = FALSE
+  ) {
     $params = [];
     $params['index'] = $index;
     $params['type'] = $type;
@@ -239,9 +252,14 @@ class ESInstance {
    *
    * @return $this
    */
-  public function setIndexParams($index_name, $shards = 5, $replicas = 0,
-                                 $tokenizer = 'standard', $token_filters = [],
-                                 $field_mapping_types = []) {
+  public function setIndexParams(
+    $index_name,
+    $shards = 5,
+    $replicas = 0,
+    $tokenizer = 'standard',
+    $token_filters = [],
+    $field_mapping_types = []
+  ) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -470,7 +488,13 @@ class ESInstance {
    *
    * @return array
    */
-  public function bulk($operation, $index, $entries, $type = NULL, $id_key = NULL) {
+  public function bulk(
+    $operation,
+    $index,
+    $entries,
+    $type = NULL,
+    $id_key = NULL
+  ) {
     if (count($entries) === 0) {
       return [];
     }
@@ -558,11 +582,16 @@ class ESInstance {
    *          If count is requested, 2 arrays will be returned.
    *          Otherwise, the structure is $array[$type_label] = $type_label
    */
-  public function getAllCategories($version = NULL, $get_count = FALSE, $keyword = '*') {
+  public function getAllCategories(
+    $version = NULL,
+    $get_count = FALSE,
+    $keyword = '*'
+  ) {
     $types = [];
     $indices = $this->getIndices();
     $search_index = [];
-    if (in_array('website', $indices) && ($version === NULL || $version === 2)) {
+    if (in_array('website',
+        $indices) && ($version === NULL || $version === 2)) {
       // Get all node types from the node table.
       $node_types = db_query("SELECT name, type FROM {node_type}")->fetchAll();
       foreach ($node_types as $type) {
@@ -572,7 +601,8 @@ class ESInstance {
       $search_index[] = 'website';
     }
 
-    if (in_array('entities', $indices) && ($version === NULL || $version === 3)) {
+    if (in_array('entities',
+        $indices) && ($version === NULL || $version === 3)) {
       // Get all tripal entity types from the tripal_bundle table.
       $entity_types = db_query("SELECT name, label FROM {tripal_bundle}")->fetchAll();
       foreach ($entity_types as $type) {
@@ -587,8 +617,7 @@ class ESInstance {
     $indices = implode(',', $search_index);
     $counts = [];
     foreach ($types as $key => $type) {
-      $count = $es->setWebsiteSearchParams($keyword, $key, $indices)
-        ->count();
+      $count = $es->setWebsiteSearchParams($keyword, $key, $indices)->count();
       if ($count < 1 && !$get_count) {
         unset($types[$key]);
       }
@@ -741,7 +770,12 @@ class ESInstance {
    * @throws \Exception
    * @return array
    */
-  public function putMapping($index_name, $field_name, $field_type, $index_type = NULL) {
+  public function putMapping(
+    $index_name,
+    $field_name,
+    $field_type,
+    $index_type = NULL
+  ) {
     if ($index_type === NULL) {
       $index_type = $index_name;
     }
