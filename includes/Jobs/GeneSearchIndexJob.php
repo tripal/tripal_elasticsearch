@@ -276,11 +276,11 @@ class GeneSearchIndexJob extends ESJob {
     // Get feature bundles
     $records = db_query('SELECT object_id,
                                 subject_id,
-                                f1.uniquename,
-                                f2.uniquename
+                                f1.uniquename as object_uniquename,
+                                f2.uniquename as subject_uniquename
                         FROM chado.feature_relationship fr
                         INNER JOIN chado.feature f1 ON f1.feature_id = fr.object_id
-                        INNER JOIN chado.feautre f2 ON f2.feature_id = fr.subject_id
+                        INNER JOIN chado.feature f2 ON f2.feature_id = fr.subject_id
                         WHERE fr.object_id IN (:keys_1) OR fr.subject_id IN (:keys_2)', [
       ':keys_1' => $keys,
       ':keys_2' => $keys,
@@ -288,8 +288,8 @@ class GeneSearchIndexJob extends ESJob {
 
     $indexed = [];
     foreach ($records as $record) {
-      $indexed[$record->object_id][] = $record;
-      $indexed[$record->subject_id][] = $record;
+      $indexed[$record->object_id][] = $record->subject_uniquename;
+      $indexed[$record->subject_id][] = $record->object_uniquename;
     }
 
     return $indexed;
