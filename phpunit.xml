@@ -7,9 +7,9 @@
          bootstrap="tests/bootstrap.php"
          verbose="true"
          colors="true">
-  <testsuites>
-    <testsuite name="default">
-      <directory suffix="Test.php">tests</directory>
-    </testsuite>
-  </testsuites>
+    <testsuites>
+        <testsuite name="default">
+            <directory suffix="Test.php">tests</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>

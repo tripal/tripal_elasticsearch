@@ -160,7 +160,7 @@
           params: {
             terms: form.terms,
             category: form.category,
-            size: 2
+            size: 5
           }
         }).then(function (response) {
           var data = response.data.data;

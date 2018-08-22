@@ -419,12 +419,18 @@ function tripal_elasticsearch_cron_queue_info() {
  */
 function tripal_elasticsearch_block_info() {
   $blocks = [];
-  // Define block for website search box.
-  $blocks['elasticsearch_website_search_box'] = [
-    'info' => t('Tripal Elasticsearch website search box'),
-    'status' => 1,
-    'cache' => DRUPAL_NO_CACHE,
-  ];
+
+  // Define blocks for table search forms.
+  $sql = "SELECT index_name FROM {tripal_elasticsearch}";
+  $index_names = db_query($sql)->fetchCol('index_name');
+  if (!empty($index_names)) {
+    foreach ($index_names as $index_name) {
+      $blocks['tes_' . $index_name] = [
+        'info' => t('Search block for index: ' . $index_name),
+        'cache' => DRUPAL_NO_CACHE,
+      ];
+    }
+  }
 
   // Define block for website search results by category.
   $blocks['website_search_category'] = [
@@ -451,22 +457,16 @@ function tripal_elasticsearch_block_info() {
 
   $blocks['es_local_gene_search_block'] = [
     'info' => t('Tripal Elasticsearch local gene search form'),
-    'visibility' => BLOCK_VISIBILITY_LISTED,
     'cache' => DRUPAL_NO_CACHE,
     'page' => "elasticsearch/gene-search",
   ];
 
-  // Define blocks for table search forms.
-  $sql = "SELECT index_name FROM {tripal_elasticsearch}";
-  $index_names = db_query($sql)->fetchCol('index_name');
-  if (!empty($index_names)) {
-    foreach ($index_names as $index_name) {
-      $blocks['tes_' . $index_name] = [
-        'info' => t('Search block for index: ' . $index_name),
-        'cache' => DRUPAL_NO_CACHE,
-      ];
-    }
-  }
+  // Define block for website search box.
+  $blocks['elasticsearch_website_search_box'] = [
+    'info' => t('Tripal Elasticsearch website search box'),
+    'status' => TRUE,
+    'cache' => DRUPAL_NO_CACHE,
+  ];
 
   return $blocks;
 }
