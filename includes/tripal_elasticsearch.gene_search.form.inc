@@ -195,10 +195,15 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
   foreach ($search_results as $result) {
     $result = (array) $result;
     if ($host) {
-      $url = "<a href='{$base_url}/{$result['url']}'>{$result['uniquename']}</a>";
+      $url = "<div><a href='{$base_url}/{$result['url']}'>{$result['uniquename']}</a></div>";
     }
     else {
-      $url = l($result['uniquename'], $result['url']);
+      $url = '<div>' . l($result['uniquename'], $result['url']) . '</div>';
+    }
+
+    if (isset($result['related_features']) && count($result['related_features'])) {
+      $url .= '<div>Relationships</div>';
+      $url .= '<div class="es-squish text-muted">' . elasticsearch_recursive_implode('<br>', $result['related_features']) . '</div>';
     }
 
     $result = (array) $result;

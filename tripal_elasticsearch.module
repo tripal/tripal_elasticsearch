@@ -421,7 +421,7 @@ function tripal_elasticsearch_block_info() {
   $blocks = [];
   // Define block for website search box.
   $blocks['elasticsearch_website_search_box'] = [
-    'info' => t('Tripal Elasticsearch website search box'),
+    'info' => t('Tripal Elasticsearch website search form'),
     'status' => 1,
     'cache' => DRUPAL_NO_CACHE,
   ];

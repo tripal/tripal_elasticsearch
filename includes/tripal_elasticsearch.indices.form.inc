@@ -21,6 +21,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+
     return $form;
   }
 
@@ -248,7 +249,8 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
     if ($type === 'entities') {
       $count = db_query('SELECT COUNT(id) FROM {tripal_elasticsearch_priority}')->fetchField();
       if (intval($count) === 0) {
-        form_set_error(0, t('Please configure and submit ') . l('the tuning form', 'admin/tripal/extension/tripal_elasticsearch/tuning') . t(' before creating the entities index.'));
+        form_set_error(0, t('Please configure and submit ') . l('the tuning form',
+            'admin/tripal/extension/tripal_elasticsearch/tuning') . t(' before creating the entities index.'));
       }
     }
   }
@@ -282,6 +284,7 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+
     return NULL;
   }
 
@@ -354,6 +357,7 @@ function tripal_elasticsearch_indices_list_page() {
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
     drupal_set_message("Please check your Elasticsearch Connection.", 'warning');
+
     return '';
   }
 
@@ -461,13 +465,15 @@ function tripal_elasticsearch_index_edit_confirm(
           $table_name = $table_name[0];
         }
 
-        db_query("INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')", [
-          ':index_name' => $index_name,
-          ':table_name' => $table_name,
-        ]);
+        db_query("INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')",
+          [
+            ':index_name' => $index_name,
+            ':table_name' => $table_name,
+          ]);
         $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
       } catch (Exception $exception) {
         drupal_set_message($exception->getMessage(), 'error');
+
         return [];
       }
     }
@@ -501,6 +507,7 @@ function tripal_elasticsearch_index_edit_confirm(
     $index_mappings = $es->getIndexMappings($index_name);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
+
     return [];
   }
 
@@ -516,7 +523,8 @@ function tripal_elasticsearch_index_edit_confirm(
 
   if (!$preset_mappings && $index_type == "table") {
     // there is no dbtable mapping settings yet.  Cron still needs to run!
-    drupal_set_message("The index $index_name has no database mapping. Please make sure that your CRON job has finished running.", 'warning');
+    drupal_set_message("The index $index_name has no database mapping. Please make sure that your CRON job has finished running.",
+      'warning');
   }
 
   $index_settings = ["tokenizer" => "standard", "token_filters" => ""];
@@ -675,6 +683,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
         tripal_elasticsearch_update_index_table($form_state['values']);
         drupal_set_message("Your index has been updated. Re-indexing is not necessary.");
         drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+
         return;
       }
     }
@@ -708,6 +717,7 @@ function tripal_elasticsearch_index_delete_confirm(
     '#type' => 'hidden',
     '#value' => $index_name,
   ];
+
   return confirm_form($form, 'Are you sure?', $cancel_path, $description, 'Delete');
 }
 
@@ -787,6 +797,7 @@ function tripal_elasticsearch_create_index(&$values) {
       'type' => 'text',
       'sequence' => 'text',
       'sequence_length' => 'integer',
+      'related_features' => 'text',
     ];
   }
   else { //checks and defaults for custom index type
@@ -798,6 +809,7 @@ function tripal_elasticsearch_create_index(&$values) {
 
     if (!$index_name) {
       form_set_error('Error: No index name supplied for custom index');
+
       return;
     }
     if (!$field_mapping_types) {
@@ -823,7 +835,8 @@ function tripal_elasticsearch_create_index(&$values) {
     ':url' => $url,
   ];
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)', $insert);
+  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)',
+    $insert);
 
   // Create the index.
   try {
@@ -833,6 +846,7 @@ function tripal_elasticsearch_create_index(&$values) {
   } catch (Exception $exception) {
     form_set_error(0, $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
+
     return;
   }
 
@@ -865,7 +879,8 @@ function tripal_elasticsearch_create_index(&$values) {
 
   drupal_set_message("The indexing job for {$index_name} has been submitted to your CRON queue. You can view the status of your CRON jobs at {$cron_url}");
   if ($index_type === 'database') {
-    drupal_set_message("You may create a search block for this index using the " . l('form management', 'admin/tripal/extension/tripal_elasticsearch/forms') . " section.");
+    drupal_set_message("You may create a search block for this index using the " . l('form management',
+        'admin/tripal/extension/tripal_elasticsearch/forms') . " section.");
   }
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
@@ -882,6 +897,7 @@ function tripal_elasticsearch_delete_index($index) {
     $es->deleteIndex($index);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
+
     return;
   }
 
