@@ -488,11 +488,12 @@ function tripal_elasticsearch_update_7211() {
 function tripal_elasticsearch_update_7212() {
   try {
     $es = new ESInstance();
-    $es->putMapping('gene_search_index', 'related_features', 'text');
+    if (in_array('gene_search_index', $es->getIndices())) {
+      $es->putMapping('gene_search_index', 'related_features', 'text', 'chado.feature');
+    }
   } catch (Exception $exception) {
-    print "ERROR: failed to add new elasticsearch fields (related_features) due to the following error\n";
-    print $exception->getMessage();
-
-    throw $exception;
+    // Ignore failure since it's not important. The field gets auto created on
+    // index update. We don't want to remove this function to maintain the
+    // increment of the update functions.
   }
 }
