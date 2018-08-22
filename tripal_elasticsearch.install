@@ -481,3 +481,19 @@ function tripal_elasticsearch_update_7211() {
     throw $exception;
   }
 }
+
+/**
+ * @throws \Exception
+ */
+function tripal_elasticsearch_update_7212() {
+  try {
+    $es = new ESInstance();
+    if (in_array('gene_search_index', $es->getIndices())) {
+      $es->putMapping('gene_search_index', 'related_features', 'text', 'chado.feature');
+    }
+  } catch (Exception $exception) {
+    // Ignore failure since it's not important. The field gets auto created on
+    // index update. We don't want to remove this function to maintain the
+    // increment of the update functions.
+  }
+}
