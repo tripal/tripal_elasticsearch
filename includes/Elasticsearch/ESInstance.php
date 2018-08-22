@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance{
+class ESInstance {
 
   /**
    * Elasticsearch client.
@@ -687,13 +687,19 @@ class ESInstance{
 
     $index = implode(',', $index_name);
 
-    $this->setWebsiteSearchParams($terms, $category, $index, '', [0, $size]);
-    $count = $this->count();
-    $results = $this->search();
+    $categories = $this->getAllCategories(NULL, FALSE, $terms);
+    $category = trim($category);
+    $category_index = array_search($category, $categories);
+    if ($category_index !== FALSE) {
+      $category = $category_index;
+    }
+
+    $this->setWebsiteSearchParams($terms, $category, $index);
+    $results = $this->paginate($size);
 
     return [
-      'count' => $count,
-      'results' => $results,
+      'count' => $results['total'],
+      'results' => $results['results'],
     ];
   }
 
