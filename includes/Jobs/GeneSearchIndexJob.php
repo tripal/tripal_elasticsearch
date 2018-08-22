@@ -247,18 +247,52 @@ class GeneSearchIndexJob extends ESJob {
     // Load urls
     // $urls = $this->loadUrlPaths($primary_keys);
 
+    // Load feature relationships
+    $related = $this->loadRelatedFeatures($primary_keys);
+
     // Attach data to records
     foreach ($records as $key => $record) {
       // Get only features that have annotations or blast hit descriptions
-//      if (!isset($annotations[$record->feature_id]) && !isset($blast_results[$record->feature_id])) {
-//        unset($records[$key]);
-//        continue;
-//      }
+      //      if (!isset($annotations[$record->feature_id]) && !isset($blast_results[$record->feature_id])) {
+      //        unset($records[$key]);
+      //        continue;
+      //      }
 
       $records[$key]->annotations = isset($annotations[$record->feature_id]) ? $annotations[$record->feature_id] : '';
       $records[$key]->blast_hit_descriptions = isset($blast_results[$record->feature_id]) ? $blast_results[$record->feature_id] : '';
       $records[$key]->url = $this->tripal_version === 3 ? "bio_data/{$record->entity_id}" : "node/{$record->node_id}";
+      $records[$key]->related_features = isset($related[$record->feature_id]) ? $related[$record->feature_id] : [];
     }
+  }
+
+  /**
+   * Add related features to the index.
+   *
+   * @param array $keys
+   *
+   * @return array
+   */
+  protected function loadRelatedFeatures($keys) {
+    // Get feature bundles
+    $records = db_query('SELECT object_id,
+                                subject_id,
+                                f1.uniquename as object_uniquename,
+                                f2.uniquename as subject_uniquename
+                        FROM chado.feature_relationship fr
+                        INNER JOIN chado.feature f1 ON f1.feature_id = fr.object_id
+                        INNER JOIN chado.feature f2 ON f2.feature_id = fr.subject_id
+                        WHERE fr.object_id IN (:keys_1) OR fr.subject_id IN (:keys_2)', [
+      ':keys_1' => $keys,
+      ':keys_2' => $keys,
+    ]);
+
+    $indexed = [];
+    foreach ($records as $record) {
+      $indexed[$record->object_id][] = $record->subject_uniquename;
+      $indexed[$record->subject_id][] = $record->object_uniquename;
+    }
+
+    return $indexed;
   }
 
   /**

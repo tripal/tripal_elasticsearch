@@ -481,3 +481,18 @@ function tripal_elasticsearch_update_7211() {
     throw $exception;
   }
 }
+
+/**
+ * @throws \Exception
+ */
+function tripal_elasticsearch_update_7212() {
+  try {
+    $es = new ESInstance();
+    $es->putMapping('gene_search_index', 'related_features', 'text');
+  } catch (Exception $exception) {
+    print "ERROR: failed to add new elasticsearch fields (related_features) due to the following error\n";
+    print $exception->getMessage();
+
+    throw $exception;
+  }
+}
