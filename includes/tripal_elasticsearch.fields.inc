@@ -101,6 +101,9 @@ function tripal_elasticsearch_bundle_instances_info($entity_type, $bundle) {
       'description' => 'Search features related to an organism (search by property)',
       'required' => FALSE,
       'settings' => array(
+        'term_vocabulary' => 'local',
+        'term_name' => 'feature_search',
+        'term_accession' => 'feature_search',
         'auto_attach' => FALSE,
         'chado_table' => $bundle->data_table,
         'chado_column' => 'organism_id',
