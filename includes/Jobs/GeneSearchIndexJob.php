@@ -92,17 +92,18 @@ class GeneSearchIndexJob extends ESJob {
       $es = new ESInstance();
 
       // Delete the feature if it already exists
-      if (!is_null($this->entity_id) && in_array('gene_search_index', $es->getIndices()) && $this->total > 0) {
-        $record = $records[0];
-        $es->deleteEntry('gene_search_index', 'chado.feature', $record->feature_id);
-      }
+      //if (!is_null($this->entity_id) && in_array('gene_search_index', $es->getIndices()) && $this->total > 0) {
+      //  $record = $records[0];
+      //  $es->deleteEntry('gene_search_index', 'chado.feature', $record->feature_id);
+      //}
 
       // Can't use bulk indexing since we are using array data
       // type (ES error not our fault)
       foreach ($records as $record) {
-        $es->createEntry($this->index, $this->table, $record->feature_id, $record);
+        $es->createOrUpdate($this->index, $this->table, $record->feature_id, $record);
       }
     } catch (Exception $exception) {
+      echo "ERROR: ".$exception->getMessage()."\n";
       tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
     }
   }

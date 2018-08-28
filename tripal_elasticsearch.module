@@ -128,6 +128,17 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
+  $items[$url . '/indices/update/%'] = [
+    'title' => 'Update Index',
+    'page callback' => 'tripal_elasticsearch_update_index',
+    'page arguments' => [6],
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
+    'weight' => 1,
+  ];
+
   $items[$url . '/indices/delete/%'] = [
     'title' => 'Delete Index',
     'page callback' => 'drupal_get_form',
@@ -456,7 +467,7 @@ function tripal_elasticsearch_block_info() {
     'info' => t('Tripal Elasticsearch website search box'),
     'status' => TRUE,
     'cache' => DRUPAL_NO_CACHE,
-    'region' => 'header'
+    'region' => 'header',
   ];
 
   // Define block for website search results by category.
@@ -466,7 +477,7 @@ function tripal_elasticsearch_block_info() {
     'status' => TRUE,
     'visibility' => BLOCK_VISIBILITY_LISTED,
     'page' => "tripal_elasticsearch/search_website\ntripal_elasticsearch/search_website/*",
-    'region' => 'sidebar_first'
+    'region' => 'sidebar_first',
   ];
 
   return $blocks;
@@ -1068,15 +1079,21 @@ function tripal_elasticsearch_auto_discover_classes() {
 }
 
 /**
- * @param  \TripalImporter $importer
- */
-function tripal_elasticsearch_importer_start($importer) {
-  // TODO: Implement
-}
-
-/**
  * @param \TripalImporter $importer
  */
 function tripal_elasticsearch_importer_finish($importer) {
-  // TODO: Implement
+  $args = $importer->getArguments();
+  $name = $args['run_args']['importer_class'];
+
+  $supported_importers = [
+    'InterProImporter',
+    'BlastImporter',
+    'GOImporter',
+    'GAFImporter',
+  ];
+
+  if (in_array($name, $supported_importers)) {
+    GeneSearchIndexJob::generateDispatcherJobs();
+    EntitiesIndexJob::generateDispatcherJobs();
+  }
 }
