@@ -145,7 +145,7 @@ class GeneSearchIndexJob extends ESJob {
                 INNER JOIN chado.cvterm CV ON F.type_id = CV.cvterm_id 
                 INNER JOIN tripal_entity TE ON BT.entity_id = TE.id
                 WHERE TE.status = 1 AND BT.entity_id=:entity_id', [
-      ':entity_id' => $entity_id,
+      ':entity_id' => $this->entity_id,
     ])->fetchAll();
 
     if (count($records) > 0) {
