@@ -91,19 +91,13 @@ class GeneSearchIndexJob extends ESJob {
     try {
       $es = new ESInstance();
 
-      // Delete the feature if it already exists
-      //if (!is_null($this->entity_id) && in_array('gene_search_index', $es->getIndices()) && $this->total > 0) {
-      //  $record = $records[0];
-      //  $es->deleteEntry('gene_search_index', 'chado.feature', $record->feature_id);
-      //}
-
       // Can't use bulk indexing since we are using array data
       // type (ES error not our fault)
       foreach ($records as $record) {
         $es->createOrUpdate($this->index, $this->table, $record->feature_id, $record);
       }
     } catch (Exception $exception) {
-      echo "ERROR: ".$exception->getMessage()."\n";
+      echo "ERROR: " . $exception->getMessage() . "\n";
       tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
     }
   }
@@ -386,9 +380,28 @@ class GeneSearchIndexJob extends ESJob {
   /**
    * A method to quickly create and dispatch indexing jobs.
    *
-   * @param int $round Priority round (1 or 2)
+   * @param boolean $clear_queue Whether to remove old jobs before
+   *                              submitting new ones
    */
-  public static function generateDispatcherJobs() {
+  public static function generateDispatcherJobs($clear_queue = FALSE) {
+    // Clear all entries from the queue
+    if ($clear_queue) {
+      // Clear all entries from the queue
+      $sql = 'SELECT item_id, data FROM queue q WHERE name LIKE :name';
+      $results = db_query($sql, [':name' => db_like('elasticsearch') . '%'])->fetchAll();
+      $delete = [];
+
+      foreach ($results as $result) {
+        $class = unserialize($result->data);
+        if ($class instanceof DispatcherJob && $class->job() instanceof EntitiesIndexJob) {
+          $delete[] = $result->item_id;
+        }
+        elseif ($class instanceof EntitiesIndexJob) {
+          $delete[] = $result->item_id;
+        }
+      }
+    }
+
     if (db_table_exists('chado_bundle')) {
       // Foreach bundle type, create a dispatcher job.
       $bundles = db_query('SELECT bundle_id FROM {chado_bundle} WHERE data_table = :data_table', [

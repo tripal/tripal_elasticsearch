@@ -1,6 +1,6 @@
 <?php
 
-class EntitiesIndexJob extends ESJob{
+class EntitiesIndexJob extends ESJob {
 
   /**
    * Job type to show in progress report.
@@ -394,8 +394,41 @@ class EntitiesIndexJob extends ESJob{
    * A method to quickly create and dispatch indexing jobs.
    *
    * @param int $round Priority round (1 or 2)
+   * @param boolean $clear_queue Whether to clear old queue jobs before
+   *                              submitting new ones
+   * @param string $bundle A specific bundle to update
+   * @param
    */
-  public static function generateDispatcherJobs($round = 1) {
+  public static function generateDispatcherJobs($round = 1, $clear_queue = FALSE, $bundle = NULL) {
+    if ($clear_queue) {
+      // Clear all entries from the queue
+      $sql = 'SELECT item_id, data FROM queue q WHERE name LIKE :name';
+      $results = db_query($sql, [':name' => db_like('elasticsearch') . '%'])->fetchAll();
+      $delete = [];
+
+      foreach ($results as $result) {
+        $class = unserialize($result->data);
+        if ($class instanceof DispatcherJob && $class->job() instanceof EntitiesIndexJob) {
+          $delete[] = $result->item_id;
+        }
+        elseif ($class instanceof EntitiesIndexJob) {
+          $delete[] = $result->item_id;
+        }
+      }
+
+      if (!empty($delete)) {
+        $dsql = 'DELETE FROM queue WHERE item_id IN (' . implode(',', $delete) . ')';
+        db_query($dsql)->execute();
+      }
+    }
+
+    if (!is_null($bundle)) {
+      $job = new EntitiesIndexJob($bundle, NULL, $round === 1 ? 1 : 2);
+      $dispatcher = new DispatcherJob($job);
+      $dispatcher->dispatch();
+      return;
+    }
+
     // Foreach bundle type, create a dispatcher job.
     $bundles = db_query('SELECT name FROM {tripal_bundle}')->fetchAll();
     foreach ($bundles as $bundle) {

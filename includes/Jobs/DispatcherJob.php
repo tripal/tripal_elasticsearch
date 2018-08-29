@@ -64,4 +64,13 @@ class DispatcherJob extends ESJob {
     }
     parent::dispatch($queue_name);
   }
+
+  /**
+   * Get the job.
+   *
+   * @return \ESJob
+   */
+  public function job() {
+    return $this->job;
+  }
 }

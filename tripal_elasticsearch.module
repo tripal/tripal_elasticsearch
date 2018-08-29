@@ -139,6 +139,17 @@ function tripal_elasticsearch_menu() {
     'weight' => 1,
   ];
 
+  $items[$url . '/indices/update_entities'] = [
+    'title' => 'Update Entities Index',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_elasticsearch_update_entities_form'],
+    'access arguments' => ['administer tripal elasticsearch'],
+    'file' => 'includes/tripal_elasticsearch.indices.form.inc',
+    'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
+    'type' => MENU_CALLBACK,
+    'weight' => 1,
+  ];
+
   $items[$url . '/indices/delete/%'] = [
     'title' => 'Delete Index',
     'page callback' => 'drupal_get_form',
@@ -1088,12 +1099,10 @@ function tripal_elasticsearch_importer_finish($importer) {
   $supported_importers = [
     'InterProImporter',
     'BlastImporter',
-    'GOImporter',
-    'GAFImporter',
   ];
 
   if (in_array($name, $supported_importers)) {
-    GeneSearchIndexJob::generateDispatcherJobs();
-    EntitiesIndexJob::generateDispatcherJobs();
+    GeneSearchIndexJob::generateDispatcherJobs(TRUE);
+    EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
   }
 }

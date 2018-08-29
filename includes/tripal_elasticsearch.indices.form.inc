@@ -974,10 +974,10 @@ function tripal_elasticsearch_update_index($index) {
 
   switch ($index) {
     case 'gene_search_index':
-      GeneSearchIndexJob::generateDispatcherJobs();
+      GeneSearchIndexJob::generateDispatcherJobs(TRUE);
       break;
     case 'entities':
-      EntitiesIndexJob::generateDispatcherJobs();
+      return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices/update_entities');
       break;
   }
 
@@ -1099,4 +1099,50 @@ function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
   }
 
   return number_format($remaining, 2) . " {$unit}";
+}
+
+
+function tripal_elasticsearch_update_entities_form($form, &$form_state) {
+  // get bundles
+  $bundles = db_query('SELECT * FROM {tripal_bundle}')->fetchAll();
+
+  $options = ['' => 'All Bundles'];
+  foreach ($bundles as $bundle) {
+    $options[$bundle->name] = $bundle->label;
+  }
+
+  $form['field'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Indexing Options'),
+  ];
+
+  $form['field']['bundle'] = [
+    '#title' => t('Select a bundle to update'),
+    '#type' => 'select',
+    '#options' => $options,
+  ];
+
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => 'Submit Indexing Jobs',
+  ];
+
+  return $form;
+}
+
+function tripal_elasticsearch_update_entities_form_validate($form, &$form_state) {
+}
+
+function tripal_elasticsearch_update_entities_form_submit($form, &$form_state) {
+  $bundle = $form_state['values']['bundle'];
+
+  if (!empty($bundle)) {
+    EntitiesIndexJob::generateDispatcherJobs(1, FALSE, $bundle);
+  }
+  else {
+    EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+  }
+
+  drupal_set_message("Entities updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
+  return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
