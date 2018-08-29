@@ -88,22 +88,17 @@ class EntitiesIndexJob extends ESJob {
   public function handle() {
     try {
       $this->es = new ESInstance();
-      $records = $this->get();
-      $records = $this->loadContent($records);
+      $entities = $this->get();
+      $this->total = count($entities);
+      $records = $this->loadContent($entities);
 
-      if ($this->total > 1) {
-        if (!$this->shouldUpdate) {
-          $this->es->bulkIndex($this->index, $records, $this->index, 'entity_id');
-        }
-        else {
-          $this->es->bulkUpdate($this->index, $records, $this->index, 'entity_id');
-        }
-      }
-      elseif (count($records) > 0) {
-        $this->es->createEntry($this->index, $this->index, $records[0]->entity_id, $records[0]);
+      foreach ($records as $record) {
+        $this->es->createOrUpdate($this->index, $this->index,
+          $record->entity_id, $record);
       }
     } catch (Exception $exception) {
-      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
+      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR,
+        $exception->getMessage());
     }
   }
 
@@ -116,7 +111,6 @@ class EntitiesIndexJob extends ESJob {
    */
   protected function loadContent($records) {
     $all = [];
-    $this->total = 0;
 
     // Load entities and applicable fields
     $ids = array_map(function ($record) {
@@ -127,10 +121,9 @@ class EntitiesIndexJob extends ESJob {
 
     // Load priority list
     $priority = $this->getPriorityList($fields);
-    $entities = tripal_load_entity('TripalEntity', $ids, TRUE, $priority['ids']);
+    $entities = tripal_load_entity('TripalEntity', $ids, TRUE,
+      $priority['ids']);
     foreach ($records as $record) {
-      $this->total++;
-
       if (!isset($entities[$record->entity_id])) {
         continue;
       }
@@ -139,15 +132,19 @@ class EntitiesIndexJob extends ESJob {
       $content = [];
       if (tripal_entity_access('view', $entity)) {
         foreach ($priority['names'] as $field) {
-          if (property_exists($entity, $field) && isset($entity->{$field}['und'])) {
+          if (property_exists($entity,
+              $field) && isset($entity->{$field}['und'])) {
+
             foreach ($entity->{$field}['und'] as $elements) {
               if (!isset($elements['value'])) {
+
                 continue;
               }
 
               $value = $this->extractValue($elements['value']);
 
               if (empty($value)) {
+
                 continue;
               }
 
@@ -228,9 +225,10 @@ class EntitiesIndexJob extends ESJob {
    */
   protected function prioritizeFields($fields) {
     if ($this->priority_round < 2 && $this->id === NULL) {
-      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority = :priority', [
-        ':priority' => 1,
-      ])->fetchAll();
+      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority = :priority',
+        [
+          ':priority' => 1,
+        ])->fetchAll();
     }
     else {
       $results = db_query('SELECT * FROM {tripal_elasticsearch_priority}')->fetchAll();
@@ -388,15 +386,49 @@ class EntitiesIndexJob extends ESJob {
    * @return int
    */
   public function count() {
-    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1 AND bundle=:bundle', [':bundle' => $this->bundle])->fetchField();
+    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1 AND bundle=:bundle',
+      [':bundle' => $this->bundle])->fetchField();
   }
 
   /**
    * A method to quickly create and dispatch indexing jobs.
    *
    * @param int $round Priority round (1 or 2)
+   * @param boolean $clear_queue Whether to clear old queue jobs before
+   *                              submitting new ones
+   * @param string $bundle A specific bundle to update
+   * @param
    */
-  public static function generateDispatcherJobs($round = 1) {
+  public static function generateDispatcherJobs($round = 1, $clear_queue = FALSE, $bundle = NULL) {
+    if ($clear_queue) {
+      // Clear all entries from the queue
+      $sql = 'SELECT item_id, data FROM queue q WHERE name LIKE :name';
+      $results = db_query($sql, [':name' => db_like('elasticsearch') . '%'])->fetchAll();
+      $delete = [];
+
+      foreach ($results as $result) {
+        $class = unserialize($result->data);
+        if ($class instanceof DispatcherJob && $class->job() instanceof EntitiesIndexJob) {
+          $delete[] = $result->item_id;
+        }
+        elseif ($class instanceof EntitiesIndexJob) {
+          $delete[] = $result->item_id;
+        }
+      }
+
+      if (!empty($delete)) {
+        $dsql = 'DELETE FROM queue WHERE item_id IN (' . implode(',', $delete) . ')';
+        db_query($dsql)->execute();
+      }
+    }
+
+    if (!is_null($bundle)) {
+      $job = new EntitiesIndexJob($bundle, NULL, $round === 1 ? 1 : 2);
+      $dispatcher = new DispatcherJob($job);
+      $dispatcher->dispatch();
+      return;
+    }
+
     // Foreach bundle type, create a dispatcher job.
     $bundles = db_query('SELECT name FROM {tripal_bundle}')->fetchAll();
     foreach ($bundles as $bundle) {

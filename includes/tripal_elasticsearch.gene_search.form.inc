@@ -192,6 +192,7 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
   if ($host) {
     $base_url = trim($host->url, '/');
   }
+
   foreach ($search_results as $result) {
     $result = (array) $result;
     if ($host) {
@@ -206,7 +207,6 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
       $url .= '<div class="es-squish text-muted">' . elasticsearch_recursive_implode('<br>', $result['related_features']) . '</div>';
     }
 
-    $result = (array) $result;
     $rows[] = [
       $url,
       '<div class="es-squish">' . elasticsearch_recursive_implode('<br>', $result['blast_hit_descriptions']) . '</div>',

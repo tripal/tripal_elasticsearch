@@ -7,7 +7,7 @@
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance {
+class ESInstance{
 
   /**
    * Elasticsearch client.
@@ -803,6 +803,29 @@ class ESInstance {
       'type' => $index_type,
       'body' => [
         'properties' => $properties,
+      ],
+    ]);
+  }
+
+  /**
+   * Create a new element if one does not exist. Update the
+   * element if it already exists.
+   *
+   * @param string $index The index name
+   * @param string $index_type The index type
+   * @param mixed $id The document ID
+   * @param array $item The fields to update or create.
+   *
+   * @return array
+   */
+  public function createOrUpdate($index, $index_type, $id, $item) {
+    return $this->client->update([
+      'index' => $index,
+      'type' => $index_type,
+      'id' => $id,
+      'body' => [
+        'doc' => $item,
+        'upsert' => $item,
       ],
     ]);
   }

@@ -25,10 +25,10 @@
       <?php else: ?>
           <small>
             <?php
-            $url = $GLOBALS['base_url'] . url(ltrim($row->url, '/'));
-            $url = substr($url, 0, 40) . (strlen($url) > 40 ? '...' : '')
+            $url = $GLOBALS['base_url'] .'/'.ltrim($row->url, '/');
+            $url = substr($url, 0, 40) . (strlen($url) > 40 ? '...' : '');
             ?>
-            <?php print l($url, $row->url, [
+            <?php print l($url, ltrim($row->url, '/'), [
               'attributes' => [
                 'class' => ['text-muted'],
               ],
