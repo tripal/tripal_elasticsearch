@@ -122,13 +122,11 @@ class GeneSearchIndexJob extends ESJob {
   }
 
   /**
-   * @param int $entity_id
-   *
    * @return mixed
    * @throws \Exception
    */
-  protected function getSingleEntity($entity_id = NULL) {
-    if (is_null($entity_id)) {
+  protected function getSingleEntity() {
+    if (is_null($this->entity_id)) {
       throw new Exception('Please provide a valid entity id in GeneSearchIndexer');
     }
 
