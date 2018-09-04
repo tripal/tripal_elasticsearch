@@ -162,7 +162,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   }
 
   return ESResponse::success(array_merge($results, [
-    'url' => rtrim($base_url, '/') . url('tripal_elasticsearch/search_website/' . $category, [
+    'url' => url(rtrim($base_url, '/').'/tripal_elasticsearch/search_website/' . $category, [
         'query' => [
           'search_box' => $terms,
           'category' => $category,
@@ -226,7 +226,6 @@ function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_hos
   $markup = tripal_elasticsearch_results_formatter($results->data->results, $index_name, $host);
   return ESResponse::success([
     'url' => $results->data->url,
-    'raw' => $results->data->raw,
     'markup' => $markup,
     'count' => $results->data->count,
   ]);
