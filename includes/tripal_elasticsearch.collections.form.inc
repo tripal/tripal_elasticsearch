@@ -9,7 +9,8 @@
 function tripal_elasticsearch_collections_form($form, &$form_state) {
   if (!user_is_logged_in()) {
     $content = '<p>';
-    $content .= t('To create a collection, you must first ') . l('sign in', 'user') . t(' or ') . l('register a new account', 'user/register');
+    $content .= t('To create a collection, you must first ') . l('sign in',
+        'user') . t(' or ') . l('register a new account', 'user/register');
     $content .= '</p>';
     $form['login'] = [
       '#type' => 'markup',
@@ -29,7 +30,7 @@ function tripal_elasticsearch_collections_form($form, &$form_state) {
   }
 
   foreach ($bundles->fetchAll() as $bundle) {
-    if ($selected_label === $bundle->label) {
+    if ($selected_label === $bundle->name) {
       $selected_category = $bundle->name;
     }
     $index_bundles[$bundle->name] = $bundle->label;
@@ -77,7 +78,8 @@ function tripal_elasticsearch_collections_form($form, &$form_state) {
     $bundle = isset($form_state['values']) ? $form_state['values']['bundle_type'] : $selected_category;
     $field_ids = tripal_elasticsearch_get_fields_as_options($bundle);
     $defaults = array_filter($field_ids, function ($field) {
-      return strstr($field, 'FASTA') !== FALSE;
+      return strstr(strtolower($field),
+          'sequence') !== FALSE || strstr(strtolower($field), 'name') !== FALSE;
     });
 
     $form['step2']['fields'] = [
@@ -141,7 +143,8 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
   $query = $values['search_query'];
 
   // get the bundle label
-  $bundle_label = db_query('SELECT name FROM {tripal_bundle} WHERE name=:name', [':name' => $bundle_name])->fetchField();
+  $bundle_label = db_query('SELECT name FROM {tripal_bundle} WHERE name=:name',
+    [':name' => $bundle_name])->fetchField();
   $entities = [];
 
   try {
@@ -160,7 +163,10 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
       }
     }
   } catch (Exception $exception) {
-    drupal_set_message('Could not create collection due to an internal server error. Please try again later.', 'error');
+    drupal_set_message('Could not create collection due to an internal server error. Please try again later.',
+      'error');
+    tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR,
+      $exception->getMessage());
     return;
   }
 
@@ -216,7 +222,7 @@ function tripal_elasticsearch_get_fields_as_options($bundle) {
     }
     $field_label = $instance['label'];
 
-    // Add in in any non CSV or Tab formatters to the label.
+    // Add in any non CSV or Tab formatters to the label.
     $formatters = [];
     if (tripal_load_include_field_class($field_type)) {
       $instance_settings = $field_type::$default_instance_settings;
@@ -229,11 +235,8 @@ function tripal_elasticsearch_get_fields_as_options($bundle) {
             tripal_load_include_downloader_class($class_name);
             $formatters[] = $class_name::$label;
           }
-
         }
-
       }
-
     }
 
     if (count($formatters) > 0) {
