@@ -483,6 +483,7 @@ function tripal_elasticsearch_update_7211() {
 }
 
 /**
+ * Add the related_features field to the gene search index.
  * @throws \Exception
  */
 function tripal_elasticsearch_update_7212() {
