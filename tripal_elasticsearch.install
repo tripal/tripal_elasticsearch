@@ -365,8 +365,6 @@ function tripal_elasticsearch_update_7208() {
 
 /**
  * Create new gene search elasticsearch fields.
- *
- * @throws \Exception
  */
 function tripal_elasticsearch_update_7209() {
   try {
@@ -383,8 +381,6 @@ function tripal_elasticsearch_update_7209() {
 
 /**
  * Remove blast database content type from website index.
- *
- * @throws \Exception
  */
 function tripal_elasticsearch_update_7210() {
   try {
@@ -433,8 +429,6 @@ function tripal_elasticsearch_update_7210() {
 
 /**
  * Remove blastdb content type from website index.
- *
- * @throws \Exception
  */
 function tripal_elasticsearch_update_7211() {
   try {
@@ -484,7 +478,6 @@ function tripal_elasticsearch_update_7211() {
 
 /**
  * Add the related_features field to the gene search index.
- * @throws \Exception
  */
 function tripal_elasticsearch_update_7212() {
   try {
