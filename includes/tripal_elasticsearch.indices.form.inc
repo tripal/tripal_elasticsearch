@@ -108,7 +108,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   $form['index_settings']['token_filters'] = [
     '#type' => 'checkboxes',
     '#title' => t('Token filters'),
-    '#options' => get_token_filter_options(),
+    '#options' => tripal_elasticsearch_get_token_filter_options(),
   ];
 
   // Table fields and mapping types
@@ -156,7 +156,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
 													not be indexed. This can be used to selectively index
 													table fields.'),
       '#options' => array_merge(['' => 'Select mapping type'],
-        get_field_mapping_types()),
+        tripal_elasticsearch_get_field_mapping_types()),
     ];
   }
 
@@ -571,7 +571,7 @@ function tripal_elasticsearch_index_edit_confirm(
   // Snapshot the settings that require indexing so we can figure out if we need
   // to re-index need to build it the same way the options are built so they match
 
-  $previous_token_filters = get_token_filter_options();
+  $previous_token_filters = tripal_elasticsearch_get_token_filter_options();
   $previous_token_filters = array_map(function ($value) {
     return 0;
   }, $previous_token_filters); //empty the array values
@@ -619,7 +619,7 @@ function tripal_elasticsearch_index_edit_confirm(
   $form['index_settings']['token_filters'] = [
     '#type' => 'checkboxes',
     '#title' => t('Token filters'),
-    '#options' => get_token_filter_options(),
+    '#options' => tripal_elasticsearch_get_token_filter_options(),
     '#default_value' => $index_settings["token_filters"] ? $index_settings["token_filters"] : [],
   ];
 
@@ -680,7 +680,7 @@ function tripal_elasticsearch_index_edit_confirm(
       '#title' => t('Field name: ' . $field),
       '#default_value' => $preset,
       '#options' => array_merge(['' => 'Select mapping type'],
-        get_field_mapping_types()),
+        tripal_elasticsearch_get_field_mapping_types()),
     ];
   }
 

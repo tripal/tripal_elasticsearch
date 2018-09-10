@@ -109,7 +109,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     }
   }
 
-  $markup = get_website_search_result_table($response->data->results, FALSE, $host->url);
+  $markup = tripal_elasticsearch_get_website_search_result_table($response->data->results, FALSE, $host->url);
 
   // Render results into fields and send them back
   return ESResponse::success([
@@ -256,7 +256,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http
       $query = call_user_func('tripal_elasticsearch_' . $index_name . '_query_mapper', $_GET);
     }
     else {
-      $query = build_search_query_from_field_content_pairs($field_content_pairs);
+      $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($field_content_pairs);
     }
 
     $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], TRUE);

@@ -1,20 +1,5 @@
 <?php
 
-function tripal_elasticsearch_escape($value = '') {
-  return htmlspecialchars($value, ENT_QUOTES, 'UTF-8', FALSE);
-}
-
-/**
- * Define several arrays for elasticsearch indexing settings
- */
-function tripal_elasticsearch_get_character_filter_options() {
-  return drupal_map_assoc([
-    'html_strip',
-    'mapping',
-    'pattern_replace',
-  ]);
-}
-
 function tripal_elasticsearch_get_tokenizer_options() {
   return drupal_map_assoc([
     'standard',
@@ -31,7 +16,7 @@ function tripal_elasticsearch_get_tokenizer_options() {
   ]);
 }
 
-function get_token_filter_options() {
+function tripal_elasticsearch_get_token_filter_options() {
   return drupal_map_assoc([
     'standard',
     'asciifolding',
@@ -44,7 +29,7 @@ function get_token_filter_options() {
 /**
  * Return an array of Elasticsearch field mapping types.
  */
-function get_field_mapping_types() {
+function tripal_elasticsearch_get_field_mapping_types() {
   return drupal_map_assoc([
     'text',
     'keyword',
@@ -59,20 +44,6 @@ function get_field_mapping_types() {
     'geo_shape',
     'completion',
   ]);
-}
-
-/**
- * This function return an array containing tables from the chado schema
- */
-function get_chado_table_list() {
-  $sql_table_list = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'chado' ORDER BY table_name;";
-  $result_table = db_query($sql_table_list);
-  $input_table = $result_table->fetchAll();
-  $table_list = [];
-  foreach ($input_table as $value) {
-    $table_list[] = $value->table_name;
-  }
-  return $table_list;
 }
 
 /**
@@ -122,21 +93,21 @@ function tripal_elasticsearch_get_table_list() {
 /*
  * Escape special characters for elasticsearch
  */
-function _remove_special_chars($keyword) {
+function _tripal_elasticsearch_remove_special_chars($keyword) {
   return stripslashes($keyword);
 }
 
 /**
  * Build search query from field content pairs.
  */
-function build_search_query_from_field_content_pairs(array $field_content_pairs, $query_method = 'query_string') {
+function tripal_elasticsearch_build_search_query_from_field_content_pairs(array $field_content_pairs, $query_method = 'query_string') {
   $queries = [];
   foreach ($field_content_pairs as $field => $content) {
     if (!empty($content)) {
       $queries[] = [
         $query_method => [
           "default_field" => $field,
-          "query" => _remove_special_chars($content),
+          "query" => _tripal_elasticsearch_remove_special_chars($content),
           "default_operator" => "OR",
         ],
       ];
@@ -157,7 +128,7 @@ function build_search_query_from_field_content_pairs(array $field_content_pairs,
  * @throws \Exception
  * @return string
  */
-function get_website_search_results_category_list($keyword) {
+function tripal_elasticsearch_get_website_search_results_category_list($keyword) {
   try {
     $es = new ESInstance();
     $indices = $es->getIndices();
@@ -245,7 +216,7 @@ function get_website_search_results_category_list($keyword) {
  * @return string
  * @throws Exception
  */
-function get_website_search_result_table($search_results, $pager = TRUE, $base_url = NULL) {
+function tripal_elasticsearch_get_website_search_result_table($search_results, $pager = TRUE, $base_url = NULL) {
   // Get all labels
   $types = [];
   if (function_exists('tripal_load_entity')) {
@@ -342,7 +313,7 @@ function get_website_search_result_table($search_results, $pager = TRUE, $base_u
  *
  * @return mixed
  */
-function get_table_search_result_table($search_results, $index_name, $total) {
+function tripal_elasticsearch_get_table_search_result_table($search_results, $index_name, $total) {
   // Get field url
   $sql = "SELECT * FROM {tripal_elasticsearch_links} WHERE index_name = :index_name";
   $result = db_query($sql, [':index_name' => $index_name]);
@@ -440,11 +411,6 @@ function get_table_search_result_table($search_results, $index_name, $total) {
     }
   }
 
-  //	$rows = $processed_search_results;
-  //$per_page = 10;
-  //$current_page = pager_default_initialize(count($rows), $per_page);
-  // split list into page sized chunks
-  //$chunks = array_chunk($rows, $per_page, TRUE);
   $output .= theme('table', [
     'header' => $headers,
     'rows' => $rows,

@@ -538,7 +538,7 @@ function tripal_elasticsearch_generate_block($delta) {
         $page['content'] = ['#markup' => '0 results found.'];
       }
       else {
-        $markup = get_table_search_result_table($search_results['results'],
+        $markup = tripal_elasticsearch_get_table_search_result_table($search_results['results'],
           $index_name, $search_results['total']);
         $page_number = $search_results['page'];
         $total_pages = ceil($search_results['total'] / 10);
@@ -587,7 +587,7 @@ function tripal_elasticsearch_block_view($delta = '') {
 
       if (strstr(current_path(),
           'tripal_elasticsearch/search_website') !== FALSE) {
-        $block['content'] = get_website_search_results_category_list($keyword);
+        $block['content'] = tripal_elasticsearch_get_website_search_results_category_list($keyword);
       }
       break;
     case 'cross_site_search_block':
@@ -667,7 +667,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
     $content = tripal_elasticsearch_create_collection_button();
   }
   $content .= '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
-  $content .= get_website_search_result_table($results['results'], FALSE);
+  $content .= tripal_elasticsearch_get_website_search_result_table($results['results'], FALSE);
   $content .= $results['pager'];
 
   if (function_exists('tripal_create_collection')) {
@@ -757,7 +757,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     // get index type
     $index_type = $record->table_name;
     // Build search query for table search.
-    $query = build_search_query_from_field_content_pairs($index_fields);
+    $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
     // Build table search params.
     $select_window = isset($form_state['values']['select_window']) ? $form_state['values']['select_window'] : '';
     $from = empty($select_window) ? 0 : 1000 * ($select_window - 1);
@@ -779,7 +779,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     $total = count($results);
     if ($total > 0) {
       $output = '<div id="table_search_results_datatable">';
-      $output .= get_table_search_result_table($results, $index_name, $total);
+      $output .= tripal_elasticsearch_get_table_search_result_table($results, $index_name, $total);
       $output .= '</div>';
     }
 
@@ -990,7 +990,7 @@ function tripal_elasticsearch_paginate($per_page) {
   $index_type = $record->table_name;
 
   // Build search query for table search.
-  $query = build_search_query_from_field_content_pairs($index_fields);
+  $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
 
   // Run Elasticsearch and return search results into an array.
   try {
@@ -1033,7 +1033,7 @@ function tripal_elasticsearch_table_search_download() {
   $index_type = $record->table_name;
 
   // Build search query for table search.
-  $query = build_search_query_from_field_content_pairs($index_fields);
+  $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
 
   // loop through window and write returned search results into a file.
   $directory = 'public://table_search_results';

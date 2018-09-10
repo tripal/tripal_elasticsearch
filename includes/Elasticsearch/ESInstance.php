@@ -80,6 +80,7 @@ class ESInstance{
     $query = str_replace('\\', ' ', $query);
     $query = str_replace('+', ' ', $query);
     $query = str_replace('-', ' ', $query);
+    $query = str_replace('^', '', $query);
     return str_replace(':', '\\:', $query);
   }
 

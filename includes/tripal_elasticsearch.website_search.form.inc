@@ -157,7 +157,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
   //$window_range = drupal_map_assoc([1]);
   if (count($index_fields) > 0) {
     // Build search query for table search.
-    $query = build_search_query_from_field_content_pairs($index_fields);
+    $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
     try {
       $es = new ESInstance();
       $results_count = $es->setTableSearchParams($index_name, $index_type, $query)
