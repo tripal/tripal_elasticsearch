@@ -1,6 +1,6 @@
 <?php
 
-class NodesIndexJob extends ESJob {
+class NodesIndexJob extends ESJob{
 
   /**
    * Job type to show in progress report.
@@ -59,10 +59,15 @@ class NodesIndexJob extends ESJob {
     $this->total = count($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $this->loadContent($records), $this->index, 'nid');
+      $es->bulkIndex($this->index, $this->loadContent($records), $this->index,
+        'nid');
     }
     elseif ($this->total > 0) {
       $node = $this->loadContent($records);
+      if (empty($node)) {
+        return;
+      }
+
       $record = end($node);
 
       $es->createEntry($this->index, $this->index, $record->nid, $record);
@@ -92,7 +97,7 @@ class NodesIndexJob extends ESJob {
 
       $node = $nodes[$record->nid];
 
-      if(!node_access('view', $node)) {
+      if (!node_access('view', $node)) {
         // Anonymous user is not allowed to access this node
         // so don't index it
         continue;
@@ -112,7 +117,7 @@ class NodesIndexJob extends ESJob {
 
       // Ignore nodes with empty titles
       $title = trim($record->title);
-      if(empty($title)) {
+      if (empty($title)) {
         continue;
       }
 
@@ -145,7 +150,8 @@ class NodesIndexJob extends ESJob {
     // add one space to html tags to avoid words concatenated after stripping html tags
     $page_html = str_replace('<', ' <', $page_html);
     // remove generated jQuery script
-    $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "", $page_html);
+    $page_html = preg_replace('/<script\b[^>]*>.*<\/script>/isU', "",
+      $page_html);
     // remove css stuff
     $page_html = preg_replace('/<style\b[^>]*>.*<\/style>/isU', "", $page_html);
 
@@ -201,6 +207,7 @@ class NodesIndexJob extends ESJob {
    */
   public function count() {
     return db_query('SELECT COUNT(nid) FROM {node} N
-                      WHERE status=1 AND type != :type', [':type' => 'blastdb'])->fetchField();
+                      WHERE status=1 AND type != :type',
+      [':type' => 'blastdb'])->fetchField();
   }
 }
