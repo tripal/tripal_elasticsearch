@@ -8,6 +8,8 @@
 
 Please refer to [the Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html) to install Elasticsearch.
 
+If you prefer using a package manager such as `apt` (`apt-get`) or `yum`, you can follow the [documentation here](https://www.elastic.co/guide/en/elasticsearch/reference/current/deb.html#deb-repo)
+
 ## Install Elasticsearch-PHP library
 
 * Create a folder named `elasticsearch-php` within your drupal `sites/all/libraries` directory.
