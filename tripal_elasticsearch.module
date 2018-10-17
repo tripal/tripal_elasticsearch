@@ -645,8 +645,9 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
     }
 
     $per_page = 10;
-    $results = $es->setWebsiteSearchParams($keyword, $node_type,
-      implode(',', $index_name), '')->paginate($per_page);
+    $composed = implode(',', $index_name);
+    $results = $es->setWebsiteSearchParams($keyword, $node_type, $composed, '')
+      ->paginate($per_page);
   } catch (\Exception $e) {
     tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $e->getMessage());
 
@@ -663,11 +664,12 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
   $current_page = $results['page'];
   $pages = $results['pages'];
   $content = '';
-  if (count($results['results'])) {
-    $content = tripal_elasticsearch_create_collection_button();
-  }
+  //if (count($results['results'])) {
+  //  $content = tripal_elasticsearch_create_collection_button();
+  //}
   $content .= '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
-  $content .= tripal_elasticsearch_get_website_search_result_table($results['results'], FALSE);
+  $content .= tripal_elasticsearch_get_website_search_result_table($results['results'],
+    FALSE);
   $content .= $results['pager'];
 
   if (function_exists('tripal_create_collection')) {
@@ -779,7 +781,8 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     $total = count($results);
     if ($total > 0) {
       $output = '<div id="table_search_results_datatable">';
-      $output .= tripal_elasticsearch_get_table_search_result_table($results, $index_name, $total);
+      $output .= tripal_elasticsearch_get_table_search_result_table($results,
+        $index_name, $total);
       $output .= '</div>';
     }
 
