@@ -1094,16 +1094,16 @@ function tripal_elasticsearch_auto_discover_classes() {
  * @param \TripalImporter $importer
  */
 function tripal_elasticsearch_importer_finish($importer) {
-  $args = $importer->getArguments();
-  $name = $args['run_args']['importer_class'];
-
-  $supported_importers = [
-    'InterProImporter',
-    'BlastImporter',
-  ];
-
-  if (in_array($name, $supported_importers)) {
-    GeneSearchIndexJob::generateDispatcherJobs(TRUE);
-    EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
-  }
+  //$args = $importer->getArguments();
+  //$name = $args['run_args']['importer_class'];
+  //
+  //$supported_importers = [
+  //  'InterProImporter',
+  //  'BlastImporter',
+  //];
+  //
+  //if (in_array($name, $supported_importers)) {
+  //  GeneSearchIndexJob::generateDispatcherJobs(TRUE);
+  //  EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+  //}
 }
