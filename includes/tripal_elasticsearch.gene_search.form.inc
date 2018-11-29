@@ -135,13 +135,13 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
 
   if (!empty($organism)) {
     $organism_array = explode(' ', $organism);
-    $genus = array_shift($organism_array);
-    $species = array_shift($organism_array);
+    $genus = trim(array_shift($organism_array));
+    $species = trim(array_shift($organism_array));
 
     $queries[] = [
       'query_string' => [
         'fields' => ['organism_genus', 'organism_species'],
-        "query" => "+$genus AND +$species",
+        "query" => "+$genus". (!empty($species) ? " AND +$species" : ''),
         "default_operator" => "AND",
       ],
     ];
@@ -413,6 +413,7 @@ function tripal_elasticsearch_get_gene_search_organisms() {
   } catch (Exception $exception) {
     drupal_set_message('Unable to get list of available organisms.
                         Please contact us to resolve the problem', 'error');
+    watchdog('tripal_elasticsearch', $exception->getMessage(), [], WATCHDOG_ERROR);
     return [];
   }
 
