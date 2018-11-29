@@ -413,6 +413,7 @@ function tripal_elasticsearch_get_gene_search_organisms() {
   } catch (Exception $exception) {
     drupal_set_message('Unable to get list of available organisms.
                         Please contact us to resolve the problem', 'error');
+    watchdog('tripal_elasticsearch', $exception->getMessage(), WATCHDOG_ERROR);
     return [];
   }
 
