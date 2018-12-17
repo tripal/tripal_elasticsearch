@@ -181,7 +181,7 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
     'description' => $description,
   ]);
 
-  drupal_goto('user/' . $user->uid . '/files');
+  $form_state['redirect'] = 'user/' . $user->uid . '/files';
 }
 
 /**

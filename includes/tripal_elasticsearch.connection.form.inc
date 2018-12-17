@@ -201,7 +201,7 @@ function elasticsearch_connection_form_submit($form, &$form_state) {
     // Insert records to the database
     db_insert('tripal_elasticsearch_servers')->fields($fields)->execute();
     drupal_set_message('External elasticsearch server added!');
-    drupal_goto('admin/tripal/extension/tripal_elasticsearch');
+    $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch';
   }
 }
 
@@ -282,7 +282,7 @@ function remote_delete_confirm_submit($form, &$form_state) {
     drupal_set_message(t('Remote server ' . $remote->label . ' has been deleted successfully.'));
   }
 
-  drupal_goto("admin/tripal/extension/tripal_elasticsearch");
+  $form_state['redirect'] = "admin/tripal/extension/tripal_elasticsearch";
 }
 
 /**
@@ -369,6 +369,6 @@ function remote_edit_confirm_submit($form, &$form_state) {
     ]);
 
     drupal_set_message(t('Remote server ' . $label . ' has been edited successfully.'));
-    drupal_goto("admin/tripal/extension/tripal_elasticsearch");
+    $form_state['redirect'] = ("admin/tripal/extension/tripal_elasticsearch");
   }
 }
