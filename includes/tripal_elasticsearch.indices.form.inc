@@ -272,7 +272,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   //Create the new index
   tripal_elasticsearch_create_index($form_state['values']);
-  $form_state['admin/tripal/extension/tripal_elasticsearch/indices'];
+  $form_state['redirect'] = ['admin/tripal/extension/tripal_elasticsearch/indices'];
 }
 
 /**
@@ -727,6 +727,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   // Create the new index
   tripal_elasticsearch_create_index($form_state['values']);
+  $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
 }
 
 /**
