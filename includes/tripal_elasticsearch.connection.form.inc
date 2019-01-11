@@ -158,7 +158,6 @@ function elasticsearch_connection_form($form, &$form_state) {
 
     foreach ($remotes as $remote) {
       $logo = '';
-      dpm(file_load($remote->logo));
       if(!empty($remote->logo)) {
         $logo_img = file_load($remote->logo);
         $logo = '<img src="'.file_create_url($logo_img->uri).'" style="max-height:50px; width: auto"/> ';
