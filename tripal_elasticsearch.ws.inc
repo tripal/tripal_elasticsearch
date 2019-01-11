@@ -631,7 +631,7 @@ function tripal_elasticsearch_make_logos_table($remotes) {
     $rows[] = [$img, $remote->label];
   }
 
-  return '<p>Available Databases</p>' . theme(
+  return '<h4>Available Databases</h4>' . theme(
       'table', [
         'header' => $header,
         'rows'   => $rows,
