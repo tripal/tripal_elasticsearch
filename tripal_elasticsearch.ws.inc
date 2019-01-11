@@ -117,10 +117,10 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     try {
       $response = ESRequest::get(
         $url, [
-        'terms'    => $_GET['terms'],
-        'category' => isset($_GET['category']) ? $_GET['category'] : '',
-        'size'     => $size,
-      ]
+          'terms'    => $_GET['terms'],
+          'category' => isset($_GET['category']) ? $_GET['category'] : '',
+          'size'     => $size,
+        ]
       );
     } catch (Exception $exception) {
       return ESResponse::error(['server' => $exception->getMessage()], 500);
@@ -190,16 +190,16 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   return ESResponse::success(
     array_merge(
       $results, [
-      'url' => url(
-        rtrim($base_url, '/') . '/tripal_elasticsearch/search_website/'
-        . $category, [
-        'query' => [
-          'search_box' => $terms,
-          'category'   => $category,
-        ],
+        'url' => url(
+          rtrim($base_url, '/') . '/tripal_elasticsearch/search_website/'
+          . $category, [
+            'query' => [
+              'search_box' => $terms,
+              'category'   => $category,
+            ],
+          ]
+        ),
       ]
-      ),
-    ]
     ), $http
   );
 }
@@ -397,9 +397,10 @@ function tripal_elasticsearch_results_formatter(
 
   return theme(
     'table', [
-    'header' => isset($search_results[0]) ? array_keys($search_results[0]) : [],
-    'rows'   => $rows,
-  ]
+      'header' => isset($search_results[0]) ? array_keys($search_results[0])
+        : [],
+      'rows'   => $rows,
+    ]
   );
 }
 
@@ -478,6 +479,14 @@ function tripal_elasticsearch_api_v1_categories() {
 function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   global $base_url;
 
+  $remotes =
+    db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
+
+  // Add local server as the first remote
+  array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
+
+  tripal_elasticsearch_load_logos($remotes);
+
   $form['options'] = [
     '#type'       => 'fieldset',
     '#attributes' => [
@@ -524,9 +533,11 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
     ],
   ];
 
+  $logos_table = tripal_elasticsearch_make_logos_table($remotes);
+
   $form['results_block'] = [
     '#type'   => 'markup',
-    '#markup' => '<div id="tripal-elasticsearch-results-block"></div>',
+    '#markup' => '<div id="tripal-elasticsearch-results-block">'.$logos_table.'</div>',
   ];
 
   $form['#atached']['js'][] = [
@@ -535,14 +546,6 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
     ),
     'type' => 'file',
   ];
-
-  $remotes =
-    db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
-
-  // Add local server as the first remote
-  array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
-
-  tripal_elasticsearch_load_logos($remotes);
 
   drupal_add_js(
     drupal_get_path('module', 'tripal_elasticsearch')
@@ -604,7 +607,7 @@ function tripal_elasticsearch_is_index_exposed($index_name) {
 
 function tripal_elasticsearch_load_logos(array &$remotes) {
   foreach ($remotes as $remote) {
-    if($remote->id === 0) {
+    if ($remote->id === 0) {
       $remote->logo_url = variable_get('elasticsearch_host_logo', '');
       continue;
     }
@@ -612,4 +615,26 @@ function tripal_elasticsearch_load_logos(array &$remotes) {
     $remote->logo_url =
       $remote->logo ? file_create_url(file_load($remote->logo)->uri) : '';
   }
+}
+
+function tripal_elasticsearch_make_logos_table($remotes) {
+  $header = ['Logo', 'Database'];
+  $rows   = [];
+
+  foreach ($remotes as $remote) {
+    $img = '';
+    if (!empty($remote->logo_url)) {
+      $img = '<img src="' . $remote->logo_url
+        . '" style="width:auto; height: 50px"/>';
+    }
+
+    $rows[] = [$img, $remote->label];
+  }
+
+  return '<p>Available Databases</p>' . theme(
+      'table', [
+        'header' => $header,
+        'rows'   => $rows,
+      ]
+    );
 }
