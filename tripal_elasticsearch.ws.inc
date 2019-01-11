@@ -606,6 +606,7 @@ function tripal_elasticsearch_load_logos(array &$remotes) {
   foreach ($remotes as $remote) {
     if($remote->id === 0) {
       $remote->logo_url = variable_get('elasticsearch_host_logo', '');
+      continue;
     }
 
     $remote->logo_url =
