@@ -539,10 +539,10 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   $remotes =
     db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
 
-  tripal_elasticsearch_load_logos($remotes);
-
   // Add local server as the first remote
   array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
+
+  tripal_elasticsearch_load_logos($remotes);
 
   drupal_add_js(
     drupal_get_path('module', 'tripal_elasticsearch')
@@ -604,6 +604,10 @@ function tripal_elasticsearch_is_index_exposed($index_name) {
 
 function tripal_elasticsearch_load_logos(array &$remotes) {
   foreach ($remotes as $remote) {
+    if($remote->id === 0) {
+      $remote->logo_url = variable_get('elasticsearch_host_logo', '');
+    }
+
     $remote->logo_url =
       $remote->logo ? file_create_url(file_load($remote->logo)->uri) : '';
   }

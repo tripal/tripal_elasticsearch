@@ -58,6 +58,18 @@ function elasticsearch_connection_form($form, &$form_state) {
     ],
   ];
 
+  $form['local_host']['local_logo'] = [
+    '#type'          => 'textfield',
+    '#title'         => t('Site Logo URL'),
+    '#description'   => t(
+      'An optional URL to the site logo. Examples: /sites/default/files/logo.png or https://cdn.example.com/logo.png'
+    ),
+    '#default_value' => variable_get('elasticsearch_host_logo'),
+    '#attributes'    => [
+      'placeholder' => 'Optional',
+    ],
+  ];
+
   $form['remote_host'] = [
     '#type'   => 'fieldset',
     '#title'  => t('Elasticsearch Remote Server'),
@@ -241,6 +253,7 @@ function elasticsearch_connection_form_submit($form, &$form_state) {
   if ($server_type == "local") {
     // Update the elasticsearch_host variable after form submission.
     variable_set('elasticsearch_host', $url);
+    variable_set('elasticsearch_host_logo', $form_state['values']['local_logo']);
   }
 
 
