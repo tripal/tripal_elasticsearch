@@ -628,7 +628,7 @@ function tripal_elasticsearch_make_logos_table($remotes) {
         . '" style="width:auto; height: 50px"/>';
     }
 
-    $rows[] = [$img, $remote->label];
+    $rows[] = [$img, l($remote->label, !empty($remote->url) ? $remote->url : '<front>')];
   }
 
   return '<h4>Available Databases</h4>' . theme(
