@@ -12,7 +12,10 @@ This module can be installed using one of the following methods.
 ```shell
 cd sites/all/modules
 git clone https://github.com/tripal/tripal_elasticsearch.git
-git checkout 7.x-2.0
+
+# OPTIONAL STEP
+git checkout [LATEST VERSION such as 7.x-2.1]
+
 drush en tripal_elasticsearch -y && drush updatedb
 ```
  

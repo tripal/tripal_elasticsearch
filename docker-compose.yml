@@ -9,6 +9,6 @@ services:
       - .:/modules/tripal_elasticsearch
       - ./vendor:/var/www/html/sites/all/libraries/elasticsearch-php
   elasticsearch:
-    image: 'elasticsearch:5'
+    image: 'elasticsearch:6.5.4'
     ports:
-      - "9201:9200"
+      - "9200:9200"
