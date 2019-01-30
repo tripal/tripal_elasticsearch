@@ -14,12 +14,12 @@ crontab -e
 ```
 - Paste the following lines. Make sure you change `/path/to/your/drupal/root` to your drupal root path.
 ```shell
-*/5 * * * * drush cron-run queue_elasticsearch_dispatcher --options=thread=1 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_1 --options=thread=2 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_2 --options=thread=3 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_3 --options=thread=4 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_4 --options=thread=5 --root=/path/to/your/drupal/root
-*/5 * * * * drush cron-run queue_elasticsearch_queue_5 --options=thread=6 --root=/path/to/your/drupal/root
+* * * * * drush cron-run queue_elasticsearch_dispatcher --root=/path/to/your/drupal/root
+* * * * * drush cron-run queue_elasticsearch_queue_1 --root=/path/to/your/drupal/root
+* * * * * drush cron-run queue_elasticsearch_queue_2 --root=/path/to/your/drupal/root
+* * * * * drush cron-run queue_elasticsearch_queue_3 --root=/path/to/your/drupal/root
+* * * * * drush cron-run queue_elasticsearch_queue_4 --root=/path/to/your/drupal/root
+* * * * * drush cron-run queue_elasticsearch_queue_5 --root=/path/to/your/drupal/root
 ```
 
 ## Obtain cron job names
