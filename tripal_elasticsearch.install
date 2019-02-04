@@ -74,7 +74,7 @@ function tripal_elasticsearch_schema() {
       'url' => ['type' => 'varchar', 'length' => '255'],
       'label' => ['type' => 'varchar', 'length' => '255'],
       'description' => ['type' => 'text'],
-      'logo' => ['type', 'text']
+      'logo' => ['type'=> 'text']
     ],
     'primary key' => ['id'],
   ];
