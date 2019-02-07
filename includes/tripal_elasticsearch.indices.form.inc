@@ -272,6 +272,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
 function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
   //Create the new index
   tripal_elasticsearch_create_index($form_state['values']);
+  $form_state['redirect'] = ['admin/tripal/extension/tripal_elasticsearch/indices'];
 }
 
 /**
@@ -715,8 +716,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
         // No need to delete the index, just need to update the table.
         tripal_elasticsearch_update_index_table($form_state['values']);
         drupal_set_message("Your index has been updated. Re-indexing is not necessary.");
-        drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
-
+        $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
         return;
       }
     }
@@ -727,6 +727,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   // Create the new index
   tripal_elasticsearch_create_index($form_state['values']);
+  $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
 }
 
 /**
@@ -766,7 +767,7 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
 
   tripal_elasticsearch_delete_index($index);
   drupal_set_message('Index "' . $index . '" deleted successfully.');
-  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+  $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
 }
 
 /** Creates an index.  Used by the create and edit index functions.
@@ -917,7 +918,6 @@ function tripal_elasticsearch_create_index(&$values) {
     drupal_set_message("You may create a search block for this index using the " . l('form management',
         'admin/tripal/extension/tripal_elasticsearch/forms') . " section.");
   }
-  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
 /**
@@ -982,7 +982,6 @@ function tripal_elasticsearch_update_index($index) {
   }
 
   drupal_set_message("{$index} updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
-  return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
 /**
@@ -1144,5 +1143,6 @@ function tripal_elasticsearch_update_entities_form_submit($form, &$form_state) {
   }
 
   drupal_set_message("Entities updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
-  return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+
+  $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
 }
