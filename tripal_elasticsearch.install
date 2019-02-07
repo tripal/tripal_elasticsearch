@@ -74,6 +74,7 @@ function tripal_elasticsearch_schema() {
       'url' => ['type' => 'varchar', 'length' => '255'],
       'label' => ['type' => 'varchar', 'length' => '255'],
       'description' => ['type' => 'text'],
+      'logo' => ['type'=> 'text']
     ],
     'primary key' => ['id'],
   ];
@@ -489,5 +490,18 @@ function tripal_elasticsearch_update_7212() {
     // Ignore failure since it's not important. The field gets auto created on
     // index update. We don't want to remove this function to maintain the
     // increment of the update functions.
+  }
+}
+
+
+/**
+ * Add logo column to tripal_elasticsearch_servers table
+ */
+function tripal_elasticsearch_update_7213() {
+  $table = 'tripal_elasticsearch_servers';
+  $field = 'logo';
+
+  if(!db_field_exists($table, $field)) {
+    db_add_field($table, $field, ['type'=>'text']);
   }
 }

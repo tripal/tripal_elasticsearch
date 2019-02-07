@@ -204,9 +204,14 @@
         'class': 'elastic-result-block'
       });
 
+      var logo = remote.logo_url && remote.logo_url.length > 0 ? $('<img />', {
+        src: remote.logo_url,
+        style: 'width: auto; height: 50px',
+      }) : null;
+
       var title = $('<h3 />', {
         'class': 'elastic-result-block-title'
-      }).append(remote.label);
+      }).append(logo ? logo : remote.label);
       block.append(title);
 
       var count = $('<div />', {

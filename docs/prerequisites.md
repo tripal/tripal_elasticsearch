@@ -17,8 +17,11 @@ If you prefer using a package manager such as `apt` (`apt-get`) or `yum`, you ca
 
 ```
 curl -s http://getcomposer.org/installer | php
-php composer.phar require "elasticsearch/elasticsearch:~5.0"
+php composer.phar require "elasticsearch/elasticsearch"
 ```
+
+If you are using ElasticSearch 6, please make sure composer installs the corresponding elasticsearch:~6.0. Similarly,
+if you are using ElasticSearch 5, make sure to tell composer to install `~5.0`.
 
 For more details, visit the [Elasticsearch PHP library API](https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/_quickstart.html).
 
