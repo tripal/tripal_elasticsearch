@@ -3,7 +3,7 @@
 /**
  * Class DispatcherJob
  * ======================================
- * Dispatch jobs for bulk indexing
+ * Dispatch jobs for bulk indexing.
  */
 class DispatcherJob extends ESJob {
 
@@ -11,6 +11,7 @@ class DispatcherJob extends ESJob {
    * Dispatcher job type.
    *
    * @var string
+   * @see ESJob::$type
    */
   public $type = 'Dispatcher';
 
@@ -31,7 +32,7 @@ class DispatcherJob extends ESJob {
   /**
    * DispatcherJob constructor.
    *
-   * @param \ESJob $job
+   * @param \ESJob $job The job object.
    */
   public function __construct($job) {
     $this->job = $job;
@@ -44,7 +45,8 @@ class DispatcherJob extends ESJob {
     $chunk = $this->job->chunk;
     $this->total = $this->job->count();
     $round = $this->job->hasRounds() ? $this->job->currentRound() : 1;
-    ESQueue::initProgress($this->job->type, $this->job->index, $this->total, $round);
+    ESQueue::initProgress($this->job->type, $this->job->index, $this->total,
+      $round);
 
     for ($offset = 0; $offset < $this->total; $offset += $chunk) {
       $this->job->offset($offset)->limit($chunk)->dispatch();
@@ -54,9 +56,10 @@ class DispatcherJob extends ESJob {
   /**
    * Dispatch the job on the dispatcher queue.
    *
-   * @param string $queue_name Defaults to the dispatcher queue.
+   * @param string $queue_name
+   *   Defaults to the dispatcher queue.
    *
-   * @override parent::dispatch
+   * @see ESJob::dispatch
    */
   public function dispatch($queue_name = NULL) {
     if ($queue_name === NULL) {
@@ -73,4 +76,5 @@ class DispatcherJob extends ESJob {
   public function job() {
     return $this->job;
   }
+
 }

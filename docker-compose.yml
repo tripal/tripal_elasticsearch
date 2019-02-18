@@ -11,4 +11,4 @@ services:
   elasticsearch:
     image: 'elasticsearch:6.5.4'
     ports:
-      - "9200:9200"
+      - "9201:9200"
