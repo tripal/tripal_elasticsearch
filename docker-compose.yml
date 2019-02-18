@@ -1,14 +1,13 @@
 version: '3'
 
 services:
-  # Uncomment to instantiate a tripal container as well
-  #app:
-  #  image: 'statonlab/tripal3'
-  # environment:
-  #   - DRUPAL_ROOT=/var/www/html
-  # volumes:
-  #   - .:/modules/tripal_elasticsearch
-  #   - ./vendor:/var/www/html/sites/all/libraries/elasticsearch-php
+  app:
+    image: 'statonlab/tripal3'
+    environment:
+      - DRUPAL_ROOT=/var/www/html
+    volumes:
+      - .:/modules/tripal_elasticsearch
+      - ./vendor:/var/www/html/sites/all/libraries/elasticsearch-php
   elasticsearch:
     image: 'elasticsearch:6.5.4'
     ports:
