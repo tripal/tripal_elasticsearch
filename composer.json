@@ -8,7 +8,16 @@
         "phpunit/phpunit": "~7.0",
         "statonlab/tripal-test-suite": "~1.1.2"
     },
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
     "license": "GPLv3",
+    "autoload": {
+        "files": [
+            "tests/TestCase.php"
+        ]
+    },
     "authors": [
         {
             "name": "Staton Lab",
