@@ -16,7 +16,7 @@ require 'includes/tripal_elasticsearch.fields.inc';
 require 'includes/tripal_elasticsearch.collections.form.inc';
 
 // Auto discover and include jobs and ES classes.
-tripal_elasticsearch_auto_discover_classes();
+//tripal_elasticsearch_auto_discover_classes();
 
 /**
  * Implements hook_init().
@@ -27,15 +27,22 @@ function tripal_elasticsearch_init() {
   $library = libraries_detect('elasticsearch-php');
   if (user_access('administer tripal elasticsearch', $user)) {
     if (!$library) {
-      drupal_set_message(t('The Elastichsearch-PHP library is not installed.
-				Please install this library first.'), 'warning');
+      drupal_set_message(
+        t(
+          'The Elastichsearch-PHP library is not installed.
+				Please install this library first.'
+        ),
+        'warning'
+      );
     }
 
     // Try to load the library and check if that worked.
     $library = libraries_load('elasticsearch-php');
     if (empty($library['loaded'])) {
-      drupal_set_message(t('The Elasticsearch-PHP library loading failed!'),
-        'warning');
+      drupal_set_message(
+        t('The Elasticsearch-PHP library loading failed!'),
+        'warning'
+      );
     }
   }
 }
@@ -62,7 +69,9 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'page callback' => 'drupal_get_form',
     'page arguments' => ['elasticsearch_connection_form'],
-    'description' => t('Add or edit Elasticsearch connections for this site or remote sites.'),
+    'description' => t(
+      'Add or edit Elasticsearch connections for this site or remote sites.'
+    ),
     'file' => 'includes/tripal_elasticsearch.connection.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
     'type' => MENU_LOCAL_TASK,
@@ -96,7 +105,9 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/tripal_elasticsearch.indices.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'description' => t('Manage your Elasticsearch indices.  Create, edit, or delete indices, check their status, or manage settings such as cross-site querying.'),
+    'description' => t(
+      'Manage your Elasticsearch indices.  Create, edit, or delete indices, check their status, or manage settings such as cross-site querying.'
+    ),
     'type' => MENU_LOCAL_TASK,
   ];
 
@@ -168,7 +179,9 @@ function tripal_elasticsearch_menu() {
     'access arguments' => ['administer tripal elasticsearch'],
     'file' => 'includes/tripal_elasticsearch.search_forms.form.inc',
     'file_path' => drupal_get_path('module', 'tripal_elasticsearch'),
-    'description' => t('Create or edit search forms for custom database table indices.'),
+    'description' => t(
+      'Create or edit search forms for custom database table indices.'
+    ),
     'type' => MENU_LOCAL_TASK,
   ];
 
@@ -196,7 +209,9 @@ function tripal_elasticsearch_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_elasticsearch_tuning_form'],
     'access arguments' => ['administer tripal elasticsearch'],
-    'description' => t('Make fine changes to what fields are indexed. Applies to Tripal 3 entities index only.'),
+    'description' => t(
+      'Make fine changes to what fields are indexed. Applies to Tripal 3 entities index only.'
+    ),
     'type' => MENU_LOCAL_TASK,
   ];
 
@@ -303,7 +318,9 @@ function tripal_elasticsearch_permission() {
   return [
     'administer tripal elasticsearch' => [
       'title' => t('Administer Tripal Elasticsearch module'),
-      'description' => t('Perform administration tasks for Tripal Elasticsearch'),
+      'description' => t(
+        'Perform administration tasks for Tripal Elasticsearch'
+      ),
     ],
   ];
 }
@@ -382,8 +399,12 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
  * Add JS file when the elastic modal theme function is called.
  */
 function tripal_elasticsearch_preprocess_elastic_modal(&$variables) {
-  drupal_add_js(drupal_get_path('module',
-      'tripal_elasticsearch') . '/js/ESModal.js');
+  drupal_add_js(
+    drupal_get_path(
+      'module',
+      'tripal_elasticsearch'
+    ) . '/js/ESModal.js'
+  );
 }
 
 /**
@@ -424,13 +445,13 @@ function tripal_elasticsearch_cron_queue_info() {
 
   for ($n = 1; $n <= $queue_number; $n++) {
     $queues['elasticsearch_queue_' . $n] = [
-      'worker callback' => 'ESQueue::run',
+      'worker callback' => '\ES\Common\Queue::run',
       'time' => 60 * 2,
     ];
   }
 
   $queues['elasticsearch_dispatcher'] = [
-    'worker callback' => 'ESQueue::run',
+    'worker callback' => '\ES\Common\Queue::run',
     // Let worker take as much time required to dispatch all jobs
     'time' => 60 * 20,
   ];
@@ -520,31 +541,45 @@ function tripal_elasticsearch_generate_block($delta) {
 
   // Use index name obtained from block name and query the database.
   $sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-  $result = db_query($sql,
-    [':index_name' => $index_name])->fetchCol('index_name');
+  $result = db_query(
+    $sql,
+    [':index_name' => $index_name]
+  )->fetchCol('index_name');
 
   // If query result is not empty, display the block.
   if (!empty($result)) {
-    $block['subject'] = t('Search block form for index: <b>' . $index_name . '</b>');
+    $block['subject'] = t(
+      'Search block form for index: <b>' . $index_name . '</b>'
+    );
 
-    $page['form'] = drupal_get_form('tripal_elasticsearch_build_search_block_form',
-      $index_name);
+    $page['form'] = drupal_get_form(
+      'tripal_elasticsearch_build_search_block_form',
+      $index_name
+    );
 
     if (isset($_GET['op'])) {
-      drupal_add_js(drupal_get_path('module',
-          'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
+      drupal_add_js(
+        drupal_get_path(
+          'module',
+          'tripal_elasticsearch'
+        ) . '/js/table_search_results_datatable.js'
+      );
       $search_results = tripal_elasticsearch_paginate(10);
       if (empty($search_results)) {
         $page['content'] = ['#markup' => '0 results found.'];
       }
       else {
-        $markup = tripal_elasticsearch_get_table_search_result_table($search_results['results'],
-          $index_name, $search_results['total']);
+        $markup = tripal_elasticsearch_get_table_search_result_table(
+          $search_results['results'],
+          $index_name,
+          $search_results['total']
+        );
         $page_number = $search_results['page'];
         $total_pages = ceil($search_results['total'] / 10);
 
         $page['download'] = [
-          '#markup' => '<p>' . '<a href="' . tripal_elasticsearch_build_download_url() . '" target="_blank">Download all results in csv format</a>' . '</p>',
+          '#markup' => '<p>' . '<a href="' . tripal_elasticsearch_build_download_url(
+            ) . '" target="_blank">Download all results in csv format</a>' . '</p>',
         ];
         $page['count'] = [
           '#markup' => "<div style='font-weight: bold; margin: 10px 0'>" . "<p style='float: right'>Showing page {$page_number} out of {$total_pages} pages.</p>" . "<p>Found {$search_results['total']} results.</p>" . "</div>",
@@ -585,24 +620,34 @@ function tripal_elasticsearch_block_view($delta = '') {
       $block['subject'] = '';
       $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
-      if (strstr(current_path(),
-          'tripal_elasticsearch/search_website') !== FALSE) {
-        $block['content'] = tripal_elasticsearch_get_website_search_results_category_list($keyword);
+      if (strstr(
+          current_path(),
+          'tripal_elasticsearch/search_website'
+        ) !== FALSE) {
+        $block['content'] = tripal_elasticsearch_get_website_search_results_category_list(
+          $keyword
+        );
       }
       break;
     case 'cross_site_search_block':
       $block['subject'] = '';
-      $block['content'] = drupal_get_form('tripal_elasticsearch_cross_site_search_form');
+      $block['content'] = drupal_get_form(
+        'tripal_elasticsearch_cross_site_search_form'
+      );
       break;
     case 'elasticsearch_gene_search_block':
       $block['subject'] = '';
-      $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form',
-        FALSE);
+      $block['content'] = drupal_get_form(
+        'tripal_elasticsearch_gene_search_form',
+        FALSE
+      );
       break;
     case 'es_local_gene_search_block':
       $block['subject'] = '';
-      $block['content'] = drupal_get_form('tripal_elasticsearch_gene_search_form',
-        TRUE);
+      $block['content'] = drupal_get_form(
+        'tripal_elasticsearch_gene_search_form',
+        TRUE
+      );
       break;
   }
 
@@ -616,8 +661,7 @@ function tripal_elasticsearch_block_view($delta = '') {
  *
  * @throws Exception
  */
-function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
-) {
+function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
   if (empty($keyword)) {
@@ -629,7 +673,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
 
   // Run Elasticsearch.
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $indices = $es->getIndices();
     $index_name = [];
     if (in_array('website', $indices)) {
@@ -645,8 +689,12 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
     }
 
     $per_page = 10;
-    $results = $es->setWebsiteSearchParams($keyword, $node_type,
-      implode(',', $index_name), '')->paginate($per_page);
+    $results = $es->setWebsiteSearchParams(
+      $keyword,
+      $node_type,
+      implode(',', $index_name),
+      ''
+    )->paginate($per_page);
   } catch (\Exception $e) {
     tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $e->getMessage());
 
@@ -667,23 +715,32 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
     $content = tripal_elasticsearch_create_collection_button();
   }
   $content .= '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
-  $content .= tripal_elasticsearch_get_website_search_result_table($results['results'], FALSE);
+  $content .= tripal_elasticsearch_get_website_search_result_table(
+    $results['results'],
+    FALSE
+  );
   $content .= $results['pager'];
 
   if (function_exists('tripal_create_collection')) {
     $form = drupal_get_form('tripal_elasticsearch_collections_form');
     try {
-      $content .= theme('elastic_modal', [
-        'trigger' => '#create-collection-btn',
-        'title' => 'Create Collection',
-        'submit' => 'Save Collection',
-        'content' => [
-          'form' => $form,
-        ],
-      ]);
+      $content .= theme(
+        'elastic_modal',
+        [
+          'trigger' => '#create-collection-btn',
+          'title' => 'Create Collection',
+          'submit' => 'Save Collection',
+          'content' => [
+            'form' => $form,
+          ],
+        ]
+      );
     } catch (Exception $exception) {
-      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR,
-        $exception->getMessage());
+      tripal_report_error(
+        'tripal_elasticsearch',
+        TRIPAL_ERROR,
+        $exception->getMessage()
+      );
     }
   }
 
@@ -701,13 +758,16 @@ function tripal_elasticsearch_create_collection_button() {
     return '';
   }
 
-  return '<p>' . l('Create Downloadable Collection',
-      'tripal_elasticsearch/collections/create', [
+  return '<p>' . l(
+      'Create Downloadable Collection',
+      'tripal_elasticsearch/collections/create',
+      [
         'attributes' => [
           'id' => 'create-collection-btn',
           'class' => 'btn btn-primary',
         ],
-      ]) . '</p>';
+      ]
+    ) . '</p>';
 }
 
 /**
@@ -723,22 +783,30 @@ function tripal_elasticsearch_table_search_page_callback() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(
-  &$form,
-  &$form_state,
-  $form_id
-) {
+function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
   if (!isset($form_state['values']['op'])) {
     return;
   }
   elseif ($form_state['values']['op'] !== 'Download') {
     // add js and css files
-    drupal_add_css(drupal_get_path('module',
-        'tripal_elasticsearch') . '/css/jquery.dataTables.min.css');
-    drupal_add_js(drupal_get_path('module',
-        'tripal_elasticsearch') . '/js/jquery.dataTables.min.js');
-    drupal_add_js(drupal_get_path('module',
-        'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
+    drupal_add_css(
+      drupal_get_path(
+        'module',
+        'tripal_elasticsearch'
+      ) . '/css/jquery.dataTables.min.css'
+    );
+    drupal_add_js(
+      drupal_get_path(
+        'module',
+        'tripal_elasticsearch'
+      ) . '/js/jquery.dataTables.min.js'
+    );
+    drupal_add_js(
+      drupal_get_path(
+        'module',
+        'tripal_elasticsearch'
+      ) . '/js/table_search_results_datatable.js'
+    );
 
     /**
      * build an associated array in which keys are field names and values are user input contents.
@@ -757,21 +825,31 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     // get index type
     $index_type = $record->table_name;
     // Build search query for table search.
-    $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
+    $query = tripal_elasticsearch_build_search_query_from_field_content_pairs(
+      $index_fields
+    );
     // Build table search params.
     $select_window = isset($form_state['values']['select_window']) ? $form_state['values']['select_window'] : '';
     $from = empty($select_window) ? 0 : 1000 * ($select_window - 1);
     // Run Elasticsearch and return search results into an array.
     $results = [];
     try {
-      $es = new ESInstance();
-      $results = $es->setTableSearchParams($index_name, $index_type, $query, [
-        $from,
-        1000,
-      ])->search();
+      $es = new Instance();
+      $results = $es->setTableSearchParams(
+        $index_name,
+        $index_type,
+        $query,
+        [
+          $from,
+          1000,
+        ]
+      )->search();
     } catch (\Exception $e) {
-      tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR',
-        $e->getMessage());
+      tripal_report_error(
+        'tripal_elasticsearch',
+        'TRIPAL_ERROR',
+        $e->getMessage()
+      );
     }
 
     // Theme search results
@@ -779,7 +857,11 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     $total = count($results);
     if ($total > 0) {
       $output = '<div id="table_search_results_datatable">';
-      $output .= tripal_elasticsearch_get_table_search_result_table($results, $index_name, $total);
+      $output .= tripal_elasticsearch_get_table_search_result_table(
+        $results,
+        $index_name,
+        $total
+      );
       $output .= '</div>';
     }
 
@@ -807,15 +889,19 @@ function tripal_elasticsearch_node_update($node) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $indices = $es->getIndices();
     if (!in_array('website', $indices)) {
       return;
     }
   } catch (Exception $exception) {
     if (!$tripal_elasticsearch_errors) {
-      watchdog('tripal_elasticsearch', $exception->getMessage(), [],
-        WATCHDOG_ERROR);
+      watchdog(
+        'tripal_elasticsearch',
+        $exception->getMessage(),
+        [],
+        WATCHDOG_ERROR
+      );
       $tripal_elasticsearch_errors = TRUE;
     }
   }
@@ -845,11 +931,12 @@ function tripal_elasticsearch_node_delete($node) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $es->deleteEntry('website', 'website', $node->nid);
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
-      $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
+      $message = $e->getMessage(
+        ) . ' Failed to delete indexed node ' . $node->nid;
       tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $message);
       $tripal_elasticsearch_errors = TRUE;
     }
@@ -870,12 +957,13 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $indices = $es->getIndices();
     if (in_array('gene_search_index', $indices)) {
       if (isset($entity->chado_table) && $entity->chado_table === 'feature') {
-        $job = new GeneSearchIndexJob('chado_' . $entity->bundle, 3,
-          $entity->id);
+        $job = new GeneSearchIndexJob(
+          'chado_' . $entity->bundle, 3, $entity->id
+        );
         $job->dispatch();
       }
     }
@@ -885,8 +973,12 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
     }
   } catch (Exception $exception) {
     if (!$tripal_elasticsearch_errors) {
-      watchdog('tripal_elasticsearch', $exception->getMessage(), [],
-        WATCHDOG_ERROR);
+      watchdog(
+        'tripal_elasticsearch',
+        $exception->getMessage(),
+        [],
+        WATCHDOG_ERROR
+      );
       $tripal_elasticsearch_errors = TRUE;
     }
   }
@@ -938,19 +1030,25 @@ function tripal_elasticsearch_entity_delete($entity, $type) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     if (in_array('entities', $es->getIndices())) {
       $es->deleteEntry('entities', 'entities', $entity->id);
     }
 
-    if ($entity->chado_table === 'feature' && in_array('gene_search_index',
-        $es->getIndices())) {
-      $es->deleteEntry('gene_search_index', 'chado.feature',
-        $entity->chado_record_id);
+    if ($entity->chado_table === 'feature' && in_array(
+        'gene_search_index',
+        $es->getIndices()
+      )) {
+      $es->deleteEntry(
+        'gene_search_index',
+        'chado.feature',
+        $entity->chado_record_id
+      );
     }
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
-      $message = $e->getMessage() . ' Failed to delete indexed entity ' . $entity->id;
+      $message = $e->getMessage(
+        ) . ' Failed to delete indexed entity ' . $entity->id;
       watchdog('tripal_elasticsearch', $message, WATCHDOG_WARNING);
       $tripal_elasticsearch_errors = TRUE;
     }
@@ -990,11 +1088,13 @@ function tripal_elasticsearch_paginate($per_page) {
   $index_type = $record->table_name;
 
   // Build search query for table search.
-  $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
+  $query = tripal_elasticsearch_build_search_query_from_field_content_pairs(
+    $index_fields
+  );
 
   // Run Elasticsearch and return search results into an array.
   try {
-    $es = new ESInstance();
+    $es = new Instance();
 
     return $es->setTableSearchParams($index_name, $index_type, $query)
       ->paginate($per_page);
@@ -1033,7 +1133,9 @@ function tripal_elasticsearch_table_search_download() {
   $index_type = $record->table_name;
 
   // Build search query for table search.
-  $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
+  $query = tripal_elasticsearch_build_search_query_from_field_content_pairs(
+    $index_fields
+  );
 
   // loop through window and write returned search results into a file.
   $directory = 'public://table_search_results';
@@ -1041,13 +1143,16 @@ function tripal_elasticsearch_table_search_download() {
   $temp_file = drupal_tempnam($directory, 'search_results_') . '.csv';
 
   try {
-    $es = new ESInstance();
-    $count = $es->setTableSearchParams($index_name, $index_type, $query)
-      ->count();
+    $es = new Instance();
+    $count = $es->setTableSearchParams($index_name, $index_type, $query)->count(
+    );
     $window_range = range(1, ceil($count / 1000));
   } catch (Exception $exception) {
-    tripal_report_error('tripal_elasticsearch', 'TRIPAL_ERROR',
-      $exception->getMessage());
+    tripal_report_error(
+      'tripal_elasticsearch',
+      'TRIPAL_ERROR',
+      $exception->getMessage()
+    );
 
     return;
   }
@@ -1056,8 +1161,12 @@ function tripal_elasticsearch_table_search_download() {
     $offset = [1000 * ($window - 1), 1000];
 
     try {
-      $result = $es->setTableSearchParams($index_name, $index_type, $query,
-        $offset)->search();
+      $result = $es->setTableSearchParams(
+        $index_name,
+        $index_type,
+        $query,
+        $offset
+      )->search();
     } catch (Exception $exception) {
       drupal_set_message($exception->getMessage(), 'error');
 
@@ -1075,14 +1184,44 @@ function tripal_elasticsearch_table_search_download() {
 
 /**
  * Auto discover and include ES classes and Jobs.
+ *
+ * After registering this autoload function with SPL, the following line
+ * would cause the function to attempt to load the \Foo\Bar\Baz\Qux class
+ * from includes/Indices/Entities.php:
+ *
+ *      new \ES\Indices\Entity;
+ *
+ * @author https://www.php-fig.org/psr/psr-4/examples/
+ *
+ * @param string $class The fully-qualified class name.
+ *
+ * @return void
  */
-function tripal_elasticsearch_auto_discover_classes() {
-  $path = drupal_get_path('module', 'tripal_elasticsearch');
-  foreach (glob("{$path}/includes/Elasticsearch/*.php", GLOB_NOSORT) as $file) {
-    require_once $file;
+spl_autoload_register('tripal_elasticsearch_auto_discover_classes');
+function tripal_elasticsearch_auto_discover_classes($class) {
+  // project-specific namespace prefix
+  $prefix = 'ES\\';
+
+  // base directory for the namespace prefix
+  $base_dir = __DIR__ . '/includes/';
+
+  // does the class use the namespace prefix?
+  $len = strlen($prefix);
+  if (strncmp($prefix, $class, $len) !== 0) {
+    // no, move to the next registered autoloader
+    return;
   }
 
-  foreach (glob("{$path}/includes/Jobs/*.php", GLOB_NOSORT) as $file) {
+  // get the relative class name
+  $relative_class = substr($class, $len);
+
+  // replace the namespace prefix with the base directory, replace namespace
+  // separators with directory separators in the relative class name, append
+  // with .php
+  $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+
+  // if the file exists, require it
+  if (file_exists($file)) {
     require_once $file;
   }
 }

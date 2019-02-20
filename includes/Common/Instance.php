@@ -75,7 +75,7 @@ class ESInstance{
    *
    * @return mixed
    */
-  protected function sanitizeQuery($query) {
+  public function sanitizeQuery($query) {
     $query = stripslashes($query);
     $query = str_replace('\\', ' ', $query);
     $query = str_replace('+', ' ', $query);
@@ -96,19 +96,12 @@ class ESInstance{
    *
    * @return $this
    */
-  public function setWebsiteSearchParams(
-    $search_terms,
-    $node_type = '',
-    $index = 'website',
-    $index_type = '',
-    $offset = [],
-    $force_entities_only = FALSE
-  ) {
+  public function setWebsiteSearchParams($search_terms, $node_type = '', $index = 'website', $index_type = '', $offset = [], $force_entities_only = FALSE) {
     $queries = [];
 
     $queries[] = [
       'query_string' => [
-        'default_field' => 'content',
+        //'default_field' => 'content.taxrank__genus',
         'query' => $this->sanitizeQuery($search_terms),
         'default_operator' => 'AND',
       ],
@@ -179,6 +172,17 @@ class ESInstance{
   }
 
   /**
+   * @param $index
+   *
+   * @return bool
+   */
+  public function hasIndex($index) {
+    $indices = $this->getIndices();
+
+    return in_array($index, $indices);
+  }
+
+  /**
    * Build table search params.
    * USe this method if not searching the website or entities indices.
    *
@@ -190,13 +194,7 @@ class ESInstance{
    *
    * @return $this
    */
-  public function setTableSearchParams(
-    $index,
-    $type,
-    $query,
-    $offset = [],
-    $highlight = FALSE
-  ) {
+  public function setTableSearchParams($index, $type, $query, $offset = [], $highlight = FALSE) {
     $params = [];
     $params['index'] = $index;
     $params['type'] = $type;
@@ -253,14 +251,7 @@ class ESInstance{
    *
    * @return $this
    */
-  public function setIndexParams(
-    $index_name,
-    $shards = 5,
-    $replicas = 0,
-    $tokenizer = 'standard',
-    $token_filters = [],
-    $field_mapping_types = []
-  ) {
+  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
     $analysis = [
       'analyzer' => [
         $index_name => [
@@ -281,13 +272,13 @@ class ESInstance{
     $properties = [];
     foreach ($field_mapping_types as $field => $mapping_type) {
       $properties[$field] = [
-        'type' => $mapping_type,
-        'fields' => [
-          'raw' => [
-            'type' => $mapping_type,
-            //'index' => 'not_analyzed',
-          ],
-        ],
+        //'type' => $mapping_type,
+        //'fields' => [
+        //  'raw' => [
+        //    'type' => $mapping_type,
+        //    //'index' => 'not_analyzed',
+        //  ],
+        //],
       ];
     }
 
@@ -331,6 +322,17 @@ class ESInstance{
       return $hits;
     }
 
+    return $this->formatHits($hits);
+  }
+
+  /**
+   * Format hits.
+   *
+   * @param array $hits The hits returned from the search operation.
+   *
+   * @return array
+   */
+  public function formatHits($hits) {
     $results = [];
     foreach ($hits['hits']['hits'] as $hit) {
       if (isset($hit['highlight'])) {
@@ -489,13 +491,7 @@ class ESInstance{
    *
    * @return array
    */
-  public function bulk(
-    $operation,
-    $index,
-    $entries,
-    $type = NULL,
-    $id_key = NULL
-  ) {
+  public function bulk($operation, $index, $entries, $type = NULL, $id_key = NULL) {
     if (count($entries) === 0) {
       return [];
     }
@@ -542,8 +538,8 @@ class ESInstance{
    * @return array
    */
   public function paginate($per_page) {
-    $total = $this->count();
-    $total = min($total, 10 * 100000);
+    $count = $this->count();
+    $total = min($count, 1000000);
     $current_page = pager_default_initialize($total, $per_page);
 
     // Set the offset.
@@ -555,6 +551,7 @@ class ESInstance{
     return [
       'results' => $results,
       'total' => $total,
+      'count' => $count,
       'page' => $current_page + 1,
       'pages' => ceil($total / $per_page),
       'pager' => theme('pager', ['quantity', $total]),
@@ -583,11 +580,7 @@ class ESInstance{
    *          If count is requested, 2 arrays will be returned.
    *          Otherwise, the structure is $array[$type_label] = $type_label
    */
-  public function getAllCategories(
-    $version = NULL,
-    $get_count = FALSE,
-    $keyword = '*'
-  ) {
+  public function getAllCategories($version = NULL, $get_count = FALSE, $keyword = '*') {
     $types = [];
     $indices = $this->getIndices();
     $search_index = [];
@@ -777,12 +770,7 @@ class ESInstance{
    * @throws \Exception
    * @return array
    */
-  public function putMapping(
-    $index_name,
-    $field_name,
-    $field_type,
-    $index_type = NULL
-  ) {
+  public function putMapping($index_name, $field_name, $field_type, $index_type = NULL) {
     if ($index_type === NULL) {
       $index_type = $index_name;
     }

@@ -124,7 +124,7 @@ class ESQueue{
    * Dispatch a new job. Uses the queue that has minimum items if queue name is
    * not provided.
    *
-   * @param \ESJob $job
+   * @param \ES\Common\Job $job
    * @param string $queue_name
    *
    * @return boolean
@@ -142,12 +142,12 @@ class ESQueue{
   /**
    * Execute a given job.
    *
-   * @param \ESJob $job
+   * @param \ES\Common\Job $job
    *
    * @throws \Exception
    */
   public static function run($job) {
-    if ($job instanceof ESJob) {
+    if ($job instanceof \ES\Common\Job) {
       try {
         $job->handle();
         $total = $job->total();
@@ -164,7 +164,7 @@ class ESQueue{
       return;
     }
 
-    throw new Exception('Elasticsearch Queue: ' . get_class($job) . ' is an invalid job type. Jobs must extend the ESJob class');
+    throw new Exception('Elasticsearch Queue: ' . get_class($job) . ' is an invalid job type. Jobs must extend the ES\Common\Job class');
   }
 
   /**

@@ -2,10 +2,11 @@
 
 namespace Test\Feature;
 
+use ES\Common\Instance;
 use StatonLab\TripalTestSuite\DBTransaction;
-use StatonLab\TripalTestSuite\TripalTestCase;
+use Tests\TestCase;
 
-class ConnectToElasticSearchServerTest extends TripalTestCase
+class ConnectToElasticSearchServerTest extends TestCase
 {
     use DBTransaction;
 
@@ -21,7 +22,7 @@ class ConnectToElasticSearchServerTest extends TripalTestCase
 
         $this->expectException('Exception');
 
-        new \ESInstance();
+        new \ES\Common\Instance();
     }
 
     /**
@@ -34,8 +35,8 @@ class ConnectToElasticSearchServerTest extends TripalTestCase
     {
         variable_set('elasticsearch_host', 'http://localhost:9200');
 
-        $es = new \ESInstance();
+        $es = new \ES\Common\Instance();
 
-        $this->assertInstanceOf('\\ESInstance', $es);
+        $this->assertInstanceOf(Instance::class, $es);
     }
 }

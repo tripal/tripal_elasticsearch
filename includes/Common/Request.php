@@ -1,11 +1,13 @@
 <?php
+namespace ES\Common;
+
 /**
  * Provides RESTful HTTP request API.
  *
  * @file includes/Elasticsearch/ESRequest.php
  */
 
-class ESRequest {
+class Request {
 
   public static $base_url = '';
 
