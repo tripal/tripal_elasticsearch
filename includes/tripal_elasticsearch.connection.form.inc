@@ -135,7 +135,7 @@ function elasticsearch_connection_form($form, &$form_state) {
   ];
 
   try {
-    $client = (new ESInstance())->client;
+    $client = (new Instance())->client;
     // Obtain cluster health information.
     $params['v'] = TRUE;
     $health      = $client->cat()->health($params)[0];

@@ -6,37 +6,36 @@ use ES\Common\Instance;
 use StatonLab\TripalTestSuite\DBTransaction;
 use Tests\TestCase;
 
-class ConnectToElasticSearchServerTest extends TestCase
+class InstanceTest extends TestCase
 {
     use DBTransaction;
 
-    /**
-     * Tests that an exception is thrown when no host is specified.
-     *
-     * @throws \Exception
-     * @test
-     */
-    public function should_fail_to_connect_to_server_before_specifying_host()
+   /** @test */
+    public function testThatConnectionToAnInvalidHostFails()
     {
         variable_del('elasticsearch_host');
 
-        $this->expectException('Exception');
+        $this->expectException(\Exception::class);
 
         new \ES\Common\Instance();
     }
 
-    /**
-     * Tests whether connecting to ES server is possible.
-     *
-     * @throws \Exception
-     * @test
-     */
-    public function should_successfully_connect_to_server_after_specifying_host()
+    /** @test */
+    public function testThatWeCanSuccessfullyConnectToNonSpecifiedHost()
     {
-        variable_set('elasticsearch_host', 'http://localhost:9200');
+        variable_set('elasticsearch_host', getenv('ES_HOST'));
 
         $es = new \ES\Common\Instance();
 
         $this->assertInstanceOf(Instance::class, $es);
     }
+
+  /** @test */
+  public function testThatCreatingAnIndexSucceeds() {
+    $name = uniqid();
+    $index = $this->makeIndex($name);
+
+    $this->assertTrue($index['acknowledged']);
+    $this->assertEquals($name, $index['index']);
+  }
 }

@@ -1,6 +1,6 @@
 <?php
 
-class GeneSearchIndexJob extends ESJob {
+class GeneSearchIndexJob extends \ES\Jobs {
 
   /**
    * Index name.
@@ -89,7 +89,7 @@ class GeneSearchIndexJob extends ESJob {
     $this->total = count($records);
 
     try {
-      $es = new ESInstance();
+      $es = new Instance();
 
       // Can't use bulk indexing since we are using array data
       // type (ES error not our fault)

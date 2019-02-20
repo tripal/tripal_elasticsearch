@@ -238,7 +238,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   }
 
   try {
-    $es = new ESInstance();
+    $es = new Instance();
   } catch (Exception $exception) {
     drupal_set_message('The search service is currently unavailable. Please try again later.',
       'error');
@@ -318,7 +318,7 @@ function tripal_elasticsearch_gene_search_download() {
   }
 
   try {
-    $es = new ESInstance();
+    $es = new Instance();
   } catch (Exception $exception) {
     drupal_set_message('Error occurred while generating records for download. Please try again later.',
       'error');
@@ -413,7 +413,7 @@ function tripal_elasticsearch_get_gene_search_organisms() {
 
   $organism_list = chado_query($sql)->fetchAll();
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $organisms = [];
     foreach ($organism_list as $organism) {
       $name = "{$organism->genus} {$organism->species}";

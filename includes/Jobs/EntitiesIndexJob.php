@@ -1,6 +1,6 @@
 <?php
 
-class EntitiesIndexJob extends ESJob {
+class EntitiesIndexJob extends \ES\Jobs{
 
   /**
    * Job type to show in progress report.
@@ -55,7 +55,7 @@ class EntitiesIndexJob extends ESJob {
   /**
    * Elasticsearch instance.
    *
-   * @var \ESInstance
+   * @var \ES\Common\Instance
    */
   protected $es;
 
@@ -87,8 +87,9 @@ class EntitiesIndexJob extends ESJob {
    */
   public function handle() {
     try {
-      $this->es = new ESInstance();
+      $this->es = new Instance();
       $entities = $this->get();
+
       $this->total = count($entities);
       $records = $this->loadContent($entities);
 
@@ -135,20 +136,22 @@ class EntitiesIndexJob extends ESJob {
           if (property_exists($entity,
               $field) && isset($entity->{$field}['und'])) {
 
+            $content[$field] = [];
             foreach ($entity->{$field}['und'] as $elements) {
               if (!isset($elements['value'])) {
 
                 continue;
               }
 
-              $value = $this->extractValue($elements['value']);
 
+              $value = $this->extractValue($elements['value']);
               if (empty($value)) {
 
                 continue;
               }
 
-              $content[] = $value;
+              $content[$field][] = $value;
+              //$content[] = $value;
             }
           }
         }
@@ -403,7 +406,8 @@ class EntitiesIndexJob extends ESJob {
     if ($clear_queue) {
       // Clear all entries from the queue
       $sql = 'SELECT item_id, data FROM queue q WHERE name LIKE :name';
-      $results = db_query($sql, [':name' => db_like('elasticsearch') . '%'])->fetchAll();
+      $results = db_query($sql,
+        [':name' => db_like('elasticsearch') . '%'])->fetchAll();
       $delete = [];
 
       foreach ($results as $result) {
@@ -417,7 +421,8 @@ class EntitiesIndexJob extends ESJob {
       }
 
       if (!empty($delete)) {
-        $dsql = 'DELETE FROM queue WHERE item_id IN (' . implode(',', $delete) . ')';
+        $dsql = 'DELETE FROM queue WHERE item_id IN (' . implode(',',
+            $delete) . ')';
         db_query($dsql)->execute();
       }
     }
@@ -439,7 +444,7 @@ class EntitiesIndexJob extends ESJob {
   }
 
   /**
-   * Tells the ESQueue class whether this job implements
+   * Tells the \ES\Common\Queue class whether this job implements
    * priority queues.
    *
    * @return bool

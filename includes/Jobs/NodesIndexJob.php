@@ -1,6 +1,6 @@
 <?php
 
-class NodesIndexJob extends ESJob{
+class NodesIndexJob extends \ES\Jobs{
 
   /**
    * Job type to show in progress report.
@@ -53,7 +53,7 @@ class NodesIndexJob extends ESJob{
    * @throws \Exception
    */
   public function handle() {
-    $es = new ESInstance();
+    $es = new Instance();
     $records = $this->get();
 
     $this->total = count($records);

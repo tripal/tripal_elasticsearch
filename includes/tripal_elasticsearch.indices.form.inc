@@ -14,7 +14,7 @@
  */
 function tripal_elasticsearch_indexing_form($form, &$form_state) {
   try {
-    $es = new ESInstance();
+    $es = new Instance();
 
     // associate index name with indexed table.
     $indices = $es->getIndices();
@@ -285,7 +285,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   try {
-    $client = (new ESInstance())->client;
+    $client = (new Instance())->client;
 
     // associate index name with indexed table.
     $mappings = $client->indices()->getMapping();
@@ -341,7 +341,7 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
   if (!empty($delete_indices)) {
     foreach ($delete_indices as $index) {
       try {
-        $es = new ESInstance();
+        $es = new Instance();
         $es->deleteIndex($index);
         db_query('DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name',
           [
@@ -361,7 +361,7 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_indices_list_page() {
   try {
-    $es = new ESInstance();
+    $es = new Instance();
 
     // associate index name with indexed table.
     $indices = $es->getIndices();
@@ -446,11 +446,7 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
   $form = [];
   $exposed = FALSE;
   $url = NULL;
@@ -485,7 +481,7 @@ function tripal_elasticsearch_index_edit_confirm(
     $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
     if (!$result) {
       try {
-        $es = new ESInstance();
+        $es = new Instance();
         $mappings = $es->getIndexMappings($index_name);
         $table_name = array_keys($mappings);
         if (count($table_name) > 1) {
@@ -532,7 +528,7 @@ function tripal_elasticsearch_index_edit_confirm(
   // Get existing index settings and mappings.
   // TODO: what about default tables?
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $index_settings = $es->getIndexSettings($index_name);
     $index_mappings = $es->getIndexMappings($index_name);
   } catch (Exception $exception) {
@@ -739,11 +735,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
@@ -808,7 +800,10 @@ function tripal_elasticsearch_create_index(&$values) {
       'entity_id' => 'integer',
       'bundle_label' => 'text',
       'title' => 'text',
-      'content' => 'text',
+      'content' => [
+        'dynamic' => TRUE,
+        'properties' => [],
+      ],
     ];
   }
   elseif ($index_type === 'gene_search') {
@@ -875,7 +870,7 @@ function tripal_elasticsearch_create_index(&$values) {
 
   // Create the index.
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters,
       $field_mapping_types)->createIndex();
   } catch (Exception $exception) {
@@ -928,7 +923,7 @@ function tripal_elasticsearch_create_index(&$values) {
 function tripal_elasticsearch_delete_index($index) {
   // Find the index and delete it from ES
   try {
-    $es = new ESInstance();
+    $es = new Instance();
     $es->deleteIndex($index);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
@@ -937,17 +932,13 @@ function tripal_elasticsearch_delete_index($index) {
   }
 
   // Find the index and delete it from the DB.  this db is for the search blocks
-  $result = db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name",
-    [':index_name' => $index])->fetchObject();
-
-  if (!$result) {
-    // It's not in the DB so there is nothing to delete here.
-    return;
-  }
+  db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name",
+    [':index_name' => $index]);
 
   // Now delete the table info
   db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
     [':index_name' => $index]);
+
   // Delete any progress indicator
   db_query('DELETE FROM {tripal_elasticsearch_queues} WHERE index_name=:index_name',
     [':index_name' => $index]);
@@ -961,6 +952,7 @@ function tripal_elasticsearch_delete_index($index) {
 function tripal_elasticsearch_update_index($index) {
   $result = db_query("SELECT * FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
     [':index_name' => $index])->fetchObject();
+
   if (!$result) {
     drupal_set_message("Index \"{$index}\" not found", 'error');
     return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
@@ -982,6 +974,7 @@ function tripal_elasticsearch_update_index($index) {
   }
 
   drupal_set_message("{$index} updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
+  drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
 /**
@@ -997,7 +990,7 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
 
   $content .= '<h1>Indexing Progress Tracker</h1>';
 
-  $data = ESQueue::progress();
+  $data = \ES\Common\Queue::progress();
 
   $content .= '<h3>Overall Progress</h3>';
 
@@ -1099,7 +1092,6 @@ function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
 
   return number_format($remaining, 2) . " {$unit}";
 }
-
 
 function tripal_elasticsearch_update_entities_form($form, &$form_state) {
   // get bundles

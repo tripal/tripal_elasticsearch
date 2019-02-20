@@ -1,6 +1,6 @@
 <?php
 
-namespace ES\Common;
+namespace ES\Jobs;
 
 abstract class Job{
 

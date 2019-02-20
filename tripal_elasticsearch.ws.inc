@@ -14,10 +14,10 @@
 function tripal_elasticsearch_api_v1_status() {
   try {
     $params['v'] = TRUE;
-    $es          = new ESInstance();
+    $es          = new Instance();
     $health      = current($es->client->cat()->health($params));
   } catch (Exception $exception) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       [
         'status'  => 'Inactive',
         'healthy' => FALSE,
@@ -26,7 +26,7 @@ function tripal_elasticsearch_api_v1_status() {
   }
 
   if (empty($health)) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       [
         'status'  => 'Inactive',
         'healthy' => FALSE,
@@ -34,7 +34,7 @@ function tripal_elasticsearch_api_v1_status() {
     );
   }
 
-  return ESResponse::success(
+  return \ES\Common\Response::success(
     [
       'status'  => 'Active',
       'healthy' => TRUE,
@@ -53,7 +53,7 @@ function tripal_elasticsearch_api_v1_remote_status($remote_id) {
   $remote_id = abs(intval(trim($remote_id)));
 
   if (!is_int($remote_id)) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       [
         'remote_id' => ['Invalid remote server id'],
       ]
@@ -66,7 +66,7 @@ function tripal_elasticsearch_api_v1_remote_status($remote_id) {
     [':id' => $remote_id]
   )->fetchObject();
   if (!$host) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       [
         'remote_id' => ['Remote server record does not exist'],
       ]
@@ -76,12 +76,12 @@ function tripal_elasticsearch_api_v1_remote_status($remote_id) {
   $url = trim(trim($host->url), '/') . '/elasticsearch/api/v1/status';
 
   try {
-    $response = ESRequest::get($url);
+    $response = \ES\Common\Request::get($url);
   } catch (Exception $exception) {
-    return ESResponse::error(['server' => $exception->getMessage()], 500);
+    return \ES\Common\Response::error(['server' => $exception->getMessage()], 500);
   }
 
-  return ESResponse::success($response->data);
+  return \ES\Common\Response::success($response->data);
 }
 
 /**
@@ -95,7 +95,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
   $remote_host_id = abs(intval(trim($remote_host_id)));
 
   if (!isset($_GET['terms'])) {
-    return ESResponse::error(['terms' => ['Please provide search terms']]);
+    return \ES\Common\Response::error(['terms' => ['Please provide search terms']]);
   }
 
   $size = 0;
@@ -115,7 +115,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
     $url  = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
 
     try {
-      $response = ESRequest::get(
+      $response = \ES\Common\Request::get(
         $url, [
           'terms'    => $_GET['terms'],
           'category' => isset($_GET['category']) ? $_GET['category'] : '',
@@ -123,7 +123,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
         ]
       );
     } catch (Exception $exception) {
-      return ESResponse::error(['server' => $exception->getMessage()], 500);
+      return \ES\Common\Response::error(['server' => $exception->getMessage()], 500);
     }
   }
 
@@ -132,7 +132,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
   );
 
   // Render results into fields and send them back
-  return ESResponse::success(
+  return \ES\Common\Response::success(
     [
       'count'  => $response->data->count,
       'url'    => $response->data->url,
@@ -157,7 +157,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   $exposed = tripal_elasticsearch_is_index_exposed(['website', 'entities']);
 
   if (!$exposed) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       '403 Forbidden. The request index is not available
      for cross site search. Contact the admin to mark the index as public', 403
     );
@@ -169,7 +169,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   $category = isset($_GET['category']) ? $_GET['category'] : NULL;
 
   if ($size !== 0 && $size > 20) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       [
         'size' => ['Please provide a valid size between 1 and 20'],
       ]
@@ -181,13 +181,13 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   }
 
   try {
-    $es      = new ESInstance();
+    $es      = new Instance();
     $results = $es->searchWebIndices($terms, $size, $category);
   } catch (Exception $exception) {
-    return ESResponse::error($exception->getMessage(), 500);
+    return \ES\Common\Response::error($exception->getMessage(), 500);
   }
 
-  return ESResponse::success(
+  return \ES\Common\Response::success(
     array_merge(
       $results, [
         'url' => url(
@@ -218,7 +218,7 @@ function tripal_elasticsearch_api_v1_table_index_search(
   $remote_id = abs(intval(trim($remote_host_id)));
 
   if (!tripal_elasticsearch_is_index_exposed($index_name)) {
-    return ESResponse::error(
+    return \ES\Common\Response::error(
       '403 Forbidden. The request index is not available
      for cross site search. Contact the admin to mark the index as public', 403
     );
@@ -231,7 +231,7 @@ function tripal_elasticsearch_api_v1_table_index_search(
         $index_name, FALSE
       );
     } catch (Exception $exception) {
-      return ESResponse::error(
+      return \ES\Common\Response::error(
         [
           'results' => [$exception->getMessage()],
         ]
@@ -245,7 +245,7 @@ function tripal_elasticsearch_api_v1_table_index_search(
     )->fetchObject();
 
     if (!$host) {
-      return ESResponse::error(
+      return \ES\Common\Response::error(
         [
           'remote_id' => ['Invalid remote host provided. ID: ' . $remote_id],
         ]
@@ -259,9 +259,9 @@ function tripal_elasticsearch_api_v1_table_index_search(
       if (isset($data['q'])) {
         unset($data['q']);
       }
-      $results = ESRequest::get($url, $data);
+      $results = \ES\Common\Request::get($url, $data);
     } catch (Exception $exception) {
-      return ESResponse::error(
+      return \ES\Common\Response::error(
         [
           'remote_id' => [
             'The host returned an invalid response',
@@ -275,7 +275,7 @@ function tripal_elasticsearch_api_v1_table_index_search(
   $markup = tripal_elasticsearch_results_formatter(
     $results->data->results, $index_name, $host
   );
-  return ESResponse::success(
+  return \ES\Common\Response::success(
     [
       'url'    => $results->data->url,
       'markup' => $markup,
@@ -297,7 +297,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
   $index_name, $http = TRUE
 ) {
   try {
-    $es                  = new ESInstance();
+    $es                  = new Instance();
     $fields              = $es->getIndexFields($index_name);
     $field_content_pairs = [];
 
@@ -324,7 +324,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
     $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], TRUE);
   } catch (Exception $exception) {
     if ($http) {
-      return ESResponse::error(
+      return \ES\Common\Response::error(
         [
           'results' => [$exception->getMessage()],
         ]
@@ -349,7 +349,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
   global $base_url;
   $query = $_GET;
   unset($query['q']);
-  return ESResponse::success(
+  return \ES\Common\Response::success(
     [
       'count'   => $count,
       'url'     => $url ? url($base_url . '/' . $url, ['query' => $query])
@@ -450,7 +450,7 @@ function elasticsearch_recursive_flatten($array, &$result) {
  * @return array|bool|object
  */
 function tripal_elasticsearch_api_v1_categories() {
-  return ESResponse::success(
+  return \ES\Common\Response::success(
     [
       [
         'label' => 'Gene',
@@ -499,7 +499,7 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
 
   $default_category = ['Any Type' => 'Any Type'];
   try {
-    $es         = new ESInstance();
+    $es         = new Instance();
     $categories = drupal_map_assoc($es->getAllCategories());
   } catch (Exception $exception) {
     $categories = [];

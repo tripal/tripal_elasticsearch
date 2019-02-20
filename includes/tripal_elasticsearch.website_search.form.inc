@@ -159,7 +159,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     // Build search query for table search.
     $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
     try {
-      $es = new ESInstance();
+      $es = new Instance();
       $results_count = $es->setTableSearchParams($index_name, $index_type, $query)
         ->count();
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';

@@ -1,13 +1,18 @@
 <?php
 
+namespace ES\Common;
+
+use Elasticsearch\ClientBuilder;
+use Exception;
+
 /**
- * Class ESInstance
+ * Class Instance
  * ================================================
  * Instantiates connections to an elasticsearch client.
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class ESInstance{
+class Instance{
 
   /**
    * Elasticsearch client.
@@ -47,8 +52,10 @@ class ESInstance{
     }
 
     if (empty($host)) {
-      throw new Exception('A host was not provided. Please set an Elasticsearch host through the admin interface.',
-        100);
+      throw new Exception(
+        'A host was not provided. Please set an Elasticsearch host through the admin interface.',
+        100
+      );
     }
 
     if (!is_array($host)) {
@@ -58,12 +65,14 @@ class ESInstance{
     // Load the elastic search library
     libraries_load('elasticsearch-php');
 
-    $exists = class_exists("Elasticsearch\\ClientBuilder");
+    $exists = class_exists(ClientBuilder::class);
     if ($exists === FALSE) {
-      throw new Exception('The elasticsearch-php library is not available. Please refer to the prerequisites section of the online documentation.');
+      throw new \Exception(
+        'The elasticsearch-php library is not available. Please refer to the prerequisites section of the online documentation.'
+      );
     }
 
-    $this->client = Elasticsearch\ClientBuilder::create()
+    $this->client = ClientBuilder::create()
       ->setHosts($host)
       ->build();
   }
@@ -126,8 +135,10 @@ class ESInstance{
         ];
       }
 
-      if (in_array('entities', $indices) && in_array('website',
-          $indices) && !$force_entities_only) {
+      if (in_array('entities', $indices) && in_array(
+          'website',
+          $indices
+        ) && !$force_entities_only) {
         $queries[1]['query_string'] = [
           'fields' => ['type', 'bundle_label'],
           'query' => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
@@ -305,15 +316,17 @@ class ESInstance{
    *
    * @param bool $return_source whether to format the results or not.
    *
-   * @see \ESInstance::setTableSearchParams()
-   * @see \ESInstance::setWebsiteSearchParams()
+   * @see \ES\Common\Instance::setTableSearchParams()
+   * @see \ES\Common\Instance::setWebsiteSearchParams()
    *
    * @return array
    * @throws \Exception
    */
   public function search($return_source = FALSE) {
     if (empty($this->searchParams)) {
-      throw new Exception('Please build search parameters before attempting to search.');
+      throw new Exception(
+        'Please build search parameters before attempting to search.'
+      );
     }
 
     $hits = $this->client->search($this->searchParams);
@@ -357,7 +370,9 @@ class ESInstance{
    */
   public function count() {
     if (empty($this->searchParams)) {
-      throw new Exception('Please build search parameters before attempting to count results.');
+      throw new Exception(
+        'Please build search parameters before attempting to count results.'
+      );
     }
 
     // Get the search query
@@ -375,15 +390,16 @@ class ESInstance{
    * Create a new index.
    * Use this function after building the index parameters.
    *
-   * @see \ESInstance::setIndexParams()
-   *
-   * @param $params
+   * @see \ES\Common\Instance::setIndexParams()
    *
    * @return array
+   * @throws \Exception
    */
   public function createIndex() {
     if (empty($this->indexParams)) {
-      throw new Exception('Please set the index parameters before attempting to create a new index.');
+      throw new Exception(
+        'Please set the index parameters before attempting to create a new index.'
+      );
     }
 
     return $this->client->indices()->create($this->indexParams);
@@ -584,8 +600,10 @@ class ESInstance{
     $types = [];
     $indices = $this->getIndices();
     $search_index = [];
-    if (in_array('website',
-        $indices) && ($version === NULL || $version === 2)) {
+    if (in_array(
+        'website',
+        $indices
+      ) && ($version === NULL || $version === 2)) {
       // Get all node types from the node table.
       $node_types = db_query("SELECT name, type FROM {node_type}")->fetchAll();
       foreach ($node_types as $type) {
@@ -595,10 +613,14 @@ class ESInstance{
       $search_index[] = 'website';
     }
 
-    if (in_array('entities',
-        $indices) && ($version === NULL || $version === 3)) {
+    if (in_array(
+        'entities',
+        $indices
+      ) && ($version === NULL || $version === 3)) {
       // Get all tripal entity types from the tripal_bundle table.
-      $entity_types = db_query("SELECT name, label FROM {tripal_bundle}")->fetchAll();
+      $entity_types = db_query(
+        "SELECT name, label FROM {tripal_bundle}"
+      )->fetchAll();
       foreach ($entity_types as $type) {
         $types[$type->name] = $type->label;
       }
@@ -721,22 +743,26 @@ class ESInstance{
    */
   public function deleteAllRecords($index_name, $type = NULL) {
     if (empty($index_name)) {
-      throw new Exception('Please provide an index name when deleting records from an index');
+      throw new Exception(
+        'Please provide an index name when deleting records from an index'
+      );
     }
 
     if ($type === NULL) {
       $type = $index_name;
     }
 
-    $this->client->deleteByQuery([
-      'index' => $index_name,
-      'type' => $type,
-      'body' => [
-        'query' => [
-          'match_all' => (object) [],
+    $this->client->deleteByQuery(
+      [
+        'index' => $index_name,
+        'type' => $type,
+        'body' => [
+          'query' => [
+            'match_all' => (object) [],
+          ],
         ],
-      ],
-    ]);
+      ]
+    );
   }
 
   /**
@@ -750,11 +776,13 @@ class ESInstance{
    */
   public function getRecord($index, $type, $id) {
     try {
-      return $this->client->get([
-        'index' => $index,
-        'type' => $type,
-        'id' => $id,
-      ]);
+      return $this->client->get(
+        [
+          'index' => $index,
+          'type' => $type,
+          'id' => $id,
+        ]
+      );
     } catch (Exception $exception) {
       return ['found' => FALSE];
     }
@@ -787,13 +815,15 @@ class ESInstance{
       ],
     ];
 
-    return $this->client->indices()->putMapping([
-      'index' => $index_name,
-      'type' => $index_type,
-      'body' => [
-        'properties' => $properties,
-      ],
-    ]);
+    return $this->client->indices()->putMapping(
+      [
+        'index' => $index_name,
+        'type' => $index_type,
+        'body' => [
+          'properties' => $properties,
+        ],
+      ]
+    );
   }
 
   /**
@@ -808,14 +838,16 @@ class ESInstance{
    * @return array
    */
   public function createOrUpdate($index, $index_type, $id, $item) {
-    return $this->client->update([
-      'index' => $index,
-      'type' => $index_type,
-      'id' => $id,
-      'body' => [
-        'doc' => $item,
-        'upsert' => $item,
-      ],
-    ]);
+    return $this->client->update(
+      [
+        'index' => $index,
+        'type' => $index_type,
+        'id' => $id,
+        'body' => [
+          'doc' => $item,
+          'upsert' => $item,
+        ],
+      ]
+    );
   }
 }
