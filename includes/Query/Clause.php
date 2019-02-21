@@ -101,4 +101,37 @@ class Clause extends BuilderContract{
   public function build() {
     return $this->query;
   }
+
+  /**
+   * Add a raw query joined with $op.
+   *
+   * @param string $query
+   * @param string $op
+   *
+   * @return $this
+   */
+  public function raw($query, $op = 'AND') {
+    $query = $this->sanitizer->escape($query);
+
+    if (empty($this->query)) {
+      $this->query = $query;
+
+      return $this;
+    }
+
+    $this->query .= " {$op} {$query}";
+
+    return $this;
+  }
+
+  /**
+   * Add a raw query joined with OR.
+   *
+   * @param string $query
+   *
+   * @return \ES\Query\Clause
+   */
+  public function orRaw($query) {
+    return $this->raw($query, 'OR');
+  }
 }

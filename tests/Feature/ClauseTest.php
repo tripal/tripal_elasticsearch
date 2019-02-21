@@ -58,6 +58,7 @@ class ClauseTest extends TestCase{
     $this->assertEquals('test* OR test* OR *test* OR *test OR test~', $query);
   }
 
+  /** @test */
   public function testAddonsWithFields() {
     $clause = new Clause();
 
@@ -73,6 +74,7 @@ class ClauseTest extends TestCase{
     );
   }
 
+  /** @test */
   public function testAddonsWithFieldsUsingOr() {
     $clause = new Clause();
 
@@ -87,5 +89,14 @@ class ClauseTest extends TestCase{
       'field:test* OR field:test* OR field:*test* OR field:*test OR field:test~',
       $query
     );
+  }
+
+  /** @test */
+  public function testRawQuery() {
+    $clause = new Clause();
+
+    $query = $clause->raw('test:value* AND test')->orRaw('test')->build();
+
+    $this->assertEquals('test:value* AND test OR test', $query);
   }
 }

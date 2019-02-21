@@ -26,6 +26,9 @@ abstract class BuilderContract{
    */
   abstract public function orWhere($field, $value = NULL);
 
+  abstract public function raw($query, $op = 'AND');
+  abstract public function orRaw($query);
+
   /**
    * Add a begins with condition.
    *

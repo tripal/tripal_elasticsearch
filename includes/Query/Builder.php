@@ -96,6 +96,32 @@ class Builder extends BuilderContract{
   }
 
   /**
+   * @param $query
+   * @param string $op
+   *
+   * @return $this
+   *
+   * @see \ES\Query\Clause::raw()
+   */
+  public function raw($query, $op = 'AND') {
+    $this->query->raw($query, $op);
+
+    return $this;
+  }
+
+  /**
+   * @param $query
+   *
+   * @return $this
+   * @see \ES\Query\Clause::orRaw()
+   */
+  public function orRaw($query) {
+    $this->query->orRaw($query);
+
+    return $this;
+  }
+
+  /**
    *
    * @param string|array $fields
    *
