@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "659c79abed2accea365e00d3efd955c4",
+    "content-hash": "3a8bf0a4e263278d88698c4969217b0b",
     "packages": [],
     "packages-dev": [
         {
@@ -2027,12 +2027,12 @@
             "version": "1.1.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/statonlab/TripalTestSuite.git",
+                "url": "https://github.com/tripal/TripalTestSuite.git",
                 "reference": "ca85284fc1da9c9f2863353dcb6eefe6d4b39343"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/ca85284fc1da9c9f2863353dcb6eefe6d4b39343",
+                "url": "https://api.github.com/repos/tripal/TripalTestSuite/zipball/ca85284fc1da9c9f2863353dcb6eefe6d4b39343",
                 "reference": "ca85284fc1da9c9f2863353dcb6eefe6d4b39343",
                 "shasum": ""
             },
@@ -2424,6 +2424,9 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
     "platform-dev": []
 }
