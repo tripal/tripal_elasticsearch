@@ -45,6 +45,9 @@ class TestCase extends TripalTestCase{
    * @throws \Exception
    */
   public function makeIndex($name = NULL, $fields = []) {
+    var_dump(getenv('ES_HOST'));
+    var_dump(file_get_contents('http://127.0.0.1:9201'));
+
     $es = new \ES\Common\Instance(getenv('ES_HOST'));
 
     if (is_null($name)) {
