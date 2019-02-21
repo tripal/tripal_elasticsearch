@@ -72,9 +72,7 @@ class Instance{
       );
     }
 
-    $this->client = ClientBuilder::create()
-      ->setHosts($host)
-      ->build();
+    $this->client = ClientBuilder::create()->setHosts($host)->build();
   }
 
   /**
@@ -486,6 +484,30 @@ class Instance{
    */
   public function bulkUpdate($index, $entries, $type = NULL, $id_key = NULL) {
     return $this->bulk('update', $index, $entries, $type, $id_key);
+  }
+
+  /**
+   * Update a document.
+   *
+   * @param string $index The index name.
+   * @param string $type The type name.
+   * @param string $id The id of the document to update.
+   * @param array $data The data to replace.
+   *
+   * @return array
+   *    The returned array from the client.
+   */
+  public function update($index, $type, $id, $data) {
+    $params = [
+      'index' => $index,
+      'type' => $type,
+      'id' => $id,
+      'body' => [
+        'doc' => $data,
+      ],
+    ];
+
+    return $this->client->update($params);
   }
 
   /**

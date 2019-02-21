@@ -2,7 +2,7 @@
 
 namespace ES\Query;
 
-class Clause{
+class Clause implements BuilderContract{
 
   /**
    * The built query.
@@ -12,8 +12,22 @@ class Clause{
   protected $query = '';
 
   /**
-   * @param $field
-   * @param null $value
+   * @var \ES\Query\ClauseSanitizer
+   */
+  protected $sanitizer;
+
+  /**
+   * Clause constructor.
+   */
+  public function __construct() {
+    $this->sanitizer = new ClauseSanitizer();
+  }
+
+  /**
+   * Recursively build the query.
+   *
+   * @param string $field
+   * @param string $value
    *
    * @return string
    */
@@ -28,8 +42,11 @@ class Clause{
     }
 
     if (is_null($value)) {
-      return $field;
+      return $this->sanitizer->escape($field);
     }
+
+    $field = $this->sanitizer->escape($field);
+    $value = $this->sanitizer->escape($value);
 
     return $field . ':' . $value;
   }

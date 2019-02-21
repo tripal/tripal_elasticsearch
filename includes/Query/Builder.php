@@ -2,7 +2,7 @@
 
 namespace ES\Query;
 
-class Builder{
+class Builder implements BuilderContract{
 
   /**
    * @var string
@@ -22,12 +22,21 @@ class Builder{
   /**
    * @var array
    */
-  protected $queries = [];
+  protected $highlight;
 
   /**
-   * @var array
+   * The query clause builder.
+   *
+   * @var \ES\Query\Clause
    */
-  protected $highlight;
+  protected $query;
+
+  /**
+   * ES generated id if exists.
+   *
+   * @var string
+   */
+  protected $id = FALSE;
 
   /**
    * Builder constructor.
@@ -36,6 +45,7 @@ class Builder{
    */
   public function __construct($index) {
     $this->index = $index;
+    $this->query = new Clause();
   }
 
   /**
@@ -55,27 +65,29 @@ class Builder{
   }
 
   /**
-   * Add a clause.
+   * Build a where clause.
    *
-   * @param $query
-   * @param null $fields
+   * @param string $field
+   * @param string $value
+   *
+   * @return $this
    */
-  public function query($query, array $fields = NULL) {
-    $query = [
-      'simple_query_string' => [
-        'query' => $query,
-      ],
-    ];
+  public function where($field, $value = NULL) {
+    $this->query->where($field, $value);
+    return $this;
+  }
 
-    if (!is_null($fields)) {
-      if (!is_array($fields)) {
-        $fields = [$fields];
-      }
-
-      $query['simple_query_string']['fields'] = $fields;
-    }
-
-    $this->queries[] = $query;
+  /**
+   * Build an or where clause.
+   *
+   * @param string $field
+   * @param string $value
+   *
+   * @return $this
+   */
+  public function orWhere($field, $value = NULL) {
+    $this->query->orWhere($field, $value);
+    return $this;
   }
 
   /**
@@ -107,30 +119,50 @@ class Builder{
   }
 
   /**
+   * @param $id
+   *
+   * @return $this
+   */
+  public function setID($id) {
+    $this->id = $id;
+    return $this;
+  }
+
+  /**
    * Build and return the parameters.
+   *
+   * @param bool $with_range Whether to include the range.
    *
    * @return array
    *   The params array.
    */
-  public function build() {
+  public function build($with_range = TRUE) {
     $params = [];
 
-    if ($this->size) {
+    if ($this->size && $with_range) {
       $params['size'] = $this->size;
     }
 
-    if ($this['from']) {
+    if ($this->from && $with_range) {
       $params['from'] = $this->from;
     }
 
     $params['body'] = [
-      'query' => $this->queries,
+      'query' => [
+        'simple_query_string' => [
+          'query' => $this->query->build(),
+        ],
+      ],
     ];
 
     if ($this->highlight) {
       $params['body']['highlight'] = [
         'fields' => $this->highlight,
       ];
+    }
+
+    if ($this->id !== FALSE) {
+      $params['id'] = $this->id;
     }
 
     return $params;

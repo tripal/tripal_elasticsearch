@@ -44,14 +44,15 @@ class TestCase extends TripalTestCase{
    *
    * @throws \Exception
    */
-  public function makeIndex($name = NULL) {
+  public function makeIndex($name = NULL, $fields = []) {
     $es = new \ES\Common\Instance(getenv('ES_HOST'));
 
     if (is_null($name)) {
-      return $name;
+      $name = uniqid();
     }
 
-    $index = $es->setIndexParams($name)->createIndex();
+    $index = $es->setIndexParams($name, 1, 0, 'standard', [], $fields)
+      ->createIndex();
 
     $this->_indices[] = $index;
 
