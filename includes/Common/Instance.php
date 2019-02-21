@@ -251,22 +251,23 @@ class Instance{
   /**
    * Build a new index parameters.
    *
-   * @param $index_name
-   * @param int $shards
-   * @param int $replicas
-   * @param string $tokenizer
-   * @param array $token_filters
-   * @param array $field_mapping_types
+   * @param string $index_name The index name.
+   * @param int $shards Number of shards.
+   * @param int $replicas Number of replicas.
+   * @param string $tokenizer The type of tokenizer.
+   * @param array $filters The filters.
+   * @param array $fields The fields as ['field' => 'type', ...].
    *
    * @return $this
+   *   The current object.
    */
-  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $token_filters = [], $field_mapping_types = []) {
+  public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $filters = [], $fields = []) {
     $analysis = [
       'analyzer' => [
         $index_name => [
           'type' => 'custom',
           'tokenizer' => $tokenizer,
-          'filter' => array_keys($token_filters),
+          'filter' => array_keys($filters),
         ],
       ],
     ];
@@ -279,16 +280,15 @@ class Instance{
     ];
 
     $properties = [];
-    foreach ($field_mapping_types as $field => $mapping_type) {
-      $properties[$field] = [
-        //'type' => $mapping_type,
-        //'fields' => [
-        //  'raw' => [
-        //    'type' => $mapping_type,
-        //    //'index' => 'not_analyzed',
-        //  ],
-        //],
-      ];
+    foreach ($fields as $field => $mapping_type) {
+      if ($mapping_type === 'dynamic') {
+        $properties[$field] = [];
+      }
+      else {
+        $properties[$field] = [
+          'type' => $mapping_type,
+        ];
+      }
     }
 
     $mappings = [
@@ -312,12 +312,13 @@ class Instance{
    * Perform the actual search.
    * Use this function after setting the search params.
    *
-   * @param bool $return_source whether to format the results or not.
+   * @param bool $return_source Whether to format the results or not.
    *
    * @see \ES\Common\Instance::setTableSearchParams()
    * @see \ES\Common\Instance::setWebsiteSearchParams()
    *
    * @return array
+   *    The search results.
    * @throws \Exception
    */
   public function search($return_source = FALSE) {

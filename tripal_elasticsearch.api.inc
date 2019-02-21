@@ -130,7 +130,7 @@ function tripal_elasticsearch_build_search_query_from_field_content_pairs(array 
  */
 function tripal_elasticsearch_get_website_search_results_category_list($keyword) {
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $indices = $es->getIndices();
     $types = $es->getAllCategories(NULL, TRUE, $keyword);
   } catch (Exception $exception) {

@@ -6,7 +6,7 @@ namespace ES\Jobs;
  * ======================================
  * Dispatch jobs for bulk indexing.
  */
-class DispatcherJob extends \ES\Jobs {
+class DispatcherJob extends Job{
 
   /**
    * Dispatcher job type.

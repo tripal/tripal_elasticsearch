@@ -3,20 +3,17 @@
 namespace ES\Indices;
 
 use ES\Common\Instance;
+use ES\Exceptions\IndexExistsException;
+use ES\Exceptions\IndexMissingException;
+use ES\Models\Model;
+use mysql_xdevapi\Exception;
 
 /**
  * Class Index
  *
  * @package ES\Indices
  */
-abstract class Index{
-
-  use HandlesIndices;
-
-  /**
-   * @var array
-   */
-  protected $attributes = [];
+class Index{
 
   /**
    * The ES instance.
@@ -30,14 +27,7 @@ abstract class Index{
    *
    * @var string
    */
-  protected $index;
-
-  /**
-   * Optional index type.
-   *
-   * @var string
-   */
-  protected $type;
+  protected $index = NULL;
 
   /**
    * Fields mappings.
@@ -47,205 +37,138 @@ abstract class Index{
   protected $fields = [];
 
   /**
-   * The id of the entry.
-   *
-   * @var int
-   */
-  protected $id;
-
-  /**
-   * Query Builder.
-   *
-   * @var \ES\Query\Builder
-   */
-  protected $builder;
-
-  /**
-   * Whether the entry exists in the index.
-   *
-   * @var bool
-   */
-  protected $exists = FALSE;
-
-  /**
    * Index constructor.
    *
    * @param array $data Fill the object with data.
+   * @param string $id The ES given id for the object.
+   * @param Instance $instance The ES instance.
    *
    * @throws \Exception
    */
-  public function __construct($data = [], Instance $instance = NULL) {
+  public function __construct(Instance $instance = NULL) {
     $this->instance = $instance ?? new Instance();
-    $this->fill($data);
   }
 
   /**
-   * Add a where clause.
+   * Creates an index from a given model.
    *
-   * @param string $field The field.
-   * @param string $value The value
+   * @param \ES\Models\Model $model The model to create an index for.
    *
-   * @return $this
-   *   The object.
-   * @see \ES\Query\Clause::where()
+   * @return array
+   * @throws \Exception
+   * @throws \ES\Exceptions\IndexExistsException
    */
-  public function where($field, $value = NULL) {
-    $this->builder->where($field, $value);
+  public function createFromModel(Model $model) {
+    $this->setIndexName($model->getIndexName());
+    $this->setFields($model->getFields());
 
-    return $this;
+    return $this->createIndex();
   }
 
   /**
-   * Add an or clause.
+   * Create the index.
    *
-   * @param string $field The field.
-   * @param string $value The value
-   *
-   * @return $this
-   *   The object.
-   * @see \ES\Query\Clause::orWhere()
+   * @throws \Exception
+   * @throws \ES\Exceptions\IndexExistsException
    */
-  public function orWhere($field, $value = NULL) {
-    $this->builder->where($field, $value);
-
-    return $this;
-  }
-
-  /**
-   * Fills the object attributes with values.
-   *
-   * @param array $data
-   */
-  public function fill(array $data = []) {
-    foreach ($data as $key => $value) {
-      if (isset($this->fields[$key])) {
-        $this->attributes[$key] = $value;
-      }
+  public function createIndex() {
+    if (!$this->index || empty($this->index)) {
+      throw new \Exception('Index name must be specified to create the index.');
     }
-  }
 
-  /**
-   * Save the data.
-   *
-   * @return $this
-   */
-  public function save() {
-    if ($this->exists()) {
-      $data = $this->instance->update(
-        $this->getIndexName(),
-        $this->getIndexType(),
-        $this->id ?? FALSE,
-        $this->attributes
+    if (empty($this->fields)) {
+      throw new \Exception(
+        'Indices cannot be created if fields are not specified.'
       );
-
-      $this->id = $data['_id'];
-
-      return $this;
     }
 
-    $data = $this->instance->createEntry(
-      $this->getIndexName(),
-      $this->getIndexType(),
-      $this->id ?? FALSE,
-      $this->attributes
+    if ($this->instance->hasIndex($this->index)) {
+      throw new IndexExistsException(
+        'Index ' . $this->index . ' already exists.'
+      );
+    }
+
+    $shards = 5;
+    $replicas = 0;
+    $tokenizer = 'standard';
+    $filters = [];
+
+    return $this->instance->setIndexParams(
+      $this->index,
+      $shards,
+      $replicas,
+      $tokenizer,
+      $filters,
+      $this->fields
+    )->createIndex();
+  }
+
+  /**
+   * Delete the index.
+   *
+   * @return array|bool
+   * @throws \ES\Exceptions\IndexMissingException
+   * @throws \Exception
+   */
+  public function deleteIndex() {
+    if (!$this->index || empty($this->index)) {
+      throw new \Exception('Index name must be specified to create the index.');
+    }
+
+    db_query(
+      'DELETE FROM tripal_elasticsearch_indices WHERE index_name = :name',
+      [':name' => $this->index]
     );
 
-    $this->id = $data['_id'];
+    if (!$this->instance->hasIndex($this->index)) {
+      throw new IndexMissingException(
+        'The index ' . $this->index . ' cannot be deleted because it does not exist.'
+      );
+    }
+
+    return $this->instance->deleteIndex($this->index);
+  }
+
+  /**
+   * Set the index name.
+   *
+   * @param $index
+   *
+   * @return $this
+   */
+  public function setIndexName($index) {
+    $this->index = $index;
 
     return $this;
   }
 
   /**
-   * Check whether the record exists.
+   * Get the index name.
    *
-   * @return bool
+   * @return string
    */
-  public function exists() {
-    $this->exists = $this->count() > 0;
-
-    return $this->exists;
+  public function getIndexName() {
+    return $this->index;
   }
 
-  /**
-   * Count the number of documents in the index.
-   *
-   * @return int
-   *    The number of documents in the index.
-   */
-  public function count() {
-    return (int) $this->instance->client->count($this->builder->build(FALSE));
-  }
-
-  /**
-   * @param $data
-   *
-   * @throws \Exception
-   */
-  public static function createOrUpdate($data, $id = FALSE) {
-    $record = new static($data);
-
-    $record->setID($id);
-    $record->save();
-
-    return $record;
-  }
-
-  /**
-   * @param $id
-   */
-  public function setID($id) {
-    $this->id = $id;
-
-    $this->builder->setID($id);
+  public function setFields(array $fields) {
+    $this->fields = $fields;
 
     return $this;
   }
 
   /**
-   * @param array $data
-   * @param bool $id
-   *
-   * @return \ES\Indices\Index
-   * @throws \Exception
+   * @return array
    */
-  public static function create(array $data, $id = FALSE) {
-    $index = new static($data);
-
-    $index->setID($id);
-    $index->save();
-
-    return $index;
-  }
-
-  /**
-   * Get an attribute.
-   *
-   * @param string $name The name of attribute.
-   *
-   * @return mixed
-   *   The value of the attribute if it exists.
-   */
-  public function __get($name) {
-    if (array_key_exists($name, $this->attributes)) {
-      return $this->attributes[$name];
+  public function getFields($refresh = FALSE) {
+    if (!$refresh && !empty($this->fields)) {
+      return array_keys($this->fields);
     }
 
-    if (method_exists(static::class, $name)) {
-      return;
+    if (empty($this->index)) {
+      throw new Exception('Index name must be provided before getting fields');
     }
 
-    return $this->{$name};
-  }
-
-  /**
-   * Check if an attribute isset.
-   *
-   * @param string $name The name of the attribute.
-   *
-   * @return bool
-   *   Whether the attribute has been set.
-   */
-  public function __isset($name) {
-    return isset($this->attributes[$name]);
+    return $this->instance->getIndexMappings($this->index);
   }
 }

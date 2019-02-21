@@ -1,6 +1,9 @@
 <?php
+namespace ES\Jobs;
 
-class GeneSearchIndexJob extends \ES\Jobs {
+use ES\Common\Instance;
+
+class GeneSearchIndexJob extends Job {
 
   /**
    * Index name.

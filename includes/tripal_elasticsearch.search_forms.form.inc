@@ -26,7 +26,7 @@ function table_search_interface_building_form($form, &$form_state) {
   ];
 
   try {
-    $client = (new Instance())->client;
+    $client = (new \ES\Common\Instance())->client;
     $existing_indices = $client->indices()->getMapping();
   } catch (\Exception $e) {
     $form['markup'] = [

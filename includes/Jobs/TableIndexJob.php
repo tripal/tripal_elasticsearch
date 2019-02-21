@@ -1,6 +1,9 @@
 <?php
+namespace ES\Jobs;
 
-class TableIndexJob extends \ES\Jobs {
+use ES\Common\Instance;
+
+class TableIndexJob extends Job {
 
   /**
    * Job type to show in progress report.

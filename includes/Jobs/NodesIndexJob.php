@@ -1,6 +1,8 @@
 <?php
+namespace ES\Jobs;
+use ES\Common\Instance;
 
-class NodesIndexJob extends \ES\Jobs{
+class NodesIndexJob extends Job{
 
   /**
    * Job type to show in progress report.

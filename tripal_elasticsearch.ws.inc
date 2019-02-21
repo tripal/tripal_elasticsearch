@@ -14,7 +14,7 @@
 function tripal_elasticsearch_api_v1_status() {
   try {
     $params['v'] = TRUE;
-    $es          = new Instance();
+    $es          = new \ES\Common\Instance();
     $health      = current($es->client->cat()->health($params));
   } catch (Exception $exception) {
     return \ES\Common\Response::error(
@@ -181,7 +181,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   }
 
   try {
-    $es      = new Instance();
+    $es      = new \ES\Common\Instance();
     $results = $es->searchWebIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return \ES\Common\Response::error($exception->getMessage(), 500);
@@ -297,7 +297,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
   $index_name, $http = TRUE
 ) {
   try {
-    $es                  = new Instance();
+    $es                  = new \ES\Common\Instance();
     $fields              = $es->getIndexFields($index_name);
     $field_content_pairs = [];
 
@@ -499,7 +499,7 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
 
   $default_category = ['Any Type' => 'Any Type'];
   try {
-    $es         = new Instance();
+    $es         = new \ES\Common\Instance();
     $categories = drupal_map_assoc($es->getAllCategories());
   } catch (Exception $exception) {
     $categories = [];

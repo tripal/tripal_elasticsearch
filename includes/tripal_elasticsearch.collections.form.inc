@@ -148,7 +148,7 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
   $entities = [];
 
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $es->setWebsiteSearchParams($query, $bundle_label, '', '', [0, 10], TRUE);
     $count = $es->count();
 

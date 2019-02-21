@@ -673,7 +673,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
 
   // Run Elasticsearch.
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $indices = $es->getIndices();
     $index_name = [];
     if (in_array('website', $indices)) {
@@ -834,7 +834,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     // Run Elasticsearch and return search results into an array.
     $results = [];
     try {
-      $es = new Instance();
+      $es = new \ES\Common\Instance();
       $results = $es->setTableSearchParams(
         $index_name,
         $index_type,
@@ -889,7 +889,7 @@ function tripal_elasticsearch_node_update($node) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $indices = $es->getIndices();
     if (!in_array('website', $indices)) {
       return;
@@ -931,7 +931,7 @@ function tripal_elasticsearch_node_delete($node) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $es->deleteEntry('website', 'website', $node->nid);
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
@@ -957,7 +957,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $indices = $es->getIndices();
     if (in_array('gene_search_index', $indices)) {
       if (isset($entity->chado_table) && $entity->chado_table === 'feature') {
@@ -1030,7 +1030,7 @@ function tripal_elasticsearch_entity_delete($entity, $type) {
   static $tripal_elasticsearch_errors = FALSE;
 
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     if (in_array('entities', $es->getIndices())) {
       $es->deleteEntry('entities', 'entities', $entity->id);
     }
@@ -1094,7 +1094,7 @@ function tripal_elasticsearch_paginate($per_page) {
 
   // Run Elasticsearch and return search results into an array.
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
 
     return $es->setTableSearchParams($index_name, $index_type, $query)
       ->paginate($per_page);
@@ -1143,7 +1143,7 @@ function tripal_elasticsearch_table_search_download() {
   $temp_file = drupal_tempnam($directory, 'search_results_') . '.csv';
 
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $count = $es->setTableSearchParams($index_name, $index_type, $query)->count(
     );
     $window_range = range(1, ceil($count / 1000));

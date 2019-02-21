@@ -14,7 +14,7 @@
  */
 function tripal_elasticsearch_indexing_form($form, &$form_state) {
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
 
     // associate index name with indexed table.
     $indices = $es->getIndices();
@@ -285,7 +285,7 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   try {
-    $client = (new Instance())->client;
+    $client = (new \ES\Common\Instance())->client;
 
     // associate index name with indexed table.
     $mappings = $client->indices()->getMapping();
@@ -341,7 +341,7 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
   if (!empty($delete_indices)) {
     foreach ($delete_indices as $index) {
       try {
-        $es = new Instance();
+        $es = new \ES\Common\Instance();
         $es->deleteIndex($index);
         db_query('DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name',
           [
@@ -361,7 +361,7 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_indices_list_page() {
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
 
     // associate index name with indexed table.
     $indices = $es->getIndices();
@@ -481,7 +481,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
     $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
     if (!$result) {
       try {
-        $es = new Instance();
+        $es = new \ES\Common\Instance();
         $mappings = $es->getIndexMappings($index_name);
         $table_name = array_keys($mappings);
         if (count($table_name) > 1) {
@@ -528,7 +528,7 @@ function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_nam
   // Get existing index settings and mappings.
   // TODO: what about default tables?
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $index_settings = $es->getIndexSettings($index_name);
     $index_mappings = $es->getIndexMappings($index_name);
   } catch (Exception $exception) {
@@ -870,7 +870,7 @@ function tripal_elasticsearch_create_index(&$values) {
 
   // Create the index.
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters,
       $field_mapping_types)->createIndex();
   } catch (Exception $exception) {
@@ -923,7 +923,7 @@ function tripal_elasticsearch_create_index(&$values) {
 function tripal_elasticsearch_delete_index($index) {
   // Find the index and delete it from ES
   try {
-    $es = new Instance();
+    $es = new \ES\Common\Instance();
     $es->deleteIndex($index);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
