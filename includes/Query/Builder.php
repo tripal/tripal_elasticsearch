@@ -156,6 +156,25 @@ class Builder implements BuilderContract{
   }
 
   /**
+   * Validate the query.
+   *
+   * @throws \Exception
+   */
+  public function validate() {
+    if (is_null($this->index)) {
+      throw new \Exception(
+        'Index name must be set to build request parameters.'
+      );
+    }
+
+    if (empty($this->query->build())) {
+      throw new \Exception(
+        'Query string must be provided in order to build request parameters.'
+      );
+    }
+  }
+
+  /**
    * Build and return the parameters.
    *
    * @param bool $with_range Whether to include the range.
@@ -166,9 +185,7 @@ class Builder implements BuilderContract{
    * @throws \Exception
    */
   public function build($with_range = TRUE) {
-    if (is_null($this->index)) {
-      throw new \Exception('Index name must be set to build a query');
-    }
+    $this->validate();
 
     // Initialize params
     $params = [

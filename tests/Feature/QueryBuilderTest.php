@@ -50,9 +50,18 @@ class QueryBuilderTest extends TestCase{
     $this->assertArrayNotHasKey('size', $params);
   }
 
-  public function testThatAnExceptionIsThrownWhenIndexIsNotAvailable() {
+  /** @test */
+  public function testThatAnExceptionIsThrownWhenIndexIsNotProvided() {
     $builder = new Builder();
 
+    $this->expectException(\Exception::class);
+    $builder->build();
+  }
+
+  /** @test */
+  public function testThatAnExceptionIsThrownWhenQueryIsNotProvided() {
+    $builder = new Builder('test');
+    
     $this->expectException(\Exception::class);
     $builder->build();
   }
