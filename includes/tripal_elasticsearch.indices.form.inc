@@ -1212,7 +1212,7 @@ function tripal_elasticsearch_update_index_table(&$values) {
         'exposed' => $exposed,
         'url' => $url,
       ]
-    )->condition('table_name', $index_table)->execute();
+    )->condition('index_name', $index_table)->execute();
     drupal_set_message(t('Index \'' . $index_name . '\' has been updated.'));
   } catch (Exception $e) {
     drupal_set_message("could not edit index");
