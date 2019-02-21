@@ -12,12 +12,12 @@ class Builder implements BuilderContract{
   /**
    * @var int
    */
-  protected $from;
+  protected $from = NULL;
 
   /**
    * @var int
    */
-  protected $size;
+  protected $size = NULL;
 
   /**
    * @var array
@@ -39,11 +39,16 @@ class Builder implements BuilderContract{
   protected $id = FALSE;
 
   /**
+   * @var string
+   */
+  protected $type;
+
+  /**
    * Builder constructor.
    *
    * @param $index
    */
-  public function __construct($index) {
+  public function __construct($index = NULL) {
     $this->index = $index;
     $this->query = new Clause();
   }
@@ -129,40 +134,78 @@ class Builder implements BuilderContract{
   }
 
   /**
+   * @param string $index
+   *
+   * @return $this
+   */
+  public function setIndex($index) {
+    $this->index = $index;
+
+    return $this;
+  }
+
+  /**
+   * @param string $type
+   *
+   * @return $this
+   */
+  public function setType($type) {
+    $this->type = $type;
+
+    return $this;
+  }
+
+  /**
    * Build and return the parameters.
    *
    * @param bool $with_range Whether to include the range.
    *
    * @return array
    *   The params array.
+   *
+   * @throws \Exception
    */
   public function build($with_range = TRUE) {
-    $params = [];
-
-    if ($this->size && $with_range) {
-      $params['size'] = $this->size;
+    if (is_null($this->index)) {
+      throw new \Exception('Index name must be set to build a query');
     }
 
-    if ($this->from && $with_range) {
-      $params['from'] = $this->from;
-    }
-
-    $params['body'] = [
-      'query' => [
-        'simple_query_string' => [
-          'query' => $this->query->build(),
+    // Initialize params
+    $params = [
+      'index' => $this->index,
+      'body' => [
+        'query' => [
+          'simple_query_string' => [
+            'query' => $this->query->build(),
+          ],
         ],
       ],
     ];
 
+    // Set range
+    if (!is_null($this->from) && $with_range) {
+      $params['from'] = $this->from;
+    }
+
+    if (!is_null($this->size) && $with_range) {
+      $params['size'] = $this->size;
+    }
+
+    // Set the highlighted field
     if ($this->highlight) {
       $params['body']['highlight'] = [
         'fields' => $this->highlight,
       ];
     }
 
-    if ($this->id !== FALSE) {
+    // Set the id
+    if ($this->id !== FALSE && $this->id !== NULL) {
       $params['id'] = $this->id;
+    }
+
+    // Set the index type
+    if ($this->type) {
+      $params['type'] = $this->type;
     }
 
     return $params;
