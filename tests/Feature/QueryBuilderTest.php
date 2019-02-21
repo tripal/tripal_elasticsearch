@@ -61,7 +61,7 @@ class QueryBuilderTest extends TestCase{
   /** @test */
   public function testThatAnExceptionIsThrownWhenQueryIsNotProvided() {
     $builder = new Builder('test');
-    
+
     $this->expectException(\Exception::class);
     $builder->build();
   }

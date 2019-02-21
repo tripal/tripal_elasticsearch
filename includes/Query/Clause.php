@@ -2,7 +2,7 @@
 
 namespace ES\Query;
 
-class Clause implements BuilderContract{
+class Clause extends BuilderContract{
 
   /**
    * The built query.

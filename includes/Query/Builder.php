@@ -2,7 +2,7 @@
 
 namespace ES\Query;
 
-class Builder implements BuilderContract{
+class Builder extends BuilderContract{
 
   /**
    * @var string
@@ -203,7 +203,6 @@ class Builder implements BuilderContract{
     if (!is_null($this->from) && $with_range) {
       $params['from'] = $this->from;
     }
-
     if (!is_null($this->size) && $with_range) {
       $params['size'] = $this->size;
     }

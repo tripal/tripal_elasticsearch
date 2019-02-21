@@ -33,4 +33,59 @@ class ClauseTest extends TestCase{
 
     $this->assertEquals('(f:v AND f:v) OR (f:v OR v)', $query);
   }
+
+  /** @test */
+  public function testAddonBuilders() {
+    $clause = new Clause();
+
+    $query = $clause->beginsWith('test')
+      ->contains('test')
+      ->endsWith('test')
+      ->fuzzy('test')
+      ->build();
+
+    $this->assertEquals('test* AND *test* AND *test AND test~', $query);
+  }
+
+  /** @test */
+  public function testAddonBuildersThatUseOr() {
+    $clause = new Clause();
+
+    $query = $clause->beginsWith('test')->orBeginsWith('test')->orContains(
+        'test'
+      )->orEndsWith('test')->orFuzzy('test')->build();
+
+    $this->assertEquals('test* OR test* OR *test* OR *test OR test~', $query);
+  }
+
+  public function testAddonsWithFields() {
+    $clause = new Clause();
+
+    $query = $clause->beginsWith('field', 'test')
+      ->contains('field', 'test')
+      ->endsWith('field', 'test')
+      ->fuzzy('field', 'test')
+      ->build();
+
+    $this->assertEquals(
+      'field:test* AND field:*test* AND field:*test AND field:test~',
+      $query
+    );
+  }
+
+  public function testAddonsWithFieldsUsingOr() {
+    $clause = new Clause();
+
+    $query = $clause->beginsWith('field', 'test')
+      ->orBeginsWith('field', 'test')
+      ->orContains('field', 'test')
+      ->orEndsWith('field', 'test')
+      ->orFuzzy('field', 'test')
+      ->build();
+
+    $this->assertEquals(
+      'field:test* OR field:test* OR field:*test* OR field:*test OR field:test~',
+      $query
+    );
+  }
 }
