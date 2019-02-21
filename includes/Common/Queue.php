@@ -3,6 +3,7 @@
 namespace ES\Common;
 
 use DateTime;
+use ES\Jobs\Job;
 use Exception;
 use DrupalQueue;
 
@@ -140,7 +141,7 @@ class Queue{
    * Dispatch a new job. Uses the queue that has minimum items if queue name is
    * not provided.
    *
-   * @param \ES\Jobs $job
+   * @param \ES\Jobs\Job $job
    * @param string $queue_name
    *
    * @return boolean
@@ -158,7 +159,7 @@ class Queue{
   /**
    * Execute a given job.
    *
-   * @param \ES\Jobs $job
+   * @param \ES\Jobs\Job $job
    *
    * @throws \Exception
    */
@@ -187,7 +188,7 @@ class Queue{
     throw new Exception(
       'Elasticsearch Queue: ' . get_class(
         $job
-      ) . ' is an invalid job type. Jobs must extend the ES\Jobs class'
+      ) . ' is an invalid job type. Jobs must extend the ES\Jobs\Job class'
     );
   }
 

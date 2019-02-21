@@ -350,7 +350,7 @@ class Instance{
       if (isset($hit['highlight'])) {
         $highlight = '';
         foreach ($hit['highlight'] as $content) {
-          $highlight .= implode('...', $content);
+          $highlight .= implode('... ', $content);
         }
         $hit['_source']['highlight'] = $highlight;
       }

@@ -29,12 +29,20 @@ class TestCase extends TripalTestCase{
   }
 
   /**
+   * @return \ES\Common\Instance
+   * @throws \Exception
+   */
+  public function makeInstance() {
+    return new \ES\Common\Instance(getenv('ES_HOST'));
+  }
+
+  /**
    * @param string $name
    *
    * @throws \Exception
    */
   public function deleteIndex($name) {
-    $es = new \ES\Common\Instance(getenv('ES_HOST'));
+    $es = $this->makeInstance();
 
     $es->deleteIndex($name);
   }
@@ -45,7 +53,7 @@ class TestCase extends TripalTestCase{
    * @throws \Exception
    */
   public function makeIndex($name = NULL, $fields = []) {
-    $es = new \ES\Common\Instance(getenv('ES_HOST'));
+    $es = $this->makeInstance();
 
     if (is_null($name)) {
       $name = uniqid();

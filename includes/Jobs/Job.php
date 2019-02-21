@@ -2,6 +2,8 @@
 
 namespace ES\Jobs;
 
+use ES\Common\Queue;
+
 abstract class Job{
 
   /**

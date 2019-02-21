@@ -1239,7 +1239,7 @@ function tripal_elasticsearch_importer_finish($importer) {
   ];
 
   if (in_array($name, $supported_importers)) {
-    GeneSearchIndexJob::generateDispatcherJobs(TRUE);
-    EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+    \ES\Jobs\GeneSearchIndexJob::generateDispatcherJobs(TRUE);
+    \ES\Jobs\EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
   }
 }

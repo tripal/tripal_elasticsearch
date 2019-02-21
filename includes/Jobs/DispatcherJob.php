@@ -33,7 +33,7 @@ class DispatcherJob extends Job{
   /**
    * DispatcherJob constructor.
    *
-   * @param \ES\Jobs $job The job object.
+   * @param \ES\Jobs\Job $job The job object.
    */
   public function __construct($job) {
     $this->job = $job;
@@ -72,7 +72,7 @@ class DispatcherJob extends Job{
   /**
    * Get the job.
    *
-   * @return \ES\Jobs
+   * @return \ES\Jobs\Job
    */
   public function job() {
     return $this->job;
