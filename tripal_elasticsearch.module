@@ -614,7 +614,7 @@ function tripal_elasticsearch_block_view($delta = '') {
   switch ($delta) {
     case 'elasticsearch_website_search_box':
       $block['subject'] = '';
-      $block['content'] = drupal_get_form('website_search_box_form');
+      $block['content'] = drupal_get_form('tripal_elasticsearch_site_wide_search_form');
       break;
     case 'website_search_category':
       $block['subject'] = '';

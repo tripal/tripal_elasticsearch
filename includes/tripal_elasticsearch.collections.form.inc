@@ -9,8 +9,10 @@
 function tripal_elasticsearch_collections_form($form, &$form_state) {
   if (!user_is_logged_in()) {
     $content = '<p>';
-    $content .= t('To create a collection, you must first ') . l('sign in',
-        'user') . t(' or ') . l('register a new account', 'user/register');
+    $content .= t('To create a collection, you must first ') . l(
+        'sign in',
+        'user'
+      ) . t(' or ') . l('register a new account', 'user/register');
     $content .= '</p>';
     $form['login'] = [
       '#type' => 'markup',
@@ -77,20 +79,27 @@ function tripal_elasticsearch_collections_form($form, &$form_state) {
   if ($selected_category || (isset($form_state['values']) && $form_state['values']['bundle_type'])) {
     $bundle = isset($form_state['values']) ? $form_state['values']['bundle_type'] : $selected_category;
     $field_ids = tripal_elasticsearch_get_fields_as_options($bundle);
-    $defaults = array_filter($field_ids, function ($field) {
-      return strstr(strtolower($field),
-          'sequence') !== FALSE || strstr(strtolower($field), 'name') !== FALSE;
-    });
+    $defaults = array_filter(
+      $field_ids,
+      function ($field) {
+        return strstr(
+            strtolower($field),
+            'sequence'
+          ) !== FALSE || strstr(strtolower($field), 'name') !== FALSE;
+      }
+    );
 
     $form['step2']['fields'] = [
       '#title' => t('Select One or More Fields'),
-      '#description' => t('Please select the fields to include in this data
+      '#description' => t(
+        'Please select the fields to include in this data
       collection. Not all of these fields appear in the search results
       above but they are available for this category. By default,
       tab-delimited and comma-separated files are generated for the
       collection using only the fields selected. However, some fields when
       selected will generate other downloadable file formats. Fields that
-      generate other file formats are indicated.'),
+      generate other file formats are indicated.'
+      ),
       '#type' => 'checkboxes',
       '#options' => $field_ids,
       '#prefix' => '<div id="collections-step-2">',
@@ -117,7 +126,9 @@ function tripal_elasticsearch_collections_form($form, &$form_state) {
     '#type' => 'textarea',
     '#title' => t('Description'),
     '#required' => FALSE,
-    '#description' => t('Optionally, you can add a more detailed description for this collection.'),
+    '#description' => t(
+      'Optionally, you can add a more detailed description for this collection.'
+    ),
   ];
 
   // hidden elements
@@ -143,8 +154,10 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
   $query = $values['search_query'];
 
   // get the bundle label
-  $bundle_label = db_query('SELECT name FROM {tripal_bundle} WHERE name=:name',
-    [':name' => $bundle_name])->fetchField();
+  $bundle_label = db_query(
+    'SELECT name FROM {tripal_bundle} WHERE name=:name',
+    [':name' => $bundle_name]
+  )->fetchField();
   $entities = [];
 
   try {
@@ -153,33 +166,47 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
     $count = $es->count();
 
     for ($i = 0; $i < $count; $i += 500) {
-      $results = $es->setWebsiteSearchParams($query, $bundle_label, '', '', [
-        $i,
-        500,
-      ], TRUE)->search();
+      $results = $es->setWebsiteSearchParams(
+        $query,
+        $bundle_label,
+        '',
+        '',
+        [
+          $i,
+          500,
+        ],
+        TRUE
+      )->search();
 
       foreach ($results as $entity) {
         $entities[] = $entity['entity_id'];
       }
     }
   } catch (Exception $exception) {
-    drupal_set_message('Could not create collection due to an internal server error. Please try again later.',
-      'error');
-    tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR,
-      $exception->getMessage());
+    drupal_set_message(
+      'Could not create collection due to an internal server error. Please try again later.',
+      'error'
+    );
+    tripal_report_error(
+      'tripal_elasticsearch',
+      TRIPAL_ERROR,
+      $exception->getMessage()
+    );
     return;
   }
 
   global $user;
 
-  tripal_create_collection([
-    'uid' => $user->uid,
-    'collection_name' => $collection_name,
-    'bundle_name' => $bundle_label,
-    'ids' => $entities,
-    'fields' => $fields,
-    'description' => $description,
-  ]);
+  tripal_create_collection(
+    [
+      'uid' => $user->uid,
+      'collection_name' => $collection_name,
+      'bundle_name' => $bundle_label,
+      'ids' => $entities,
+      'fields' => $fields,
+      'description' => $description,
+    ]
+  );
 
   $form_state['redirect'] = 'user/' . $user->uid . '/files';
 }
