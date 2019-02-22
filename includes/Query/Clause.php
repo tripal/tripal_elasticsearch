@@ -45,7 +45,7 @@ class Clause extends BuilderContract{
       return $this->sanitizer->escape($field);
     }
 
-    $field = $this->sanitizer->escape($field);
+    $field = $this->sanitizer->escapeField($field);
     $value = $this->sanitizer->escape($value);
 
     return $field . ':' . $value;

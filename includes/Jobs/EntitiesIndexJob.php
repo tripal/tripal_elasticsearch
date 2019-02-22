@@ -181,7 +181,6 @@ class EntitiesIndexJob extends Job{
               unset($content[$field]);
             }
           }
-
         }
       }
 

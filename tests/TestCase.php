@@ -59,11 +59,25 @@ class TestCase extends TripalTestCase{
       $name = uniqid();
     }
 
-    $index = $es->setIndexParams($name, 1, 0, 'standard', [], $fields)
+    $index = $es->setIndexParams($name, 5, 0, 'standard', [], $fields)
       ->createIndex();
 
     $this->_indices[] = $index;
 
     return $index;
+  }
+
+  /**
+   * Creating records is asynchronous in ES. This methods adds the wait time
+   * required to make sure the record was created before making assertions.
+   *
+   * @param string $index Index name (and type!)
+   * @param array $data
+   */
+  public function createRecord($index, $data) {
+    $instance = $this->makeInstance();
+    $record = $instance->createEntry($index, $index, false, $data);
+    sleep(1);
+    return $record;
   }
 }

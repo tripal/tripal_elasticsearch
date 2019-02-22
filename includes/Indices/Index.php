@@ -6,14 +6,14 @@ use ES\Common\Instance;
 use ES\Exceptions\IndexExistsException;
 use ES\Exceptions\IndexMissingException;
 use ES\Models\Model;
-use mysql_xdevapi\Exception;
+use Exception;
 
 /**
- * Class Index
+ * Class Index.
  *
  * @package ES\Indices
  */
-class Index{
+class Index {
 
   /**
    * The ES instance.
@@ -39,9 +39,12 @@ class Index{
   /**
    * Index constructor.
    *
-   * @param array $data Fill the object with data.
-   * @param string $id The ES given id for the object.
-   * @param Instance $instance The ES instance.
+   * @param array $data
+   *   Fill the object with data.
+   * @param string $id
+   *   The ES given id for the object.
+   * @param \ES\Common\Instance $instance
+   *   The ES instance.
    *
    * @throws \Exception
    */
@@ -52,17 +55,19 @@ class Index{
   /**
    * Creates an index from a given model.
    *
-   * @param \ES\Models\Model $model The model to create an index for.
+   * @param \ES\Models\Model $model
+   *   The model to create an index for.
    *
    * @return array
+   *
    * @throws \Exception
    * @throws \ES\Exceptions\IndexExistsException
    */
   public function createFromModel(Model $model) {
-    $this->setIndexName($model->getIndexName());
+    $this->setName($model->getIndexName());
     $this->setFields($model->getFields());
 
-    return $this->createIndex();
+    return $this->create();
   }
 
   /**
@@ -71,7 +76,7 @@ class Index{
    * @throws \Exception
    * @throws \ES\Exceptions\IndexExistsException
    */
-  public function createIndex() {
+  public function create() {
     if (!$this->index || empty($this->index)) {
       throw new \Exception('Index name must be specified to create the index.');
     }
@@ -107,10 +112,11 @@ class Index{
    * Delete the index.
    *
    * @return array|bool
+   *
    * @throws \ES\Exceptions\IndexMissingException
    * @throws \Exception
    */
-  public function deleteIndex() {
+  public function delete() {
     if (!$this->index || empty($this->index)) {
       throw new \Exception('Index name must be specified to create the index.');
     }
@@ -136,7 +142,7 @@ class Index{
    *
    * @return $this
    */
-  public function setIndexName($index) {
+  public function setName($index) {
     $this->index = $index;
 
     return $this;
@@ -147,10 +153,15 @@ class Index{
    *
    * @return string
    */
-  public function getIndexName() {
+  public function getName() {
     return $this->index;
   }
 
+  /**
+   * @param array $fields
+   *
+   * @return $this
+   */
   public function setFields(array $fields) {
     $this->fields = $fields;
 
@@ -159,6 +170,7 @@ class Index{
 
   /**
    * @return array
+   * @throws \Exception
    */
   public function getFields($refresh = FALSE) {
     if (!$refresh && !empty($this->fields)) {
@@ -169,6 +181,18 @@ class Index{
       throw new Exception('Index name must be provided before getting fields');
     }
 
-    return $this->instance->getIndexMappings($this->index);
+    $data = $this->instance->getIndexMappings($this->index);
+
+    $data = $data[$this->index];
+    $fields = $data['mappings']['_default_']['properties'] ?? [];
+
+    $results = [];
+
+    foreach ($fields as $field => $props) {
+      $results[$field] = $props['type'];
+    }
+
+    return $results;
   }
+
 }

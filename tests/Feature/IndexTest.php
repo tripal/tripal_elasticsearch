@@ -3,30 +3,61 @@
 namespace Tests\Feature;
 
 use ES\Indices\Index;
+use ES\Models\Model;
 use Tests\TestCase;
 
-class IndexTest extends TestCase{
+/**
+ *
+ */
+class IndexTest extends TestCase {
 
-  /** @test */
+  /**
+   * @test
+   * @throws \Exception
+   */
   public function testThatCreatingAndDeletingIndicesWork() {
     $instance = $this->makeInstance();
     $index = new Index($instance);
 
     $name = uniqid();
 
-    $data = $index->setIndexName($name)
-      ->setFields([
-        'content' => 'dynamic',
-        'test' => 'text'
-      ])
-      ->createIndex();
+    $fields = [
+      'content' => 'object',
+      'test' => 'text',
+    ];
+
+    $data = $index->setName($name)->setFields($fields)->create();
 
     $this->assertTrue($data['acknowledged']);
-    $this->assertEquals($index->getIndexName(), $data['index']);
+    $this->assertEquals($index->getName(), $data['index']);
 
-    var_dump($index->getFields(true));
+    $this->assertEquals($fields, $index->getFields(TRUE));
 
-    $data = $index->deleteIndex();
+    $data = $index->delete();
     $this->assertTrue($data['acknowledged']);
   }
+
+  /**
+   * @test
+   * @throws \Exception
+   */
+  public function testCreatingFromModel() {
+    $instance = $this->makeInstance();
+    $index = new Index($instance);
+    $model = new Model();
+    $name = uniqid();
+    $model->setIndexName($name);
+    $model->setFields(
+      [
+        'content' => 'object',
+      ]
+    );
+
+    $data = $index->createFromModel($model);
+    $this->assertTrue($data['acknowledged']);
+    $this->assertEquals($name, $data['index']);
+
+    $index->delete();
+  }
+
 }

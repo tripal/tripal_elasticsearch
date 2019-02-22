@@ -2,6 +2,12 @@
 
 namespace ES\Models;
 
+use ES\Common\Instance;
+use ES\Query\Builder;
+
+/**
+ *
+ */
 class Model{
 
   /**
@@ -33,6 +39,8 @@ class Model{
   /**
    * Fields mappings.
    *
+   * The format must be ['field' => 'mapping type']
+   *
    * @var array
    */
   protected $fields = [];
@@ -40,9 +48,9 @@ class Model{
   /**
    * The id of the entry.
    *
-   * @var int
+   * @var int|bool
    */
-  protected $id;
+  protected $id = FALSE;
 
   /**
    * Query Builder.
@@ -61,29 +69,31 @@ class Model{
   /**
    * Index constructor.
    *
-   * @param array $data Fill the object with data.
-   * @param string $id The ES given id for the object.
-   * @param Instance $instance The ES instance.
+   * @param array $data
+   *   Fill the object with data.
+   * @param string $id
+   *   The ES given id for the object.
+   * @param \ES\Common\Instance $instance
+   *   The ES instance.
    *
    * @throws \Exception
    */
-  public function __construct($data = [], $id = FALSE, Instance $instance = NULL) {
+  public function __construct(Instance $instance = NULL) {
     $this->instance = $instance ?? new Instance();
-    $this->fill($data);
-
-    $this->id = $id;
-
     $this->builder = new Builder($this->index);
   }
 
   /**
    * Add a where clause.
    *
-   * @param string $field The field.
-   * @param string $value The value
+   * @param string $field
+   *   The field.
+   * @param string $value
+   *   The value.
    *
    * @return $this
    *   The object.
+   *
    * @see \ES\Query\Clause::where()
    */
   public function where($field, $value = NULL) {
@@ -95,11 +105,14 @@ class Model{
   /**
    * Add an or clause.
    *
-   * @param string $field The field.
-   * @param string $value The value
+   * @param string $field
+   *   The field.
+   * @param string $value
+   *   The value.
    *
    * @return $this
    *   The object.
+   *
    * @see \ES\Query\Clause::orWhere()
    */
   public function orWhere($field, $value = NULL) {
@@ -121,19 +134,40 @@ class Model{
     }
   }
 
+  public function find($id) {
+    $record = $this->instance->getRecord(
+      $this->getIndexName(),
+      $this->getIndexType(),
+      $id
+    );
+  }
+
   /**
    * Save the data.
    *
    * @return $this
-   *    The object.
-   * @throws  \Exception
+   *   The object.
+   *
+   * @throws \Exception
    */
   public function save() {
-    if ($this->exists()) {
+    $exists = FALSE;
+    if ($this->id !== FALSE) {
+      $record = $this->find($this->id);
+      if ($record) {
+        $this->id = $record->id;
+        $exists = TRUE;
+      }
+    }
+    else {
+      $exists = $this->exists();
+    }
+
+    if ($exists) {
       $data = $this->instance->update(
         $this->getIndexName(),
         $this->getIndexType(),
-        $this->id ?? FALSE,
+        $this->id,
         $this->attributes
       );
 
@@ -142,7 +176,7 @@ class Model{
       return $this;
     }
 
-    // There data does not exist so
+    // There data does not exist so.
     $data = $this->instance->createEntry(
       $this->getIndexName(),
       $this->getIndexType(),
@@ -159,7 +193,8 @@ class Model{
    * Check whether the record exists.
    *
    * @return bool
-   *    Whether the record exists.
+   *   Whether the record exists.
+   *
    * @throws \Exception
    */
   public function exists() {
@@ -172,7 +207,8 @@ class Model{
    * Count the number of documents in the index.
    *
    * @return int
-   *    The number of documents in the index.
+   *   The number of documents in the index.
+   *
    * @throws \Exception
    */
   public function count() {
@@ -185,13 +221,12 @@ class Model{
    * @throws \Exception
    * @return \ES\Models\Model
    */
-  public static function createOrUpdate($data, $id = FALSE) {
-    $record = new static($data);
+  public function createOrUpdate($data, $id = FALSE) {
+    $this->fill($data);
+    $this->setID($id);
+    $this->save();
 
-    $record->setID($id);
-    $record->save();
-
-    return $record;
+    return $this;
   }
 
   /**
@@ -208,19 +243,27 @@ class Model{
   }
 
   /**
+   * Get the ES given id.
+   *
+   * @return bool|int
+   */
+  public function getID() {
+    return $this->id;
+  }
+
+  /**
    * @param array $data
    * @param bool $id
    *
    * @return \ES\Models\Model
    * @throws \Exception
    */
-  public static function create(array $data, $id = FALSE) {
-    $index = new static($data);
+  public function create(array $data) {
+    $this->fill($data);
+    $this->setID(FALSE);
+    $this->save();
 
-    $index->setID($id);
-    $index->save();
-
-    return $index;
+    return $this;
   }
 
   /**
@@ -232,6 +275,9 @@ class Model{
    */
   public function setIndexName($index) {
     $this->index = $index;
+
+    // Update the builder as well
+    $this->builder->setIndex($index);
 
     return $this;
   }
@@ -255,6 +301,9 @@ class Model{
   public function setIndexType($type) {
     $this->type = $type;
 
+    // Update the builder.
+    $this->builder->setType($type);
+
     return $this;
   }
 
@@ -268,6 +317,17 @@ class Model{
   }
 
   /**
+   * @param array fields
+   *
+   * @return $this
+   */
+  public function setFields($fields) {
+    $this->fields = $fields;
+
+    return $this;
+  }
+
+  /**
    * Get the fields for the model.
    *
    * @return array
@@ -277,9 +337,39 @@ class Model{
   }
 
   /**
+   * @return array
+   * @throws \Exception
+   */
+  public function search() {
+    $params = $this->builder->build();
+    $q = $params['body']['query']['simple_query_string']['query'];
+    $results = $this->instance->setWebsiteSearchParams(
+      $q,
+      '',
+      $this->getIndexName(),
+      $this->getIndexType()
+    )->search(true);
+
+    //$results = $this->instance->client->search($params);
+
+    return $results;
+  }
+
+  /**
+   * Get query paramaters.
+   *
+   * @return array
+   * @throws \Exception
+   */
+  public function getQuery() {
+    return $this->builder->build();
+  }
+
+  /**
    * Get an attribute.
    *
-   * @param string $name The name of attribute.
+   * @param string $name
+   *   The name of attribute.
    *
    * @return mixed
    *   The value of the attribute if it exists.
@@ -299,7 +389,8 @@ class Model{
   /**
    * Check if an attribute isset.
    *
-   * @param string $name The name of the attribute.
+   * @param string $name
+   *   The name of the attribute.
    *
    * @return bool
    *   Whether the attribute has been set.

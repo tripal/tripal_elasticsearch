@@ -10,12 +10,37 @@ class InstanceTest extends TestCase{
 
   use DBTransaction;
 
+  protected $old_host = NULL;
+
+  /**
+   * @throws \StatonLab\TripalTestSuite\Exceptions\TripalTestSuiteException
+   */
+  public function setUp() {
+    parent::setUp();
+
+    $this->old_host = NULL;
+  }
+
+  /**
+   * @throws \Exception
+   */
+  public function tearDown() {
+    parent::tearDown();
+
+    if (!is_null($this->old_host)) {
+      putenv("ES_HOST=$this->old_host");
+    }
+  }
+
   /** @test */
   public function testThatConnectionToAnInvalidHostFails() {
     variable_del('elasticsearch_host');
+    $this->old_host = getenv('ES_HOST');
+    putenv('ES_HOST');
 
     $this->expectException(\Exception::class);
 
+    // Set the host to false to simulate a non-existent host
     new \ES\Common\Instance();
   }
 
@@ -43,7 +68,7 @@ class InstanceTest extends TestCase{
 
     $this->makeIndex($name, ['content' => 'text']);
 
-    $es = new Instance();
+    $es = $this->makeInstance();
     $data = $es->createEntry(
       $name,
       $name,

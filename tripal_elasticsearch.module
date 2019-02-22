@@ -714,7 +714,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
   if (count($results['results'])) {
     $content = tripal_elasticsearch_create_collection_button();
   }
-  $content .= '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
+  $content .= '<p><strong>' . number_format($results['total']) . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
   $content .= tripal_elasticsearch_get_website_search_result_table(
     $results['results'],
     FALSE

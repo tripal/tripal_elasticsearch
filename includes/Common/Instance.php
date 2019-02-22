@@ -12,7 +12,7 @@ use Exception;
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class Instance{
+class Instance {
 
   /**
    * Elasticsearch client.
@@ -43,12 +43,13 @@ class Instance{
    *
    * @param null $host
    *
-   * @throws \Exception
+   *
    * @return void
    */
   public function __construct($host = NULL) {
+
     if ($host === NULL) {
-      $host = variable_get('elasticsearch_host');
+      $host = getenv('ES_HOST') ?: variable_get('elasticsearch_host');
     }
 
     if (empty($host)) {
@@ -62,7 +63,7 @@ class Instance{
       $host = [$host];
     }
 
-    // Load the elastic search library
+    // Load the elastic search library.
     libraries_load('elasticsearch-php');
 
     $exists = class_exists(ClientBuilder::class);
@@ -98,8 +99,10 @@ class Instance{
    * @param string $node_type
    * @param string $index
    * @param string $index_type
-   * @param array $offset [int $from, int $to]
-   * @param bool $force_entities_only force search of entities only
+   * @param array $offset
+   *   [int $from, int $to].
+   * @param bool $force_entities_only
+   *   force search of entities only.
    *
    * @return $this
    */
@@ -108,7 +111,7 @@ class Instance{
 
     $queries[] = [
       'query_string' => [
-        //'default_field' => 'content.taxrank__genus',
+        // 'default_field' => 'content.taxrank__genus',.
         'query' => $this->sanitizeQuery($search_terms),
         'default_operator' => 'AND',
       ],
@@ -139,7 +142,8 @@ class Instance{
         ) && !$force_entities_only) {
         $queries[1]['query_string'] = [
           'fields' => ['type', 'bundle_label'],
-          'query' => '"' . $node_type . '"', // Gene or mRNA (feature,Gene)
+        // Gene or mRNA (feature,Gene)
+          'query' => '"' . $node_type . '"',
           'default_operator' => 'AND',
         ];
       }
@@ -195,11 +199,16 @@ class Instance{
    * Build table search params.
    * USe this method if not searching the website or entities indices.
    *
-   * @param string $index Index name
-   * @param string $type Index type
-   * @param array $query ES query array
-   * @param array $offset [int from, int size]
-   * @param boolean $highlight Whether to highlight fields
+   * @param string $index
+   *   Index name.
+   * @param string $type
+   *   Index type.
+   * @param array $query
+   *   ES query array.
+   * @param array $offset
+   *   [int from, int size].
+   * @param bool $highlight
+   *   Whether to highlight fields.
    *
    * @return $this
    */
@@ -208,9 +217,8 @@ class Instance{
     $params['index'] = $index;
     $params['type'] = $type;
 
-    // sort the table by the first field by default
-    //$sort_field = array_keys($field_content_pairs)[0];
-
+    // Sort the table by the first field by default
+    // $sort_field = array_keys($field_content_pairs)[0];
     $params['body'] = [
       'query' => $query,
     ];
@@ -251,12 +259,18 @@ class Instance{
   /**
    * Build a new index parameters.
    *
-   * @param string $index_name The index name.
-   * @param int $shards Number of shards.
-   * @param int $replicas Number of replicas.
-   * @param string $tokenizer The type of tokenizer.
-   * @param array $filters The filters.
-   * @param array $fields The fields as ['field' => 'type', ...].
+   * @param string $index_name
+   *   The index name.
+   * @param int $shards
+   *   Number of shards.
+   * @param int $replicas
+   *   Number of replicas.
+   * @param string $tokenizer
+   *   The type of tokenizer.
+   * @param array $filters
+   *   The filters.
+   * @param array $fields
+   *   The fields as ['field' => 'type', ...].
    *
    * @return $this
    *   The current object.
@@ -281,8 +295,10 @@ class Instance{
 
     $properties = [];
     foreach ($fields as $field => $mapping_type) {
-      if ($mapping_type === 'dynamic') {
-        $properties[$field] = [];
+      if ($mapping_type === 'object') {
+        $properties[$field] = [
+          'properties' => [],
+        ];
       }
       else {
         $properties[$field] = [
@@ -312,13 +328,15 @@ class Instance{
    * Perform the actual search.
    * Use this function after setting the search params.
    *
-   * @param bool $return_source Whether to format the results or not.
+   * @param bool $return_source
+   *   Whether to format the results or not.
    *
    * @see \ES\Common\Instance::setTableSearchParams()
    * @see \ES\Common\Instance::setWebsiteSearchParams()
    *
    * @return array
-   *    The search results.
+   *   The search results.
+   *
    * @throws \Exception
    */
   public function search($return_source = FALSE) {
@@ -340,7 +358,8 @@ class Instance{
   /**
    * Format hits.
    *
-   * @param array $hits The hits returned from the search operation.
+   * @param array $hits
+   *   The hits returned from the search operation.
    *
    * @return array
    */
@@ -365,6 +384,7 @@ class Instance{
    * Get the number of available results for a given search query.
    *
    * @return mixed
+   *
    * @throws \Exception
    */
   public function count() {
@@ -374,10 +394,10 @@ class Instance{
       );
     }
 
-    // Get the search query
+    // Get the search query.
     $params = $this->searchParams;
 
-    // Remove offset restrictions
+    // Remove offset restrictions.
     unset($params['from']);
     unset($params['size']);
     unset($params['body']['highlight']);
@@ -392,6 +412,7 @@ class Instance{
    * @see \ES\Common\Instance::setIndexParams()
    *
    * @return array
+   *
    * @throws \Exception
    */
   public function createIndex() {
@@ -407,7 +428,8 @@ class Instance{
   /**
    * Delete an entire index.
    *
-   * @param string $index Index name
+   * @param string $index
+   *   Index name.
    *
    * @return array
    */
@@ -420,9 +442,12 @@ class Instance{
   /**
    * Delete an entry from an index.
    *
-   * @param string $index Index name
-   * @param string $index_type Index type
-   * @param int $id Entry ID (node or entity id)
+   * @param string $index
+   *   Index name.
+   * @param string $index_type
+   *   Index type.
+   * @param int $id
+   *   Entry ID (node or entity id)
    */
   public function deleteEntry($index, $index_type, $id) {
     $params = [
@@ -437,13 +462,17 @@ class Instance{
   /**
    * Create a new entry and add it to the provided index.
    *
-   * @param string $index Index name
-   * @param string $type Table name for table entries and index name for
-   *                     website entries
-   * @param int $id Entry ID (node or entity id). Set as FALSE if a table index
-   *                entry.
-   * @param array $body Array of record data to index. Must match index
-   *                    structure.
+   * @param string $index
+   *   Index name.
+   * @param string $type
+   *   Table name for table entries and index name for
+   *   website entries.
+   * @param int $id
+   *   Entry ID (node or entity id). Set as FALSE if a table index
+   *   entry.
+   * @param array $body
+   *   Array of record data to index. Must match index
+   *   structure.
    *
    * @return array
    */
@@ -464,10 +493,14 @@ class Instance{
   /**
    * Index multiple entries at once.
    *
-   * @param string $index Index name
-   * @param array $entries Array of entries
-   * @param string $type Index type
-   * @param string $id_key The object key to get the id value
+   * @param string $index
+   *   Index name.
+   * @param array $entries
+   *   Array of entries.
+   * @param string $type
+   *   Index type.
+   * @param string $id_key
+   *   The object key to get the id value.
    *
    * @return array
    */
@@ -476,10 +509,14 @@ class Instance{
   }
 
   /**
-   * @param string $index Index name
-   * @param array $entries Array of entries
-   * @param string $type Index type
-   * @param string $id_key The object key to get the id value
+   * @param string $index
+   *   Index name.
+   * @param array $entries
+   *   Array of entries.
+   * @param string $type
+   *   Index type.
+   * @param string $id_key
+   *   The object key to get the id value.
    *
    * @return array
    */
@@ -490,13 +527,17 @@ class Instance{
   /**
    * Update a document.
    *
-   * @param string $index The index name.
-   * @param string $type The type name.
-   * @param string $id The id of the document to update.
-   * @param array $data The data to replace.
+   * @param string $index
+   *   The index name.
+   * @param string $type
+   *   The type name.
+   * @param string $id
+   *   The id of the document to update.
+   * @param array $data
+   *   The data to replace.
    *
    * @return array
-   *    The returned array from the client.
+   *   The returned array from the client.
    */
   public function update($index, $type, $id, $data) {
     $params = [
@@ -514,8 +555,9 @@ class Instance{
   /**
    * @param string $operation
    * @param string $index
-   * @param array $entries Array of entries of the form
-   *              [
+   * @param array $entries
+   *   Array of entries of the form
+   *   [
    *                [ // Start of entry 1
    *                  'field1' => 'value for field1',
    *                  'field2' => 'value for field 2'
@@ -524,7 +566,7 @@ class Instance{
    *                  'field1' => 'another value',
    *                  'field2' => 'some other value'
    *                ]
-   *              ]
+   *              ].
    * @param string $type
    * @param string $id_key
    *
@@ -559,6 +601,7 @@ class Instance{
         case 'index':
           $params['body'][] = $entry;
           break;
+
         case 'update':
           $params['body'][] = ['doc' => $entry];
           break;
@@ -574,6 +617,7 @@ class Instance{
    * @param $per_page
    *
    * @throws \Exception
+   *
    * @return array
    */
   public function paginate($per_page) {
@@ -609,14 +653,18 @@ class Instance{
   /**
    * Get all available categories.
    *
-   * @param int $version Get specific tripal version categories.
-   * @param boolean $get_count Add count to the list. If set to TRUE, elements
-   *                            with 0 count won't be removed.
-   * @param string $keyword Count keyword.
+   * @param int $version
+   *   Get specific tripal version categories.
+   * @param bool $get_count
+   *   Add count to the list. If set to TRUE, elements
+   *   with 0 count won't be removed.
+   * @param string $keyword
+   *   Count keyword.
    *
    * @throws \Exception
+   *
    * @return array
-   *          If count is requested, 2 arrays will be returned.
+   *   If count is requested, 2 arrays will be returned.
    *          Otherwise, the structure is $array[$type_label] = $type_label
    */
   public function getAllCategories($version = NULL, $get_count = FALSE, $keyword = '*') {
@@ -709,6 +757,7 @@ class Instance{
    * @param string|null $category
    *
    * @throws \Exception
+   *
    * @return array
    */
   public function searchWebIndices($terms, $size, $category = NULL) {
@@ -806,7 +855,8 @@ class Instance{
           'id' => $id,
         ]
       );
-    } catch (Exception $exception) {
+    }
+    catch (Exception $exception) {
       return ['found' => FALSE];
     }
   }
@@ -814,11 +864,15 @@ class Instance{
   /**
    * Update field mappings of an index.
    *
-   * @param string $index_name Index name
-   * @param string $field_name Field name
-   * @param string $field_type Mapping type. E.g, text, integer, etc.
+   * @param string $index_name
+   *   Index name.
+   * @param string $field_name
+   *   Field name.
+   * @param string $field_type
+   *   Mapping type. E.g, text, integer, etc.
    *
    * @throws \Exception
+   *
    * @return array
    */
   public function putMapping($index_name, $field_name, $field_type, $index_type = NULL) {
@@ -832,7 +886,7 @@ class Instance{
         'fields' => [
           'raw' => [
             'type' => $field_type,
-            //'index' => 'not_analyzed',
+            // 'index' => 'not_analyzed',.
           ],
         ],
       ],
@@ -853,10 +907,14 @@ class Instance{
    * Create a new element if one does not exist. Update the
    * element if it already exists.
    *
-   * @param string $index The index name
-   * @param string $index_type The index type
-   * @param mixed $id The document ID
-   * @param array $item The fields to update or create.
+   * @param string $index
+   *   The index name.
+   * @param string $index_type
+   *   The index type.
+   * @param mixed $id
+   *   The document ID.
+   * @param array $item
+   *   The fields to update or create.
    *
    * @return array
    */
@@ -873,4 +931,5 @@ class Instance{
       ]
     );
   }
+
 }
