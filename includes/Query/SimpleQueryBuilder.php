@@ -2,7 +2,7 @@
 
 namespace ES\Query;
 
-class Builder extends BuilderContract{
+class SimpleQueryBuilder extends BuilderContract{
 
   /**
    * @var string
@@ -27,7 +27,7 @@ class Builder extends BuilderContract{
   /**
    * The query clause builder.
    *
-   * @var \ES\Query\Clause
+   * @var \ES\Query\SimpleQueryClause
    */
   protected $query;
 
@@ -50,7 +50,7 @@ class Builder extends BuilderContract{
    */
   public function __construct($index = NULL) {
     $this->index = $index;
-    $this->query = new Clause();
+    $this->query = new SimpleQueryClause();
   }
 
   /**

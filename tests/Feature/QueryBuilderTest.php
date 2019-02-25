@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use ES\Query\Builder;
+use ES\Query\SimpleQueryBuilder;
 use Tests\TestCase;
 
 class QueryBuilderTest extends TestCase{
 
   /** @test */
   public function testThatParamsBuildCorrectly() {
-    $builder = new Builder('entities');
+    $builder = new SimpleQueryBuilder('entities');
 
     $builder->setID('some_id')->where('field', 'value')->orWhere(
         'other',
@@ -46,7 +46,7 @@ class QueryBuilderTest extends TestCase{
 
   /** @test */
   public function testThatAnExceptionIsThrownWhenIndexIsNotProvided() {
-    $builder = new Builder();
+    $builder = new SimpleQueryBuilder();
 
     $this->expectException(\Exception::class);
     $builder->build();
@@ -54,7 +54,7 @@ class QueryBuilderTest extends TestCase{
 
   /** @test */
   public function testThatAnExceptionIsThrownWhenQueryIsNotProvided() {
-    $builder = new Builder('test');
+    $builder = new SimpleQueryBuilder('test');
 
     $this->expectException(\Exception::class);
     $builder->build();

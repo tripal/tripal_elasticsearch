@@ -3,21 +3,21 @@
 namespace Tests\Feature;
 
 use ES\Query\BuilderContract;
-use ES\Query\Clause;
+use ES\Query\SimpleQueryClause;
 use Tests\TestCase;
 
 class ClauseTest extends TestCase{
 
   /** @test */
   public function testThatWeCanBuildWhereQueriesWithoutUsingClosures() {
-    $clause = new Clause();
+    $clause = new SimpleQueryClause();
     $query = $clause->where('field', 'value')->where('value')->orWhere('value');
     $this->assertEquals(3, count($query->build()));
   }
 
   /** @test */
   public function testThatClosuresGenerateEnclosedParameters() {
-    $clause = new Clause();
+    $clause = new SimpleQueryClause();
 
     $query = $clause->where(
       function (BuilderContract $query) {
@@ -36,7 +36,7 @@ class ClauseTest extends TestCase{
 
   /** @test */
   public function testAddonBuilders() {
-    $clause = new Clause();
+    $clause = new SimpleQueryClause();
 
     $query = $clause->beginsWith('test')
       ->contains('test')
@@ -49,7 +49,7 @@ class ClauseTest extends TestCase{
 
   /** @test */
   public function testAddonBuildersThatUseOr() {
-    $clause = new Clause();
+    $clause = new SimpleQueryClause();
 
     $query = $clause->orBeginsWith('test')->orContains(
       'test'
@@ -60,7 +60,7 @@ class ClauseTest extends TestCase{
 
   /** @test */
   public function testAddonsWithFields() {
-    $clause = new Clause();
+    $clause = new SimpleQueryClause();
 
     $query = $clause->beginsWith('field', 'test')
       ->contains('field', 'test')
@@ -73,7 +73,7 @@ class ClauseTest extends TestCase{
 
   /** @test */
   public function testAddonsWithFieldsUsingOr() {
-    $clause = new Clause();
+    $clause = new SimpleQueryClause();
 
     $query = $clause->beginsWith('field', 'test')
       ->orBeginsWith('field', 'test')

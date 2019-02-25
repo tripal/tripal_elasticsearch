@@ -2,7 +2,7 @@
 
 namespace ES\Query;
 
-class Clause extends BuilderContract{
+class SimpleQueryClause extends BuilderContract{
 
   /**
    * The built query.
@@ -33,7 +33,7 @@ class Clause extends BuilderContract{
    */
   protected function makeQuery($field, $value = NULL) {
     if ($field instanceof \Closure) {
-      $clause = new Clause();
+      $clause = new SimpleQueryClause();
       $field($clause);
       return $clause->build();
     }

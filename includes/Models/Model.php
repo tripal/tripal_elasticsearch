@@ -3,7 +3,7 @@
 namespace ES\Models;
 
 use ES\Common\Instance;
-use ES\Query\Builder;
+use ES\Query\SimpleQueryBuilder;
 
 /**
  *
@@ -55,7 +55,7 @@ class Model{
   /**
    * Query Builder.
    *
-   * @var \ES\Query\Builder
+   * @var \ES\Query\SimpleQueryBuilder
    */
   protected $builder;
 
@@ -80,7 +80,7 @@ class Model{
    */
   public function __construct(Instance $instance = NULL) {
     $this->instance = $instance ?? new Instance();
-    $this->builder = new Builder($this->index);
+    $this->builder = new SimpleQueryBuilder($this->index);
   }
 
   /**
@@ -94,7 +94,7 @@ class Model{
    * @return $this
    *   The object.
    *
-   * @see \ES\Query\Clause::where()
+   * @see \ES\Query\SimpleQueryClause::where()
    */
   public function where($field, $value = NULL) {
     $this->builder->where($field, $value);
@@ -113,7 +113,7 @@ class Model{
    * @return $this
    *   The object.
    *
-   * @see \ES\Query\Clause::orWhere()
+   * @see \ES\Query\SimpleQueryClause::orWhere()
    */
   public function orWhere($field, $value = NULL) {
     $this->builder->orWhere($field, $value);
