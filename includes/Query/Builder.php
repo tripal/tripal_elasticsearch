@@ -96,32 +96,6 @@ class Builder extends BuilderContract{
   }
 
   /**
-   * @param $query
-   * @param string $op
-   *
-   * @return $this
-   *
-   * @see \ES\Query\Clause::raw()
-   */
-  public function raw($query, $op = 'AND') {
-    $this->query->raw($query, $op);
-
-    return $this;
-  }
-
-  /**
-   * @param $query
-   *
-   * @return $this
-   * @see \ES\Query\Clause::orRaw()
-   */
-  public function orRaw($query) {
-    $this->query->orRaw($query);
-
-    return $this;
-  }
-
-  /**
    *
    * @param string|array $fields
    *
@@ -218,8 +192,8 @@ class Builder extends BuilderContract{
       'index' => $this->index,
       'body' => [
         'query' => [
-          'simple_query_string' => [
-            'query' => $this->query->build(),
+          'bool' => [
+            'must' => $this->query->build(),
           ],
         ],
       ],
@@ -251,5 +225,18 @@ class Builder extends BuilderContract{
     }
 
     return $params;
+  }
+
+  /**
+   * @param null $index
+   */
+  public function reset($index = NULL) {
+    $this->from = NULL;
+    $this->query = NULL;
+    $this->size = NULL;
+    $this->type = NULL;
+    if (!is_null($index)) {
+      $this->index = $index;
+    }
   }
 }

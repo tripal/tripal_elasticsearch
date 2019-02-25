@@ -116,7 +116,7 @@ class Model{
    * @see \ES\Query\Clause::orWhere()
    */
   public function orWhere($field, $value = NULL) {
-    $this->builder->where($field, $value);
+    $this->builder->orWhere($field, $value);
 
     return $this;
   }
@@ -342,15 +342,9 @@ class Model{
    */
   public function search() {
     $params = $this->builder->build();
-    $q = $params['body']['query']['simple_query_string']['query'];
-    $results = $this->instance->setWebsiteSearchParams(
-      $q,
-      '',
-      $this->getIndexName(),
-      $this->getIndexType()
-    )->search(true);
+    $results = $this->instance->client->search($params);
 
-    //$results = $this->instance->client->search($params);
+    $this->builder->reset($this->index);
 
     return $results;
   }

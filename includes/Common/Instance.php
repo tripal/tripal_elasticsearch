@@ -12,7 +12,7 @@ use Exception;
  * Also Provides methods for building indices, searching,
  * deleting and indexing.
  */
-class Instance {
+class Instance{
 
   /**
    * Elasticsearch client.
@@ -142,7 +142,6 @@ class Instance {
         ) && !$force_entities_only) {
         $queries[1]['query_string'] = [
           'fields' => ['type', 'bundle_label'],
-        // Gene or mRNA (feature,Gene)
           'query' => '"' . $node_type . '"',
           'default_operator' => 'AND',
         ];
@@ -855,8 +854,7 @@ class Instance {
           'id' => $id,
         ]
       );
-    }
-    catch (Exception $exception) {
+    } catch (Exception $exception) {
       return ['found' => FALSE];
     }
   }
@@ -931,5 +929,4 @@ class Instance {
       ]
     );
   }
-
 }

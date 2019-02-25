@@ -7,9 +7,9 @@ class Clause extends BuilderContract{
   /**
    * The built query.
    *
-   * @var string
+   * @var array
    */
-  protected $query = '';
+  protected $queries = [];
 
   /**
    * @var \ES\Query\ClauseSanitizer
@@ -29,26 +29,35 @@ class Clause extends BuilderContract{
    * @param string $field
    * @param string $value
    *
-   * @return string
+   * @return array
    */
   protected function makeQuery($field, $value = NULL) {
     if ($field instanceof \Closure) {
-      $query = '(';
       $clause = new Clause();
       $field($clause);
-      $query .= $clause->build();
-      $query .= ')';
-      return $query;
+      return $clause->build();
     }
 
     if (is_null($value)) {
-      return $this->sanitizer->escape($field);
+      return [
+        'simple_query_string' => [
+          'fields' => ['*'],
+          'query' => $this->sanitizer->escape($field),
+          'lenient' => TRUE,
+        ],
+      ];
     }
 
-    $field = $this->sanitizer->escapeField($field);
+    $fields = is_array($field) ? $field : [$field];
     $value = $this->sanitizer->escape($value);
 
-    return $field . ':' . $value;
+    return [
+      'simple_query_string' => [
+        'fields' => $fields,
+        'query' => $value,
+        'lenient' => TRUE,
+      ],
+    ];
   }
 
   /**
@@ -63,11 +72,13 @@ class Clause extends BuilderContract{
    */
   public function where($field, $data = NULL) {
     $query = $this->makeQuery($field, $data);
-    if (!empty($this->query)) {
-      $this->query .= " AND $query";
+    if (count($query) > 1) {
+      foreach ($query as $q) {
+        $this->queries[] = $q;
+      }
     }
     else {
-      $this->query = $query;
+      $this->queries[] = $query;
     }
 
     return $this;
@@ -84,54 +95,15 @@ class Clause extends BuilderContract{
    *   The object.
    */
   public function orWhere($field, $data = NULL) {
-    $query = $this->makeQuery($field, $data);
-    if (!empty($this->query)) {
-      $this->query .= " OR $query";
-    }
-    else {
-      $this->query = $query;
-    }
+    $this->where($field, $data);
 
     return $this;
   }
 
   /**
-   * @return string
+   * @return array
    */
   public function build() {
-    return $this->query;
-  }
-
-  /**
-   * Add a raw query joined with $op.
-   *
-   * @param string $query
-   * @param string $op
-   *
-   * @return $this
-   */
-  public function raw($query, $op = 'AND') {
-    $query = $this->sanitizer->escape($query);
-
-    if (empty($this->query)) {
-      $this->query = $query;
-
-      return $this;
-    }
-
-    $this->query .= " {$op} {$query}";
-
-    return $this;
-  }
-
-  /**
-   * Add a raw query joined with OR.
-   *
-   * @param string $query
-   *
-   * @return \ES\Query\Clause
-   */
-  public function orRaw($query) {
-    return $this->raw($query, 'OR');
+    return $this->queries;
   }
 }

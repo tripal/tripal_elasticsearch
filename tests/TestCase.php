@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Faker\Factory;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
 class TestCase extends TripalTestCase{
@@ -37,6 +38,13 @@ class TestCase extends TripalTestCase{
   }
 
   /**
+   * @return \Faker\Generator
+   */
+  public function makeFaker() {
+    return Factory::create();
+  }
+
+  /**
    * @param string $name
    *
    * @throws \Exception
@@ -68,15 +76,17 @@ class TestCase extends TripalTestCase{
   }
 
   /**
-   * Creating records is asynchronous in ES. This methods adds the wait time
+   * Creating records is asynchronous in ES. This method adds the wait time
    * required to make sure the record was created before making assertions.
    *
    * @param string $index Index name (and type!)
    * @param array $data
+   *
+   * @throws \Exception
    */
   public function createRecord($index, $data) {
     $instance = $this->makeInstance();
-    $record = $instance->createEntry($index, $index, false, $data);
+    $record = $instance->createEntry($index, $index, FALSE, $data);
     sleep(1);
     return $record;
   }

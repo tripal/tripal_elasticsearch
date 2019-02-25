@@ -26,20 +26,14 @@ class QueryBuilderTest extends TestCase{
     $this->assertArrayHasKey('index', $params);
     $this->assertArrayHasKey('query', $params['body']);
     $this->assertArrayHasKey(
-      'query',
-      $params['body']['query']['simple_query_string']
+      'bool',
+      $params['body']['query']
     );
     $this->assertArrayHasKey('highlight', $params['body']);
     $this->assertArrayHasKey('fields', $params['body']['highlight']);
     $this->assertArrayHasKey(
       'highlighted_field',
       $params['body']['highlight']['fields']
-    );
-
-    // Check query value
-    $this->assertEquals(
-      'field:value OR other:value',
-      $params['body']['query']['simple_query_string']['query']
     );
 
     // Build without range
