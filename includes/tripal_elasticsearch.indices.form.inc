@@ -906,7 +906,7 @@ function tripal_elasticsearch_create_index(&$values) {
       'entity_id' => 'integer',
       'bundle_label' => 'text',
       'title' => 'text',
-      'content' => 'dynamic',
+      'content' => 'object',
     ];
   }
   elseif ($index_type === 'gene_search') {

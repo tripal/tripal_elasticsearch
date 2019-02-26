@@ -86,7 +86,7 @@ class Model{
   /**
    * Add a where clause.
    *
-   * @param string $field
+   * @param string|array $field
    *   The field.
    * @param string $value
    *   The value.
@@ -103,9 +103,23 @@ class Model{
   }
 
   /**
+   * Highlight certain fields.
+   *
+   * @param string|array $fields A single field name or an array of field names.
+   *
+   * @return $this
+   *    The current object.
+   */
+  public function highlight($fields) {
+    $this->builder->highlight($fields);
+
+    return $this;
+  }
+
+  /**
    * Add an or clause.
    *
-   * @param string $field
+   * @param string|array $field
    *   The field.
    * @param string $value
    *   The value.
@@ -343,8 +357,6 @@ class Model{
   public function search() {
     $params = $this->builder->build();
     $results = $this->instance->client->search($params);
-
-    $this->builder->reset($this->index);
 
     return $results;
   }

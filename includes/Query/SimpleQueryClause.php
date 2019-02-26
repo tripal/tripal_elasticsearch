@@ -39,23 +39,32 @@ class SimpleQueryClause extends BuilderContract{
     }
 
     if (is_null($value)) {
-      return [
-        'simple_query_string' => [
-          'fields' => ['*'],
-          'query' => $this->sanitizer->escape($field),
-          'lenient' => TRUE,
-        ],
-      ];
+      return $this->multiMatch(['*'], $value);
     }
 
     $fields = is_array($field) ? $field : [$field];
     $value = $this->sanitizer->escape($value);
 
+    return $this->multiMatch($fields, $value);
+  }
+
+  /**
+   * Create a multi_match query.
+   *
+   * @param array $fields
+   * @param string $value
+   *
+   * @return array
+   */
+  public function multiMatch(array $fields, $value) {
     return [
-      'simple_query_string' => [
+      'multi_match' => [
         'fields' => $fields,
         'query' => $value,
         'lenient' => TRUE,
+        //'type' => 'phrase',
+        'analyzer' => 'synonym',
+        'fuzziness' => 'AUTO',
       ],
     ];
   }

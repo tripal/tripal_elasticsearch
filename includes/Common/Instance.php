@@ -256,6 +256,22 @@ class Instance{
   }
 
   /**
+   * Get the path from Tripal ES root.
+   *
+   * @param string $path The path to the file. All instances of "/" will be
+   *   replaced with the constant DIRECTORY_SEPARATOR.
+   *
+   * @return string
+   */
+  public function getPath($path) {
+    return TRIPAL_ELASTICSEARCH_ROOT . DIRECTORY_SEPARATOR . str_replace(
+        '/',
+        DIRECTORY_SEPARATOR,
+        trim($path, '/')
+      );
+  }
+
+  /**
    * Build a new index parameters.
    *
    * @param string $index_name
@@ -275,20 +291,32 @@ class Instance{
    *   The current object.
    */
   public function setIndexParams($index_name, $shards = 5, $replicas = 0, $tokenizer = 'standard', $filters = [], $fields = []) {
-    $analysis = [
-      'analyzer' => [
-        $index_name => [
-          'type' => 'custom',
-          'tokenizer' => $tokenizer,
-          'filter' => array_keys($filters),
-        ],
-      ],
-    ];
-
     $settings = [
       'number_of_shards' => $shards,
       'number_of_replicas' => $replicas,
-      'analysis' => $analysis,
+      'analysis' => [
+        'analyzer' => [
+          $index_name => [
+            'type' => 'custom',
+            'tokenizer' => $tokenizer,
+            'filter' => array_keys($filters),
+          ],
+          'synonym' => [
+            'tokenizer' => 'whitespace',
+            'filter' => [
+              'synonym',
+              'lowercase'
+            ],
+          ],
+        ],
+        'filter' => [
+          'synonym' => [
+            'type' => 'synonym_graph',
+            'format' => 'wordnet',
+            'synonyms_path' => 'analysis/wn_s.pl',
+          ],
+        ],
+      ],
       'max_result_window' => 1000000,
     ];
 
@@ -368,7 +396,10 @@ class Instance{
       if (isset($hit['highlight'])) {
         $highlight = '';
         foreach ($hit['highlight'] as $content) {
-          $highlight .= implode('... ', $content);
+          if (!empty($highlight)) {
+            $highlight .= ' ... ';
+          }
+          $highlight .= elasticsearch_recursive_implode(' ... ', $content);
         }
         $hit['_source']['highlight'] = $highlight;
       }
