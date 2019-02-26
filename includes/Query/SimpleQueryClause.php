@@ -39,7 +39,7 @@ class SimpleQueryClause extends BuilderContract{
     }
 
     if (is_null($value)) {
-      return $this->multiMatch(['*'], $value);
+      return $this->multiMatch(['*'], $field);
     }
 
     $fields = is_array($field) ? $field : [$field];
