@@ -42,7 +42,10 @@ class ModelTest extends TestCase{
 
     $model->setIndexName($name);
     $model->setIndexType($name);
-    $model->where($name1);
+    $model->where($name1)->orWhere('content.*', $name1)->orWhere(
+      'content.field1',
+      $name1
+    );
 
     $data = $model->search();
 
