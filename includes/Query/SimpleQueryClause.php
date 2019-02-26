@@ -62,8 +62,8 @@ class SimpleQueryClause extends BuilderContract{
         'fields' => $fields,
         'query' => $value,
         'lenient' => TRUE,
-        //'type' => 'phrase',
         'analyzer' => 'synonym',
+        //'type' => 'phrase',
         'fuzziness' => 'AUTO',
       ],
     ];

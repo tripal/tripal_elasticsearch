@@ -388,6 +388,17 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
         'message' => ''
       ]
     ],
+    'elasticsearch_results_header' => [
+      'template' => 'elasticsearch_results_header',
+      'render element' => 'content',
+      'path' => "$path/theme/templates",
+      'variables' => [
+        // Current page
+        'page' => 1,
+        'total' => 0,
+        'pages' => 1
+      ]
+    ],
     'elasticsearch_results' => [
       'template' => 'elasticsearch_results',
       // 'render element' => 'elements',

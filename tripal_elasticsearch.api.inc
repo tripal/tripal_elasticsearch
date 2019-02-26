@@ -238,10 +238,6 @@ function tripal_elasticsearch_get_website_search_result_table($search_results, $
     $row = new stdClass();
     $row->title = $item->title;
     if (isset($item->nid)) {
-      //      $row = '<h3>' . l($item->title, 'node/' . $item->nid) . '</h3>';
-      //      if ($base_url) {
-      //        $row = '<h3><a href="' . $base_url . '/node/' . $item->nid . '">' . $item->title . '</a></h3>';
-      //      }
 
       if ($base_url) {
         $row->url = "{$base_url}/node/{$item->nid}";
@@ -251,11 +247,6 @@ function tripal_elasticsearch_get_website_search_result_table($search_results, $
       }
     }
     else {
-      //      $row = '<h3>' . l($item->title, 'bio_data/' . $item->entity_id) . '</h3>';
-      //      if ($base_url) {
-      //        $row = '<h3><a href="' . $base_url . '/bio_data/' . $item->entity_id . '">' . $item->title . '</a></h3>';
-      //      }
-
       if ($base_url) {
         $row->url = "{$base_url}/bio_data/{$item->entity_id}";
       }
@@ -285,13 +276,6 @@ function tripal_elasticsearch_get_website_search_result_table($search_results, $
     $rows[] = $row;
   }
 
-  //  $output = theme('table', [
-  //    'header' => [],
-  //    'rows' => $rows,
-  //    'attributes' => [
-  //      'id' => 'es-search-results-table',
-  //    ],
-  //  ]);
   $output = theme('elasticsearch_results', [
     'rows' => $rows,
     'base_url' => $base_url

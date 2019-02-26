@@ -64,11 +64,11 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
 
   $form['#method'] = 'GET';
 
-  if (isset($_GET['term']) && !empty($_GET['term'])) {
-    $form['wrapper']['results'] = [
-      '#markup' => tripal_elasticsearch_advanced_search_results($_GET),
-    ];
-  }
+  //if (isset($_GET['term']) && !empty($_GET['term'])) {
+  $form['wrapper']['results'] = [
+    '#markup' => tripal_elasticsearch_advanced_search_results($_GET),
+  ];
+  //}
 
   return $form;
 }
@@ -79,26 +79,18 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
  * @return string
  */
 function tripal_elasticsearch_advanced_search_results(array $values) {
-  $fields = ['content.*', 'title'];
-
-  if (isset($_GET['field']) && !empty($_GET['field'])) {
-    $fields = ["content.{$_GET['field']}"];
+  if (empty($values['category']) && empty($values['term'])) {
+    return '';
   }
 
   try {
     $instance = new \ES\Common\Instance();
-    $model = new \ES\Models\Model();
-    $model->setIndexName('entities');
-    $model->where($fields, trim($values['term']));
-
-    $category = trim($values['category'] ?? '');
-    if (!empty($category)) {
-      $model->where('bundle_label', "\"$category\"");
+    $results = tripal_elasticsearch_perform_advanced_search($values, 15);
+    if($results['total'] == 0 && !empty($values['term'])) {
+      $values['term'] = strtolower($values['term']);
+      $results = tripal_elasticsearch_perform_advanced_search($values, 15);
     }
-
-    $model->highlight(['content.*', 'title']);
-    $data = $model->search();
-    $hits = $instance->formatHits($data);
+    $hits = $instance->formatHits($results['results']);
 
     if (count($hits) === 0) {
       return theme(
@@ -109,7 +101,16 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
       );
     }
 
-    return tripal_elasticsearch_get_website_search_result_table($hits);
+    $content = theme('elasticsearch_results_header', [
+      'page' => $results['page'],
+      'total' => $results['total'],
+      'pages' => $results['pages'],
+      'time' => $results['time']
+    ]);
+    $content .= tripal_elasticsearch_get_website_search_result_table($hits, false);
+    $content .= $results['pager'];
+
+    return $content;
   } catch (Exception $exception) {
     watchdog(
       'tripal_elasticsearch',
@@ -121,6 +122,40 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
       'The search service is currently unavailable. Please contact us to resolve the issue.'
     );
   }
+}
+
+/**
+ * @param $values
+ *
+ * @return array
+ * @throws \Exception
+ */
+function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL) {
+  $fields = ['content.*', 'title'];
+
+  if (isset($values['field']) && !empty($values['field'])) {
+    $fields = ["content.{$_GET['field']}"];
+  }
+
+  $model = new \ES\Models\Model();
+  $model->setIndexName('entities');
+
+  if (!empty($values['term'])) {
+    $model->where($fields, trim($values['term']));
+  }
+
+  $category = trim($values['category'] ?? '');
+  if (!empty($category)) {
+    $model->where('bundle_label', "\"$category\"");
+  }
+
+  $model->highlight(['content.*', 'title']);
+
+  if (is_null($per_page)) {
+    return $model->search();
+  }
+
+  return $model->paginate($per_page);
 }
 
 /**

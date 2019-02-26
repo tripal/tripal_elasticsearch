@@ -296,17 +296,16 @@ class Instance{
       'number_of_replicas' => $replicas,
       'analysis' => [
         'analyzer' => [
-          $index_name => [
-            'type' => 'custom',
-            'tokenizer' => $tokenizer,
-            'filter' => array_keys($filters),
-          ],
+          //$index_name => [
+          //  'type' => 'custom',
+          //  'tokenizer' => $tokenizer,
+          //  'filter' => array_keys($filters),
+          //],
           'synonym' => [
             'tokenizer' => 'whitespace',
-            'filter' => [
-              'synonym',
-              'lowercase'
-            ],
+            'filter' => array_unique(
+              ['synonym', 'lowercase'] + array_keys($filters)
+            ),
           ],
         ],
         'filter' => [
@@ -314,6 +313,10 @@ class Instance{
             'type' => 'synonym_graph',
             'format' => 'wordnet',
             'synonyms_path' => 'analysis/wn_s.pl',
+          ],
+          'stemmer' => [
+            'type' => 'stemmer',
+            'language' => 'english',
           ],
         ],
       ],

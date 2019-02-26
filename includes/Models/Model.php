@@ -11,11 +11,6 @@ use ES\Query\SimpleQueryBuilder;
 class Model{
 
   /**
-   * @var array
-   */
-  protected $attributes = [];
-
-  /**
    * The ES instance.
    *
    * @var \ES\Common\Instance
@@ -362,6 +357,29 @@ class Model{
   }
 
   /**
+   * Paginate the results.
+   *
+   * @param int $per_page
+   *
+   * @return array
+   * @throws \Exception
+   */
+  public function paginate($per_page = 10) {
+    $start = microtime(true);
+    $results = $this->search();
+    $total = $results['hits']['total'];
+    $current_page = pager_default_initialize($total, $per_page);
+    return [
+      'results' => $results,
+      'total' => $total,
+      'page' => $current_page + 1,
+      'pages' => ceil($total / $per_page),
+      'pager' => theme('pager', ['quantity', $total]),
+      'time' => microtime(true) - $start
+    ];
+  }
+
+  /**
    * Get query paramaters.
    *
    * @return array
@@ -369,39 +387,5 @@ class Model{
    */
   public function getQuery() {
     return $this->builder->build();
-  }
-
-  /**
-   * Get an attribute.
-   *
-   * @param string $name
-   *   The name of attribute.
-   *
-   * @return mixed
-   *   The value of the attribute if it exists.
-   */
-  public function __get($name) {
-    if (array_key_exists($name, $this->attributes)) {
-      return $this->attributes[$name];
-    }
-
-    if (method_exists(static::class, $name)) {
-      return;
-    }
-
-    return $this->{$name};
-  }
-
-  /**
-   * Check if an attribute isset.
-   *
-   * @param string $name
-   *   The name of the attribute.
-   *
-   * @return bool
-   *   Whether the attribute has been set.
-   */
-  public function __isset($name) {
-    return isset($this->attributes[$name]);
   }
 }
