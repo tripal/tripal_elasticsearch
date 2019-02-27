@@ -68,4 +68,19 @@ class BundleHelperTest extends TestCase{
     $this->assertObjectHasAttribute('name', $field);
     $this->assertObjectHasAttribute('label', $field);
   }
+
+  /** @test */
+  public function testGettingBundlesWithFields() {
+    $helper = new BundleHelper();
+
+    $bundles = $helper->getBundlesWithFields();
+    $this->assertNotEmpty($bundles);
+
+    $bundle = $bundles[0];
+    $this->assertObjectHasAttribute('fields', $bundle);
+    $this->assertObjectHasAttribute('name', $bundle);
+    $this->assertObjectHasAttribute('label', $bundle);
+    $this->assertObjectHasAttribute('cv_name', $bundle);
+    $this->assertObjectHasAttribute('accession', $bundle);
+  }
 }
