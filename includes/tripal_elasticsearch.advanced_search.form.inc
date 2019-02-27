@@ -40,7 +40,9 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
   ];
 
   if (!empty($values['category'])) {
-    $fields = $helper->getFieldsByBundle($helper->getBundleByName($values['category']));
+    $fields = $helper->getFieldsByBundle(
+      $helper->getBundleByName($values['category'])
+    );
     $field_options = [
       '' => 'Any Field',
     ];
@@ -90,7 +92,11 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
     $results = tripal_elasticsearch_perform_advanced_search($values, 15);
     if ($results['total'] == 0 && !empty($values['term'])) {
       $values['term'] = strtolower($values['term']);
-      $results = tripal_elasticsearch_perform_advanced_search($values, 15);
+      $results = tripal_elasticsearch_perform_advanced_search(
+        $values,
+        15,
+        TRUE
+      );
     }
     $hits = $instance->formatHits($results['results']);
 
@@ -138,7 +144,7 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
  * @return array
  * @throws \Exception
  */
-function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL) {
+function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL, $retry = FALSE) {
   $fields = ['content.*', 'title'];
 
   if (isset($values['field']) && !empty($values['field'])) {
@@ -158,6 +164,8 @@ function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL)
   }
 
   $model->highlight(['content.*', 'title']);
+
+  $model->retry($retry);
 
   if (is_null($per_page)) {
     return $model->search();

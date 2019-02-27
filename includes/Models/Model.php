@@ -79,6 +79,19 @@ class Model{
   }
 
   /**
+   * Whether to retry search.
+   *
+   * @param bool $retry
+   *
+   * @return $this
+   */
+  public function retry($retry = TRUE) {
+    $this->builder->retry($retry);
+
+    return $this;
+  }
+
+  /**
    * Add a where clause.
    *
    * @param string|array $field
@@ -365,7 +378,7 @@ class Model{
    * @throws \Exception
    */
   public function paginate($per_page = 10) {
-    $start = microtime(true);
+    $start = microtime(TRUE);
     $results = $this->search();
     $total = $results['hits']['total'];
     $current_page = pager_default_initialize($total, $per_page);
@@ -375,7 +388,7 @@ class Model{
       'page' => $current_page + 1,
       'pages' => ceil($total / $per_page),
       'pager' => theme('pager', ['quantity', $total]),
-      'time' => microtime(true) - $start
+      'time' => microtime(TRUE) - $start,
     ];
   }
 

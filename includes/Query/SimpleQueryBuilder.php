@@ -228,4 +228,17 @@ class SimpleQueryBuilder extends BuilderContract{
 
     return $params;
   }
+
+  /**
+   * Retry searching.
+   *
+   * @param bool $retry Whether to retry or not.
+   *
+   * @return $this
+   */
+  public function retry($retry = true) {
+    $this->query->retry($retry);
+
+    return $this;
+  }
 }

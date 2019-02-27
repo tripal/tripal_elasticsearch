@@ -17,10 +17,28 @@ class SimpleQueryClause extends BuilderContract{
   protected $sanitizer;
 
   /**
+   * @var bool
+   */
+  protected $retry = FALSE;
+
+  /**
    * Clause constructor.
    */
   public function __construct() {
     $this->sanitizer = new ClauseSanitizer();
+  }
+
+  /**
+   * Set the retry variable.
+   *
+   * @param $retry
+   *
+   * @return $this
+   */
+  public function retry($retry) {
+    $this->retry = $retry;
+
+    return $this;
   }
 
   /**
@@ -57,16 +75,21 @@ class SimpleQueryClause extends BuilderContract{
    * @return array
    */
   public function multiMatch(array $fields, $value) {
-    return [
+    $query = [
       'multi_match' => [
         'fields' => $fields,
         'query' => $value,
         'lenient' => TRUE,
         'analyzer' => 'synonym',
         //'type' => 'phrase',
-        'fuzziness' => 'AUTO',
       ],
     ];
+
+    if ($this->retry) {
+      $query['fuzziness'] = 'AUTO';
+    }
+
+    return $query;
   }
 
   /**
