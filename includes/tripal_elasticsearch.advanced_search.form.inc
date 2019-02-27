@@ -225,15 +225,15 @@ function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL,
   }
 
   $instance = new \ES\Common\Instance();
-  $index = 'entities';
+  $index = ['entities'];
   $category_field = ['bundle_label'];
   if ($instance->hasIndex('website')) {
-    $index .= ',website';
-    $category_field[] = ['type'];
+    $index[] = 'website';
+    $category_field[] = 'type';
   }
   $model = new \ES\Models\Model();
 
-  $model->setIndexName($index);
+  $model->setIndexName(implode(',', $index));
 
   if (!empty($values['term'])) {
     $model->where($fields, trim($values['term']));
