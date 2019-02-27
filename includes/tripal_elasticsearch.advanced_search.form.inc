@@ -111,8 +111,10 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
       15,
       $retry
     );
+
     if ($results['total'] <= 0 && !empty($values['term']) && !$retry) {
       $retry = TRUE;
+      $_SESSION['es_term'] = $values['term'];
       $values['term'] = strtolower($values['term']);
       $results = tripal_elasticsearch_perform_advanced_search(
         $values,
@@ -120,32 +122,37 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
         $retry
       );
     }
+
     $hits = $instance->formatHits($results['results']);
 
     if (count($hits) === 0) {
-      return theme(
+      $content = theme(
         'elasticsearch_tips',
         [
           'message' => '0 results found.',
         ]
       );
     }
+    else {
+      $content = theme(
+        'elasticsearch_results_header',
+        [
+          'page' => $results['page'],
+          'total' => $results['total'],
+          'pages' => $results['pages'],
+          'time' => $results['time'],
+        ]
+      );
 
-    $content = theme(
-      'elasticsearch_results_header',
-      [
-        'page' => $results['page'],
-        'total' => $results['total'],
-        'pages' => $results['pages'],
-        'time' => $results['time'],
-      ]
-    );
-    $content .= tripal_elasticsearch_get_website_search_result_table(
-      $hits,
-      FALSE
-    );
-    $content .= $results['pager'];
+      $content .= tripal_elasticsearch_get_website_search_result_table(
+        $hits,
+        FALSE
+      );
+      $content .= $results['pager'];
+    }
 
+    // If we are in the last page and did not yet attempt a retry, check to see
+    // if a retry would produce more results and inform the user of that option
     if ($results['pages'] == $results['page'] && !$retry) {
       $with_retry = tripal_elasticsearch_perform_advanced_search(
         $values,
