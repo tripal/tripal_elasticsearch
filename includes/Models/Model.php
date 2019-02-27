@@ -236,7 +236,7 @@ class Model{
    * @throws \Exception
    */
   public function count() {
-    return (int) $this->instance->client->count($this->builder->build(FALSE));
+    return (int) $this->instance->client->count($this->builder->build(FALSE))['count'];
   }
 
   /**
