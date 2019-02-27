@@ -241,7 +241,7 @@ function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL,
 
   $category = trim($values['category'] ?? '');
   if (!empty($category)) {
-    $model->where($category_field, "\"$category\"");
+    $model->where($category_field, "$category");
   }
 
   $model->highlight(['content.*', 'title']);
