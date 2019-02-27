@@ -70,11 +70,26 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
 
   $form['#method'] = 'GET';
 
+  tripal_elasticsearch_configure_term_session();
+
   $form['wrapper']['results'] = [
     '#markup' => tripal_elasticsearch_advanced_search_results($values),
   ];
 
   return $form;
+}
+
+function tripal_elasticsearch_configure_term_session() {
+  $op = $_GET['op'] ?? '';
+  $session_term = $_SESSION['es_term'] ?? '';
+  $term = $_GET['term'] ?? '';
+
+  if ($op === 'Include More Results') {
+    $_SESSION['es_term'] = $term;
+  }
+  elseif (isset($_SESSION['es_term']) && $session_term !== $term) {
+    unset($_SESSION['es_term']);
+  }
 }
 
 /**
@@ -87,15 +102,22 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
     return '';
   }
 
+  $retry = isset($_SESSION['es_term']);
+
   try {
     $instance = new \ES\Common\Instance();
-    $results = tripal_elasticsearch_perform_advanced_search($values, 15);
-    if ($results['total'] == 0 && !empty($values['term'])) {
+    $results = tripal_elasticsearch_perform_advanced_search(
+      $values,
+      15,
+      $retry
+    );
+    if ($results['total'] <= 0 && !empty($values['term']) && !$retry) {
+      $retry = TRUE;
       $values['term'] = strtolower($values['term']);
       $results = tripal_elasticsearch_perform_advanced_search(
         $values,
         15,
-        TRUE
+        $retry
       );
     }
     $hits = $instance->formatHits($results['results']);
@@ -124,6 +146,18 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
     );
     $content .= $results['pager'];
 
+    if ($results['pages'] == $results['page'] && !$retry) {
+      $with_retry = tripal_elasticsearch_perform_advanced_search(
+        $values,
+        15,
+        TRUE
+      );
+
+      if ($with_retry['total'] > $results['total']) {
+        $content = tripal_elasticsearch_advanced_search_retry_message();
+      }
+    }
+
     return $content;
   } catch (Exception $exception) {
     watchdog(
@@ -139,7 +173,39 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
 }
 
 /**
- * @param $values
+ * Create a retry message.
+ *
+ * @return string
+ */
+function tripal_elasticsearch_advanced_search_retry_message() {
+  $elements = [
+    [
+      '#type' => 'markup',
+      '#markup' => t(
+        '<div><i>Only most relevant results have been included</i></div>'
+      ),
+    ],
+    [
+      '#type' => 'markup',
+      '#markup' => t(
+        '<div><i>Would you like to include other results?</i></div>'
+      ),
+    ],
+    [
+      '#type' => 'button',
+      '#value' => 'Include More Results',
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+    ],
+  ];
+
+  return drupal_render($elements);
+}
+
+/**
+ * @param array $values
+ * @param int $per_page
+ * @param bool $retry
  *
  * @return array
  * @throws \Exception

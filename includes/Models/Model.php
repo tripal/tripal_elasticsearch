@@ -162,6 +162,8 @@ class Model{
       $this->getIndexType(),
       $id
     );
+
+    return $record;
   }
 
   /**
@@ -359,6 +361,8 @@ class Model{
   }
 
   /**
+   * Perform the search.
+   *
    * @return array
    * @throws \Exception
    */
@@ -370,7 +374,7 @@ class Model{
   }
 
   /**
-   * Paginate the results.
+   * Perform the search with pagination.
    *
    * @param int $per_page
    *
@@ -379,12 +383,14 @@ class Model{
    */
   public function paginate($per_page = 10) {
     $start = microtime(TRUE);
-    $results = $this->search();
-    $total = $results['hits']['total'];
+    $total = $this->count();
     $current_page = pager_default_initialize($total, $per_page);
+    $this->builder->range($current_page * $per_page, $per_page);
+    $results = $this->search();
+
     return [
       'results' => $results,
-      'total' => $total,
+      'total' => (int) $total,
       'page' => $current_page + 1,
       'pages' => ceil($total / $per_page),
       'pager' => theme('pager', ['quantity', $total]),

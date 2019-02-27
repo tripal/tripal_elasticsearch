@@ -210,7 +210,7 @@ class SimpleQueryBuilder extends BuilderContract{
     }
 
     // Set the highlighted field
-    if ($this->highlight) {
+    if ($this->highlight && $with_range) {
       $params['body']['highlight'] = [
         'fields' => $this->highlight,
       ];

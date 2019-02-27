@@ -38,6 +38,19 @@ class SimpleQueryClause extends BuilderContract{
   public function retry($retry) {
     $this->retry = $retry;
 
+    if ($retry) {
+      $queries = [];
+      foreach ($this->queries as $query) {
+        if (isset($query['multi_match']) && !isset($query['multi_match']['fuzziness'])) {
+          $query['multi_match']['fuzziness'] = 'AUTO';
+        }
+
+        $queries[] = $query;
+      }
+
+      $this->queries = $queries;
+    }
+
     return $this;
   }
 
@@ -86,7 +99,7 @@ class SimpleQueryClause extends BuilderContract{
     ];
 
     if ($this->retry) {
-      $query['fuzziness'] = 'AUTO';
+      $query['multi_match']['fuzziness'] = 'AUTO';
     }
 
     return $query;
