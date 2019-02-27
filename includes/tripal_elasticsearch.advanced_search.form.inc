@@ -125,7 +125,7 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
 
     $hits = $instance->formatHits($results['results']);
 
-    if (count($hits) === 0) {
+    if ($results['total'] === 0) {
       $content = theme(
         'elasticsearch_tips',
         [
@@ -161,7 +161,7 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
       );
 
       if ($with_retry['total'] > $results['total']) {
-        $content = tripal_elasticsearch_advanced_search_retry_message();
+        $content .= tripal_elasticsearch_advanced_search_retry_message();
       }
     }
 
