@@ -14,16 +14,20 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
     $bundles = [];
   }
 
+  $form_vals = $form_state['values'] ?? [];
+
+  $values = [
+    'term' => trim($_GET['term'] ?? $form_vals['term'] ?? ''),
+    'category' => $_GET['category'] ?? $form_vals['category'] ?? '',
+    'field' => $_GET['field'] ?? $form_vals['field'] ?? '',
+  ];
+
   $helper = new \ES\Common\BundleHelper();
 
   $form['wrapper'] = [
-    '#prefix' => '<div id="advanced_search_wrapper" class="container-inline">',
+    '#prefix' => '<div id="advanced_search_wrapper">',
     '#suffix' => '</div>',
   ];
-
-  $category = trim(
-    $_GET['category'] ?? $form_state['values']['category'] ?? ''
-  );
 
   $form['wrapper']['category'] = [
     '#type' => 'select',
@@ -32,11 +36,11 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
       'callback' => 'tripal_elasticsearch_advanced_search_form_callback',
       'wrapper' => 'advanced_search_wrapper',
     ],
-    '#default_value' => $category,
+    '#default_value' => $values['category'],
   ];
 
-  if (!empty($category)) {
-    $fields = $helper->getFieldsByBundle($helper->getBundleByName($category));
+  if (!empty($values['category'])) {
+    $fields = $helper->getFieldsByBundle($helper->getBundleByName($values['category']));
     $field_options = [
       '' => 'Any Field',
     ];
@@ -48,13 +52,13 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
     $form['wrapper']['field'] = [
       '#type' => 'select',
       '#options' => $field_options,
-      '#default_value' => trim($_GET['field'] ?? ''),
+      '#default_value' => $values['field'],
     ];
   }
 
   $form['wrapper']['term'] = [
     '#type' => 'textfield',
-    '#default_value' => $_GET['term'] ?? '',
+    '#default_value' => $values['term'],
   ];
 
   $form['wrapper']['submit'] = [
@@ -64,11 +68,9 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
 
   $form['#method'] = 'GET';
 
-  //if (isset($_GET['term']) && !empty($_GET['term'])) {
   $form['wrapper']['results'] = [
-    '#markup' => tripal_elasticsearch_advanced_search_results($_GET),
+    '#markup' => tripal_elasticsearch_advanced_search_results($values),
   ];
-  //}
 
   return $form;
 }
@@ -86,7 +88,7 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
   try {
     $instance = new \ES\Common\Instance();
     $results = tripal_elasticsearch_perform_advanced_search($values, 15);
-    if($results['total'] == 0 && !empty($values['term'])) {
+    if ($results['total'] == 0 && !empty($values['term'])) {
       $values['term'] = strtolower($values['term']);
       $results = tripal_elasticsearch_perform_advanced_search($values, 15);
     }
@@ -101,13 +103,19 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
       );
     }
 
-    $content = theme('elasticsearch_results_header', [
-      'page' => $results['page'],
-      'total' => $results['total'],
-      'pages' => $results['pages'],
-      'time' => $results['time']
-    ]);
-    $content .= tripal_elasticsearch_get_website_search_result_table($hits, false);
+    $content = theme(
+      'elasticsearch_results_header',
+      [
+        'page' => $results['page'],
+        'total' => $results['total'],
+        'pages' => $results['pages'],
+        'time' => $results['time'],
+      ]
+    );
+    $content .= tripal_elasticsearch_get_website_search_result_table(
+      $hits,
+      FALSE
+    );
     $content .= $results['pager'];
 
     return $content;
