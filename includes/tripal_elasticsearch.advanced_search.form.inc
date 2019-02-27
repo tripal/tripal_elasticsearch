@@ -224,8 +224,16 @@ function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL,
     $fields = ["content.{$_GET['field']}"];
   }
 
+  $instance = new \ES\Common\Instance();
+  $index = 'entities';
+  $category_field = ['bundle_label'];
+  if ($instance->hasIndex('website')) {
+    $index .= ',website';
+    $category_field[] = ['type'];
+  }
   $model = new \ES\Models\Model();
-  $model->setIndexName('entities');
+
+  $model->setIndexName($index);
 
   if (!empty($values['term'])) {
     $model->where($fields, trim($values['term']));
@@ -233,7 +241,7 @@ function tripal_elasticsearch_perform_advanced_search($values, $per_page = NULL,
 
   $category = trim($values['category'] ?? '');
   if (!empty($category)) {
-    $model->where('bundle_label', "\"$category\"");
+    $model->where($category_field, "\"$category\"");
   }
 
   $model->highlight(['content.*', 'title']);
