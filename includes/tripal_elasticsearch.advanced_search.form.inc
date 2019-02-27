@@ -153,7 +153,7 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
 
     // If we are in the last page and did not yet attempt a retry, check to see
     // if a retry would produce more results and inform the user of that option
-    if ($results['pages'] == $results['page'] && !$retry) {
+    if ($results['pages'] == $results['page'] && !$retry && !empty($values['term'])) {
       $with_retry = tripal_elasticsearch_perform_advanced_search(
         $values,
         15,
