@@ -14,12 +14,12 @@
 function tripal_elasticsearch_api_v1_status() {
   try {
     $params['v'] = TRUE;
-    $es          = new \ES\Common\Instance();
-    $health      = current($es->client->cat()->health($params));
+    $es = new \ES\Common\Instance();
+    $health = current($es->client->cat()->health($params));
   } catch (Exception $exception) {
     return \ES\Common\Response::error(
       [
-        'status'  => 'Inactive',
+        'status' => 'Inactive',
         'healthy' => FALSE,
       ]
     );
@@ -28,7 +28,7 @@ function tripal_elasticsearch_api_v1_status() {
   if (empty($health)) {
     return \ES\Common\Response::error(
       [
-        'status'  => 'Inactive',
+        'status' => 'Inactive',
         'healthy' => FALSE,
       ]
     );
@@ -36,7 +36,7 @@ function tripal_elasticsearch_api_v1_status() {
 
   return \ES\Common\Response::success(
     [
-      'status'  => 'Active',
+      'status' => 'Active',
       'healthy' => TRUE,
     ]
   );
@@ -78,7 +78,10 @@ function tripal_elasticsearch_api_v1_remote_status($remote_id) {
   try {
     $response = \ES\Common\Request::get($url);
   } catch (Exception $exception) {
-    return \ES\Common\Response::error(['server' => $exception->getMessage()], 500);
+    return \ES\Common\Response::error(
+      ['server' => $exception->getMessage()],
+      500
+    );
   }
 
   return \ES\Common\Response::success($response->data);
@@ -95,7 +98,9 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
   $remote_host_id = abs(intval(trim($remote_host_id)));
 
   if (!isset($_GET['terms'])) {
-    return \ES\Common\Response::error(['terms' => ['Please provide search terms']]);
+    return \ES\Common\Response::error(
+      ['terms' => ['Please provide search terms']]
+    );
   }
 
   $size = 0;
@@ -105,37 +110,43 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
 
   if ($remote_host_id === 0) {
     $response = tripal_elasticsearch_api_v1_local_search(FALSE);
-    $host     = tripal_elasticsearch_get_local_server_entry();
+    $host = tripal_elasticsearch_get_local_server_entry();
   }
   else {
     $host = db_query(
       'SELECT * FROM {tripal_elasticsearch_servers} WHERE id=:id',
       [':id' => $remote_host_id]
     )->fetchObject();
-    $url  = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
+    $url = rtrim(trim($host->url), '/') . '/elasticsearch/api/v1/local-search';
 
     try {
       $response = \ES\Common\Request::get(
-        $url, [
-          'terms'    => $_GET['terms'],
+        $url,
+        [
+          'terms' => $_GET['terms'],
           'category' => isset($_GET['category']) ? $_GET['category'] : '',
-          'size'     => $size,
+          'size' => $size,
         ]
       );
     } catch (Exception $exception) {
-      return \ES\Common\Response::error(['server' => $exception->getMessage()], 500);
+      return \ES\Common\Response::error(
+        ['server' => $exception->getMessage()],
+        500
+      );
     }
   }
 
   $markup = tripal_elasticsearch_get_website_search_result_table(
-    $response->data->results, FALSE, $host->url
+    $response->data->results,
+    FALSE,
+    $host->url
   );
 
   // Render results into fields and send them back
   return \ES\Common\Response::success(
     [
-      'count'  => $response->data->count,
-      'url'    => $response->data->url,
+      'count' => $response->data->count,
+      'url' => $response->data->url,
       'markup' => $markup,
     ]
   );
@@ -146,7 +157,7 @@ function tripal_elasticsearch_api_v1_search($remote_host_id) {
  * This method is normally called by other sites looking for
  * results from our site.
  *
- * @param bool $http  Whether this is an http request or an internal
+ * @param bool $http Whether this is an http request or an internal
  *                    request. (TRUE for http)
  *                    Set this option to FALSE to retrieve an object instead
  *                    of printing a JSON string.
@@ -159,13 +170,14 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   if (!$exposed) {
     return \ES\Common\Response::error(
       '403 Forbidden. The request index is not available
-     for cross site search. Contact the admin to mark the index as public', 403
+     for cross site search. Contact the admin to mark the index as public',
+      403
     );
   }
 
   // Validate the request
-  $terms    = isset($_GET['terms']) ? $_GET['terms'] : '';
-  $size     = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
+  $terms = isset($_GET['terms']) ? $_GET['terms'] : '';
+  $size = isset($_GET['size']) ? abs(intval($_GET['size'])) : 0;
   $category = isset($_GET['category']) ? $_GET['category'] : NULL;
 
   if ($size !== 0 && $size > 20) {
@@ -181,7 +193,7 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
   }
 
   try {
-    $es      = new \ES\Common\Instance();
+    $es = new \ES\Common\Instance();
     $results = $es->searchWebIndices($terms, $size, $category);
   } catch (Exception $exception) {
     return \ES\Common\Response::error($exception->getMessage(), 500);
@@ -189,18 +201,23 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
 
   return \ES\Common\Response::success(
     array_merge(
-      $results, [
+      $results,
+      [
         'url' => url(
-          rtrim($base_url, '/') . '/tripal_elasticsearch/search_website/'
-          . $category, [
+          rtrim(
+            $base_url,
+            '/'
+          ) . '/tripal_elasticsearch/search_website/' . $category,
+          [
             'query' => [
               'search_box' => $terms,
-              'category'   => $category,
+              'category' => $category,
             ],
           ]
         ),
       ]
-    ), $http
+    ),
+    $http
   );
 }
 
@@ -212,15 +229,14 @@ function tripal_elasticsearch_api_v1_local_search($http = TRUE) {
  *
  * @return array|bool|object
  */
-function tripal_elasticsearch_api_v1_table_index_search(
-  $index_name, $remote_host_id
-) {
+function tripal_elasticsearch_api_v1_table_index_search($index_name, $remote_host_id) {
   $remote_id = abs(intval(trim($remote_host_id)));
 
   if (!tripal_elasticsearch_is_index_exposed($index_name)) {
     return \ES\Common\Response::error(
       '403 Forbidden. The request index is not available
-     for cross site search. Contact the admin to mark the index as public', 403
+     for cross site search. Contact the admin to mark the index as public',
+      403
     );
   }
 
@@ -228,7 +244,8 @@ function tripal_elasticsearch_api_v1_table_index_search(
     $host = tripal_elasticsearch_get_local_server_entry();
     try {
       $results = tripal_elasticsearch_api_v1_table_index_local_search(
-        $index_name, FALSE
+        $index_name,
+        FALSE
       );
     } catch (Exception $exception) {
       return \ES\Common\Response::error(
@@ -252,8 +269,10 @@ function tripal_elasticsearch_api_v1_table_index_search(
       );
     }
 
-    $url = trim($host->url, '/') . '/elasticsearch/api/v1/index-search/'
-      . $index_name;
+    $url = trim(
+        $host->url,
+        '/'
+      ) . '/elasticsearch/api/v1/index-search/' . $index_name;
     try {
       $data = $_GET;
       if (isset($data['q'])) {
@@ -273,13 +292,15 @@ function tripal_elasticsearch_api_v1_table_index_search(
   }
 
   $markup = tripal_elasticsearch_results_formatter(
-    $results->data->results, $index_name, $host
+    $results->data->results,
+    $index_name,
+    $host
   );
   return \ES\Common\Response::success(
     [
-      'url'    => $results->data->url,
+      'url' => $results->data->url,
       'markup' => $markup,
-      'count'  => $results->data->count,
+      'count' => $results->data->count,
     ]
   );
 }
@@ -293,12 +314,10 @@ function tripal_elasticsearch_api_v1_table_index_search(
  * @return array|bool|object
  * @throws \Exception
  */
-function tripal_elasticsearch_api_v1_table_index_local_search(
-  $index_name, $http = TRUE
-) {
+function tripal_elasticsearch_api_v1_table_index_local_search($index_name, $http = TRUE) {
   try {
-    $es                  = new \ES\Common\Instance();
-    $fields              = $es->getIndexFields($index_name);
+    $es = new \ES\Common\Instance();
+    $fields = $es->getIndexFields($index_name);
     $field_content_pairs = [];
 
     foreach ($fields as $field) {
@@ -309,10 +328,10 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
 
     if (function_exists(
       'tripal_elasticsearch_' . $index_name . '_query_mapper'
-    )
-    ) {
+    )) {
       $query = call_user_func(
-        'tripal_elasticsearch_' . $index_name . '_query_mapper', $_GET
+        'tripal_elasticsearch_' . $index_name . '_query_mapper',
+        $_GET
       );
     }
     else {
@@ -335,7 +354,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
     }
   }
 
-  $count          = $results->count();
+  $count = $results->count();
   $search_results = $results->search();
 
   // Get the url for the index
@@ -351,11 +370,14 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
   unset($query['q']);
   return \ES\Common\Response::success(
     [
-      'count'   => $count,
-      'url'     => $url ? url($base_url . '/' . $url, ['query' => $query])
-        : $base_url,
+      'count' => $count,
+      'url' => $url ? url(
+        $base_url . '/' . $url,
+        ['query' => $query]
+      ) : $base_url,
       'results' => $search_results,
-    ], $http
+    ],
+    $http
   );
 }
 
@@ -367,17 +389,14 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
  *
  * @return mixed|string
  */
-function tripal_elasticsearch_results_formatter(
-  $search_results, $index_name = NULL, $host = NULL
-) {
-  if ($index_name !== NULL
-    && function_exists(
+function tripal_elasticsearch_results_formatter($search_results, $index_name = NULL, $host = NULL) {
+  if ($index_name !== NULL && function_exists(
       'tripal_elasticsearch_' . $index_name . '_results_formatter'
-    )
-  ) {
+    )) {
     return call_user_func(
       'tripal_elasticsearch_' . $index_name . '_results_formatter',
-      $search_results, $host
+      $search_results,
+      $host
     );
   }
 
@@ -396,10 +415,12 @@ function tripal_elasticsearch_results_formatter(
   }
 
   return theme(
-    'table', [
-      'header' => isset($search_results[0]) ? array_keys($search_results[0])
-        : [],
-      'rows'   => $rows,
+    'table',
+    [
+      'header' => isset($search_results[0]) ? array_keys(
+        $search_results[0]
+      ) : [],
+      'rows' => $rows,
     ]
   );
 }
@@ -425,7 +446,7 @@ function elasticsearch_recursive_implode($glue, $array) {
 /**
  * Flatten a nested array.
  *
- * @param array $array  The input nested array
+ * @param array $array The input nested array
  * @param array $result The resulting flattened array
  */
 function elasticsearch_recursive_flatten($array, &$result) {
@@ -447,25 +468,15 @@ function elasticsearch_recursive_flatten($array, &$result) {
 /**
  * Get local categories.
  *
- * @return array|bool|object
+ * @return array
  */
 function tripal_elasticsearch_api_v1_categories() {
-  return \ES\Common\Response::success(
-    [
-      [
-        'label' => 'Gene',
-        'table' => 'chado.feature',
-      ],
-      [
-        'label' => 'mRNA',
-        'table' => 'chado.feature',
-      ],
-      [
-        'label' => 'Organism',
-        'table' => 'chado.organism',
-      ],
-    ]
-  );
+  $helper = new \ES\Common\BundleHelper();
+
+  $categories = $helper->getBundlesWithFields();
+  $categories = array_merge($categories, $helper->getNodeTypes());
+
+  return \ES\Common\Response::success($categories);
 }
 
 /**
@@ -479,8 +490,8 @@ function tripal_elasticsearch_api_v1_categories() {
 function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   global $base_url;
 
-  $remotes =
-    db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
+  $remotes = db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll(
+  );
 
   // Add local server as the first remote
   array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
@@ -488,7 +499,7 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   tripal_elasticsearch_load_logos($remotes);
 
   $form['options'] = [
-    '#type'       => 'fieldset',
+    '#type' => 'fieldset',
     '#attributes' => [
       'class' => [
         'container-inline',
@@ -499,46 +510,54 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
 
   $default_category = ['Any Type' => 'Any Type'];
   try {
-    $es         = new \ES\Common\Instance();
+    $es = new \ES\Common\Instance();
     $categories = drupal_map_assoc($es->getAllCategories());
   } catch (Exception $exception) {
     $categories = [];
   }
 
   $form['options']['category'] = [
-    '#type'          => 'select',
-    '#attributes'    => [
+    '#type' => 'select',
+    '#attributes' => [
       'id' => 'tripal-elasticsearch-search-category',
     ],
-    '#options'       => array_merge($default_category, $categories),
+    '#options' => array_merge($default_category, $categories),
     '#default_value' => 'Any Type',
-    '#required'      => TRUE,
+    '#required' => TRUE,
   ];
 
   $form['options']['search_term'] = [
-    '#type'       => 'textfield',
-    '#size'       => '50',
+    '#type' => 'textfield',
+    '#size' => '50',
     '#attributes' => [
       'placeholder' => t('E,g. Fraxinus Excelsior mRNA'),
-      'id'          => 'tripal-elasticsearch-search-field',
+      'id' => 'tripal-elasticsearch-search-field',
     ],
-    '#required'   => TRUE,
+    '#required' => TRUE,
   ];
 
   $form['options']['search_button'] = [
-    '#type'       => 'submit',
-    '#value'      => t('Search'),
+    '#type' => 'submit',
+    '#value' => t('Search'),
     '#attributes' => [
       'id' => 'tripal-elasticsearch-search-button',
     ],
   ];
+  try {
+    $logos_table = tripal_elasticsearch_make_logos_table($remotes);
 
-  $logos_table = tripal_elasticsearch_make_logos_table($remotes);
-
-  $form['results_block'] = [
-    '#type'   => 'markup',
-    '#markup' => '<div id="tripal-elasticsearch-results-block">'.$logos_table.'</div>',
-  ];
+    $form['results_block'] = [
+      '#type' => 'markup',
+      '#markup' => '<div id="tripal-elasticsearch-results-block">' . $logos_table . '</div>',
+    ];
+  } catch (Exception $exception) {
+    watchdog(
+      'tripal_elasticsearch',
+      $exception->getMessage(),
+      [],
+      WATCHDOG_ERROR
+    );
+  }
 
   $form['#atached']['js'][] = [
     'data' => drupal_add_js(
@@ -548,15 +567,19 @@ function tripal_elasticsearch_cross_site_search_form($form, &$form_state) {
   ];
 
   drupal_add_js(
-    drupal_get_path('module', 'tripal_elasticsearch')
-    . '/js/tripal_elasticsearch.js'
+    drupal_get_path(
+      'module',
+      'tripal_elasticsearch'
+    ) . '/js/tripal_elasticsearch.js'
   );
+
   drupal_add_js(
     [
       'remotes' => $remotes,
-      'action'  => 'setupSearchPage',
-      'base'    => $base_url,
-    ], 'setting'
+      'action' => 'setupSearchPage',
+      'base' => $base_url,
+    ],
+    'setting'
   );
 
   return $form;
@@ -571,17 +594,17 @@ function tripal_elasticsearch_get_local_server_entry() {
   global $base_url;
 
   return (object) [
-    'id'          => 0,
-    'label'       => variable_get('site_name', 'Drupal'),
+    'id' => 0,
+    'label' => variable_get('site_name', 'Drupal'),
     'description' => '',
-    'url'         => $base_url,
+    'url' => $base_url,
   ];
 }
 
 /**
  * Checks if an index is exposed.
  *
- * @param $index_name
+ * @param string $index_name The name of index.
  *
  * @return bool
  */
@@ -605,6 +628,11 @@ function tripal_elasticsearch_is_index_exposed($index_name) {
   return $exposed;
 }
 
+/**
+ * Loads and attaches logos to the remote sites.
+ *
+ * @param array $remotes The list of remote sites.
+ */
 function tripal_elasticsearch_load_logos(array &$remotes) {
   foreach ($remotes as $remote) {
     if ($remote->id === 0) {
@@ -612,29 +640,42 @@ function tripal_elasticsearch_load_logos(array &$remotes) {
       continue;
     }
 
-    $remote->logo_url =
-      $remote->logo ? file_create_url(file_load($remote->logo)->uri) : '';
+    $remote->logo_url = $remote->logo ? file_create_url(
+      file_load($remote->logo)->uri
+    ) : '';
   }
 }
 
+/**
+ * Get a table of logos.
+ *
+ * @param array $remotes A list of registered remote sites.
+ *
+ * @return string
+ *    The table.
+ * @throws \Exception
+ */
 function tripal_elasticsearch_make_logos_table($remotes) {
   $header = ['Logo', 'Database'];
-  $rows   = [];
+  $rows = [];
 
   foreach ($remotes as $remote) {
     $img = '';
     if (!empty($remote->logo_url)) {
-      $img = '<img src="' . $remote->logo_url
-        . '" style="width:auto; height: 50px"/>';
+      $img = '<img src="' . $remote->logo_url . '" style="width:auto; height: 50px"/>';
     }
 
-    $rows[] = [$img, l($remote->label, !empty($remote->url) ? $remote->url : '<front>')];
+    $rows[] = [
+      $img,
+      l($remote->label, !empty($remote->url) ? $remote->url : '<front>'),
+    ];
   }
 
   return '<h4>Available Databases</h4>' . theme(
-      'table', [
+      'table',
+      [
         'header' => $header,
-        'rows'   => $rows,
+        'rows' => $rows,
       ]
     );
 }

@@ -135,4 +135,52 @@ class BundleHelper{
 
     return $fields;
   }
+
+  /**
+   * Gets node types in the same format as bundles.
+   *
+   * @return array
+   *    A list of node types.
+   */
+  public function getNodeTypes() {
+    $node_types = db_select('node_type', 'nt')
+      ->fields('nt', ['type', 'name'])
+      ->execute()
+      ->fetchAll();
+
+    $categories = [];
+
+    foreach ($node_types as $node_type) {
+      $categories[] = [
+        'name' => $node_type->type,
+        'label' => $node_type->name,
+        'type' => 'node',
+        'term_id' => NULL,
+        'cv_term' => NULL,
+        'accession' => NULL,
+        'fields' => [],
+      ];
+    }
+
+    return $categories;
+  }
+
+  /**
+   * Get a list of bundles and attach fields.
+   *
+   * @return array
+   *   A list of bundles with fields attached.
+   */
+  public function getBundlesWithFields() {
+    $bundles = $this->getBundles();
+
+    $categories = [];
+    foreach ($bundles as $bundle) {
+      $fields = $this->getFieldsByBundle($bundle);
+      $bundle->fields = $fields;
+      $categories[] = $bundle;
+    }
+
+    return $categories;
+  }
 }
