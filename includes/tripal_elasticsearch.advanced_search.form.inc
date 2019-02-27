@@ -70,8 +70,6 @@ function tripal_elasticsearch_advanced_search_form($form, &$form_state) {
 
   $form['#method'] = 'GET';
 
-  tripal_elasticsearch_configure_term_session();
-
   $form['wrapper']['results'] = [
     '#markup' => tripal_elasticsearch_advanced_search_results($values),
   ];
@@ -96,8 +94,11 @@ function tripal_elasticsearch_configure_term_session() {
  * @param array $values
  *
  * @return string
+ * @depends tripal_elasticsearch_configure_term_session()
  */
 function tripal_elasticsearch_advanced_search_results(array $values) {
+  tripal_elasticsearch_configure_term_session();
+
   if (empty($values['category']) && empty($values['term'])) {
     return '';
   }
@@ -106,6 +107,11 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
 
   try {
     $instance = new \ES\Common\Instance();
+
+    if($retry) {
+      $values['term'] = $_SESSION['es_term'];
+    }
+
     $results = tripal_elasticsearch_perform_advanced_search(
       $values,
       15,
@@ -114,13 +120,18 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
 
     if ($results['total'] <= 0 && !empty($values['term']) && !$retry) {
       $retry = TRUE;
-      $_SESSION['es_term'] = $values['term'];
       $values['term'] = strtolower($values['term']);
+      $time = $results['time'];
       $results = tripal_elasticsearch_perform_advanced_search(
         $values,
         15,
         $retry
       );
+
+      if ($results['total'] > 0) {
+        $_SESSION['es_term'] = $values['term'];
+      }
+      $results['time'] += $time;
     }
 
     $hits = $instance->formatHits($results['results']);
