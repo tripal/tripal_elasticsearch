@@ -108,7 +108,7 @@ function tripal_elasticsearch_advanced_search_results(array $values) {
   try {
     $instance = new \ES\Common\Instance();
 
-    if($retry) {
+    if ($retry) {
       $values['term'] = $_SESSION['es_term'];
     }
 

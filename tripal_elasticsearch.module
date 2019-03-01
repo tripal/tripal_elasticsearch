@@ -939,7 +939,7 @@ function tripal_elasticsearch_node_update($node) {
     return;
   }
 
-  $job = new NodesIndexJob($node->nid);
+  $job = new \ES\Jobs\NodesIndexJob($node->nid);
   $job->dispatch();
 }
 
