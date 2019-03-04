@@ -1018,7 +1018,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
 
   // the entities job will verify if the record already exists or if it should
   // create a new entry for it
-  $job = new EntitiesIndexJob($entity->bundle, $entity->id);
+  $job = new \ES\Jobs\EntitiesIndexJob($entity->bundle, $entity->id);
   $job->dispatch();
 }
 
