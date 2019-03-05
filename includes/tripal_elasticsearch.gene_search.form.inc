@@ -63,8 +63,10 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
         'id' => 'tripal-elasticsearch-search-category',
         'style' => 'max-width: 250px;',
       ],
-      '#options' => array_merge($default_organism,
-        drupal_map_assoc($organisms)),
+      '#options' => array_merge(
+        $default_organism,
+        drupal_map_assoc($organisms)
+      ),
       '#default_value' => isset($_GET['organism']) ? $_GET['organism'] : '',
       '#required' => TRUE,
     ];
@@ -96,22 +98,39 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
       '#markup' => '<div id="tripal-elasticsearch-results-block"></div>',
     ];
 
-    drupal_add_js(drupal_get_path('module',
-        'tripal_elasticsearch') . '/js/axios.min.js');
-    $remotes = db_query('SELECT * FROM {tripal_elasticsearch_servers}')->fetchAll();
+    drupal_add_js(
+      drupal_get_path(
+        'module',
+        'tripal_elasticsearch'
+      ) . '/js/axios.min.js'
+    );
+    $remotes = db_query(
+      'SELECT * FROM {tripal_elasticsearch_servers}'
+    )->fetchAll();
     // Add local server as the first remote
     array_unshift($remotes, tripal_elasticsearch_get_local_server_entry());
-    drupal_add_js([
-      'remotes' => $remotes,
-      'action' => 'setupTableIndexPage',
-      'index' => 'gene_search_index',
-      'base' => $base_url,
-    ], 'setting');
-    drupal_add_js(drupal_get_path('module',
-        'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
+    drupal_add_js(
+      [
+        'remotes' => $remotes,
+        'action' => 'setupTableIndexPage',
+        'index' => 'gene_search_index',
+        'base' => $base_url,
+      ],
+      'setting'
+    );
+    drupal_add_js(
+      drupal_get_path(
+        'module',
+        'tripal_elasticsearch'
+      ) . '/js/tripal_elasticsearch.js'
+    );
   }
   else {
-    if (!empty($_GET['search_term']) || !empty($_GET['organism'])) {
+    if (!empty($_GET['op']) || !empty($_GET['search_term']) || !empty($_GET['organism'])) {
+      if (empty($_GET['search_term'])) {
+        $_GET['search_term'] = '*';
+      }
+
       $form['results'] = [
         '#type' => 'markup',
         '#markup' => tripal_elasticsearch_gene_search_index_results(TRUE),
@@ -133,8 +152,12 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
  */
 function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   $queries = [];
-  $organism = isset($arguments['organism']) ? trim($arguments['organism']) : NULL;
-  $term = isset($arguments['search_term']) ? trim($arguments['search_term']) : NULL;
+  $organism = isset($arguments['organism']) ? trim(
+    $arguments['organism']
+  ) : NULL;
+  $term = isset($arguments['search_term']) ? trim(
+    $arguments['search_term']
+  ) : NULL;
 
   if (!empty($organism)) {
     $organism_array = explode(' ', $organism);
@@ -206,25 +229,36 @@ function tripal_elasticsearch_gene_search_index_results_formatter($search_result
       $url = '<div>' . l($result['uniquename'], $result['url']) . '</div>';
     }
 
-    if (isset($result['related_features']) && count($result['related_features'])) {
+    if (isset($result['related_features']) && count(
+        $result['related_features']
+      )) {
       $url .= '<div>Relationships</div>';
-      $url .= '<div class="es-squish text-muted">' . elasticsearch_recursive_implode('<br>',
-          $result['related_features']) . '</div>';
+      $url .= '<div class="es-squish text-muted">' . elasticsearch_recursive_implode(
+          '<br>',
+          $result['related_features']
+        ) . '</div>';
     }
 
     $rows[] = [
       $url,
-      '<div class="es-squish">' . elasticsearch_recursive_implode('<br>',
-        $result['blast_hit_descriptions']) . '</div>',
-      '<div class="es-squish">' . elasticsearch_recursive_implode('<br>',
-        $result['annotations']) . '</div>',
+      '<div class="es-squish">' . elasticsearch_recursive_implode(
+        '<br>',
+        $result['blast_hit_descriptions']
+      ) . '</div>',
+      '<div class="es-squish">' . elasticsearch_recursive_implode(
+        '<br>',
+        $result['annotations']
+      ) . '</div>',
     ];
   }
 
-  return theme('table', [
-    'header' => $header,
-    'rows' => $rows,
-  ]);
+  return theme(
+    'table',
+    [
+      'header' => $header,
+      'rows' => $rows,
+    ]
+  );
 }
 
 /**
@@ -240,11 +274,17 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   try {
     $es = new ESInstance();
   } catch (Exception $exception) {
-    drupal_set_message('The search service is currently unavailable. Please try again later.',
-      'error');
-    watchdog('tripal_elasticsearch',
-      'Feature/Gene search form resulted in this error: ' . $exception->getMessage(),
-      [], WATCHDOG_ERROR);
+    drupal_set_message(
+      'The search service is currently unavailable. Please try again later.',
+      'error'
+    );
+    watchdog(
+      'tripal_elasticsearch',
+      'Feature/Gene search form resulted in this error: ' . $exception->getMessage(
+      ),
+      [],
+      WATCHDOG_ERROR
+    );
     return '';
   }
 
@@ -254,15 +294,23 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
     $results = $es->setTableSearchParams('gene_search_index', '', $query)
       ->paginate(15);
   } catch (Exception $exception) {
-    drupal_set_message('The search service is currently unavailable. Please try again later.',
-      'error');
-    watchdog('tripal_elasticsearch',
-      'Feature/Gene search form resulted in this error: ' . $exception->getMessage(),
-      [], WATCHDOG_ERROR);
+    drupal_set_message(
+      'The search service is currently unavailable. Please try again later.',
+      'error'
+    );
+    watchdog(
+      'tripal_elasticsearch',
+      'Feature/Gene search form resulted in this error: ' . $exception->getMessage(
+      ),
+      [],
+      WATCHDOG_ERROR
+    );
     return '';
   }
 
-  $formatted = tripal_elasticsearch_gene_search_index_results_formatter($results['results']);
+  $formatted = tripal_elasticsearch_gene_search_index_results_formatter(
+    $results['results']
+  );
 
   $query = $_GET;
   if (isset($query['q'])) {
@@ -276,17 +324,21 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
 
   if ($display_download && intval($results['total']) > 0) {
     $content .= '<p>';
-    $content .= l('Download results as FASTA', 'elasticsearch/gene_download', [
-      'query' => [
-        'organism' => isset($_GET['organism']) ? $_GET['organism'] : '',
-        'search_term' => $_GET['search_term'],
-        'from' => urlencode($_GET['q']),
-      ],
-      'attributes' => [
-        'target' => '_blank',
-        'class' => ['btn', 'btn-info'],
-      ],
-    ]);
+    $content .= l(
+      'Download results as FASTA',
+      'elasticsearch/gene_download',
+      [
+        'query' => [
+          'organism' => isset($_GET['organism']) ? $_GET['organism'] : '',
+          'search_term' => $_GET['search_term'],
+          'from' => urlencode($_GET['q']),
+        ],
+        'attributes' => [
+          'target' => '_blank',
+          'class' => ['btn', 'btn-info'],
+        ],
+      ]
+    );
     $content .= '</p>';
   }
 
@@ -299,8 +351,12 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   }
 
   // Add the necessary JS
-  drupal_add_js(drupal_get_path('module',
-      'tripal_elasticsearch') . '/js/table_search_results_datatable.js');
+  drupal_add_js(
+    drupal_get_path(
+      'module',
+      'tripal_elasticsearch'
+    ) . '/js/table_search_results_datatable.js'
+  );
 
   return $content;
 }
@@ -320,8 +376,10 @@ function tripal_elasticsearch_gene_search_download() {
   try {
     $es = new ESInstance();
   } catch (Exception $exception) {
-    drupal_set_message('Error occurred while generating records for download. Please try again later.',
-      'error');
+    drupal_set_message(
+      'Error occurred while generating records for download. Please try again later.',
+      'error'
+    );
     header('Location: /' . urldecode($_GET['from']));
     return;
   }
@@ -332,33 +390,47 @@ function tripal_elasticsearch_gene_search_download() {
 
   // Set the mime type
   drupal_add_http_header('Content-Type', 'text/plain');
-  drupal_add_http_header('Content-Disposition',
-    'attachment; filename="gene_search_results.fasta"');
+  drupal_add_http_header(
+    'Content-Disposition',
+    'attachment; filename="gene_search_results.fasta"'
+  );
 
   // Handle IE downloads
   drupal_add_http_header('Pragma', 'public');
-  drupal_add_http_header('Cache-Control',
-    'must-revalidate, post-check=0, pre-check=0');
+  drupal_add_http_header(
+    'Cache-Control',
+    'must-revalidate, post-check=0, pre-check=0'
+  );
 
   try {
     // Stop at 1 million
-    $count = min($es->setTableSearchParams('gene_search_index', '', $query)
-      ->count(), 1000000);
+    $count = min(
+      $es->setTableSearchParams('gene_search_index', '', $query)->count(),
+      1000000
+    );
 
     $i = 0;
     $chunk = 500;
     while ($i < $count) {
-      $records = $es->setTableSearchParams('gene_search_index', '', $query, [
-        $i,
-        $chunk,
-      ])->search();
+      $records = $es->setTableSearchParams(
+        'gene_search_index',
+        '',
+        $query,
+        [
+          $i,
+          $chunk,
+        ]
+      )->search();
 
       foreach ($records as $record) {
-        $line = tripal_elasticsearch_put_fasta_line($record['uniquename'],
-          $record['sequence'], [
+        $line = tripal_elasticsearch_put_fasta_line(
+          $record['uniquename'],
+          $record['sequence'],
+          [
             'Sequence Length' => $record['sequence_length'],
             'Type' => $record['type'],
-          ]);
+          ]
+        );
 
         if ($line) {
           print $line;
@@ -418,10 +490,12 @@ function tripal_elasticsearch_get_gene_search_organisms() {
     foreach ($organism_list as $organism) {
       $name = "{$organism->genus} {$organism->species}";
 
-      $query = tripal_elasticsearch_gene_search_index_query_mapper([
-        'organism' => $name,
-        'search_term' => '*',
-      ]);
+      $query = tripal_elasticsearch_gene_search_index_query_mapper(
+        [
+          'organism' => $name,
+          'search_term' => '*',
+        ]
+      );
 
       // TODO: CACHE THE RESULTS OF THIS QUERY
       $count = $es->setTableSearchParams('gene_search_index', '', $query)
@@ -438,10 +512,17 @@ function tripal_elasticsearch_get_gene_search_organisms() {
       $organisms[] = $name;
     }
   } catch (Exception $exception) {
-    drupal_set_message('Unable to get list of available organisms.
-                        Please contact us to resolve the problem', 'error');
-    watchdog('tripal_elasticsearch', $exception->getMessage(), [],
-      WATCHDOG_ERROR);
+    drupal_set_message(
+      'Unable to get list of available organisms.
+                        Please contact us to resolve the problem',
+      'error'
+    );
+    watchdog(
+      'tripal_elasticsearch',
+      $exception->getMessage(),
+      [],
+      WATCHDOG_ERROR
+    );
     return [];
   }
 
