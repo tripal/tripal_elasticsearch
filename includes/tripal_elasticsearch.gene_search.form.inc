@@ -133,8 +133,8 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
  */
 function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
   $queries = [];
-  $organism = isset($arguments['organism']) ? $arguments['organism'] : NULL;
-  $term = isset($arguments['search_term']) ? $arguments['search_term'] : NULL;
+  $organism = isset($arguments['organism']) ? trim($arguments['organism']) : NULL;
+  $term = isset($arguments['search_term']) ? trim($arguments['search_term']) : NULL;
 
   if (!empty($organism)) {
     $organism_array = explode(' ', $organism);
@@ -162,7 +162,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
       ];
     }
     else {
-      $fields = ['_all'];
+      $fields = [];
     }
 
     $queries[] = [
