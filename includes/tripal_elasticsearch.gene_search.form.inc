@@ -111,7 +111,12 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
         'tripal_elasticsearch') . '/js/tripal_elasticsearch.js');
   }
   else {
-    if (!empty($_GET['search_term']) || !empty($_GET['organism'])) {
+    if (!empty($_GET['op'])) {
+
+      if(empty($_GET['search_term'])) {
+        $_GET['search_term'] = '*';
+      }
+
       $form['results'] = [
         '#type' => 'markup',
         '#markup' => tripal_elasticsearch_gene_search_index_results(TRUE),
