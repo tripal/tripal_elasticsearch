@@ -146,7 +146,7 @@ function tripal_elasticsearch_schema() {
     ],
     'primary key' => ['id'],
     'unique keys' => [
-      'index_name_unique_constraint' => 'index_name',
+      'index_name_unique_constraint' => ['index_name'],
     ],
   ];
 
