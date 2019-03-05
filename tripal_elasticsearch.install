@@ -559,6 +559,14 @@ function tripal_elasticsearch_delete_duplicate_indices() {
       continue;
     }
     $visited[$index->index_name] = $index;
+
+    $query = db_update('tripal_elasticsearch');
+    $query->condition('index_name', $index->name);
+    $query->fields([
+      'index_id' => $index->id
+    ]);
+    $query->execute();
+
     $query = db_delete('tripal_elasticsearch_indices');
     $query->condition('index_name', $index->index_name);
     $query->condition('id', $index->id, '!=');
