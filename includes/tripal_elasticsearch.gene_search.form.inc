@@ -162,7 +162,7 @@ function tripal_elasticsearch_gene_search_index_query_mapper($arguments) {
       ];
     }
     else {
-      $fields = ['_all'];
+      $fields = [];
     }
 
     $queries[] = [
