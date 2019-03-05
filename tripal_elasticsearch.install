@@ -46,7 +46,9 @@ function tripal_elasticsearch_schema() {
   ];
 
   $schema['tripal_elasticsearch_links'] = [
-    'description' => t('A table for storing data for adding page links to search results'),
+    'description' => t(
+      'A table for storing data for adding page links to search results'
+    ),
     'fields' => [
       'index_name' => [
         'type' => 'varchar',
@@ -68,13 +70,15 @@ function tripal_elasticsearch_schema() {
   ];
 
   $schema['tripal_elasticsearch_servers'] = [
-    'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
+    'description' => t(
+      'Stores URLs and configuration for remote elasticsearch servers.'
+    ),
     'fields' => [
       'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
       'url' => ['type' => 'varchar', 'length' => '255'],
       'label' => ['type' => 'varchar', 'length' => '255'],
       'description' => ['type' => 'text'],
-      'logo' => ['type'=> 'text']
+      'logo' => ['type' => 'text'],
     ],
     'primary key' => ['id'],
   ];
@@ -123,6 +127,29 @@ function tripal_elasticsearch_schema() {
     'primary key' => ['id'],
   ];
 
+  $schema['tripal_elasticsearch_indices'] = [
+    'description' => 'Store elasticsearch indices',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'index_name' => [
+        'type' => 'varchar',
+        'length' => '255',
+      ],
+      'table_name' => [
+        'type' => 'varchar',
+        'length' => '255',
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'index_name_unique_constraint' => ['index_name'],
+    ],
+  ];
+
   return $schema;
 }
 
@@ -167,26 +194,12 @@ function tripal_elasticsearch_install() {
 function tripal_elasticsearch_update_7200() {
   if (!db_table_exists('tripal_elasticsearch_indices')) {
     // Create new table
-    $tripal_elasticsearch_indices = [
-      'description' => 'Store elasticsearch indices',
-      'fields' => [
-        'id' => [
-          'type' => 'serial',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-        ],
-        'index_name' => [
-          'type' => 'varchar',
-          'length' => '255',
-        ],
-        'table_name' => [
-          'type' => 'varchar',
-          'length' => '255',
-        ],
-      ],
-      'primary key' => ['id'],
-    ];
-    db_create_table('tripal_elasticsearch_indices', $tripal_elasticsearch_indices);
+    $schema = tripal_elasticsearch_schema();
+    $tripal_elasticsearch_indices = $schema['tripal_elasticsearch_indices'];
+    db_create_table(
+      'tripal_elasticsearch_indices',
+      $tripal_elasticsearch_indices
+    );
   }
 
   // Add a new column to the old table
@@ -202,12 +215,16 @@ function tripal_elasticsearch_update_7200() {
   }
 
   // Assign the right values to the new id field in tripal_elasticsearch_indices
-  $fields = db_query('SELECT * FROM {tripal_elasticsearch_indices}')->fetchAll();
+  $fields = db_query('SELECT * FROM {tripal_elasticsearch_indices}')->fetchAll(
+  );
   foreach ($fields as $field) {
-    db_query('UPDATE {tripal_elasticsearch} SET index_id=:id WHERE index_name=:index_name', [
-      ':index_name' => $field->index_name,
-      ':id' => $field->id,
-    ]);
+    db_query(
+      'UPDATE {tripal_elasticsearch} SET index_id=:id WHERE index_name=:index_name',
+      [
+        ':index_name' => $field->index_name,
+        ':id' => $field->id,
+      ]
+    );
   }
 }
 
@@ -217,7 +234,6 @@ function tripal_elasticsearch_update_7200() {
  */
 function tripal_elasticsearch_update_7201() {
   if (!db_field_exists('tripal_elasticsearch_indices', 'exposed')) {
-
     $spec = [
       'type' => 'int',
       'size' => 'small',
@@ -268,7 +284,10 @@ function tripal_elasticsearch_update_7202() {
       ],
     ];
 
-    db_create_table('tripal_elasticsearch_queues', $tripal_elasticsearch_queues);
+    db_create_table(
+      'tripal_elasticsearch_queues',
+      $tripal_elasticsearch_queues
+    );
   }
 }
 
@@ -319,7 +338,9 @@ function tripal_elasticsearch_update_7205() {
 function tripal_elasticsearch_update_7206() {
   if (!db_table_exists('tripal_elasticsearch_servers')) {
     $spec = [
-      'description' => t('Stores URLs and configuration for remote elasticsearch servers.'),
+      'description' => t(
+        'Stores URLs and configuration for remote elasticsearch servers.'
+      ),
       'fields' => [
         'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
         'url' => ['type' => 'varchar', 'length' => '255'],
@@ -399,22 +420,30 @@ function tripal_elasticsearch_update_7210() {
     }
 
     for ($i = 0; $i < $count; $i += 100) {
-      $results = $es->setWebsiteSearchParams('*', 'Blast Database', 'website', 'website', [
-        $i,
-        100,
-      ])->search(FALSE);
+      $results = $es->setWebsiteSearchParams(
+        '*',
+        'Blast Database',
+        'website',
+        'website',
+        [
+          $i,
+          100,
+        ]
+      )->search(FALSE);
       foreach ($results as $result) {
-        $client->deleteByQuery([
-          'index' => 'website',
-          'type' => 'website',
-          'body' => [
-            'query' => [
-              'match' => [
-                'nid' => $result['nid'],
+        $client->deleteByQuery(
+          [
+            'index' => 'website',
+            'type' => 'website',
+            'body' => [
+              'query' => [
+                'match' => [
+                  'nid' => $result['nid'],
+                ],
               ],
             ],
-          ],
-        ]);
+          ]
+        );
       }
     }
 
@@ -427,7 +456,6 @@ function tripal_elasticsearch_update_7210() {
   }
 }
 
-
 /**
  * Remove blastdb content type from website index.
  */
@@ -439,8 +467,7 @@ function tripal_elasticsearch_update_7211() {
       return;
     }
 
-    $count = $es->setWebsiteSearchParams('*', 'blastdb', 'website')
-      ->count();
+    $count = $es->setWebsiteSearchParams('*', 'blastdb', 'website')->count();
     $client = $es->client;
 
     if ($count === 0) {
@@ -449,22 +476,30 @@ function tripal_elasticsearch_update_7211() {
     }
 
     for ($i = 0; $i < $count; $i += 100) {
-      $results = $es->setWebsiteSearchParams('*', 'blastdb', 'website', 'website', [
-        $i,
-        100,
-      ])->search(FALSE);
+      $results = $es->setWebsiteSearchParams(
+        '*',
+        'blastdb',
+        'website',
+        'website',
+        [
+          $i,
+          100,
+        ]
+      )->search(FALSE);
       foreach ($results as $result) {
-        $client->deleteByQuery([
-          'index' => 'website',
-          'type' => 'website',
-          'body' => [
-            'query' => [
-              'match' => [
-                'nid' => $result['nid'],
+        $client->deleteByQuery(
+          [
+            'index' => 'website',
+            'type' => 'website',
+            'body' => [
+              'query' => [
+                'match' => [
+                  'nid' => $result['nid'],
+                ],
               ],
             ],
-          ],
-        ]);
+          ]
+        );
       }
     }
 
@@ -484,7 +519,12 @@ function tripal_elasticsearch_update_7212() {
   try {
     $es = new ESInstance();
     if (in_array('gene_search_index', $es->getIndices())) {
-      $es->putMapping('gene_search_index', 'related_features', 'text', 'chado.feature');
+      $es->putMapping(
+        'gene_search_index',
+        'related_features',
+        'text',
+        'chado.feature'
+      );
     }
   } catch (Exception $exception) {
     // Ignore failure since it's not important. The field gets auto created on
@@ -493,7 +533,6 @@ function tripal_elasticsearch_update_7212() {
   }
 }
 
-
 /**
  * Add logo column to tripal_elasticsearch_servers table
  */
@@ -501,7 +540,47 @@ function tripal_elasticsearch_update_7213() {
   $table = 'tripal_elasticsearch_servers';
   $field = 'logo';
 
-  if(!db_field_exists($table, $field)) {
-    db_add_field($table, $field, ['type'=>'text']);
+  if (!db_field_exists($table, $field)) {
+    db_add_field($table, $field, ['type' => 'text']);
+  }
+}
+
+/**
+ * Remove duplicate indices.
+ */
+function tripal_elasticsearch_delete_duplicate_indices() {
+  $visited = [];
+  $query = db_select('tripal_elasticsearch_indices', 't');
+  $query->fields('t');
+  $query->orderBy('id', 'DESC');
+  $indices = $query->execute()->fetchAll();
+  foreach ($indices as $index) {
+    if (isset($visited[$index->index_name])) {
+      continue;
+    }
+    $visited[$index->index_name] = $index;
+    $query = db_delete('tripal_elasticsearch_indices');
+    $query->condition('index_name', $index->index_name);
+    $query->condition('id', $index->id, '!=');
+    $query->execute();
+  }
+}
+
+/**
+ * Delete duplicate indices and add unique name constraint.
+ */
+function tripal_elasticsearch_update_7214() {
+  tripal_elasticsearch_delete_duplicate_indices();
+
+  try {
+    db_add_unique_key(
+      'tripal_elasticsearch_indices',
+      'index_name_unique_constraint',
+      [
+        'index_name',
+      ]
+    );
+  } catch (Exception $exception) {
+    print $exception->getMessage();
   }
 }
