@@ -11,11 +11,6 @@ use ES\Query\SimpleQueryBuilder;
 class Model{
 
   /**
-   * @var array
-   */
-  protected $attributes = [];
-
-  /**
    * The ES instance.
    *
    * @var \ES\Common\Instance
@@ -84,9 +79,22 @@ class Model{
   }
 
   /**
+   * Whether to retry search.
+   *
+   * @param bool $retry
+   *
+   * @return $this
+   */
+  public function retry($retry = TRUE) {
+    $this->builder->retry($retry);
+
+    return $this;
+  }
+
+  /**
    * Add a where clause.
    *
-   * @param string $field
+   * @param string|array $field
    *   The field.
    * @param string $value
    *   The value.
@@ -103,9 +111,23 @@ class Model{
   }
 
   /**
+   * Highlight certain fields.
+   *
+   * @param string|array $fields A single field name or an array of field names.
+   *
+   * @return $this
+   *    The current object.
+   */
+  public function highlight($fields) {
+    $this->builder->highlight($fields);
+
+    return $this;
+  }
+
+  /**
    * Add an or clause.
    *
-   * @param string $field
+   * @param string|array $field
    *   The field.
    * @param string $value
    *   The value.
@@ -140,6 +162,8 @@ class Model{
       $this->getIndexType(),
       $id
     );
+
+    return $record;
   }
 
   /**
@@ -212,7 +236,7 @@ class Model{
    * @throws \Exception
    */
   public function count() {
-    return (int) $this->instance->client->count($this->builder->build(FALSE));
+    return (int) $this->instance->client->count($this->builder->build(FALSE))['count'];
   }
 
   /**
@@ -337,6 +361,8 @@ class Model{
   }
 
   /**
+   * Perform the search.
+   *
    * @return array
    * @throws \Exception
    */
@@ -344,9 +370,32 @@ class Model{
     $params = $this->builder->build();
     $results = $this->instance->client->search($params);
 
-    $this->builder->reset($this->index);
-
     return $results;
+  }
+
+  /**
+   * Perform the search with pagination.
+   *
+   * @param int $per_page
+   *
+   * @return array
+   * @throws \Exception
+   */
+  public function paginate($per_page = 10) {
+    $start = microtime(TRUE);
+    $total = $this->count();
+    $current_page = pager_default_initialize($total, $per_page);
+    $this->builder->range($current_page * $per_page, $per_page);
+    $results = $this->search();
+
+    return [
+      'results' => $results,
+      'total' => (int) $total,
+      'page' => $current_page + 1,
+      'pages' => ceil($total / $per_page),
+      'pager' => theme('pager', ['quantity', $total]),
+      'time' => microtime(TRUE) - $start,
+    ];
   }
 
   /**
@@ -357,39 +406,5 @@ class Model{
    */
   public function getQuery() {
     return $this->builder->build();
-  }
-
-  /**
-   * Get an attribute.
-   *
-   * @param string $name
-   *   The name of attribute.
-   *
-   * @return mixed
-   *   The value of the attribute if it exists.
-   */
-  public function __get($name) {
-    if (array_key_exists($name, $this->attributes)) {
-      return $this->attributes[$name];
-    }
-
-    if (method_exists(static::class, $name)) {
-      return;
-    }
-
-    return $this->{$name};
-  }
-
-  /**
-   * Check if an attribute isset.
-   *
-   * @param string $name
-   *   The name of the attribute.
-   *
-   * @return bool
-   *   Whether the attribute has been set.
-   */
-  public function __isset($name) {
-    return isset($this->attributes[$name]);
   }
 }

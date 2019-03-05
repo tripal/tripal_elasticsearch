@@ -14,9 +14,10 @@ require 'includes/tripal_elasticsearch.gene_search.form.inc';
 require 'includes/tripal_elasticsearch.tuning.form.inc';
 require 'includes/tripal_elasticsearch.fields.inc';
 require 'includes/tripal_elasticsearch.collections.form.inc';
+require 'includes/tripal_elasticsearch.advanced_search.form.inc';
 
 // Auto discover and include jobs and ES classes.
-//tripal_elasticsearch_auto_discover_classes();
+define('TRIPAL_ELASTICSEARCH_ROOT', __DIR__);
 
 /**
  * Implements hook_init().
@@ -232,9 +233,15 @@ function tripal_elasticsearch_menu() {
     'access callback' => TRUE,
   ];
 
+  $items['tripal_elasticsearch/advanced'] = [
+    'title' => t('Advanced Search'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_elasticsearch_advanced_search_form'],
+    'access arguments' => ['access content']
+  ];
+
   // Page to display table search result.
   $items['tripal_elasticsearch/search_table'] = [
-    'title' => '',
     'page callback' => 'tripal_elasticsearch_table_search_page_callback',
     'access arguments' => ['access content'],
   ];
@@ -373,9 +380,24 @@ function tripal_elasticsearch_theme($existing, $type, $theme, $path) {
       ],
     ],
     'elasticsearch_tips' => [
-      'template' => 'advanced_search',
+      'template' => 'elasticsearch_tips',
       'render element' => 'content',
       'path' => "$path/theme/templates",
+      'variables' => [
+        // A message to display above the tips
+        'message' => ''
+      ]
+    ],
+    'elasticsearch_results_header' => [
+      'template' => 'elasticsearch_results_header',
+      'render element' => 'content',
+      'path' => "$path/theme/templates",
+      'variables' => [
+        // Current page
+        'page' => 1,
+        'total' => 0,
+        'pages' => 1
+      ]
     ],
     'elasticsearch_results' => [
       'template' => 'elasticsearch_results',
@@ -614,7 +636,9 @@ function tripal_elasticsearch_block_view($delta = '') {
   switch ($delta) {
     case 'elasticsearch_website_search_box':
       $block['subject'] = '';
-      $block['content'] = drupal_get_form('tripal_elasticsearch_site_wide_search_form');
+      $block['content'] = drupal_get_form(
+        'tripal_elasticsearch_site_wide_search_form'
+      );
       break;
     case 'website_search_category':
       $block['subject'] = '';
@@ -714,7 +738,9 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
   if (count($results['results'])) {
     $content = tripal_elasticsearch_create_collection_button();
   }
-  $content .= '<p><strong>' . number_format($results['total']) . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
+  $content .= '<p><strong>' . number_format(
+      $results['total']
+    ) . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
   $content .= tripal_elasticsearch_get_website_search_result_table(
     $results['results'],
     FALSE
@@ -913,7 +939,7 @@ function tripal_elasticsearch_node_update($node) {
     return;
   }
 
-  $job = new NodesIndexJob($node->nid);
+  $job = new \ES\Jobs\NodesIndexJob($node->nid);
   $job->dispatch();
 }
 
@@ -992,7 +1018,7 @@ function tripal_elasticsearch_entity_update($entity, $entity_type) {
 
   // the entities job will verify if the record already exists or if it should
   // create a new entry for it
-  $job = new EntitiesIndexJob($entity->bundle, $entity->id);
+  $job = new \ES\Jobs\EntitiesIndexJob($entity->bundle, $entity->id);
   $job->dispatch();
 }
 

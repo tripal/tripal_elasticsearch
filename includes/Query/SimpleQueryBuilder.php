@@ -96,10 +96,12 @@ class SimpleQueryBuilder extends BuilderContract{
   }
 
   /**
+   * Highlight certain fields.
    *
-   * @param string|array $fields
+   * @param string|array $fields A single field name or an array of field names.
    *
-   * @return $this The current object.
+   * @return $this
+   *    The current object.
    */
   public function highlight($fields) {
     if (is_array($fields)) {
@@ -208,7 +210,7 @@ class SimpleQueryBuilder extends BuilderContract{
     }
 
     // Set the highlighted field
-    if ($this->highlight) {
+    if ($this->highlight && $with_range) {
       $params['body']['highlight'] = [
         'fields' => $this->highlight,
       ];
@@ -228,15 +230,15 @@ class SimpleQueryBuilder extends BuilderContract{
   }
 
   /**
-   * @param null $index
+   * Retry searching.
+   *
+   * @param bool $retry Whether to retry or not.
+   *
+   * @return $this
    */
-  public function reset($index = NULL) {
-    $this->from = NULL;
-    $this->query = NULL;
-    $this->size = NULL;
-    $this->type = NULL;
-    if (!is_null($index)) {
-      $this->index = $index;
-    }
+  public function retry($retry = true) {
+    $this->query->retry($retry);
+
+    return $this;
   }
 }

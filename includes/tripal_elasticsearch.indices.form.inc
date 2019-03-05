@@ -887,7 +887,7 @@ function tripal_elasticsearch_create_index(&$values) {
     );
     $field_mapping_types = [
       'nid' => 'integer',
-      'type' => 'text',
+      'type' => 'keyword',
       'title' => 'text',
       'content' => 'text',
     ];
@@ -904,9 +904,9 @@ function tripal_elasticsearch_create_index(&$values) {
     );
     $field_mapping_types = [
       'entity_id' => 'integer',
-      'bundle_label' => 'text',
+      'bundle_label' => 'keyword',
       'title' => 'text',
-      'content' => 'dynamic',
+      'content' => 'object',
     ];
   }
   elseif ($index_type === 'gene_search') {
