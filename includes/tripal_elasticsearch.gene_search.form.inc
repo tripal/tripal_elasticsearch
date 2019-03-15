@@ -43,6 +43,11 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
     ],
   ];
 
+  $form['is_es_gene_form'] = [
+    '#type' => 'hidden',
+    '#value' => 'is_es_gene_form',
+  ];
+
   if ($organism !== NULL) {
     $form['organism'] = [
       '#type' => 'hidden',
@@ -126,15 +131,17 @@ function tripal_elasticsearch_gene_search_form($form, &$form_state, $local = TRU
     );
   }
   else {
-    if (!empty($_GET['op']) || !empty($_GET['search_term']) || !empty($_GET['organism'])) {
-      if (empty($_GET['search_term'])) {
-        $_GET['search_term'] = '*';
-      }
+    if (isset($_GET['is_es_gene_form'])) {
+      if (!empty($_GET['op']) || !empty($_GET['search_term']) || !empty($_GET['organism'])) {
+        if (empty($_GET['search_term'])) {
+          $_GET['search_term'] = '*';
+        }
 
-      $form['results'] = [
-        '#type' => 'markup',
-        '#markup' => tripal_elasticsearch_gene_search_index_results(TRUE),
-      ];
+        $form['results'] = [
+          '#type' => 'markup',
+          '#markup' => tripal_elasticsearch_gene_search_index_results(TRUE),
+        ];
+      }
     }
   }
 
