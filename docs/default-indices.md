@@ -16,6 +16,10 @@ Next, you'll need to activate the `Tripal Elasticsearch website search box` bloc
 Tripal Elasticsearch also provides a default index for Tripal 3 entities. To activate the index, follow the same procedure
 as the website nodes index above, selecting "Entities" from the dropdown list when creating the index.
 
+# Warning!
+
+Before running the indexer, please make sure that your content types have the correct permissions. The indexer is only allowed to access content as an anonymous user. This prevents it from indexing private content that only administrators or authenticated users should be able to access.
+
 ### Create, Update and Delete Pages
 
 Whenever you create a new page, update existing pages or delete pages, indexing jobs will automatically 

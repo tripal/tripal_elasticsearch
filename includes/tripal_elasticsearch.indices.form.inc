@@ -1116,6 +1116,7 @@ function tripal_elasticsearch_update_index($index) {
   drupal_set_message(
     "{$index} updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue."
   );
+
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
