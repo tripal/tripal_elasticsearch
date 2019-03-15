@@ -390,7 +390,7 @@ function tripal_elasticsearch_update_7208() {
  */
 function tripal_elasticsearch_update_7209() {
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
     $es->putMapping('gene_search_index', 'entity_id', 'integer');
     $es->putMapping('gene_search_index', 'node_id', 'integer');
   } catch (Exception $exception) {
@@ -406,7 +406,7 @@ function tripal_elasticsearch_update_7209() {
  */
 function tripal_elasticsearch_update_7210() {
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
     if (in_array('website', $es->getIndices())) {
       return;
     }
@@ -461,7 +461,7 @@ function tripal_elasticsearch_update_7210() {
  */
 function tripal_elasticsearch_update_7211() {
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
 
     if (!in_array('website', $es->getIndices())) {
       return;
@@ -517,7 +517,7 @@ function tripal_elasticsearch_update_7211() {
  */
 function tripal_elasticsearch_update_7212() {
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
     if (in_array('gene_search_index', $es->getIndices())) {
       $es->putMapping(
         'gene_search_index',

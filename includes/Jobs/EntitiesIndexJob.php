@@ -1,6 +1,10 @@
 <?php
 
-class EntitiesIndexJob extends ESJob {
+namespace ES\Jobs;
+
+use ES\Common\Instance;
+
+class EntitiesIndexJob extends Job{
 
   /**
    * Job type to show in progress report.
@@ -55,7 +59,7 @@ class EntitiesIndexJob extends ESJob {
   /**
    * Elasticsearch instance.
    *
-   * @var \ESInstance
+   * @var \ES\Common\Instance
    */
   protected $es;
 
@@ -69,7 +73,7 @@ class EntitiesIndexJob extends ESJob {
   /**
    * Constructor.
    *
-   * @param int $bundle_type Which bundle type to process
+   * @param int $bundle Which bundle type to process
    * @param int $entity_id Provide a specific entity id to index a single
    *   entity.
    * @param int $round
@@ -87,18 +91,26 @@ class EntitiesIndexJob extends ESJob {
    */
   public function handle() {
     try {
-      $this->es = new ESInstance();
+      $this->es = new Instance();
       $entities = $this->get();
+
       $this->total = count($entities);
       $records = $this->loadContent($entities);
 
       foreach ($records as $record) {
-        $this->es->createOrUpdate($this->index, $this->index,
-          $record->entity_id, $record);
+        $this->es->createOrUpdate(
+          $this->index,
+          $this->index,
+          $record->entity_id,
+          $record
+        );
       }
-    } catch (Exception $exception) {
-      tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR,
-        $exception->getMessage());
+    } catch (\Exception $exception) {
+      tripal_report_error(
+        'tripal_elasticsearch',
+        TRIPAL_ERROR,
+        $exception->getMessage()
+      );
     }
   }
 
@@ -113,16 +125,23 @@ class EntitiesIndexJob extends ESJob {
     $all = [];
 
     // Load entities and applicable fields
-    $ids = array_map(function ($record) {
-      return $record->entity_id;
-    }, $records);
+    $ids = array_map(
+      function ($record) {
+        return $record->entity_id;
+      },
+      $records
+    );
 
     $fields = field_info_instances('TripalEntity', $this->bundle);
 
     // Load priority list
     $priority = $this->getPriorityList($fields);
-    $entities = tripal_load_entity('TripalEntity', $ids, TRUE,
-      $priority['ids']);
+    $entities = tripal_load_entity(
+      'TripalEntity',
+      $ids,
+      TRUE,
+      $priority['ids']
+    );
     foreach ($records as $record) {
       if (!isset($entities[$record->entity_id])) {
         continue;
@@ -132,8 +151,10 @@ class EntitiesIndexJob extends ESJob {
       $content = [];
       if (tripal_entity_access('view', $entity)) {
         foreach ($priority['names'] as $field) {
-          if (property_exists($entity,
-              $field) && isset($entity->{$field}['und'])) {
+          $has_prop = property_exists($entity, $field);
+
+          if ($has_prop && isset($entity->{$field}['und'])) {
+            $content[$field] = [];
 
             foreach ($entity->{$field}['und'] as $elements) {
               if (!isset($elements['value'])) {
@@ -142,13 +163,22 @@ class EntitiesIndexJob extends ESJob {
               }
 
               $value = $this->extractValue($elements['value']);
-
               if (empty($value)) {
 
                 continue;
               }
 
-              $content[] = $value;
+              $content[$field][] = $value;
+              //$content[] = $value;
+            }
+
+            $content[$field] = elasticsearch_recursive_implode(
+              ' ',
+              $content[$field]
+            );
+
+            if(empty($content[$field])) {
+              unset($content[$field]);
             }
           }
         }
@@ -225,13 +255,17 @@ class EntitiesIndexJob extends ESJob {
    */
   protected function prioritizeFields($fields) {
     if ($this->priority_round < 2 && $this->id === NULL) {
-      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority} WHERE priority = :priority',
+      $results = db_query(
+        'SELECT * FROM {tripal_elasticsearch_priority} WHERE priority = :priority',
         [
           ':priority' => 1,
-        ])->fetchAll();
+        ]
+      )->fetchAll();
     }
     else {
-      $results = db_query('SELECT * FROM {tripal_elasticsearch_priority}')->fetchAll();
+      $results = db_query(
+        'SELECT * FROM {tripal_elasticsearch_priority}'
+      )->fetchAll();
     }
 
     $indexed = [];
@@ -320,7 +354,7 @@ class EntitiesIndexJob extends ESJob {
    * Get records to index.
    *
    * @return mixed
-   * @throws \Exception
+   * @throws \\Exception
    */
   protected function get() {
     if ($this->id !== NULL) {
@@ -328,7 +362,9 @@ class EntitiesIndexJob extends ESJob {
     }
 
     if ($this->limit === NULL || $this->offset === NULL) {
-      throw new Exception('EntitiesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.');
+      throw new \Exception(
+        'EntitiesIndexJob: Limit and offset parameters are required if node id is not provided in the constructor.'
+      );
     }
 
     return $this->getMultipleEntities();
@@ -348,11 +384,14 @@ class EntitiesIndexJob extends ESJob {
               OFFSET :offset
               LIMIT :limit';
 
-    return db_query($query, [
-      ':bundle' => $this->bundle,
-      ':limit' => $this->limit,
-      ':offset' => $this->offset,
-    ])->fetchAll();
+    return db_query(
+      $query,
+      [
+        ':bundle' => $this->bundle,
+        ':limit' => $this->limit,
+        ':offset' => $this->offset,
+      ]
+    )->fetchAll();
   }
 
   /**
@@ -386,8 +425,10 @@ class EntitiesIndexJob extends ESJob {
    * @return int
    */
   public function count() {
-    return db_query('SELECT COUNT(id) FROM {tripal_entity} WHERE status=1 AND bundle=:bundle',
-      [':bundle' => $this->bundle])->fetchField();
+    return db_query(
+      'SELECT COUNT(id) FROM {tripal_entity} WHERE status=1 AND bundle=:bundle',
+      [':bundle' => $this->bundle]
+    )->fetchField();
   }
 
   /**
@@ -403,12 +444,16 @@ class EntitiesIndexJob extends ESJob {
     if ($clear_queue) {
       // Clear all entries from the queue
       $sql = 'SELECT item_id, data FROM queue q WHERE name LIKE :name';
-      $results = db_query($sql, [':name' => db_like('elasticsearch') . '%'])->fetchAll();
+      $results = db_query(
+        $sql,
+        [':name' => db_like('elasticsearch') . '%']
+      )->fetchAll();
       $delete = [];
 
       foreach ($results as $result) {
         $class = unserialize($result->data);
-        if ($class instanceof DispatcherJob && $class->job() instanceof EntitiesIndexJob) {
+        if ($class instanceof DispatcherJob && $class->job(
+          ) instanceof EntitiesIndexJob) {
           $delete[] = $result->item_id;
         }
         elseif ($class instanceof EntitiesIndexJob) {
@@ -417,7 +462,10 @@ class EntitiesIndexJob extends ESJob {
       }
 
       if (!empty($delete)) {
-        $dsql = 'DELETE FROM queue WHERE item_id IN (' . implode(',', $delete) . ')';
+        $dsql = 'DELETE FROM queue WHERE item_id IN (' . implode(
+            ',',
+            $delete
+          ) . ')';
         db_query($dsql)->execute();
       }
     }
@@ -439,7 +487,7 @@ class EntitiesIndexJob extends ESJob {
   }
 
   /**
-   * Tells the ESQueue class whether this job implements
+   * Tells the \ES\Common\Queue class whether this job implements
    * priority queues.
    *
    * @return bool

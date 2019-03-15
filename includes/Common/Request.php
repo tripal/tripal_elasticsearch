@@ -1,11 +1,15 @@
 <?php
+namespace ES\Common;
+
+use Exception;
+
 /**
  * Provides RESTful HTTP request API.
  *
  * @file includes/Elasticsearch/ESRequest.php
  */
 
-class ESRequest {
+class Request {
 
   public static $base_url = '';
 
@@ -16,6 +20,7 @@ class ESRequest {
    * @param null $data
    *
    * @return mixed
+   * @throws \Exception
    */
   public static function get($url, $data = NULL) {
     return static::send('GET', $url, $data);
@@ -28,6 +33,7 @@ class ESRequest {
    * @param null $data
    *
    * @return mixed
+   * @throws \Exception
    */
   public static function post($url, $data = NULL) {
     return static::send('POST', $url, $data);
@@ -40,6 +46,7 @@ class ESRequest {
    * @param null $data
    *
    * @return mixed
+   * @throws \Exception
    */
   public static function delete($url, $data = NULL) {
     return static::send('DELETE', $url, $data);
@@ -52,6 +59,7 @@ class ESRequest {
    * @param null $data
    *
    * @return mixed
+   * @throws \Exception
    */
   public static function put($url, $data = NULL) {
     return static::send('PUT', $url, $data);
@@ -66,6 +74,7 @@ class ESRequest {
    * @param null|string|array $data
    *
    * @return mixed
+   * @throws \Exception
    */
   public static function send($method, $url, $data = NULL) {
     global $conf;

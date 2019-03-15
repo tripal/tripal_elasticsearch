@@ -81,7 +81,7 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
     $organism = $entity->chado_record;
 
     try {
-      $es = new ESInstance();
+      $es = new \ES\Common\Instance();
       $query = tripal_elasticsearch_gene_search_index_query_mapper([
         'organism' => "$organism->genus $organism->species",
         "search_term" => '*',

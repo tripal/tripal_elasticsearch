@@ -1,6 +1,10 @@
 <?php
 
-abstract class ESJob{
+namespace ES\Jobs;
+
+use ES\Common\Queue;
+
+abstract class Job{
 
   /**
    * Holds the index name.
@@ -39,7 +43,7 @@ abstract class ESJob{
   protected $offset = NULL;
 
   /**
-   * Automatically set by ESQueue
+   * Automatically set by \ES\Common\Queue
    *
    * @var string
    */
@@ -106,11 +110,11 @@ abstract class ESJob{
    * @param string $queue_nameN ame of queue.
    */
   public function dispatch($queue_name = NULL) {
-    ESQueue::dispatch($this, $queue_name);
+    Queue::dispatch($this, $queue_name);
   }
 
   /**
-   * Tells the ESQueue class whether that this job implements
+   * Tells the \ES\Common\Queue class whether that this job implements
    * priority rounds.
    *
    * @return bool

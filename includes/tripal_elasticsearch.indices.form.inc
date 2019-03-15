@@ -14,14 +14,16 @@
  */
 function tripal_elasticsearch_indexing_form($form, &$form_state) {
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
 
     // associate index name with indexed table.
     $indices = $es->getIndices();
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
-    drupal_set_message("Please check your Elasticsearch Connection.",
-      'warning');
+    drupal_set_message(
+      "Please check your Elasticsearch Connection.",
+      'warning'
+    );
 
     return $form;
   }
@@ -59,8 +61,10 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   $form['index_type'] = [
     '#type' => 'select',
     '#title' => t('Index type'),
-    '#description' => t('If you already have a website-wide node or tripal
-                         entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'),
+    '#description' => t(
+      'If you already have a website-wide node or tripal
+                         entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'
+    ),
     '#options' => $index_types,
     '#default_value' => isset($index_types['website']) ? 'website' : 'database',
   ];
@@ -69,7 +73,9 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Enter a unique Elasticsearch index name'),
     '#field_suffix' => 'less than 28 characters',
-    '#description' => t('Elasticsearch index name can only contain lowercase letters, numbers and underscores. It must start with a letter.'),
+    '#description' => t(
+      'Elasticsearch index name can only contain lowercase letters, numbers and underscores. It must start with a letter.'
+    ),
     // This field is only visible to table indexing.
     '#states' => [
       'visible' => [
@@ -84,7 +90,9 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#tree' => TRUE,
     '#title' => t('Elasticsearch index settings'),
-    '#description' => t('These settings determine how your data will be indexed and made searchable.'),
+    '#description' => t(
+      'These settings determine how your data will be indexed and made searchable.'
+    ),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#states' => [
@@ -115,8 +123,10 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
   $form['index_table'] = [
     '#type' => 'select',
     '#title' => t('Select a table and fields to index'),
-    '#options' => array_merge(['' => 'Select a table'],
-      drupal_map_assoc(tripal_elasticsearch_get_table_list())),
+    '#options' => array_merge(
+      ['' => 'Select a table'],
+      drupal_map_assoc(tripal_elasticsearch_get_table_list())
+    ),
     '#states' => [
       'visible' => [
         ':input[name="index_type"]' => [
@@ -151,26 +161,34 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     $form['table_fields'][$field] = [
       '#type' => 'select',
       '#title' => t('Field name: ' . $field),
-      '#description' => t('Please select a mapping type for each field. If no 
+      '#description' => t(
+        'Please select a mapping type for each field. If no 
 													mapping type is selected for a field, that field will
 													not be indexed. This can be used to selectively index
-													table fields.'),
-      '#options' => array_merge(['' => 'Select mapping type'],
-        tripal_elasticsearch_get_field_mapping_types()),
+													table fields.'
+      ),
+      '#options' => array_merge(
+        ['' => 'Select mapping type'],
+        tripal_elasticsearch_get_field_mapping_types()
+      ),
     ];
   }
 
   $form['exposed'] = [
     '#type' => 'checkbox',
     '#title' => t('Expose Index to Cross-Site Search'),
-    '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
+    '#description' => t(
+      "Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."
+    ),
     '#default_value' => FALSE,
   ];
 
   $form['url'] = [
     '#type' => 'textfield',
     '#title' => 'Results URL Path',
-    '#description' => t('In order for other sites to link back to your results page, you must specify a path where the form for this index can be reached.'),
+    '#description' => t(
+      'In order for other sites to link back to your results page, you must specify a path where the form for this index can be reached.'
+    ),
     '#attributes' => [
       'placeholder' => 'E.g, elasticsearch/index-name',
     ],
@@ -220,29 +238,47 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   if ($type === "database") {
     // Index name validation.
     if (strlen($index_name) > 28) {
-      form_set_error('index_name',
-        t('String length cannot be greater than 28.'));
+      form_set_error(
+        'index_name',
+        t('String length cannot be greater than 28.')
+      );
     }
     if (!preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name)) {
-      form_set_error('index_name', t('index name can only contain lowercase letters, 
-								numbers and underscores, and must start with a letter.'));
+      form_set_error(
+        'index_name',
+        t(
+          'index name can only contain lowercase letters, 
+								numbers and underscores, and must start with a letter.'
+        )
+      );
     }
     // 'website' is reserved for website indexing and search, use a different name
     // as index name for table search.
     if ($index_name === 'website') {
-      form_set_error('index_name', t('"website" is reserved for the website nodes index. Please
-					use a different name.'));
+      form_set_error(
+        'index_name',
+        t(
+          '"website" is reserved for the website nodes index. Please
+					use a different name.'
+        )
+      );
     }
     // At least one table field need to be selected.
-    if (!is_array($form_state['values']['table_fields']) || empty($form_state['values']['table_fields'])) {
-      form_set_error('table_fields',
-        t('Please specify a mapping type for at least one field.'));
+    if (!is_array(
+        $form_state['values']['table_fields']
+      ) || empty($form_state['values']['table_fields'])) {
+      form_set_error(
+        'table_fields',
+        t('Please specify a mapping type for at least one field.')
+      );
     }
     else {
       $table_fields = array_filter($form_state['values']['table_fields']);
       if (empty($table_fields)) {
-        form_set_error('table_fields',
-          t('Please specify a mapping type for at least one field.'));
+        form_set_error(
+          'table_fields',
+          t('Please specify a mapping type for at least one field.')
+        );
       }
     }
   }
@@ -253,11 +289,17 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   }
   else {
     if ($type === 'entities') {
-      $count = db_query('SELECT COUNT(id) FROM {tripal_elasticsearch_priority}')->fetchField();
+      $count = db_query(
+        'SELECT COUNT(id) FROM {tripal_elasticsearch_priority}'
+      )->fetchField();
       if (intval($count) === 0) {
-        form_set_error(0,
-          t('Please configure and submit ') . l('the tuning form',
-            'admin/tripal/extension/tripal_elasticsearch/tuning') . t(' before creating the entities index.'));
+        form_set_error(
+          0,
+          t('Please configure and submit ') . l(
+            'the tuning form',
+            'admin/tripal/extension/tripal_elasticsearch/tuning'
+          ) . t(' before creating the entities index.')
+        );
       }
     }
   }
@@ -285,14 +327,16 @@ function tripal_elasticsearch_indexing_form_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   try {
-    $client = (new ESInstance())->client;
+    $client = (new \ES\Common\Instance())->client;
 
     // associate index name with indexed table.
     $mappings = $client->indices()->getMapping();
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
-    drupal_set_message("Please check your Elasticsearch Connection.",
-      'warning');
+    drupal_set_message(
+      "Please check your Elasticsearch Connection.",
+      'warning'
+    );
 
     return NULL;
   }
@@ -301,7 +345,9 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   foreach (array_keys($mappings) as $index) {
     if (isset(array_keys($mappings[$index]['mappings'])[1])) {
       if (!in_array($index, ['entities', 'website'])) {
-        $existing_indices[$index] = $index . ' (indexed table: <b>' . array_keys($mappings[$index]['mappings'])[1] . '</b>)';
+        $existing_indices[$index] = $index . ' (indexed table: <b>' . array_keys(
+            $mappings[$index]['mappings']
+          )[1] . '</b>)';
       }
       else {
         $existing_indices[$index] = $index . ' (index for site-wide search)';
@@ -315,7 +361,9 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
   $form['indices'] = [
     '#type' => 'checkboxes',
     '#title' => t('Existing indices'),
-    '#description' => t('delete indexed data from Eleasticsearch. Please make sure you know what the data is. This process can NOT be undone.'),
+    '#description' => t(
+      'delete indexed data from Eleasticsearch. Please make sure you know what the data is. This process can NOT be undone.'
+    ),
     '#options' => $existing_indices,
   ];
 
@@ -324,8 +372,12 @@ function tripal_elasticsearch_delete_indices_form($form, &$form_state) {
     '#value' => t('Delete'),
   ];
 
-  drupal_add_js(drupal_get_path('module',
-      'tripal_elasticsearch') . '/js/indices_delete_confirm.js');
+  drupal_add_js(
+    drupal_get_path(
+      'module',
+      'tripal_elasticsearch'
+    ) . '/js/indices_delete_confirm.js'
+  );
 
   return $form;
 }
@@ -341,12 +393,14 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
   if (!empty($delete_indices)) {
     foreach ($delete_indices as $index) {
       try {
-        $es = new ESInstance();
+        $es = new \ES\Common\Instance();
         $es->deleteIndex($index);
-        db_query('DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name',
+        db_query(
+          'DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name',
           [
             ':index_name' => $index,
-          ]);
+          ]
+        );
       } catch (\Exception $exception) {
         drupal_set_message($exception->getMessage(), 'warning');
       }
@@ -361,14 +415,16 @@ function tripal_elasticsearch_delete_indices_form_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_indices_list_page() {
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
 
     // associate index name with indexed table.
     $indices = $es->getIndices();
   } catch (\Exception $exception) {
     drupal_set_message($exception->getMessage(), 'warning');
-    drupal_set_message("Please check your Elasticsearch Connection.",
-      'warning');
+    drupal_set_message(
+      "Please check your Elasticsearch Connection.",
+      'warning'
+    );
 
     return '';
   }
@@ -405,14 +461,20 @@ function tripal_elasticsearch_indices_list_page() {
       $exposed_text = "public";
     }
 
-    $edit = l('Edit',
-      'admin/tripal/extension/tripal_elasticsearch/indices/edit/' . $index);
-    $delete = l('Delete',
-      'admin/tripal/extension/tripal_elasticsearch/indices/delete/' . $index);
+    $edit = l(
+      'Edit',
+      'admin/tripal/extension/tripal_elasticsearch/indices/edit/' . $index
+    );
+    $delete = l(
+      'Delete',
+      'admin/tripal/extension/tripal_elasticsearch/indices/delete/' . $index
+    );
     $row = [$index, $table, $exposed_text, $edit, $delete];
     if (in_array($index, ['entities', 'gene_search_index'])) {
-      $row[] = l('Update',
-        'admin/tripal/extension/tripal_elasticsearch/indices/update/' . $index);
+      $row[] = l(
+        'Update',
+        'admin/tripal/extension/tripal_elasticsearch/indices/update/' . $index
+      );
     }
     else {
       $row[] = t('Update not available');
@@ -421,19 +483,24 @@ function tripal_elasticsearch_indices_list_page() {
   }
 
   $output = '<h2>List of Available Indices</h2>';
-  $output .= theme('table', [
-    'header' => [
-      'Index Name',
-      'Indexed Table',
-      'Exposed',
-      'Edit',
-      'Delete',
-      'update',
-    ],
-    'rows' => $rows,
-  ]);
-  $link = l('Create Index',
-    'admin/tripal/extension/tripal_elasticsearch/indices/create');
+  $output .= theme(
+    'table',
+    [
+      'header' => [
+        'Index Name',
+        'Indexed Table',
+        'Exposed',
+        'Edit',
+        'Delete',
+        'update',
+      ],
+      'rows' => $rows,
+    ]
+  );
+  $link = l(
+    'Create Index',
+    'admin/tripal/extension/tripal_elasticsearch/indices/create'
+  );
   $output .= '<p>To create a new index, click the ' . $link . ' tab above.</p>';
 
   return $output;
@@ -446,11 +513,7 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
   $form = [];
   $exposed = FALSE;
   $url = NULL;
@@ -485,7 +548,7 @@ function tripal_elasticsearch_index_edit_confirm(
     $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
     if (!$result) {
       try {
-        $es = new ESInstance();
+        $es = new \ES\Common\Instance();
         $mappings = $es->getIndexMappings($index_name);
         $table_name = array_keys($mappings);
         if (count($table_name) > 1) {
@@ -495,11 +558,13 @@ function tripal_elasticsearch_index_edit_confirm(
           $table_name = $table_name[0];
         }
 
-        db_query("INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')",
+        db_query(
+          "INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES(:index_name, :table_name, 0, '')",
           [
             ':index_name' => $index_name,
             ':table_name' => $table_name,
-          ]);
+          ]
+        );
         $result = db_query($sql, [':index_name' => $index_name])->fetchObject();
       } catch (Exception $exception) {
         drupal_set_message($exception->getMessage(), 'error');
@@ -532,7 +597,7 @@ function tripal_elasticsearch_index_edit_confirm(
   // Get existing index settings and mappings.
   // TODO: what about default tables?
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
     $index_settings = $es->getIndexSettings($index_name);
     $index_mappings = $es->getIndexMappings($index_name);
   } catch (Exception $exception) {
@@ -546,16 +611,20 @@ function tripal_elasticsearch_index_edit_confirm(
   $preset_mappings = [];
 
   if ($index_type == 'table') {
-    if (array_key_exists($table_name,
-      $index_mappings[$index_name]["mappings"])) {
+    if (array_key_exists(
+      $table_name,
+      $index_mappings[$index_name]["mappings"]
+    )) {
       $preset_mappings = $index_mappings[$index_name]["mappings"][$table_name]["properties"];
     }
   }
 
   if (!$preset_mappings && $index_type == "table") {
     // there is no dbtable mapping settings yet.  Cron still needs to run!
-    drupal_set_message("The index $index_name has no database mapping. Please make sure that your CRON job has finished running.",
-      'warning');
+    drupal_set_message(
+      "The index $index_name has no database mapping. Please make sure that your CRON job has finished running.",
+      'warning'
+    );
   }
 
   $index_settings = ["tokenizer" => "standard", "token_filters" => ""];
@@ -573,9 +642,12 @@ function tripal_elasticsearch_index_edit_confirm(
   // to re-index need to build it the same way the options are built so they match
 
   $previous_token_filters = tripal_elasticsearch_get_token_filter_options();
-  $previous_token_filters = array_map(function ($value) {
-    return 0;
-  }, $previous_token_filters); //empty the array values
+  $previous_token_filters = array_map(
+    function ($value) {
+      return 0;
+    },
+    $previous_token_filters
+  ); //empty the array values
   foreach ($index_settings["token_filters"] as $setting) {
     $previous_token_filters[$setting] = $setting;
   }
@@ -605,7 +677,9 @@ function tripal_elasticsearch_index_edit_confirm(
     '#type' => 'fieldset',
     '#tree' => TRUE,
     '#title' => t('Elasticsearch index settings'),
-    '#description' => t('These settings determine how your data will be indexed and made searchable.'),
+    '#description' => t(
+      'These settings determine how your data will be indexed and made searchable.'
+    ),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   ];
@@ -628,7 +702,9 @@ function tripal_elasticsearch_index_edit_confirm(
   $form['exposed'] = [
     '#type' => 'checkbox',
     '#title' => t('Expose Index to Cross-Site Search'),
-    '#description' => t("Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."),
+    '#description' => t(
+      "Check this box to expose your index to cross-site search.  If exposed, other Tripal sites using this module will be able to search your sites and display the results on their own.  Exposing an index is READ ONLY."
+    ),
     '#default_value' => $exposed == 1 ? TRUE : FALSE,
   ];
 
@@ -637,7 +713,9 @@ function tripal_elasticsearch_index_edit_confirm(
     $form['url'] = [
       '#type' => 'textfield',
       '#title' => 'Results URL Path',
-      '#description' => t('In order for other sites to link back to your results page, you must specify a path where the form for this index can be reached.'),
+      '#description' => t(
+        'In order for other sites to link back to your results page, you must specify a path where the form for this index can be reached.'
+      ),
       '#attributes' => [
         'placeholder' => 'E.g, elasticsearch/index-name',
       ],
@@ -660,10 +738,12 @@ function tripal_elasticsearch_index_edit_confirm(
   $form['table_fields'] = [
     '#type' => 'fieldset',
     '#title' => t('Select fields to index'),
-    '#description' => t('Please select a mapping type for each field. If no 
+    '#description' => t(
+      'Please select a mapping type for each field. If no 
 													mapping type is selected for a field, that field will
 													not be indexed. This can be used to selectively index
-													table fields.'),
+													table fields.'
+    ),
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
@@ -680,16 +760,23 @@ function tripal_elasticsearch_index_edit_confirm(
       '#type' => 'select',
       '#title' => t('Field name: ' . $field),
       '#default_value' => $preset,
-      '#options' => array_merge(['' => 'Select mapping type'],
-        tripal_elasticsearch_get_field_mapping_types()),
+      '#options' => array_merge(
+        ['' => 'Select mapping type'],
+        tripal_elasticsearch_get_field_mapping_types()
+      ),
     ];
   }
 
   $description = 'Edit settings for ' . $index_name;
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
 
-  return confirm_form($form, 'Edit Index', $cancel_path, $description,
-    'Submit Edits');
+  return confirm_form(
+    $form,
+    'Edit Index',
+    $cancel_path,
+    $description,
+    'Submit Edits'
+  );
 }
 
 /**
@@ -710,12 +797,18 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
 
   // Delete/Create for custom tables since the field settings might have changed.
   if ($index == $previous_values['index_name'] && $previous_index_settings['tokenizer'] && $new_index_settings['tokenizer']) {
-    if (empty(array_diff($previous_index_settings['token_filters'],
-      $new_index_settings['token_filters']))) {
+    if (empty(
+    array_diff(
+      $previous_index_settings['token_filters'],
+      $new_index_settings['token_filters']
+    )
+    )) {
       if ($type != 'table') {
         // No need to delete the index, just need to update the table.
         tripal_elasticsearch_update_index_table($form_state['values']);
-        drupal_set_message("Your index has been updated. Re-indexing is not necessary.");
+        drupal_set_message(
+          "Your index has been updated. Re-indexing is not necessary."
+        );
         $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
         return;
       }
@@ -739,11 +832,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
@@ -752,8 +841,13 @@ function tripal_elasticsearch_index_delete_confirm(
     '#value' => $index_name,
   ];
 
-  return confirm_form($form, 'Are you sure?', $cancel_path, $description,
-    'Delete');
+  return confirm_form(
+    $form,
+    'Are you sure?',
+    $cancel_path,
+    $description,
+    'Delete'
+  );
 }
 
 /**
@@ -785,10 +879,12 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_name = 'website';
     $index_table = 'node';
     $tokenizer = 'standard';
-    $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
-    ]);
+    $token_filters = drupal_map_assoc(
+      [
+        'standard',
+        'lowercase',
+      ]
+    );
     $field_mapping_types = [
       'nid' => 'integer',
       'type' => 'text',
@@ -800,25 +896,29 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_name = 'entities';
     $index_table = 'tripal_entity';
     $tokenizer = 'standard';
-    $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
-    ]);
+    $token_filters = drupal_map_assoc(
+      [
+        'standard',
+        'lowercase',
+      ]
+    );
     $field_mapping_types = [
       'entity_id' => 'integer',
       'bundle_label' => 'text',
       'title' => 'text',
-      'content' => 'text',
+      'content' => 'dynamic',
     ];
   }
   elseif ($index_type === 'gene_search') {
     $index_name = 'gene_search_index';
     $index_table = 'chado.feature';
     $tokenizer = 'standard';
-    $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
-    ]);
+    $token_filters = drupal_map_assoc(
+      [
+        'standard',
+        'lowercase',
+      ]
+    );
     $field_mapping_types = [
       'node_id' => 'integer',
       'entity_id' => 'integer',
@@ -855,10 +955,12 @@ function tripal_elasticsearch_create_index(&$values) {
       $tokenizer = 'standard';
     }
     if (!$token_filters) {
-      $token_filters = drupal_map_assoc([
-        'standard',
-        'lowercase',
-      ]);
+      $token_filters = drupal_map_assoc(
+        [
+          'standard',
+          'lowercase',
+        ]
+      );
     }
   }
 
@@ -870,14 +972,22 @@ function tripal_elasticsearch_create_index(&$values) {
     ':url' => $url,
   ];
 
-  db_query('INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)',
-    $insert);
+  db_query(
+    'INSERT INTO {tripal_elasticsearch_indices} (index_name, table_name, exposed, url) VALUES (:index_name, :table_name, :exposed, :url)',
+    $insert
+  );
 
   // Create the index.
   try {
-    $es = new ESInstance();
-    $es->setIndexParams($index_name, 5, 0, $tokenizer, $token_filters,
-      $field_mapping_types)->createIndex();
+    $es = new \ES\Common\Instance();
+    $es->setIndexParams(
+      $index_name,
+      5,
+      0,
+      $tokenizer,
+      $token_filters,
+      $field_mapping_types
+    )->createIndex();
   } catch (Exception $exception) {
     form_set_error(0, $exception->getMessage());
     watchdog('tripal_elasticsearch', $exception->getMessage());
@@ -889,34 +999,42 @@ function tripal_elasticsearch_create_index(&$values) {
   $job = NULL;
   switch ($index_type) {
     case 'website':
-      $job = new NodesIndexJob();
+      $job = new \ES\Jobs\NodesIndexJob();
       break;
     case 'gene_search':
-      GeneSearchIndexJob::generateDispatcherJobs();
+      \ES\Jobs\GeneSearchIndexJob::generateDispatcherJobs();
       break;
     case 'entities':
-      EntitiesIndexJob::generateDispatcherJobs();
+      \ES\Jobs\EntitiesIndexJob::generateDispatcherJobs();
       break;
     default:
       $fields = array_keys($field_mapping_types);
-      $job = new TableIndexJob($index_name, $index_table, $fields);
+      $job = new \ES\Jobs\TableIndexJob($index_name, $index_table, $fields);
   }
 
   // All jobs other than entities can be dispatched directly.
   // Tripal entities must be dispatched by bundle type.
   if ($job !== NULL) {
-    $dispatcher = new DispatcherJob($job);
+    $dispatcher = new \ES\Jobs\DispatcherJob($job);
     $dispatcher->dispatch();
   }
 
   $base_url = variable_get('website_base_url');
-  $cron_url = l($base_url . '/admin/config/system/cron',
-    'admin/config/system/cron');
+  $cron_url = l(
+    $base_url . '/admin/config/system/cron',
+    'admin/config/system/cron'
+  );
 
-  drupal_set_message("The indexing job for {$index_name} has been submitted to your CRON queue. You can view the status of your CRON jobs at {$cron_url}");
+  drupal_set_message(
+    "The indexing job for {$index_name} has been submitted to your CRON queue. You can view the status of your CRON jobs at {$cron_url}"
+  );
   if ($index_type === 'database') {
-    drupal_set_message("You may create a search block for this index using the " . l('form management',
-        'admin/tripal/extension/tripal_elasticsearch/forms') . " section.");
+    drupal_set_message(
+      "You may create a search block for this index using the " . l(
+        'form management',
+        'admin/tripal/extension/tripal_elasticsearch/forms'
+      ) . " section."
+    );
   }
 }
 
@@ -928,7 +1046,7 @@ function tripal_elasticsearch_create_index(&$values) {
 function tripal_elasticsearch_delete_index($index) {
   // Find the index and delete it from ES
   try {
-    $es = new ESInstance();
+    $es = new \ES\Common\Instance();
     $es->deleteIndex($index);
   } catch (Exception $exception) {
     drupal_set_message($exception->getMessage(), 'error');
@@ -937,51 +1055,68 @@ function tripal_elasticsearch_delete_index($index) {
   }
 
   // Find the index and delete it from the DB.  this db is for the search blocks
-  $result = db_query("DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name",
-    [':index_name' => $index])->fetchObject();
-
-  if (!$result) {
-    // It's not in the DB so there is nothing to delete here.
-    return;
-  }
+  db_query(
+    "DELETE FROM {tripal_elasticsearch} WHERE index_name=:index_name",
+    [':index_name' => $index]
+  );
 
   // Now delete the table info
-  db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
-    [':index_name' => $index]);
+  db_query(
+    "DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
+    [':index_name' => $index]
+  );
+
   // Delete any progress indicator
-  db_query('DELETE FROM {tripal_elasticsearch_queues} WHERE index_name=:index_name',
-    [':index_name' => $index]);
+  db_query(
+    'DELETE FROM {tripal_elasticsearch_queues} WHERE index_name=:index_name',
+    [':index_name' => $index]
+  );
 }
 
 /**
  * Update an index.
  *
  * @param string $index index name
+ *
+ * @return void
  */
 function tripal_elasticsearch_update_index($index) {
-  $result = db_query("SELECT * FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
-    [':index_name' => $index])->fetchObject();
+  $result = db_query(
+    "SELECT * FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
+    [':index_name' => $index]
+  )->fetchObject();
+
   if (!$result) {
     drupal_set_message("Index \"{$index}\" not found", 'error');
-    return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+    drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+    return;
   }
 
   if (!in_array($index, ['entities', 'gene_search_index'])) {
-    drupal_set_message('Update functionality is not available for this index. Please delete and recreate the index.',
-      'error');
-    return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+    drupal_set_message(
+      'Update functionality is not available for this index. Please delete and recreate the index.',
+      'error'
+    );
+    drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
+    return;
   }
 
   switch ($index) {
     case 'gene_search_index':
-      GeneSearchIndexJob::generateDispatcherJobs(TRUE);
+      \ES\Jobs\GeneSearchIndexJob::generateDispatcherJobs(TRUE);
       break;
     case 'entities':
-      return drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices/update_entities');
+      drupal_goto(
+        'admin/tripal/extension/tripal_elasticsearch/indices/update_entities'
+      );
+      return;
       break;
   }
 
-  drupal_set_message("{$index} updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
+  drupal_set_message(
+    "{$index} updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue."
+  );
+
   drupal_goto('admin/tripal/extension/tripal_elasticsearch/indices');
 }
 
@@ -991,14 +1126,18 @@ function tripal_elasticsearch_update_index($index) {
 function tripal_elasticsearch_progress_page($callback = FALSE) {
   $content = '';
   if (!$callback) {
-    drupal_add_js(drupal_get_path('module',
-        'tripal_elasticsearch') . '/js/tripal_elasticsearch_progress_tracker.js');
+    drupal_add_js(
+      drupal_get_path(
+        'module',
+        'tripal_elasticsearch'
+      ) . '/js/tripal_elasticsearch_progress_tracker.js'
+    );
     $content .= '<div id="progress-report-page">';
   }
 
   $content .= '<h1>Indexing Progress Tracker</h1>';
 
-  $data = ESQueue::progress();
+  $data = \ES\Common\Queue::progress();
 
   $content .= '<h3>Overall Progress</h3>';
 
@@ -1006,12 +1145,17 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
     $content .= '<p>All items have been indexed. 0 Items remaining.</p>';
   }
   else {
-    $etr = tripal_elasticsearch_compute_ETR($data->total, $data->completed,
-      $data->time);
-    $content .= theme_progress_bar([
-      'percent' => $data->percent,
-      'message' => 'Indexing ' . $data->completed . '/' . $data->total . ' items. Estimated time remaining: ' . $etr,
-    ]);
+    $etr = tripal_elasticsearch_compute_ETR(
+      $data->total,
+      $data->completed,
+      $data->time
+    );
+    $content .= theme_progress_bar(
+      [
+        'percent' => $data->percent,
+        'message' => 'Indexing ' . $data->completed . '/' . $data->total . ' items. Estimated time remaining: ' . $etr,
+      ]
+    );
   }
 
   if (count($data->queues) > 1) {
@@ -1022,12 +1166,17 @@ function tripal_elasticsearch_progress_page($callback = FALSE) {
         $content .= '<p>All items have been indexed. 0 Items remaining</p>';
       }
       else {
-        $etr = tripal_elasticsearch_compute_ETR($progress->total,
-          $progress->completed, $progress->time);
-        $content .= theme_progress_bar([
-          'percent' => $progress->percent,
-          'message' => $progress->remaining . ' Items remaining. Estimated time remaining: ' . $etr,
-        ]);
+        $etr = tripal_elasticsearch_compute_ETR(
+          $progress->total,
+          $progress->completed,
+          $progress->time
+        );
+        $content .= theme_progress_bar(
+          [
+            'percent' => $progress->percent,
+            'message' => $progress->remaining . ' Items remaining. Estimated time remaining: ' . $etr,
+          ]
+        );
       }
     }
   }
@@ -1058,11 +1207,13 @@ function tripal_elasticsearch_update_index_table(&$values) {
   $url = isset($values['url']) ? $values['url'] : '';
 
   try {
-    db_update('tripal_elasticsearch_indices')->fields([
-      'table_name' => $index_table,
-      'exposed' => $exposed,
-      'url' => $url,
-    ])->condition('table_name', $index_table)->execute();
+    db_update('tripal_elasticsearch_indices')->fields(
+      [
+        'table_name' => $index_table,
+        'exposed' => $exposed,
+        'url' => $url,
+      ]
+    )->condition('index_name', $index_table)->execute();
     drupal_set_message(t('Index \'' . $index_name . '\' has been updated.'));
   } catch (Exception $e) {
     drupal_set_message("could not edit index");
@@ -1101,7 +1252,6 @@ function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
   return number_format($remaining, 2) . " {$unit}";
 }
 
-
 function tripal_elasticsearch_update_entities_form($form, &$form_state) {
   // get bundles
   $bundles = db_query('SELECT * FROM {tripal_bundle}')->fetchAll();
@@ -1137,13 +1287,15 @@ function tripal_elasticsearch_update_entities_form_submit($form, &$form_state) {
   $bundle = $form_state['values']['bundle'];
 
   if (!empty($bundle)) {
-    EntitiesIndexJob::generateDispatcherJobs(1, FALSE, $bundle);
+    \ES\Jobs\EntitiesIndexJob::generateDispatcherJobs(1, FALSE, $bundle);
   }
   else {
-    EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+    \ES\Jobs\EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
   }
 
-  drupal_set_message("Entities updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
+  drupal_set_message(
+    "Entities updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue."
+  );
 
   $form_state['redirect'] = 'admin/tripal/extension/tripal_elasticsearch/indices';
 }

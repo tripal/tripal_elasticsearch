@@ -1,6 +1,9 @@
 <?php
+namespace ES\Jobs;
 
-class TableIndexJob extends ESJob {
+use ES\Common\Instance;
+
+class TableIndexJob extends Job {
 
   /**
    * Job type to show in progress report.
@@ -60,7 +63,7 @@ class TableIndexJob extends ESJob {
    */
   public function handle() {
     $records = $this->get();
-    $es = new ESInstance();
+    $es = new Instance();
     $this->total = count($records);
 
     if ($this->total > 1) {

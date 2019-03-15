@@ -6,14 +6,14 @@
  */
 
 /**
- * Render array for website_search_box_form.
+ * Render array for tripal_elasticsearch_site_wide_search_form.
  *
  * @param $form
  * @param $form_state
  *
  * @return mixed
  */
-function website_search_box_form($form, &$form_state) {
+function tripal_elasticsearch_site_wide_search_form($form, &$form_state) {
   global $base_url;
 
   $default = isset($_GET['search_box']) && $_GET['search_box'] ? $_GET['search_box'] : '';
@@ -31,12 +31,6 @@ function website_search_box_form($form, &$form_state) {
     '#default_value' => $default,
   ];
 
-  if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
-    $form['container']['search_box']['#attributes'] = [
-      'autofocus' => 'autofocus',
-    ];
-  }
-
   $form['container']['submit'] = [
     '#type' => 'submit',
     '#value' => t('Search'),
@@ -51,26 +45,6 @@ function website_search_box_form($form, &$form_state) {
   $form['#action'] = $base_url . '/tripal_elasticsearch/search_website/' . $category;
 
   return $form;
-}
-
-/**
- * website_search_box_form submit.
- *
- * @param $form
- * @param $form_state
- */
-function website_search_box_form_submit($form, &$form_state) {
-  /*
-   * $keyword = $form_state['values']['search_box'];
-  $url = "tripal_elasticsearch/search_website/$keyword";
-  // only redirect to the search results page when $keyword is not empty.
-  if (empty($keyword)) {
-    drupal_goto(current_path());
-  }
-  else {
-    drupal_goto($url);
-  }
-   */
 }
 
 /**
@@ -109,19 +83,28 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
         preg_match_all('/\[.+?\]/', $select_options_text, $matches);
         $select_options_pairs = $matches[0];
 
-        $select_options_keys = array_map(function ($string) {
-          $string = preg_replace('/\[/', '', $string);
+        $select_options_keys = array_map(
+          function ($string) {
+            $string = preg_replace('/\[/', '', $string);
 
-          return explode('|', $string)[0];
-        }, $select_options_pairs);
+            return explode('|', $string)[0];
+          },
+          $select_options_pairs
+        );
 
-        $select_options_values = array_map(function ($string) {
-          $string = preg_replace('/\]/', '', $string);
+        $select_options_values = array_map(
+          function ($string) {
+            $string = preg_replace('/\]/', '', $string);
 
-          return explode('|', $string)[1];
-        }, $select_options_pairs);
+            return explode('|', $string)[1];
+          },
+          $select_options_pairs
+        );
 
-        $select_options = array_merge(['' => 'Select'], array_combine($select_options_keys, $select_options_values));
+        $select_options = array_merge(
+          ['' => 'Select'],
+          array_combine($select_options_keys, $select_options_values)
+        );
 
         $default_value = '';
         if (isset($_GET[$record->index_field])) {
@@ -157,11 +140,16 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
   //$window_range = drupal_map_assoc([1]);
   if (count($index_fields) > 0) {
     // Build search query for table search.
-    $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
+    $query = tripal_elasticsearch_build_search_query_from_field_content_pairs(
+      $index_fields
+    );
     try {
-      $es = new ESInstance();
-      $results_count = $es->setTableSearchParams($index_name, $index_type, $query)
-        ->count();
+      $es = new \ES\Common\Instance();
+      $results_count = $es->setTableSearchParams(
+        $index_name,
+        $index_type,
+        $query
+      )->count();
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {
       drupal_set_message($e->getMessage(), 'warning');
@@ -229,8 +217,14 @@ function save_to_file_ajax_callback($form, &$form_state) {
  */
 function search_content_ajax_callback($form, &$form_state) {
   $commands = [];
-  $commands[] = ajax_command_replace('#count_ajax_wrapper', drupal_render($form['count']));
-  $commands[] = ajax_command_replace("#select_window_ajax_wrapper", drupal_render($form['select_window']));
+  $commands[] = ajax_command_replace(
+    '#count_ajax_wrapper',
+    drupal_render($form['count'])
+  );
+  $commands[] = ajax_command_replace(
+    "#select_window_ajax_wrapper",
+    drupal_render($form['select_window'])
+  );
 
   return ['#type' => 'ajax', '#commands' => $commands];
 }

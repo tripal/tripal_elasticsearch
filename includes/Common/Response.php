@@ -1,11 +1,13 @@
 <?php
+namespace ES\Common;
+
 /**
  * Provides a response interface for Http Ajax requests.
  *
  * @file includes/Elasticsearch/ESResponse.php
  */
 
-class ESResponse {
+class Response {
 
   /**
    * Return a 200 OK response.

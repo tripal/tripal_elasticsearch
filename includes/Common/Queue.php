@@ -1,6 +1,13 @@
 <?php
 
-class ESQueue{
+namespace ES\Common;
+
+use DateTime;
+use ES\Jobs\Job;
+use Exception;
+use DrupalQueue;
+
+class Queue{
 
   /**
    * Name of the queue progress table.
@@ -38,7 +45,7 @@ class ESQueue{
   protected $generated_queue_count = FALSE;
 
   /**
-   * ESQueue constructor.
+   * \ES\Common\Queue constructor.
    * Populate available queues.
    */
   public function __construct() {
@@ -52,6 +59,7 @@ class ESQueue{
    * Create a progress report.
    *
    * @return object
+   * @throws \Exception
    */
   public static function progress() {
     $query = 'SELECT index_name,
@@ -76,7 +84,7 @@ class ESQueue{
         continue;
       }
 
-      if($queue->completed > $queue->total) {
+      if ($queue->completed > $queue->total) {
         static::fixProgress($queue);
       }
 
@@ -91,16 +99,21 @@ class ESQueue{
 
       $total += $queue->total;
       $completed += $queue->completed;
-      $round_name = ' Round: ' . (intval($queue->priority) === 1 ? 'High' : 'Low');
+      $round_name = ' Round: ' . (intval(
+          $queue->priority
+        ) === 1 ? 'High' : 'Low');
       $progress[$queue->index_name . $round_name] = (object) [
         'total' => $queue->total,
         'completed' => $queue->completed,
         'remaining' => $queue->total - $queue->completed,
-        'percent' => number_format(($queue->completed / ($queue->total ?: 1)) * 100, 2),
+        'percent' => number_format(
+          ($queue->completed / ($queue->total ?: 1)) * 100,
+          2
+        ),
         'last_run_at' => $last_run,
         'started_at' => $started_at,
         'time' => $queue->last_run_at - $queue->started_at,
-        'priority' => $queue->priority
+        'priority' => $queue->priority,
       ];
     }
 
@@ -110,21 +123,25 @@ class ESQueue{
       'completed' => $completed,
       'remaining' => $total - $completed,
       'percent' => number_format(($completed / ($total ?: 1)) * 100, 2),
-      'time' => count($progress) > 0 ? $progress_last_run_at - $progress_started_at : 0,
+      'time' => count(
+        $progress
+      ) > 0 ? $progress_last_run_at - $progress_started_at : 0,
     ];
   }
 
   public static function fixProgress(&$queue) {
     $queue->completed = $queue->total;
 
-    db_query('UPDATE {'.self::QUEUE_TABLE.'} SET completed=total WHERE completed > total');
+    db_query(
+      'UPDATE {' . self::QUEUE_TABLE . '} SET completed=total WHERE completed > total'
+    );
   }
 
   /**
    * Dispatch a new job. Uses the queue that has minimum items if queue name is
    * not provided.
    *
-   * @param \ESJob $job
+   * @param \ES\Jobs\Job $job
    * @param string $queue_name
    *
    * @return boolean
@@ -142,17 +159,21 @@ class ESQueue{
   /**
    * Execute a given job.
    *
-   * @param \ESJob $job
+   * @param \ES\Jobs\Job $job
    *
    * @throws \Exception
    */
   public static function run($job) {
-    if ($job instanceof ESJob) {
+    if ($job instanceof Job) {
       try {
         $job->handle();
         $total = $job->total();
       } catch (Exception $exception) {
-        tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR, $exception->getMessage());
+        tripal_report_error(
+          'tripal_elasticsearch',
+          TRIPAL_ERROR,
+          $exception->getMessage()
+        );
         $total = $job->chunk ? $job->chunk : 1;
       }
 
@@ -164,7 +185,11 @@ class ESQueue{
       return;
     }
 
-    throw new Exception('Elasticsearch Queue: ' . get_class($job) . ' is an invalid job type. Jobs must extend the ESJob class');
+    throw new Exception(
+      'Elasticsearch Queue: ' . get_class(
+        $job
+      ) . ' is an invalid job type. Jobs must extend the ES\Jobs\Job class'
+    );
   }
 
   /**
@@ -174,48 +199,50 @@ class ESQueue{
    * @param string $index_name Name of the index.
    * @param int $total the total number of records going to the queue (not
    *                    number of jobs).
+   * @param int $priority The priority round.
    *
-   * @return DatabaseStatementInterface
+   * @return \DatabaseStatementInterface
    */
-  public static function initProgress(
-    $type,
-    $index_name,
-    $total = 1,
-    $priority = 1
-  ) {
+  public static function initProgress($type, $index_name, $total = 1, $priority = 1) {
     $counter_table = self::QUEUE_TABLE;
     $query = 'SELECT total, completed FROM {' . $counter_table . '} WHERE type=:type';
     $queue = db_query($query, [':type' => $type])->fetchObject();
 
     // If type already exists, reset progress
     if ($queue) {
-      return db_query('UPDATE {' . $counter_table . '} SET total=:total, last_run_at=:time, completed=:completed, started_at=:started_at WHERE type=:type', [
-        ':type' => $type,
-        ':total' => $total,
-        ':completed' => 0,
-        ':time' => time(),
-        ':started_at' => time(),
-      ]);
+      return db_query(
+        'UPDATE {' . $counter_table . '} SET total=:total, last_run_at=:time, completed=:completed, started_at=:started_at WHERE type=:type',
+        [
+          ':type' => $type,
+          ':total' => $total,
+          ':completed' => 0,
+          ':time' => time(),
+          ':started_at' => time(),
+        ]
+      );
     }
 
     // Initialize a new progress report for index name
-    return db_query('INSERT INTO {' . $counter_table . '} (index_name, type, total, completed, last_run_at, started_at, priority) VALUES (:index_name, :type, :total, 0, :last_run_at, :started_at, :priority)', [
-      ':type' => $type,
-      ':index_name' => $index_name,
-      ':total' => $total,
-      ':last_run_at' => time(),
-      ':started_at' => time(),
-      ':priority' => $priority,
-    ]);
+    return db_query(
+      'INSERT INTO {' . $counter_table . '} (index_name, type, total, completed, last_run_at, started_at, priority) VALUES (:index_name, :type, :total, 0, :last_run_at, :started_at, :priority)',
+      [
+        ':type' => $type,
+        ':index_name' => $index_name,
+        ':total' => $total,
+        ':last_run_at' => time(),
+        ':started_at' => time(),
+        ':priority' => $priority,
+      ]
+    );
   }
 
   /**
    * Update the number of items in the counter.
    *
-   * @param string $index_name the index name.
+   * @param string $type the index type.
    * @param int $by the number to decrement by.
    *
-   * @return DatabaseStatementInterface|boolean
+   * @return \DatabaseStatementInterface|boolean
    */
   public static function updateProgress($type, $by = 1) {
     $counter_table = self::QUEUE_TABLE;
@@ -223,11 +250,14 @@ class ESQueue{
     $queue = db_query($query, [':type' => $type])->fetchObject();
 
     if ($queue) {
-      db_query('UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at WHERE type=:type', [
-        ':type' => $type,
-        ':completed' => $queue->completed + $by,
-        ':last_run_at' => time(),
-      ]);
+      db_query(
+        'UPDATE {' . $counter_table . '} SET completed=:completed, last_run_at=:last_run_at WHERE type=:type',
+        [
+          ':type' => $type,
+          ':completed' => $queue->completed + $by,
+          ':last_run_at' => time(),
+        ]
+      );
 
       return $queue->total - ($queue->completed + $by);
     }
@@ -271,7 +301,9 @@ class ESQueue{
     $max = NULL;
     $min = NULL;
 
-    $queues = db_query("SELECT name, COUNT(name) as count FROM {queue} WHERE name LIKE 'elasticsearch%' GROUP BY name ORDER BY count ASC")->fetchAll();
+    $queues = db_query(
+      "SELECT name, COUNT(name) as count FROM {queue} WHERE name LIKE 'elasticsearch%' GROUP BY name ORDER BY count ASC"
+    )->fetchAll();
 
     foreach ($queues as $queue) {
       if (!isset($this->queues[$queue->name])) {
