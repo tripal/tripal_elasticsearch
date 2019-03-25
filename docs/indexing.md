@@ -10,4 +10,6 @@ For details about indexing operations, please visit [Elasticsearch's documentati
 - [Building Custom Indices](custom-indices.md)
 
 
+**Next Section: [Running Indexing Queues](queues.md)**
+
 **[Return to Handbook Index](/docs)**
