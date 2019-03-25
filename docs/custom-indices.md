@@ -25,4 +25,4 @@ For a custom index, you will need to:
 
 **Next section: [Building Search Forms](/docs/forms.md)**
 
-**[Return to Handbook Index](/docs)**
+'**[Return to Handbook Index](README.md)**

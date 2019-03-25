@@ -31,4 +31,4 @@ to provide the url path to the block.
 
 **Next section: [Elasticsearch Daemon](/docs/daemon.md)**
 
-**[Return to Handbook Index](/docs)**
+'**[Return to Handbook Index](README.md)**

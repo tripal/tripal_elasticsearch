@@ -28,4 +28,4 @@ If you choose a `select` field type, you must provide **key|value** pairs to bui
 
 **Next section: [Cross Site Searching](/docs/cross-site-search.md)**
 
-**[Return to Handbook Index](/docs)**
+'**[Return to Handbook Index](README.md)**

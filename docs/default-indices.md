@@ -45,4 +45,4 @@ If this setup is satisfied, you can run the indexing job in the same manner as o
 
 **Next section: [Building Custom Indices](/docs/custom-indices.md)**
 
-**[Return to Handbook Index](/docs)**
+'**[Return to Handbook Index](README.md)**
