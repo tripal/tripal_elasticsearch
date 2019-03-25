@@ -57,4 +57,4 @@ After connecting a remote server, it will be displayed in the remote server heal
 
 **Next section: [What Is Indexing?](/docs/indexing.md)**
 
-**[Return to Handbook Index](/docs)**
+'**[Return to Handbook Index](README.md)**

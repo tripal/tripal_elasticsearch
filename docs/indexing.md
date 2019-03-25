@@ -12,4 +12,4 @@ For details about indexing operations, please visit [Elasticsearch's documentati
 
 **Next Section: [Running Indexing Queues](queues.md)**
 
-**[Return to Handbook Index](/docs)**
+'**[Return to Handbook Index](README.md)**
