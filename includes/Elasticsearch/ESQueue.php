@@ -54,10 +54,10 @@ class ESQueue {
    * @return object
    */
   public static function progress() {
-    $should_check = (int) db_query("SELECT count(*) 
+    $should_check = (int) db_query("SELECT COUNT(*) 
                                     FROM queue 
                                     WHERE name LIKE :es", [
-      ':es' => db_like('elasticsearch%'),
+      ':es' => db_like('elasticsearch').'%',
     ])->fetchField();
 
     $queues = [];
