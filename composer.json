@@ -6,7 +6,7 @@
         "elasticsearch/elasticsearch": "~6.0",
         "composer/installers": "~1.0",
         "phpunit/phpunit": "~7.0",
-        "statonlab/tripal-test-suite": "~1.1.2"
+        "statonlab/tripal-test-suite": "1.*"
     },
     "license": "GPLv3",
     "authors": [
