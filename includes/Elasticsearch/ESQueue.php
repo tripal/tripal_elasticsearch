@@ -1,6 +1,6 @@
 <?php
 
-class ESQueue{
+class ESQueue {
 
   /**
    * Name of the queue progress table.
@@ -54,7 +54,15 @@ class ESQueue{
    * @return object
    */
   public static function progress() {
-    $query = 'SELECT index_name,
+    $should_check = (int) db_query("SELECT count(*) 
+                                    FROM queue 
+                                    WHERE name LIKE :es", [
+      ':es' => db_like('elasticsearch%'),
+    ])->fetchField();
+
+    $queues = [];
+    if ($should_check) {
+      $query = 'SELECT index_name,
                     priority,
                     SUM(total) AS total,
                     SUM(completed) AS completed,
@@ -63,7 +71,8 @@ class ESQueue{
                     FROM {' . self::QUEUE_TABLE . '}
                     GROUP BY index_name, priority
                     ORDER BY index_name ASC, priority ASC';
-    $queues = db_query($query)->fetchAll();
+      $queues = db_query($query)->fetchAll();
+    }
 
     $progress = [];
     $total = 0;
@@ -76,7 +85,7 @@ class ESQueue{
         continue;
       }
 
-      if($queue->completed > $queue->total) {
+      if ($queue->completed > $queue->total) {
         static::fixProgress($queue);
       }
 
@@ -100,7 +109,7 @@ class ESQueue{
         'last_run_at' => $last_run,
         'started_at' => $started_at,
         'time' => $queue->last_run_at - $queue->started_at,
-        'priority' => $queue->priority
+        'priority' => $queue->priority,
       ];
     }
 
@@ -117,7 +126,7 @@ class ESQueue{
   public static function fixProgress(&$queue) {
     $queue->completed = $queue->total;
 
-    db_query('UPDATE {'.self::QUEUE_TABLE.'} SET completed=total WHERE completed > total');
+    db_query('UPDATE {' . self::QUEUE_TABLE . '} SET completed=total WHERE completed > total');
   }
 
   /**
