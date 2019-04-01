@@ -57,7 +57,7 @@ class ESQueue {
     $should_check = (int) db_query("SELECT COUNT(*) 
                                     FROM queue 
                                     WHERE name LIKE :es", [
-      ':es' => db_like('elasticsearch').'%',
+      ':es' => db_like('elasticsearch') . '%',
     ])->fetchField();
 
     $queues = [];
@@ -72,6 +72,9 @@ class ESQueue {
                     GROUP BY index_name, priority
                     ORDER BY index_name ASC, priority ASC';
       $queues = db_query($query)->fetchAll();
+    }
+    elseif (intval(db_query('SELECT COUNT(*) FROM {' . self::QUEUE_TABLE . '} WHERE completed < total')->fetchField())) {
+      db_query('UPDATE {' . self::QUEUE_TABLE . '} SET completed = total')->fetchAll();
     }
 
     $progress = [];
