@@ -30,7 +30,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#type' => 'markup',
     '#markup' => '<h1>Create New Index</h1>
                   <p>You can create indices for your local Elasticsearch server
-                  here. There are three types of indices:  website-wide 
+                  here. There are three types of indices:  website-wide
                   <b>node</b>, website-wide <b>Tripal entity</b>, and
                   <b>database table</b>. The website-wide indices are intended
                   to index all Tripal 2 or Tripal 3 content, respectively, and
@@ -63,6 +63,22 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
                          entities index, it must be edited or deleted in the indices list page.  Website Tripal entities index is available for Tripal version 3 only.'),
     '#options' => $index_types,
     '#default_value' => isset($index_types['website']) ? 'website' : 'database',
+  ];
+
+  $form['chunk_size'] = [
+    '#type' => 'textfield',
+    '#title' => t('How many records to index per job?'),
+    '#description' => t('A higher number requires higher memory but will be faster to complete.'),
+    '#default_value' => '100',
+    '#required' => true,
+    '#states' => [
+      'visible' => [
+        ':input[name="index_type"]' => [
+          ['value' => 'gene_search'],
+          ['value' => 'entities'],
+        ],
+      ],
+    ],
   ];
 
   $form['index_name'] = [
@@ -151,7 +167,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     $form['table_fields'][$field] = [
       '#type' => 'select',
       '#title' => t('Field name: ' . $field),
-      '#description' => t('Please select a mapping type for each field. If no 
+      '#description' => t('Please select a mapping type for each field. If no
 													mapping type is selected for a field, that field will
 													not be indexed. This can be used to selectively index
 													table fields.'),
@@ -216,6 +232,12 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $url = $form_state['values']['url'];
   $exposed = $form_state['values']['exposed'];
   $index_name = $form_state['values']['index_name'];
+  $chunk_size = $form_state['values']['chunk_size'];
+
+  if(empty($chunk_size) || !is_int(intval($chunk_size))) {
+    form_set_error('chunk_size',
+      t('Please enter a valid number. Only integers are accepted.'));
+  }
 
   if ($type === "database") {
     // Index name validation.
@@ -224,7 +246,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
         t('String length cannot be greater than 28.'));
     }
     if (!preg_match('/^[A-Za-z][A-Za-z0-9_]+$/', $index_name)) {
-      form_set_error('index_name', t('index name can only contain lowercase letters, 
+      form_set_error('index_name', t('index name can only contain lowercase letters,
 								numbers and underscores, and must start with a letter.'));
     }
     // 'website' is reserved for website indexing and search, use a different name
@@ -660,7 +682,7 @@ function tripal_elasticsearch_index_edit_confirm(
   $form['table_fields'] = [
     '#type' => 'fieldset',
     '#title' => t('Select fields to index'),
-    '#description' => t('Please select a mapping type for each field. If no 
+    '#description' => t('Please select a mapping type for each field. If no
 													mapping type is selected for a field, that field will
 													not be indexed. This can be used to selectively index
 													table fields.'),
@@ -778,6 +800,7 @@ function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['index_type'];
   $exposed = $values['exposed'] ? 1 : 0;
   $url = isset($values['url']) ? $values['url'] : '';
+  $chunk_size = $values['chunk_size'] ?? 500;
 
   // Populate settings for website or entities.
   if ($index_type === 'website') {
@@ -892,10 +915,10 @@ function tripal_elasticsearch_create_index(&$values) {
       $job = new NodesIndexJob();
       break;
     case 'gene_search':
-      GeneSearchIndexJob::generateDispatcherJobs();
+      GeneSearchIndexJob::generateDispatcherJobs(false, intval($chunk_size));
       break;
     case 'entities':
-      EntitiesIndexJob::generateDispatcherJobs();
+      EntitiesIndexJob::generateDispatcherJobs(1, false, null, intval($chunk_size));
       break;
     default:
       $fields = array_keys($field_mapping_types);

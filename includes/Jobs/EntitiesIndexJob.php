@@ -399,7 +399,7 @@ class EntitiesIndexJob extends ESJob {
    * @param string $bundle A specific bundle to update
    * @param
    */
-  public static function generateDispatcherJobs($round = 1, $clear_queue = FALSE, $bundle = NULL) {
+  public static function generateDispatcherJobs($round = 1, $clear_queue = FALSE, $bundle = NULL, $chunk_size = 100) {
     if ($clear_queue) {
       // Clear all entries from the queue
       $sql = 'SELECT item_id, data FROM queue q WHERE name LIKE :name';
