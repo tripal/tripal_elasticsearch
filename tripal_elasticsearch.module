@@ -564,9 +564,10 @@ function tripal_elasticsearch_generate_block($delta) {
 /**
  * Implements hook_block_view().
  *
+ * @param $delta
+ *
  * @throws \Exception
  *
- * @param $delta
  */
 function tripal_elasticsearch_block_view($delta = '') {
   $block = [];
@@ -616,8 +617,7 @@ function tripal_elasticsearch_block_view($delta = '') {
  *
  * @throws Exception
  */
-function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
-) {
+function tripal_elasticsearch_web_search_results_page_callback($node_type = '') {
   $keyword = isset($_GET['search_box']) ? $_GET['search_box'] : '';
 
   if (empty($keyword)) {
@@ -667,7 +667,8 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = ''
     $content = tripal_elasticsearch_create_collection_button();
   }
   $content .= '<p><strong>' . $results['total'] . ' results found</strong> <span style="float: right">Page ' . $current_page . ' out of ' . $pages . '</span></p>';
-  $content .= tripal_elasticsearch_get_website_search_result_table($results['results'], FALSE);
+  $content .= tripal_elasticsearch_get_website_search_result_table($results['results'],
+    FALSE);
   $content .= $results['pager'];
 
   if (function_exists('tripal_create_collection')) {
@@ -723,11 +724,7 @@ function tripal_elasticsearch_table_search_page_callback() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(
-  &$form,
-  &$form_state,
-  $form_id
-) {
+function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_alter(&$form, &$form_state, $form_id) {
   if (!isset($form_state['values']['op'])) {
     return;
   }
@@ -779,7 +776,8 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     $total = count($results);
     if ($total > 0) {
       $output = '<div id="table_search_results_datatable">';
-      $output .= tripal_elasticsearch_get_table_search_result_table($results, $index_name, $total);
+      $output .= tripal_elasticsearch_get_table_search_result_table($results,
+        $index_name, $total);
       $output .= '</div>';
     }
 
@@ -1102,5 +1100,48 @@ function tripal_elasticsearch_importer_finish($importer) {
   if (in_array($name, $supported_importers)) {
     GeneSearchIndexJob::generateDispatcherJobs(TRUE);
     EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+  }
+}
+
+function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob $job = NULL) {
+  try {
+    $es = new ESInstance();
+    foreach ($ids as $id) {
+      try {
+        if (in_array('entities', $es->getIndices())) {
+          $es->deleteEntry('entities', 'entities', $id);
+        }
+      } catch (Exception $exception) {
+        watchdog('tripal_elasticsearch',
+          "Deleting orphan entities from entities index failed. " . $exception->getMessage(),
+          WATCHDOG_ERROR);
+      }
+
+      try {
+        if (in_array('gene_search_index', $es->getIndices())) {
+          $params = [
+            'index' => 'gene_search_index',
+            'type' => 'chado.feature',
+            'body' => [
+              'query' => [
+                'match' => [
+                  ['entity_id' => $id],
+                ],
+              ],
+            ],
+          ];
+
+          $es->client->deleteByQuery($params);
+        }
+      } catch (Exception $exception) {
+        watchdog('tripal_elasticsearch',
+          "Deleting orphan entities from gene index failed. " . $exception->getMessage(),
+          WATCHDOG_ERROR);
+      }
+    }
+  } catch (\Exception $e) {
+    watchdog('tripal_elasticsearch',
+      "Deleting orphan entities failed. " . $exception->getMessage(),
+      WATCHDOG_ERROR);
   }
 }
