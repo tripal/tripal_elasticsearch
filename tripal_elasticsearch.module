@@ -1103,12 +1103,22 @@ function tripal_elasticsearch_importer_finish($importer) {
   }
 }
 
+/**
+ * Implements HOOK_bundle_delete_orphans.
+ *
+ * @param \TripalBundle $bundle
+ * @param array $ids
+ * @param \TripalJob|null $job
+ */
 function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob $job = NULL) {
   try {
     $es = new ESInstance();
+    $has_entities = in_array('entities', $es->getIndices());
+    $has_genes = in_array('gene_search_index', $es->getIndices());
+    
     foreach ($ids as $id) {
       try {
-        if (in_array('entities', $es->getIndices())) {
+        if ($has_entities) {
           $es->deleteEntry('entities', 'entities', $id);
         }
       } catch (Exception $exception) {
@@ -1118,7 +1128,7 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
       }
 
       try {
-        if (in_array('gene_search_index', $es->getIndices())) {
+        if ($has_genes) {
           $params = [
             'index' => 'gene_search_index',
             'type' => 'chado.feature',
@@ -1141,7 +1151,6 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
     }
   } catch (\Exception $e) {
     watchdog('tripal_elasticsearch',
-      "Deleting orphan entities failed. " . $exception->getMessage(),
-      WATCHDOG_ERROR);
+      "Connecting to ES failed. " . $exception->getMessage(), WATCHDOG_ERROR);
   }
 }
