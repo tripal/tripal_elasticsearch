@@ -70,7 +70,7 @@ function tripal_elasticsearch_indexing_form($form, &$form_state) {
     '#title' => t('How many records to index per job?'),
     '#description' => t('A higher number requires higher memory but will be faster to complete.'),
     '#default_value' => '100',
-    '#required' => true,
+    '#required' => TRUE,
     '#states' => [
       'visible' => [
         ':input[name="index_type"]' => [
@@ -234,7 +234,7 @@ function tripal_elasticsearch_indexing_form_validate($form, &$form_state) {
   $index_name = $form_state['values']['index_name'];
   $chunk_size = $form_state['values']['chunk_size'];
 
-  if(empty($chunk_size) || !is_int(intval($chunk_size))) {
+  if (empty($chunk_size) || !is_int(intval($chunk_size))) {
     form_set_error('chunk_size',
       t('Please enter a valid number. Only integers are accepted.'));
   }
@@ -468,11 +468,7 @@ function tripal_elasticsearch_indices_list_page() {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_edit_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_edit_confirm($form, &$form_state, $index_name) {
   $form = [];
   $exposed = FALSE;
   $url = NULL;
@@ -761,11 +757,7 @@ function tripal_elasticsearch_index_edit_confirm_submit($form, &$form_state) {
  *
  * @return mixed
  */
-function tripal_elasticsearch_index_delete_confirm(
-  $form,
-  &$form_state,
-  $index_name
-) {
+function tripal_elasticsearch_index_delete_confirm($form, &$form_state, $index_name) {
   $form = [];
   $description = 'Are you sure you want to delete the ' . $index_name . ' index?';
   $cancel_path = 'admin/tripal/extension/tripal_elasticsearch/indices';
@@ -915,10 +907,11 @@ function tripal_elasticsearch_create_index(&$values) {
       $job = new NodesIndexJob();
       break;
     case 'gene_search':
-      GeneSearchIndexJob::generateDispatcherJobs(false, intval($chunk_size));
+      GeneSearchIndexJob::generateDispatcherJobs(FALSE, intval($chunk_size));
       break;
     case 'entities':
-      EntitiesIndexJob::generateDispatcherJobs(1, false, null, intval($chunk_size));
+      EntitiesIndexJob::generateDispatcherJobs(1, FALSE, NULL,
+        intval($chunk_size));
       break;
     default:
       $fields = array_keys($field_mapping_types);
@@ -1012,7 +1005,11 @@ function tripal_elasticsearch_update_index($index) {
  * Admin Progress Tracker Page
  */
 function tripal_elasticsearch_progress_page($callback = FALSE) {
-  $content = '';
+
+  $content = 'To accurately check on progress, please visit ' . l('the queue manager page',
+      'admin/config/system/queue-ui') . ' and look for the elasticsearch queues. If none exist, indexing have been completed.';
+
+  return $content;
   if (!$callback) {
     drupal_add_js(drupal_get_path('module',
         'tripal_elasticsearch') . '/js/tripal_elasticsearch_progress_tracker.js');
@@ -1123,7 +1120,6 @@ function tripal_elasticsearch_compute_ETR($total, $completed, $time) {
 
   return number_format($remaining, 2) . " {$unit}";
 }
-
 
 function tripal_elasticsearch_update_entities_form($form, &$form_state) {
   // get bundles
