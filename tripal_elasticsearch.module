@@ -1115,7 +1115,7 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
     $es = new ESInstance();
     $has_entities = in_array('entities', $es->getIndices());
     $has_genes = in_array('gene_search_index', $es->getIndices());
-    
+
     foreach ($ids as $id) {
       try {
         if ($has_entities) {
