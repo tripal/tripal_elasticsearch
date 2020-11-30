@@ -292,9 +292,7 @@ class ESInstance{
     }
 
     $mappings = [
-      '_default_' => [
         'properties' => $properties,
-      ],
     ];
 
     $this->indexParams = [

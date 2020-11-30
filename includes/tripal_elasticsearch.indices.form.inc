@@ -790,6 +790,7 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['index_type'];
+
   $exposed = $values['exposed'] ? 1 : 0;
   $url = isset($values['url']) ? $values['url'] : '';
   $chunk_size = $values['chunk_size'] ?? 500;
@@ -801,8 +802,7 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_table = 'node';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
+      'lowercase'
     ]);
     $field_mapping_types = [
       'nid' => 'integer',
@@ -816,7 +816,6 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_table = 'tripal_entity';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
-      'standard',
       'lowercase',
     ]);
     $field_mapping_types = [
@@ -831,8 +830,7 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_table = 'chado.feature';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
+      'lowercase'
     ]);
     $field_mapping_types = [
       'node_id' => 'integer',
