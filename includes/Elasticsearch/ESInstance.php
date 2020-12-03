@@ -711,7 +711,7 @@ class ESInstance{
    */
   public function getIndexFields($index) {
     $mapping = $this->client->indices()->getMapping();
-    $fields = isset($mapping[$index]) ? $mapping[$index]['mappings']['_default_']['properties'] : [];
+    $fields = isset($mapping[$index]) ? $mapping[$index]['mappings']['properties'] : [];
 
     return array_keys($fields);
   }
