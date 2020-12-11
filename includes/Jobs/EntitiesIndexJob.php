@@ -172,7 +172,7 @@ class EntitiesIndexJob extends ESJob {
       }
 
       $all[] = (object) [
-        'entity_id' => $entity->id,
+        'entity_id' => (int)($entity->id),
         'title' => $title,
         'bundle_label' => $record->bundle_label,
         'content' => $content,

@@ -4,13 +4,27 @@ services:
   app:
     image: 'statonlab/tripal3'
     environment:
-      - DRUPAL_ROOT=/var/www/html
+     - DRUPAL_ROOT=/var/www/html
     volumes:
       - .:/modules/tripal_elasticsearch
       - ./vendor:/var/www/html/sites/all/libraries/elasticsearch-php
     ports:
       - "8090:80"
   elasticsearch:
-    image: 'elasticsearch:6.5.4'
+    image: 'elasticsearch:7.9.2'
     ports:
       - "9201:9200"
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xmx1g -Xms1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
