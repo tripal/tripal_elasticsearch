@@ -18,7 +18,6 @@ function tripal_elasticsearch_get_tokenizer_options() {
 
 function tripal_elasticsearch_get_token_filter_options() {
   return drupal_map_assoc([
-    'standard',
     'asciifolding',
     'length',
     'lowercase',
