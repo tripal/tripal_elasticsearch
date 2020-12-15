@@ -161,7 +161,7 @@ class ESInstance{
 
     $params = [];
     $params['index'] = $force_entities_only ? 'entities' : $index;
-    $params['type'] = $index_type;
+   // $params['type'] = $index_type;
     $params['body'] = [
       'query' => $query,
       'highlight' => $highlight,
@@ -199,7 +199,7 @@ class ESInstance{
   ) {
     $params = [];
     $params['index'] = $index;
-    $params['type'] = $type;
+    //$params['type'] = $type;
 
     // sort the table by the first field by default
     //$sort_field = array_keys($field_content_pairs)[0];
@@ -408,7 +408,7 @@ class ESInstance{
   public function deleteEntry($index, $index_type, $id) {
     $params = [
       'index' => $index,
-      'type' => $index_type,
+      //'type' => $index_type,
       'id' => $id,
     ];
 
@@ -431,13 +431,14 @@ class ESInstance{
   public function createEntry($index, $type, $id, $body) {
     $params = [
       'index' => $index,
-      'type' => $type,
+      //'type' => $type,
       'body' => $body,
     ];
 
     if ($id !== FALSE) {
       $params['id'] = $id;
     }
+    //watchdog('createEntry','<pre>'. print_r($params). '</pre>', NULL,WATCHDOG_WARNING);
 
     return $this->client->index($params);
   }
@@ -729,13 +730,13 @@ class ESInstance{
       throw new Exception('Please provide an index name when deleting records from an index');
     }
 
-    if ($type === NULL) {
+   /*  if ($type === NULL) {
       $type = $index_name;
-    }
+    } */
 
     $this->client->deleteByQuery([
       'index' => $index_name,
-      'type' => $type,
+      //'type' => $type,
       'body' => [
         'query' => [
           'match_all' => (object) [],
@@ -757,7 +758,7 @@ class ESInstance{
     try {
       return $this->client->get([
         'index' => $index,
-        'type' => $type,
+       // 'type' => $type,
         'id' => $id,
       ]);
     } catch (Exception $exception) {
@@ -799,7 +800,7 @@ class ESInstance{
 
     return $this->client->indices()->putMapping([
       'index' => $index_name,
-      'type' => $index_type,
+     // 'type' => $index_type,
       'body' => [
         'properties' => $properties,
       ],
@@ -813,14 +814,14 @@ class ESInstance{
    * @param string $index The index name
    * @param string $index_type The index type
    * @param mixed $id The document ID
-   * @param array $item The fields to update or create.
+   * @param array $item The fields to update or create.g
    *
    * @return array
    */
   public function createOrUpdate($index, $index_type, $id, $item) {
     return $this->client->update([
       'index' => $index,
-      'type' => $index_type,
+     // 'type' => $index_type,
       'id' => $id,
       'body' => [
         'doc' => $item,

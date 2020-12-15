@@ -869,7 +869,6 @@ function tripal_elasticsearch_create_index(&$values) {
     }
     if (!$token_filters) {
       $token_filters = drupal_map_assoc([
-        'standard',
         'lowercase',
       ]);
     }
@@ -893,7 +892,11 @@ function tripal_elasticsearch_create_index(&$values) {
       $field_mapping_types)->createIndex();
   } catch (Exception $exception) {
     form_set_error(0, $exception->getMessage());
+    //remove entry from db on error
+    db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
+    [':index_name' => $index_name]);
     watchdog('tripal_elasticsearch', $exception->getMessage());
+
 
     return;
   }
