@@ -84,7 +84,7 @@ function table_search_interface_building_form($form, &$form_state) {
 
     $index_profile = $existing_indices[$index_name];
 
-    $index_fields = array_keys($index_profile['mappings']['_default_']['properties']);
+    $index_fields = array_keys($index_profile['mappings']['properties']);
 
     $form['table_name'] = [
       '#type' => 'value',
@@ -247,7 +247,7 @@ function table_search_interface_building_form($form, &$form_state) {
     $form['manage_block']['field_settings'][$field]['weight'] = [
       '#type' => 'select',
       '#title' => t('Field weight'),
-      '#description' => t('The search rank weight for this field. A higher 
+      '#description' => t('The search rank weight for this field. A higher
                             weight means matches in this field will influence
                             the relevance more.'),
       '#options' => drupal_map_assoc(range(0, 20)),
