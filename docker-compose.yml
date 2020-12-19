@@ -4,7 +4,7 @@ services:
   app:
     image: 'statonlab/tripal3_seeded'
     environment:
-      - DRUPAL_ROOT=/var/www/html
+     - DRUPAL_ROOT=/var/www/html
     volumes:
       - .:/modules/tripal_elasticsearch
       - ../../libraries/elasticsearch-php:/var/www/html/sites/all/libraries/elasticsearch-php

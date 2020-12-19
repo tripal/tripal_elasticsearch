@@ -122,7 +122,7 @@ class NodesIndexJob extends ESJob{
       }
 
       $all[] = (object) [
-        'nid' => $record->nid,
+        'nid' => (int)($record->nid),
         'title' => $title,
         'type' => $record->type,
         'content' => $this->cleanHTML($content),
