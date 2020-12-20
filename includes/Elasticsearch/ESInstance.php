@@ -508,7 +508,7 @@ class ESInstance{
     foreach ($entries as $entry) {
       $request = [
         '_index' => $index,
-        '_type' => $type,
+       // '_type' => $type,
       ];
 
       if ($id_key !== NULL) {
