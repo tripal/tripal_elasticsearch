@@ -86,7 +86,7 @@ class local__feature_search_formatter extends ChadoFieldFormatter {
         'organism' => "$organism->genus $organism->species",
         "search_term" => '*',
       ]);
-      $count = $es->setTableSearchParams('gene_search_index', '', $query)
+      $count = $es->setTableSearchParams('gene_search_index', $query)
         ->count();
       if ($count < 1) {
         return NULL;

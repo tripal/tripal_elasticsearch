@@ -321,7 +321,7 @@ function tripal_elasticsearch_api_v1_table_index_local_search(
       );
     }
 
-    $results = $es->setTableSearchParams($index_name, '', $query, [0, 2], TRUE);
+    $results = $es->setTableSearchParams($index_name, $query, [0, 2], TRUE);
   } catch (Exception $exception) {
     if ($http) {
       return ESResponse::error(
