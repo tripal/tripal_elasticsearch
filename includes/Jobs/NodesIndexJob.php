@@ -35,7 +35,7 @@ class NodesIndexJob extends ESJob{
    *
    * @var int
    */
-  public $chunk = 500;
+  public $chunk = 50;
 
   /**
    * NodesIndexJob constructor.

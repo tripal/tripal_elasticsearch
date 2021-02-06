@@ -702,13 +702,15 @@ function tripal_elasticsearch_create_collection_button() {
     return '';
   }
 
-  return '<p>' . l('Create Downloadable Collection',
+/*  return '<p>' . l('Create Downloadable Collection',
       'tripal_elasticsearch/collections/create', [
         'attributes' => [
           'id' => 'create-collection-btn',
           'class' => 'btn btn-primary',
         ],
       ]) . '</p>';
+*/
+return '';
 }
 
 /**
