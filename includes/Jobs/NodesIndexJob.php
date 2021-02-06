@@ -59,8 +59,7 @@ class NodesIndexJob extends ESJob{
     $this->total = count($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $this->loadContent($records), $this->index,
-        'nid');
+      $es->bulkIndex($this->index, $this->loadContent($records), 'nid');
     }
     elseif ($this->total > 0) {
       $node = $this->loadContent($records);
@@ -70,7 +69,7 @@ class NodesIndexJob extends ESJob{
 
       $record = end($node);
 
-      $es->createEntry($this->index, $this->index, $record->nid, $record);
+      $es->createEntry($this->index, $record->nid, $record);
     }
   }
 
@@ -122,7 +121,7 @@ class NodesIndexJob extends ESJob{
       }
 
       $all[] = (object) [
-        'nid' => (int)($record->nid),
+        'nid' => $record->nid,
         'title' => $title,
         'type' => $record->type,
         'content' => $this->cleanHTML($content),

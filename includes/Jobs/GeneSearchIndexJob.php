@@ -95,7 +95,6 @@ class GeneSearchIndexJob extends ESJob{
       foreach ($records as $record) {
         $es->createOrUpdate(
           $this->index,
-          $this->table,
           $record->feature_id,
           $record
         );

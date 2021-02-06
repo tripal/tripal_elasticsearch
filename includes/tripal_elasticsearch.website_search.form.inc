@@ -151,7 +151,6 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 
   // get the number of total search results.
   $record = end($result);
-  $index_type = $record->table_name;
   $count = '';
 
   //$window_range = drupal_map_assoc([1]);
@@ -160,7 +159,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
     try {
       $es = new ESInstance();
-      $results_count = $es->setTableSearchParams($index_name, $index_type, $query)
+      $results_count = $es->setTableSearchParams($index_name, $query)
         ->count();
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {

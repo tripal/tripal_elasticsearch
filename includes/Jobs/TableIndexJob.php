@@ -64,10 +64,10 @@ class TableIndexJob extends ESJob {
     $this->total = count($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $records, $this->table);
+      $es->bulkIndex($this->index, $records);
     }
     elseif ($this->total > 0) {
-      $es->createEntry($this->index, $this->table, FALSE, $records[0]);
+      $es->createEntry($this->index, FALSE, $records[0]);
     }
   }
 
