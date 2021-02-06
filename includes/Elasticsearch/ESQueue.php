@@ -169,8 +169,8 @@ class ESQueue {
       }
 
       $remaining = static::updateProgress($job->type, $total);
-       //watchdog('createEntry','<pre>'. print_r($params). '</pre>', NULL,WATCHDOG_WARNING);
-      watchdog('tripal_elasticsearch', "Remaining in job" . $remaining, WATCHDOG_INFO);
+       watchdog('tripal_elasticsearch','remaining : <pre>'. print_r($remaining). '</pre>', NULL,WATCHDOG_WARNING);
+      //watchdog('tripal_elasticsearch', "Remaining in job" . $remaining, WATCHDOG_INFO);
       if ($remaining === 0 && $job->hasRounds()) {
         $job->createNextRound();
       }
