@@ -1159,7 +1159,8 @@ function tripal_elasticsearch_update_entities_form_submit($form, &$form_state) {
   $bundle = $form_state['values']['bundle'];
 
   if (!empty($bundle)) {
-    EntitiesIndexJob::(1, FALSE, $bundle);
+    EntitiesIndexJob::generateDispatcherJobs(1, FALSE, $bundle);
+    EntitiesIndexJob::generateDispatcherJobs(2, FALSE, $bundle);
   }
   else {
     EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
