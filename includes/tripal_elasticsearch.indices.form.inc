@@ -913,6 +913,8 @@ function tripal_elasticsearch_create_index(&$values) {
     case 'entities':
       EntitiesIndexJob::generateDispatcherJobs(1, FALSE, NULL,
         intval($chunk_size));
+      EntitiesIndexJob::generateDispatcherJobs(2, FALSE, NULL,
+        intval($chunk_size));
       break;
     default:
       $fields = array_keys($field_mapping_types);
@@ -1157,10 +1159,11 @@ function tripal_elasticsearch_update_entities_form_submit($form, &$form_state) {
   $bundle = $form_state['values']['bundle'];
 
   if (!empty($bundle)) {
-    EntitiesIndexJob::generateDispatcherJobs(1, FALSE, $bundle);
+    EntitiesIndexJob::(1, FALSE, $bundle);
   }
   else {
     EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+    EntitiesIndexJob::generateDispatcherJobs(2, TRUE);
   }
 
   drupal_set_message("Entities updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");
