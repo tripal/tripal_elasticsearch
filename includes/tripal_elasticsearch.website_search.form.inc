@@ -18,6 +18,10 @@ function website_search_box_form($form, &$form_state) {
 
   $default = isset($_GET['search_box']) && $_GET['search_box'] ? $_GET['search_box'] : '';
   $category = isset($_GET['category']) && $_GET['category'] ? $_GET['category'] : '';
+  
+  $form['#attributes']['role'] = 'search';
+  $form['#attributes']['aria-label'] = 'Sitewide';
+  
   $form['container'] = [
     '#type' => 'container',
     '#attributes' => [
