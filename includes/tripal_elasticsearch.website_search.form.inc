@@ -29,16 +29,24 @@ function website_search_box_form($form, &$form_state) {
     ],
   ];
 
+  $search_box_id = 'edit-query-' . uniqid();
+
+  $form['container']['search_label'] = [
+    '#markup' => '<label for="' . $search_box_id . '" class="control-label sr-only">Search</label>',
+  ];
+
   $form['container']['search_box'] = [
     '#type' => 'textfield',
     '#size' => 15,
+    '#attributes' => [
+      'id' => $search_box_id,
+      'placeholder' => 'What would you like to find?',
+    ],
     '#default_value' => $default,
   ];
 
   if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
-    $form['container']['search_box']['#attributes'] = [
-      'autofocus' => 'autofocus',
-    ];
+    $form['container']['search_box']['#attributes']['autofocus'] = 'autofocus';
   }
 
   $form['container']['submit'] = [
