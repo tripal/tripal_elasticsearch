@@ -654,7 +654,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
   }
 
   if ($results['total'] == 0) {
-    $content = "<p>Your search -<strong>" . $keyword . "</strong>- didn't match any content.</p>";
+    $content = "<p>Your search -<strong>" . htmlspecialchars($keyword, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5) . "</strong>- didn't match any content.</p>";
     $content .= theme('elasticsearch_tips');
 
     return $content;
