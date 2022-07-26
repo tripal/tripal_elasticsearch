@@ -446,7 +446,7 @@ function tripal_elasticsearch_block_info() {
 
   // Define blocks for table search forms.
   $sql = "SELECT index_name FROM {tripal_elasticsearch}";
-  $index_names = db_query($sql)->fetchCol('index_name');
+  $index_names = db_query($sql)->fetchCol(0);
   if (!empty($index_names)) {
     foreach ($index_names as $index_name) {
       $blocks['tes_' . $index_name] = [
