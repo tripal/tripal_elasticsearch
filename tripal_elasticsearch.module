@@ -446,7 +446,7 @@ function tripal_elasticsearch_block_info() {
 
   // Define blocks for table search forms.
   $sql = "SELECT index_name FROM {tripal_elasticsearch}";
-  $index_names = db_query($sql)->fetchCol('index_name');
+  $index_names = db_query($sql)->fetchCol();
   if (!empty($index_names)) {
     foreach ($index_names as $index_name) {
       $blocks['tes_' . $index_name] = [
@@ -521,7 +521,7 @@ function tripal_elasticsearch_generate_block($delta) {
   // Use index name obtained from block name and query the database.
   $sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
   $result = db_query($sql,
-    [':index_name' => $index_name])->fetchCol('index_name');
+    [':index_name' => $index_name])->fetchCol();
 
   // If query result is not empty, display the block.
   if (!empty($result)) {
@@ -1151,6 +1151,6 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
     }
   } catch (\Exception $e) {
     watchdog('tripal_elasticsearch',
-      "Connecting to ES failed. " . $exception->getMessage(), WATCHDOG_ERROR);
+      "Connecting to ES failed. " . $e->getMessage(), WATCHDOG_ERROR);
   }
 }
