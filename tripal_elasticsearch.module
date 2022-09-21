@@ -1151,6 +1151,6 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
     }
   } catch (\Exception $e) {
     watchdog('tripal_elasticsearch',
-      "Connecting to ES failed. " . $exception->getMessage(), WATCHDOG_ERROR);
+      "Connecting to ES failed. " . $e->getMessage(), WATCHDOG_ERROR);
   }
 }
