@@ -74,7 +74,7 @@ function table_search_interface_building_form($form, &$form_state) {
 
     //get the dbtable mapping
     $sql = "SELECT DISTINCT table_name FROM {tripal_elasticsearch_indices} WHERE index_name = :index_name ";
-    $dbtable = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchCol('table_name');
+    $dbtable = db_query($sql, [':index_name' => $form_state['values']['index_name']])->fetchCol();
     $table_name = $dbtable[0];
 
     if (!$table_name) {
@@ -91,7 +91,7 @@ function table_search_interface_building_form($form, &$form_state) {
       '#value' => $table_name,
     ];
     $sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch}";
-    $result = db_query($sql)->fetchCol('index_name');
+    $result = db_query($sql)->fetchCol();
     $blocks = drupal_map_assoc($result);
     $block_exists = in_array($index_name, $blocks);
   }
@@ -309,7 +309,7 @@ function table_search_interface_building_form_submit($form, &$form_state) {
   $table_name = $form_state['values']['table_name'];
   // Delete record if it already exists in database table 'tripal_elasticsearch' and 'tripal_elasticsearch_links.
   $sql = "SELECT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
-  $result = db_query($sql, [':index_name' => $index_name])->fetchCol('index_name');
+  $result = db_query($sql, [':index_name' => $index_name])->fetchCol();
   if (!empty($result)) {
     try {
       db_delete('tripal_elasticsearch')
