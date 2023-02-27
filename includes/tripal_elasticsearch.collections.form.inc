@@ -149,7 +149,7 @@ function tripal_elasticsearch_collections_form_submit($form, &$form_state) {
 
   try {
     $es = new ESInstance();
-    $es->setWebsiteSearchParams($query, $bundle_label, '', '', [0, 10], TRUE);
+    $es->setWebsiteSearchParams($query, $bundle_label, [0, 10], TRUE);
     $count = $es->count();
 
     for ($i = 0; $i < $count; $i += 500) {

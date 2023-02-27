@@ -446,7 +446,7 @@ function tripal_elasticsearch_block_info() {
 
   // Define blocks for table search forms.
   $sql = "SELECT index_name FROM {tripal_elasticsearch}";
-  $index_names = db_query($sql)->fetchCol('index_name');
+  $index_names = db_query($sql)->fetchCol();
   if (!empty($index_names)) {
     foreach ($index_names as $index_name) {
       $blocks['tes_' . $index_name] = [
@@ -521,7 +521,7 @@ function tripal_elasticsearch_generate_block($delta) {
   // Use index name obtained from block name and query the database.
   $sql = "SELECT DISTINCT index_name FROM {tripal_elasticsearch} WHERE index_name = :index_name";
   $result = db_query($sql,
-    [':index_name' => $index_name])->fetchCol('index_name');
+    [':index_name' => $index_name])->fetchCol();
 
   // If query result is not empty, display the block.
   if (!empty($result)) {
@@ -654,7 +654,7 @@ function tripal_elasticsearch_web_search_results_page_callback($node_type = '') 
   }
 
   if ($results['total'] == 0) {
-    $content = "<p>Your search -<strong>" . $keyword . "</strong>- didn't match any content.</p>";
+    $content = "<p>Your search -<strong>" . htmlspecialchars($keyword, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5) . "</strong>- didn't match any content.</p>";
     $content .= theme('elasticsearch_tips');
 
     return $content;
@@ -702,13 +702,16 @@ function tripal_elasticsearch_create_collection_button() {
     return '';
   }
 
-  return '<p>' . l('Create Downloadable Collection',
+//remove download link
+ /*  return '<p>' . l('Create Downloadable Collection',
       'tripal_elasticsearch/collections/create', [
         'attributes' => [
           'id' => 'create-collection-btn',
           'class' => 'btn btn-primary',
         ],
       ]) . '</p>';
+*/
+return '';
 }
 
 /**
@@ -762,7 +765,7 @@ function tripal_elasticsearch_form_tripal_elasticsearch_build_search_block_form_
     $results = [];
     try {
       $es = new ESInstance();
-      $results = $es->setTableSearchParams($index_name, $index_type, $query, [
+      $results = $es->setTableSearchParams($index_name, $query, [
         $from,
         1000,
       ])->search();
@@ -844,7 +847,7 @@ function tripal_elasticsearch_node_delete($node) {
 
   try {
     $es = new ESInstance();
-    $es->deleteEntry('website', 'website', $node->nid);
+    $es->deleteEntry('website', $node->nid);
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
       $message = $e->getMessage() . ' Failed to delete indexed node ' . $node->nid;
@@ -938,13 +941,12 @@ function tripal_elasticsearch_entity_delete($entity, $type) {
   try {
     $es = new ESInstance();
     if (in_array('entities', $es->getIndices())) {
-      $es->deleteEntry('entities', 'entities', $entity->id);
+      $es->deleteEntry('entities', $entity->id);
     }
 
     if ($entity->chado_table === 'feature' && in_array('gene_search_index',
         $es->getIndices())) {
-      $es->deleteEntry('gene_search_index', 'chado.feature',
-        $entity->chado_record_id);
+      $es->deleteEntry('gene_search_index', $entity->chado_record_id);
     }
   } catch (\Exception $e) {
     if (!$tripal_elasticsearch_errors) {
@@ -994,7 +996,7 @@ function tripal_elasticsearch_paginate($per_page) {
   try {
     $es = new ESInstance();
 
-    return $es->setTableSearchParams($index_name, $index_type, $query)
+    return $es->setTableSearchParams($index_name, $query)
       ->paginate($per_page);
   } catch (\Exception $e) {
     return [];
@@ -1040,7 +1042,7 @@ function tripal_elasticsearch_table_search_download() {
 
   try {
     $es = new ESInstance();
-    $count = $es->setTableSearchParams($index_name, $index_type, $query)
+    $count = $es->setTableSearchParams($index_name, $query)
       ->count();
     $window_range = range(1, ceil($count / 1000));
   } catch (Exception $exception) {
@@ -1054,7 +1056,7 @@ function tripal_elasticsearch_table_search_download() {
     $offset = [1000 * ($window - 1), 1000];
 
     try {
-      $result = $es->setTableSearchParams($index_name, $index_type, $query,
+      $result = $es->setTableSearchParams($index_name, $query,
         $offset)->search();
     } catch (Exception $exception) {
       drupal_set_message($exception->getMessage(), 'error');
@@ -1119,7 +1121,7 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
     foreach ($ids as $id) {
       try {
         if ($has_entities) {
-          $es->deleteEntry('entities', 'entities', $id);
+          $es->deleteEntry('entities', $id);
         }
       } catch (Exception $exception) {
         watchdog('tripal_elasticsearch',
@@ -1151,6 +1153,6 @@ function tripal_elasticsearch_bundle_delete_orphans(TripalBundle $bundle, array 
     }
   } catch (\Exception $e) {
     watchdog('tripal_elasticsearch',
-      "Connecting to ES failed. " . $exception->getMessage(), WATCHDOG_ERROR);
+      "Connecting to ES failed. " . $e->getMessage(), WATCHDOG_ERROR);
   }
 }

@@ -790,6 +790,7 @@ function tripal_elasticsearch_index_delete_confirm_submit($form, &$form_state) {
  */
 function tripal_elasticsearch_create_index(&$values) {
   $index_type = $values['index_type'];
+
   $exposed = $values['exposed'] ? 1 : 0;
   $url = isset($values['url']) ? $values['url'] : '';
   $chunk_size = $values['chunk_size'] ?? 500;
@@ -801,8 +802,7 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_table = 'node';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
+      'lowercase'
     ]);
     $field_mapping_types = [
       'nid' => 'integer',
@@ -816,7 +816,6 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_table = 'tripal_entity';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
-      'standard',
       'lowercase',
     ]);
     $field_mapping_types = [
@@ -831,8 +830,7 @@ function tripal_elasticsearch_create_index(&$values) {
     $index_table = 'chado.feature';
     $tokenizer = 'standard';
     $token_filters = drupal_map_assoc([
-      'standard',
-      'lowercase',
+      'lowercase'
     ]);
     $field_mapping_types = [
       'node_id' => 'integer',
@@ -871,7 +869,6 @@ function tripal_elasticsearch_create_index(&$values) {
     }
     if (!$token_filters) {
       $token_filters = drupal_map_assoc([
-        'standard',
         'lowercase',
       ]);
     }
@@ -895,7 +892,11 @@ function tripal_elasticsearch_create_index(&$values) {
       $field_mapping_types)->createIndex();
   } catch (Exception $exception) {
     form_set_error(0, $exception->getMessage());
+    //remove entry from db on error
+    db_query("DELETE FROM {tripal_elasticsearch_indices} WHERE index_name=:index_name",
+    [':index_name' => $index_name]);
     watchdog('tripal_elasticsearch', $exception->getMessage());
+
 
     return;
   }
@@ -911,6 +912,8 @@ function tripal_elasticsearch_create_index(&$values) {
       break;
     case 'entities':
       EntitiesIndexJob::generateDispatcherJobs(1, FALSE, NULL,
+        intval($chunk_size));
+      EntitiesIndexJob::generateDispatcherJobs(2, FALSE, NULL,
         intval($chunk_size));
       break;
     default:
@@ -1157,9 +1160,11 @@ function tripal_elasticsearch_update_entities_form_submit($form, &$form_state) {
 
   if (!empty($bundle)) {
     EntitiesIndexJob::generateDispatcherJobs(1, FALSE, $bundle);
+    EntitiesIndexJob::generateDispatcherJobs(2, FALSE, $bundle);
   }
   else {
     EntitiesIndexJob::generateDispatcherJobs(1, TRUE);
+    EntitiesIndexJob::generateDispatcherJobs(2, TRUE);
   }
 
   drupal_set_message("Entities updating jobs have been dispatched successfully. Please run `drush cron` to process items in the queue.");

@@ -93,8 +93,7 @@ class EntitiesIndexJob extends ESJob {
       $records = $this->loadContent($entities);
 
       foreach ($records as $record) {
-        $this->es->createOrUpdate($this->index, $this->index,
-          $record->entity_id, $record);
+        $this->es->createOrUpdate($this->index, $record->entity_id, $record);
       }
     } catch (Exception $exception) {
       tripal_report_error('tripal_elasticsearch', TRIPAL_ERROR,
@@ -158,7 +157,7 @@ class EntitiesIndexJob extends ESJob {
         continue;
       }
 
-      $prev_entity = $this->es->getRecord('entities', 'entities', $entity->id);
+      $prev_entity = $this->es->getRecord('entities', $entity->id);
       if ($prev_entity['found']) {
         $this->shouldUpdate = TRUE;
         // Use + to preserve keys. array_merge() does not preserve keys.

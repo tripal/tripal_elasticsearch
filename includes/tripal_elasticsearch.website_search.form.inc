@@ -18,6 +18,10 @@ function website_search_box_form($form, &$form_state) {
 
   $default = isset($_GET['search_box']) && $_GET['search_box'] ? $_GET['search_box'] : '';
   $category = isset($_GET['category']) && $_GET['category'] ? $_GET['category'] : '';
+  
+  $form['#attributes']['role'] = 'search';
+  $form['#attributes']['aria-label'] = 'Sitewide';
+  
   $form['container'] = [
     '#type' => 'container',
     '#attributes' => [
@@ -25,16 +29,24 @@ function website_search_box_form($form, &$form_state) {
     ],
   ];
 
+  $search_box_id = 'edit-query-' . uniqid();
+
+  $form['container']['search_label'] = [
+    '#markup' => '<label for="' . $search_box_id . '" class="control-label sr-only">Search</label>',
+  ];
+
   $form['container']['search_box'] = [
     '#type' => 'textfield',
     '#size' => 15,
+    '#attributes' => [
+      'id' => $search_box_id,
+      'placeholder' => 'What would you like to find?',
+    ],
     '#default_value' => $default,
   ];
 
   if (strstr(current_path(), 'tripal_elasticsearch/search_website') !== FALSE) {
-    $form['container']['search_box']['#attributes'] = [
-      'autofocus' => 'autofocus',
-    ];
+    $form['container']['search_box']['#attributes']['autofocus'] = 'autofocus';
   }
 
   $form['container']['submit'] = [
@@ -151,7 +163,6 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
 
   // get the number of total search results.
   $record = end($result);
-  $index_type = $record->table_name;
   $count = '';
 
   //$window_range = drupal_map_assoc([1]);
@@ -160,7 +171,7 @@ function tripal_elasticsearch_build_search_block_form($form, &$form_state, $inde
     $query = tripal_elasticsearch_build_search_query_from_field_content_pairs($index_fields);
     try {
       $es = new ESInstance();
-      $results_count = $es->setTableSearchParams($index_name, $index_type, $query)
+      $results_count = $es->setTableSearchParams($index_name, $query)
         ->count();
       $count = '<span style="color: red"><b>' . $results_count . '</b> results match your search.</span>';
     } catch (\Exception $e) {

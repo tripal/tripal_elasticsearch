@@ -35,7 +35,7 @@ class NodesIndexJob extends ESJob{
    *
    * @var int
    */
-  public $chunk = 20;
+  public $chunk = 50;
 
   /**
    * NodesIndexJob constructor.
@@ -59,8 +59,7 @@ class NodesIndexJob extends ESJob{
     $this->total = count($records);
 
     if ($this->total > 1) {
-      $es->bulkIndex($this->index, $this->loadContent($records), $this->index,
-        'nid');
+      $es->bulkIndex($this->index, $this->loadContent($records), 'nid');
     }
     elseif ($this->total > 0) {
       $node = $this->loadContent($records);
@@ -70,7 +69,7 @@ class NodesIndexJob extends ESJob{
 
       $record = end($node);
 
-      $es->createEntry($this->index, $this->index, $record->nid, $record);
+      $es->createEntry($this->index, $record->nid, $record);
     }
   }
 

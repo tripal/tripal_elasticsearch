@@ -298,7 +298,7 @@ function tripal_elasticsearch_gene_search_index_results($display_download = FALS
   $query = tripal_elasticsearch_gene_search_index_query_mapper($_GET);
 
   try {
-    $results = $es->setTableSearchParams('gene_search_index', '', $query)
+    $results = $es->setTableSearchParams('gene_search_index', $query)
       ->paginate(15);
   } catch (Exception $exception) {
     drupal_set_message(
@@ -412,7 +412,7 @@ function tripal_elasticsearch_gene_search_download() {
   try {
     // Stop at 1 million
     $count = min(
-      $es->setTableSearchParams('gene_search_index', '', $query)->count(),
+      $es->setTableSearchParams('gene_search_index', $query)->count(),
       1000000
     );
 
@@ -421,7 +421,6 @@ function tripal_elasticsearch_gene_search_download() {
     while ($i < $count) {
       $records = $es->setTableSearchParams(
         'gene_search_index',
-        '',
         $query,
         [
           $i,
@@ -505,7 +504,7 @@ function tripal_elasticsearch_get_gene_search_organisms() {
       );
 
       // TODO: CACHE THE RESULTS OF THIS QUERY
-      $count = $es->setTableSearchParams('gene_search_index', '', $query)
+      $count = $es->setTableSearchParams('gene_search_index', $query)
         ->count();
 
       if ($count < 1) {

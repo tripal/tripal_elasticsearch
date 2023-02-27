@@ -90,7 +90,6 @@ class ESInstance{
    * @param string $search_terms
    * @param string $node_type
    * @param string $index
-   * @param string $index_type
    * @param array $offset [int $from, int $to]
    * @param bool $force_entities_only force search of entities only
    *
@@ -100,7 +99,6 @@ class ESInstance{
     $search_terms,
     $node_type = '',
     $index = 'website',
-    $index_type = '',
     $offset = [],
     $force_entities_only = FALSE
   ) {
@@ -161,7 +159,6 @@ class ESInstance{
 
     $params = [];
     $params['index'] = $force_entities_only ? 'entities' : $index;
-    $params['type'] = $index_type;
     $params['body'] = [
       'query' => $query,
       'highlight' => $highlight,
@@ -192,14 +189,12 @@ class ESInstance{
    */
   public function setTableSearchParams(
     $index,
-    $type,
     $query,
     $offset = [],
     $highlight = FALSE
   ) {
     $params = [];
     $params['index'] = $index;
-    $params['type'] = $type;
 
     // sort the table by the first field by default
     //$sort_field = array_keys($field_content_pairs)[0];
@@ -292,9 +287,7 @@ class ESInstance{
     }
 
     $mappings = [
-      '_default_' => [
         'properties' => $properties,
-      ],
     ];
 
     $this->indexParams = [
@@ -404,13 +397,11 @@ class ESInstance{
    * Delete an entry from an index.
    *
    * @param string $index Index name
-   * @param string $index_type Index type
    * @param int $id Entry ID (node or entity id)
    */
-  public function deleteEntry($index, $index_type, $id) {
+  public function deleteEntry($index, $id) {
     $params = [
       'index' => $index,
-      'type' => $index_type,
       'id' => $id,
     ];
 
@@ -421,8 +412,6 @@ class ESInstance{
    * Create a new entry and add it to the provided index.
    *
    * @param string $index Index name
-   * @param string $type Table name for table entries and index name for
-   *                     website entries
    * @param int $id Entry ID (node or entity id). Set as FALSE if a table index
    *                entry.
    * @param array $body Array of record data to index. Must match index
@@ -430,10 +419,9 @@ class ESInstance{
    *
    * @return array
    */
-  public function createEntry($index, $type, $id, $body) {
+  public function createEntry($index, $id, $body) {
     $params = [
       'index' => $index,
-      'type' => $type,
       'body' => $body,
     ];
 
@@ -449,13 +437,12 @@ class ESInstance{
    *
    * @param string $index Index name
    * @param array $entries Array of entries
-   * @param string $type Index type
    * @param string $id_key The object key to get the id value
    *
    * @return array
    */
-  public function bulkIndex($index, $entries, $type = NULL, $id_key = NULL) {
-    return $this->bulk('index', $index, $entries, $type, $id_key);
+  public function bulkIndex($index, $entries, $id_key = NULL) {
+    return $this->bulk('index', $index, $entries, $id_key);
   }
 
   /**
@@ -466,8 +453,8 @@ class ESInstance{
    *
    * @return array
    */
-  public function bulkUpdate($index, $entries, $type = NULL, $id_key = NULL) {
-    return $this->bulk('update', $index, $entries, $type, $id_key);
+  public function bulkUpdate($index, $entries, $id_key = NULL) {
+    return $this->bulk('update', $index, $entries, $id_key);
   }
 
   /**
@@ -493,7 +480,6 @@ class ESInstance{
     $operation,
     $index,
     $entries,
-    $type = NULL,
     $id_key = NULL
   ) {
     if (count($entries) === 0) {
@@ -509,7 +495,6 @@ class ESInstance{
     foreach ($entries as $entry) {
       $request = [
         '_index' => $index,
-        '_type' => $type,
       ];
 
       if ($id_key !== NULL) {
@@ -713,7 +698,7 @@ class ESInstance{
    */
   public function getIndexFields($index) {
     $mapping = $this->client->indices()->getMapping();
-    $fields = isset($mapping[$index]) ? $mapping[$index]['mappings']['_default_']['properties'] : [];
+    $fields = isset($mapping[$index]) ? $mapping[$index]['mappings']['properties'] : [];
 
     return array_keys($fields);
   }
@@ -722,22 +707,16 @@ class ESInstance{
    * Delete all records in an index.
    *
    * @param string $index_name
-   * @param null|string $type
    *
    * @throws \Exception
    */
-  public function deleteAllRecords($index_name, $type = NULL) {
+  public function deleteAllRecords($index_name) {
     if (empty($index_name)) {
       throw new Exception('Please provide an index name when deleting records from an index');
     }
 
-    if ($type === NULL) {
-      $type = $index_name;
-    }
-
     $this->client->deleteByQuery([
       'index' => $index_name,
-      'type' => $type,
       'body' => [
         'query' => [
           'match_all' => (object) [],
@@ -750,16 +729,14 @@ class ESInstance{
    * Get a single record.
    *
    * @param string $index
-   * @param string $type
    * @param int $id
    *
    * @return array
    */
-  public function getRecord($index, $type, $id) {
+  public function getRecord($index, $id) {
     try {
       return $this->client->get([
         'index' => $index,
-        'type' => $type,
         'id' => $id,
       ]);
     } catch (Exception $exception) {
@@ -801,7 +778,6 @@ class ESInstance{
 
     return $this->client->indices()->putMapping([
       'index' => $index_name,
-      'type' => $index_type,
       'body' => [
         'properties' => $properties,
       ],
@@ -813,16 +789,14 @@ class ESInstance{
    * element if it already exists.
    *
    * @param string $index The index name
-   * @param string $index_type The index type
    * @param mixed $id The document ID
    * @param array $item The fields to update or create.
    *
    * @return array
    */
-  public function createOrUpdate($index, $index_type, $id, $item) {
+  public function createOrUpdate($index, $id, $item) {
     return $this->client->update([
       'index' => $index,
-      'type' => $index_type,
       'id' => $id,
       'body' => [
         'doc' => $item,
